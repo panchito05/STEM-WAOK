@@ -35,6 +35,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [rewardType, setRewardType] = useState<"medals" | "trophies" | "stars">("stars"); // Tipo de recompensa a mostrar
   const [rewardsShownIndices, setRewardsShownIndices] = useState<number[]>([]); // Índices donde se han mostrado recompensas
   const [totalRewardsShown, setTotalRewardsShown] = useState(0); // Contador total de recompensas mostradas
+  
+  // Nuevos estados para las funcionalidades solicitadas
+  const [waitingForContinue, setWaitingForContinue] = useState(false); // Controla si estamos esperando a que el usuario haga clic en "Continuar"
+  const [showingReview, setShowingReview] = useState(false); // Controla si estamos mostrando la pantalla de revisión
+  const [reviewIndex, setReviewIndex] = useState(0); // Índice del problema que estamos revisando
+  const [problemTimes, setProblemTimes] = useState<number[]>([]); // Tiempos para cada problema
+  const [problemStartTime, setProblemStartTime] = useState(0); // Tiempo de inicio del problema actual
+  const [problemAttempts, setProblemAttempts] = useState<number[]>([]); // Intentos para cada problema
+  
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const { saveExerciseResult } = useProgress();
@@ -58,6 +67,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     };
   }, [exerciseStarted, exerciseCompleted]);
+  
+  // Registro del tiempo por problema
+  useEffect(() => {
+    if (exerciseStarted && !exerciseCompleted && !waitingForContinue && !showingReview) {
+      // Registrar tiempo de inicio para el problema actual
+      setProblemStartTime(timer);
+    }
+  }, [currentProblemIndex, exerciseStarted, exerciseCompleted, waitingForContinue, showingReview, timer]);
 
   // Focus input when current problem changes
   useEffect(() => {
@@ -88,6 +105,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setConsecutiveCorrectAnswers(0); // Reiniciamos el contador de respuestas correctas consecutivas
     setRewardsShownIndices([]); // Reiniciamos el registro de índices donde se mostraron recompensas
     setTotalRewardsShown(0); // Reiniciamos el contador total de recompensas mostradas
+    
+    // Reiniciar los nuevos estados
+    setWaitingForContinue(false);
+    setShowingReview(false);
+    setReviewIndex(0);
+    setProblemTimes([]);
+    setProblemStartTime(0);
+    setProblemAttempts([]);
   };
 
   const showAnswerWithExplanation = () => {
@@ -170,8 +195,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const currentProblem = problems[currentProblemIndex];
     const isCorrect = checkAnswer(currentProblem, parseInt(userAnswer) || 0);
     
-    // Si la respuesta es correcta, guardamos la respuesta y avanzamos al siguiente problema
+    // Si la respuesta es correcta, guardamos la respuesta y esperamos a que el usuario presione "Continuar"
     if (isCorrect) {
+      // Calcular tiempo empleado en el problema actual
+      const timeSpent = timer - problemStartTime;
+      
       // Save the answer
       const answer: UserAnswer = {
         problem: currentProblem,
@@ -180,6 +208,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       };
       
       setAnswers(prev => [...prev, answer]);
+
+      // Guardar el número de intentos para este problema
+      setProblemAttempts(prev => [...prev, newAttemptCount]);
+      
+      // Guardar el tiempo empleado en este problema
+      setProblemTimes(prev => [...prev, timeSpent]);
 
       // Incrementar el contador de respuestas correctas consecutivas
       const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
@@ -278,31 +312,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           // Mostrar recompensa con animación
           setShowReward(true);
           
-          // Mantenemos la recompensa visible por más tiempo para que sea evidente
-          setTimeout(() => {
-            setShowReward(false);
-            setFeedbackMessage(null);
-            setFeedbackColor(null);
-            moveToNextProblem();
-          }, 2500); // Aumentamos el tiempo para que sea más visible
+          // Ahora esperamos a que el usuario haga clic en "Continuar"
+          setWaitingForContinue(true);
           
           // Reiniciar contador de respuestas correctas consecutivas para variar la frecuencia
           setConsecutiveCorrectAnswers(0);
         } else {
-          // Si no hay recompensa, simplemente avanzamos al siguiente problema
-          setTimeout(() => {
-            setFeedbackMessage(null);
-            setFeedbackColor(null);
-            moveToNextProblem();
-          }, 1000);
+          // Si no hay recompensa, esperamos a que el usuario haga clic en "Continuar"
+          setWaitingForContinue(true);
         }
       } else {
-        // Si las recompensas están desactivadas, simplemente avanzamos
-        setTimeout(() => {
-          setFeedbackMessage(null);
-          setFeedbackColor(null);
-          moveToNextProblem();
-        }, 1000);
+        // Si las recompensas están desactivadas, esperamos a que el usuario haga clic en "Continuar"
+        setWaitingForContinue(true);
       }
     } 
     // Si la respuesta es incorrecta...
@@ -317,8 +338,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setFeedbackMessage(t('exercises.incorrect'));
       setFeedbackColor("red");
       
-      // Si hemos alcanzado el máximo de intentos, mostrar la respuesta correcta y avanzar
+      // Si hemos alcanzado el máximo de intentos, mostrar la respuesta correcta y esperar a Continuar
       if (maxAttemptsReached) {
+        // Calcular tiempo empleado en el problema actual
+        const timeSpent = timer - problemStartTime;
+        
         // Guardar la respuesta incorrecta
         const answer: UserAnswer = {
           problem: currentProblem,
@@ -328,6 +352,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         setAnswers(prev => [...prev, answer]);
         
+        // Guardar el número de intentos para este problema
+        setProblemAttempts(prev => [...prev, newAttemptCount]);
+        
+        // Guardar el tiempo empleado en este problema
+        setProblemTimes(prev => [...prev, timeSpent]);
+        
         // Esperar un momento para mostrar el mensaje de respuesta incorrecta
         setTimeout(() => {
           // Luego mostrar la respuesta correcta
@@ -335,12 +365,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
           setFeedbackColor("green");
           
-          // Y finalmente avanzar al siguiente problema
-          setTimeout(() => {
-            setFeedbackMessage(null);
-            setFeedbackColor(null);
-            moveToNextProblem();
-          }, 2000); // Mayor tiempo para leer la respuesta correcta
+          // Esperamos a que el usuario haga clic en "Continuar"
+          setWaitingForContinue(true);
         }, 1000);
       } 
       // Si aún no hemos agotado los intentos, permitir intentar de nuevo
@@ -351,6 +377,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           setUserAnswer(""); // Limpiar el campo para un nuevo intento
         }, 1000);
       }
+    }
+  };
+  
+  // Función para continuar al siguiente problema después de esperar la acción del usuario
+  const handleContinue = () => {
+    setShowReward(false);
+    setFeedbackMessage(null);
+    setFeedbackColor(null);
+    setWaitingForContinue(false);
+    moveToNextProblem();
+  };
+  
+  // Función para iniciar la revisión de respuestas
+  const startReview = () => {
+    setShowingReview(true);
+    setReviewIndex(0);
+  };
+  
+  // Funciones para navegar entre las respuestas en modo revisión
+  const nextReviewItem = () => {
+    if (reviewIndex < answers.length - 1) {
+      setReviewIndex(prev => prev + 1);
+    } else {
+      // Si llegamos al final, volvemos a la pantalla de resumen
+      setShowingReview(false);
+    }
+  };
+  
+  const prevReviewItem = () => {
+    if (reviewIndex > 0) {
+      setReviewIndex(prev => prev - 1);
     }
   };
 
