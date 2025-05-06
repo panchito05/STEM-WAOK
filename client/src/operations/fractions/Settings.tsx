@@ -202,7 +202,48 @@ export default function Settings({ settings, onBack }: SettingsProps) {
         </div>
 
         <div>
-          <h3 className="text-lg font-medium text-gray-900">Additional Settings</h3>
+          <h3 className="text-lg font-medium text-gray-900">Maximum Attempts per Problem</h3>
+          <div className="mt-2">
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <Slider
+                  value={[localSettings.maxAttempts]}
+                  min={0}
+                  max={10}
+                  step={1}
+                  onValueChange={(value) => handleUpdateSetting("maxAttempts", value[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0</span>
+                  <span>5</span>
+                  <span>10</span>
+                </div>
+              </div>
+              <div className="w-20">
+                <Input
+                  type="number"
+                  value={localSettings.maxAttempts}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value) && value >= 0 && value <= 10) {
+                      handleUpdateSetting("maxAttempts", value);
+                    }
+                  }}
+                  min={0}
+                  max={10}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">
+              Establece el máximo de intentos por problema (0 para intentos ilimitados)
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-medium text-gray-900 mt-6">Additional Settings</h3>
           <div className="mt-2 space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="show-immediate-feedback" className="cursor-pointer">

@@ -11,6 +11,10 @@ export interface ModuleSettings {
   showImmediateFeedback: boolean;
   enableSoundEffects: boolean;
   showSolution: boolean;
+  
+  // Campos adicionales para tipos específicos de módulos
+  fractionType?: "addition" | "subtraction" | "comparison" | "mixed";
+  requireSimplified?: boolean;
 }
 
 export interface GlobalSettings {
