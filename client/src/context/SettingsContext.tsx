@@ -7,6 +7,7 @@ export interface ModuleSettings {
   problemCount: number;
   timeLimit: "none" | "per-problem" | "total";
   timeValue: number;
+  maxAttempts: number; // 0 para intentos ilimitados
   showImmediateFeedback: boolean;
   enableSoundEffects: boolean;
   showSolution: boolean;
@@ -41,6 +42,7 @@ const defaultModuleSettings: ModuleSettings = {
   problemCount: 10,
   timeLimit: "none",
   timeValue: 30,
+  maxAttempts: 3, // Por defecto, 3 intentos por problema
   showImmediateFeedback: true,
   enableSoundEffects: true,
   showSolution: false,
