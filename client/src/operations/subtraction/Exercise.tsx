@@ -46,9 +46,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [problemStartTime, setProblemStartTime] = useState(0); // Tiempo de inicio del problema actual
   const [problemAttempts, setProblemAttempts] = useState<number[]>([]); // Intentos para cada problema
   const [autoContinue, setAutoContinue] = useState(false); // Controla si continuamos automáticamente al siguiente problema
+  const [problemTimer, setProblemTimer] = useState(0); // Temporizador para el problema actual
   
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
+  const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
   const { saveExerciseResult } = useProgress();
 
   // Generate problems when settings change or initially
@@ -56,7 +58,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     generateProblems();
   }, [settings]);
 
-  // Timer logic
+  // Timer logic for overall exercise
   useEffect(() => {
     if (exerciseStarted && !exerciseCompleted) {
       timerRef.current = window.setInterval(() => {
@@ -70,6 +72,106 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     };
   }, [exerciseStarted, exerciseCompleted]);
+  
+  // Timer logic for problem time limit
+  useEffect(() => {
+    // Solo iniciamos el temporizador si hay un límite de tiempo configurado (timeValue > 0)
+    // y no estamos en modo de revisión o esperando continuar
+    if (exerciseStarted && !exerciseCompleted && !isReviewing && !waitingForContinue && settings.timeValue > 0) {
+      // Limpiamos el temporizador anterior si existe
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+      }
+      
+      // Iniciamos un nuevo temporizador para el problema actual
+      setProblemTimer(settings.timeValue); // Reiniciamos el temporizador con el valor configurado
+      
+      problemTimerRef.current = window.setInterval(() => {
+        setProblemTimer(prev => {
+          // Si el temporizador llega a cero, contamos como un intento usado
+          if (prev <= 1) {
+            // Limpiamos este intervalo
+            if (problemTimerRef.current) {
+              clearInterval(problemTimerRef.current);
+              problemTimerRef.current = null;
+            }
+            
+            // Incrementamos el contador de intentos
+            setCurrentAttempts(attempts => {
+              const newAttempts = attempts + 1;
+              
+              // Si hemos alcanzado el máximo de intentos, mostramos la respuesta y avanzamos
+              if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
+                const currentProblem = problems[currentProblemIndex];
+                const correctAnswer = currentProblem.num1 - currentProblem.num2;
+                
+                // Mostrar mensaje de tiempo agotado
+                setFeedbackMessage(`¡Tiempo agotado! La respuesta correcta es ${correctAnswer}`);
+                setFeedbackColor("red");
+                
+                // Guardar la respuesta como incorrecta
+                const answer: UserAnswer = {
+                  problem: currentProblem,
+                  userAnswer: parseInt(userAnswer) || 0,
+                  isCorrect: false
+                };
+                
+                setAnswers(prev => [...prev, answer]);
+                
+                // Updateamos el array de intentos para el problema actual
+                setProblemAttempts(prev => {
+                  const newAttempts = [...prev];
+                  newAttempts[currentProblemIndex] = newAttempts[currentProblemIndex] || 0;
+                  newAttempts[currentProblemIndex] += 1;
+                  return newAttempts;
+                });
+                
+                // Marcar como esperando para continuar
+                setWaitingForContinue(true);
+                
+                // Si autoContinue está activado, avanzamos automáticamente después de un breve retraso
+                if (autoContinue) {
+                  setTimeout(() => {
+                    handleContinue();
+                  }, 2000);
+                }
+              } else {
+                // Si aún no hemos agotado todos los intentos, reiniciamos el temporizador
+                setTimeout(() => {
+                  setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
+                  setFeedbackColor("red");
+                  
+                  // Iniciamos un nuevo temporizador
+                  setProblemTimer(settings.timeValue);
+                  problemTimerRef.current = window.setInterval(() => {
+                    setProblemTimer(p => p > 0 ? p - 1 : 0);
+                  }, 1000);
+                  
+                  // Limpiar el mensaje después de un momento
+                  setTimeout(() => {
+                    setFeedbackMessage(null);
+                    setFeedbackColor(null);
+                  }, 1500);
+                }, 500);
+              }
+              
+              return newAttempts;
+            });
+            
+            return 0;
+          }
+          return prev - 1; // Decrementar el temporizador
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+        problemTimerRef.current = null;
+      }
+    };
+  }, [exerciseStarted, exerciseCompleted, currentProblemIndex, settings.timeValue, settings.maxAttempts, isReviewing, waitingForContinue, autoContinue]);
   
   // Registro del tiempo por problema
   useEffect(() => {
@@ -177,6 +279,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (settings.showAnswerWithExplanation) {
       setShowHelpButton(true);
     }
+    
+    // Inicializar el temporizador del problema si está configurado
+    if (settings.timeValue > 0) {
+      setProblemTimer(settings.timeValue);
+    }
+    
     if (inputRef.current) {
       inputRef.current.focus();
     }
