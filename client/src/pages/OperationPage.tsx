@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { Helmet } from "react-helmet";
-import { operationComponents } from "@/utils/operationComponents";
+import { operationComponents, operationModules } from "@/utils/operationComponents";
 import { useSettings } from "@/context/SettingsContext";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -13,6 +13,7 @@ export default function OperationPage() {
 
   const operationId = params.operation;
   const operation = operationComponents[operationId];
+  const moduleInfo = operationModules.find(m => m.id === operationId);
   
   useEffect(() => {
     // Redirect to home if operation doesn't exist
@@ -21,7 +22,7 @@ export default function OperationPage() {
     }
   }, [operation, setLocation]);
 
-  if (!operation) {
+  if (!operation || !moduleInfo) {
     return null;
   }
 
@@ -31,8 +32,8 @@ export default function OperationPage() {
   return (
     <>
       <Helmet>
-        <title>{operation.displayName} - Math W+A+O+K</title>
-        <meta name="description" content={`Practice ${operation.displayName.toLowerCase()} with interactive exercises.`} />
+        <title>{moduleInfo.displayName} - Math W+A+O+K</title>
+        <meta name="description" content={`Practice ${moduleInfo.displayName.toLowerCase()} with interactive exercises.`} />
       </Helmet>
       
       <div className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
