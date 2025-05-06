@@ -35,6 +35,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [showReward, setShowReward] = useState(false); // Estado para mostrar la recompensa
   const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(0); // Contador para respuestas correctas consecutivas
   const [rewardType, setRewardType] = useState<"medals" | "trophies" | "stars">("stars"); // Tipo de recompensa a mostrar
+  const [rewardsShownIndices, setRewardsShownIndices] = useState<number[]>([]); // Índices donde se han mostrado recompensas
+  const [totalRewardsShown, setTotalRewardsShown] = useState(0); // Contador total de recompensas mostradas
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const { saveExerciseResult } = useProgress();
@@ -90,6 +92,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setAdaptiveDifficulty(settings.difficulty); // Reiniciamos la dificultad adaptativa
     setCurrentAttempts(0); // Reiniciamos el contador de intentos actuales
     setConsecutiveCorrectAnswers(0); // Reiniciamos el contador de respuestas correctas consecutivas
+    setRewardsShownIndices([]); // Reiniciamos el registro de índices donde se mostraron recompensas
+    setTotalRewardsShown(0); // Reiniciamos el contador total de recompensas mostradas
   };
   
   const showAnswerWithExplanation = () => {
@@ -210,34 +214,74 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Decidir si mostrar recompensa basado en diferentes criterios
       if (settings.enableRewards) {
-        // Calcular si debemos mostrar recompensa
-        // Criterios: 
-        // 1. Primer problema correcto: 30% de probabilidad
-        // 2. Tres respuestas correctas consecutivas: 80% de probabilidad
-        // 3. Cinco respuestas correctas consecutivas: 100% de probabilidad
-        // 4. Caso especial: Al final del ejercicio si acierta el último problema: 100%
+        // Sistema de recompensas mucho más estratégico y menos predecible
+        // - Evitamos que aparezcan recompensas en problemas consecutivos
+        // - Limitamos el número total de recompensas por sesión
+        // - Garantizamos recompensas solo en momentos clave del progreso
+        // - Introducimos una mecánica de "racha oculta" para sorprender
         
         let shouldShowReward = false;
         
-        // Criterio 1: Para el primer problema (probabilidad baja)
-        if (currentProblemIndex === 0 && Math.random() < 0.3) {
-          shouldShowReward = true;
-        }
-        // Criterio 2: Tres respuestas correctas consecutivas (probabilidad media)
-        else if (newConsecutiveCorrectAnswers === 3 && Math.random() < 0.8) {
-          shouldShowReward = true;
-        }
-        // Criterio 3: Cinco respuestas correctas consecutivas (probabilidad alta)
-        else if (newConsecutiveCorrectAnswers >= 5) {
-          shouldShowReward = true;
-        }
-        // Criterio 4: Último problema del ejercicio (siempre)
-        else if (currentProblemIndex === problems.length - 1) {
-          shouldShowReward = true;
-        }
-        // Criterio adicional: De vez en cuando, para sorprender (probabilidad muy baja)
-        else if (Math.random() < 0.15) {
-          shouldShowReward = true;
+        // Máximo de recompensas permitidas por sesión (aproximadamente 20-25% de los problemas)
+        const maxRewardsPerSession = Math.max(2, Math.ceil(problems.length * 0.2));
+        
+        // Si ya hemos mostrado suficientes recompensas, limitamos su aparición
+        if (totalRewardsShown >= maxRewardsPerSession) {
+          // Solo permitimos una recompensa final si es el último problema y aún no hemos mostrado una allí
+          shouldShowReward = currentProblemIndex === problems.length - 1 && 
+                             !rewardsShownIndices.includes(problems.length - 1);
+        } 
+        else {
+          // Evitamos mostrar recompensas en problemas consecutivos o muy cercanos
+          const lastRewardIndex = rewardsShownIndices.length > 0 ? 
+                                  rewardsShownIndices[rewardsShownIndices.length - 1] : -1;
+          
+          // Mínimo de problemas entre recompensas (al menos 3-4 problemas entre recompensas)
+          const minProblemsBetweenRewards = Math.max(3, Math.floor(problems.length / 8));
+          const problemsSinceLastReward = lastRewardIndex === -1 ? 
+                                          currentProblemIndex + 1 : 
+                                          currentProblemIndex - lastRewardIndex;
+          
+          // Solo considerar mostrar recompensa si ha pasado suficiente tiempo desde la última
+          if (lastRewardIndex === -1 || problemsSinceLastReward > minProblemsBetweenRewards) {
+            
+            // Momentos estratégicos para recompensas con mayor probabilidad:
+            // 1. Al inicio del ejercicio (primer 20% de problemas) - muy baja probabilidad (8%)
+            const isEarlyProblem = currentProblemIndex < Math.ceil(problems.length * 0.2);
+            
+            // 2. A mitad del ejercicio (promedio 50% completado) - probabilidad media (25%)
+            const isMidPointProblem = Math.abs(currentProblemIndex - Math.floor(problems.length / 2)) <= 1;
+            
+            // 3. Al final del ejercicio (último 10% de problemas) - alta probabilidad (75%) 
+            const isLateProblem = currentProblemIndex >= Math.floor(problems.length * 0.9);
+            
+            // 4. Específicamente en el último problema - garantizada (100%)
+            const isFinalProblem = currentProblemIndex === problems.length - 1;
+            
+            // 5. Tras logros significativos (5 o más respuestas correctas consecutivas) - probabilidad alta (60%)
+            const isSignificantStreak = newConsecutiveCorrectAnswers >= 5;
+            
+            // Asignamos probabilidades basadas en los criterios
+            if (isFinalProblem) {
+              shouldShowReward = true; // Garantizada en el último problema
+            }
+            else if (isSignificantStreak) {
+              shouldShowReward = Math.random() < 0.6; // Alta probabilidad por racha significativa
+            }
+            else if (isLateProblem) {
+              shouldShowReward = Math.random() < 0.35; // Probabilidad moderada hacia el final
+            }
+            else if (isMidPointProblem) {
+              shouldShowReward = Math.random() < 0.25; // Probabilidad media en el punto medio
+            }
+            else if (isEarlyProblem) {
+              shouldShowReward = Math.random() < 0.08; // Muy baja probabilidad al inicio
+            }
+            else {
+              // Factor sorpresa - muy raro (3%)
+              shouldShowReward = Math.random() < 0.03;
+            }
+          }
         }
         
         if (shouldShowReward) {
@@ -252,6 +296,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           
           // Mostrar recompensa con animación
           setShowReward(true);
+          
+          // Registrar que se mostró una recompensa en este índice
+          setRewardsShownIndices(prev => [...prev, currentProblemIndex]);
+          setTotalRewardsShown(prev => prev + 1);
           
           // Mantenemos la recompensa visible por más tiempo para que sea evidente
           setTimeout(() => {
