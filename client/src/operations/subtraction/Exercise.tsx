@@ -426,13 +426,44 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const moveToPreviousProblem = () => {
     if (currentProblemIndex > 0) {
+      // Eliminar la respuesta anterior para permitir un nuevo intento
+      setAnswers(prev => {
+        const newAnswers = [...prev];
+        if (newAnswers.length >= currentProblemIndex) {
+          // Eliminar la última respuesta que corresponde al problema actual
+          newAnswers.pop();
+        }
+        return newAnswers;
+      });
+      
+      // Remover también el tiempo y los intentos del problema actual
+      setProblemTimes(prev => {
+        const newTimes = [...prev];
+        if (newTimes.length >= currentProblemIndex) {
+          newTimes.pop();
+        }
+        return newTimes;
+      });
+      
+      setProblemAttempts(prev => {
+        const newAttempts = [...prev];
+        if (newAttempts.length >= currentProblemIndex) {
+          newAttempts.pop();
+        }
+        return newAttempts;
+      });
+      
+      // Ir al problema anterior
       setCurrentProblemIndex(prev => prev - 1);
-      // Set the input to the previously entered answer if available
-      const previousAnswer = answers[currentProblemIndex - 1];
-      setUserAnswer(previousAnswer ? previousAnswer.userAnswer.toString() : "");
-      setShowingExplanation(false); // Restablecemos la explicación al volver al problema anterior
+      // Limpiar la entrada para permitir una nueva respuesta
+      setUserAnswer("");
+      setShowingExplanation(false);
       setFeedbackMessage(null);
       setFeedbackColor(null);
+      setCurrentAttempts(0); // Resetear intentos para este problema
+      
+      // También resetear el temporizador del problema
+      setProblemStartTime(timer);
     }
   };
 
@@ -847,7 +878,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <>
             <Button
               variant="outline"
-              disabled={currentProblemIndex === 0}
+              // Habilitar el botón solo cuando haya un problema anterior y no estemos esperando "Continuar"
+              disabled={currentProblemIndex === 0 || waitingForContinue}
               onClick={moveToPreviousProblem}
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
