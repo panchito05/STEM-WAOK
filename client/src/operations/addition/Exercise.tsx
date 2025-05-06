@@ -24,6 +24,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | null>(null);
+  const [showingAnswer, setShowingAnswer] = useState(false);
+  const [currentAttempts, setCurrentAttempts] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const { saveExerciseResult } = useProgress();
@@ -71,6 +73,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setExerciseCompleted(false);
     setFeedbackMessage(null);
     setFeedbackColor(null);
+    setShowingAnswer(false);
+    setCurrentAttempts(0);
   };
 
   const startExercise = () => {
@@ -104,34 +108,96 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const currentProblem = problems[currentProblemIndex];
     const isCorrect = checkAnswer(currentProblem, parseInt(userAnswer) || 0);
     
-    // Save the answer
-    const answer: UserAnswer = {
-      problem: currentProblem,
-      userAnswer: parseInt(userAnswer) || 0,
-      isCorrect
-    };
+    // Incrementar el contador de intentos
+    setCurrentAttempts(prev => prev + 1);
     
-    setAnswers(prev => [...prev, answer]);
+    // Revisamos si se excedió el máximo de intentos (si está configurado)
+    const maxAttemptsReached = settings.maxAttempts > 0 && currentAttempts + 1 >= settings.maxAttempts;
     
-    // Show feedback if enabled
-    if (settings.showImmediateFeedback) {
-      setFeedbackMessage(isCorrect ? "Correct!" : "Incorrect!");
-      setFeedbackColor(isCorrect ? "green" : "red");
+    if (isCorrect) {
+      // Guardar la respuesta correcta
+      const answer: UserAnswer = {
+        problem: currentProblem,
+        userAnswer: parseInt(userAnswer) || 0,
+        isCorrect: true
+      };
       
-      setTimeout(() => {
-        setFeedbackMessage(null);
-        setFeedbackColor(null);
+      setAnswers(prev => [...prev, answer]);
+      
+      // Mostrar feedback
+      if (settings.showImmediateFeedback) {
+        setFeedbackMessage("¡Correcto!");
+        setFeedbackColor("green");
+        
+        setTimeout(() => {
+          setFeedbackMessage(null);
+          setFeedbackColor(null);
+          moveToNextProblem();
+        }, 1000);
+      } else {
         moveToNextProblem();
-      }, 1000);
+      }
     } else {
-      moveToNextProblem();
+      // Respuesta incorrecta
+      if (maxAttemptsReached) {
+        // Si alcanzó el máximo de intentos, guardar como incorrecto y avanzar
+        const answer: UserAnswer = {
+          problem: currentProblem,
+          userAnswer: parseInt(userAnswer) || 0,
+          isCorrect: false
+        };
+        
+        setAnswers(prev => [...prev, answer]);
+        
+        if (settings.showSolution || settings.showAnswerWithExplanation) {
+          setShowingAnswer(true);
+          setFeedbackMessage("Número máximo de intentos alcanzado.");
+          setFeedbackColor("red");
+        } else {
+          if (settings.showImmediateFeedback) {
+            setFeedbackMessage("Incorrecto. Se agotaron los intentos.");
+            setFeedbackColor("red");
+            
+            setTimeout(() => {
+              setFeedbackMessage(null);
+              setFeedbackColor(null);
+              moveToNextProblem();
+            }, 1500);
+          } else {
+            moveToNextProblem();
+          }
+        }
+      } else {
+        // Todavía tiene intentos, mostrar feedback
+        if (settings.showImmediateFeedback) {
+          setFeedbackMessage("Incorrecto. Intenta de nuevo.");
+          setFeedbackColor("red");
+          
+          setTimeout(() => {
+            setFeedbackMessage(null);
+            setFeedbackColor(null);
+          }, 1500);
+        }
+        
+        // No guardamos la respuesta hasta que sea correcta o se agoten los intentos
+      }
     }
   };
 
+  const handleContinue = () => {
+    setShowingAnswer(false);
+    setFeedbackMessage(null);
+    setFeedbackColor(null);
+    setCurrentAttempts(0);
+    moveToNextProblem();
+  };
+  
   const moveToNextProblem = () => {
     if (currentProblemIndex < problems.length - 1) {
       setCurrentProblemIndex(prev => prev + 1);
       setUserAnswer("");
+      setCurrentAttempts(0);
+      setShowingAnswer(false);
     } else {
       completeExercise();
     }
@@ -280,20 +346,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <span className="text-right w-16">{currentProblem.num2}</span>
             <span className="mx-4">=</span>
             <div className="border-b-2 border-gray-400 w-16 relative">
-              <Input
-                type="text"
-                ref={inputRef}
-                className="w-full text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2"
-                value={userAnswer}
-                onChange={handleInputChange}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    checkCurrentAnswer();
-                  }
-                }}
-                pattern="[0-9]*"
-                inputMode="numeric"
-              />
+              {showingAnswer ? (
+                <span className="block text-center py-2">{currentProblem.num1 + currentProblem.num2}</span>
+              ) : (
+                <Input
+                  type="text"
+                  ref={inputRef}
+                  className="w-full text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2"
+                  value={userAnswer}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      checkCurrentAnswer();
+                    }
+                  }}
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                />
+              )}
             </div>
           </div>
           {feedbackMessage && (
@@ -301,60 +371,124 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               {feedbackMessage}
             </div>
           )}
-        </div>
 
-        <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((num) => (
-            <button
-              key={num}
-              className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
-              onClick={() => handleKeyboardInput(num)}
-            >
-              {num}
-            </button>
-          ))}
-          <button
-            className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
-            onClick={() => handleKeyboardInput("backspace")}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 mx-auto"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
-              />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <div className="flex justify-between">
-        <Button
-          variant="outline"
-          disabled={currentProblemIndex === 0}
-          onClick={moveToPreviousProblem}
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Previous
-        </Button>
-        <Button onClick={checkCurrentAnswer}>
-          {exerciseStarted ? (
-            <>
-              Check Answer
-              <Check className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            "Start Exercise"
+          {showingAnswer && settings.showAnswerWithExplanation && (
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg text-left">
+              <h3 className="font-semibold text-lg mb-2">Explicación:</h3>
+              <p>Para sumar {currentProblem.num1} + {currentProblem.num2}:</p>
+              <ol className="list-decimal list-inside mt-2 space-y-2">
+                <li>
+                  Colocamos los números uno encima del otro, alineando las unidades.
+                  <div className="mt-1 font-mono">
+                    <div className="text-right">{currentProblem.num1}</div>
+                    <div className="text-right">+ {currentProblem.num2}</div>
+                    <div className="border-t border-gray-400 text-right">{currentProblem.num1 + currentProblem.num2}</div>
+                  </div>
+                </li>
+                <li>
+                  {currentProblem.num1 < 10 && currentProblem.num2 < 10 ? (
+                    <span>Sumamos directamente {currentProblem.num1} + {currentProblem.num2} = {currentProblem.num1 + currentProblem.num2}.</span>
+                  ) : (
+                    <>
+                      <span>Sumamos primero las unidades:</span>
+                      <div className="mt-1 mb-2">
+                        {currentProblem.num1 % 10} + {currentProblem.num2 % 10} = {(currentProblem.num1 % 10) + (currentProblem.num2 % 10)}
+                      </div>
+                      
+                      {(currentProblem.num1 % 10) + (currentProblem.num2 % 10) >= 10 && (
+                        <div className="mb-2">
+                          Como {(currentProblem.num1 % 10) + (currentProblem.num2 % 10)} es mayor o igual a 10, llevamos 1 a la columna de las decenas.
+                        </div>
+                      )}
+                      
+                      <span>Luego sumamos las decenas:</span>
+                      <div className="mt-1">
+                        {Math.floor(currentProblem.num1 / 10)} + {Math.floor(currentProblem.num2 / 10)} 
+                        {(currentProblem.num1 % 10) + (currentProblem.num2 % 10) >= 10 ? " + 1 (de arrastre)" : ""} 
+                        = {Math.floor((currentProblem.num1 + currentProblem.num2) / 10)}
+                      </div>
+                    </>
+                  )}
+                </li>
+                <li>
+                  La respuesta final es {currentProblem.num1 + currentProblem.num2}.
+                </li>
+              </ol>
+            </div>
           )}
-        </Button>
+
+          {showingAnswer && settings.showSolution && !settings.showAnswerWithExplanation && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <p className="font-medium">La respuesta correcta es: {currentProblem.num1 + currentProblem.num2}</p>
+            </div>
+          )}
+
+          {showingAnswer && (
+            <div className="mt-6">
+              <Button onClick={handleContinue}>
+                Continuar al siguiente problema
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {!showingAnswer && (
+          <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
+            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((num) => (
+              <button
+                key={num}
+                className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
+                onClick={() => handleKeyboardInput(num)}
+              >
+                {num}
+              </button>
+            ))}
+            <button
+              className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
+              onClick={() => handleKeyboardInput("backspace")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 mx-auto"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
+
+      {!showingAnswer && (
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            disabled={currentProblemIndex === 0}
+            onClick={moveToPreviousProblem}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Previous
+          </Button>
+          <Button onClick={checkCurrentAnswer}>
+            {exerciseStarted ? (
+              <>
+                Check Answer
+                <Check className="ml-2 h-4 w-4" />
+              </>
+            ) : (
+              "Start Exercise"
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
