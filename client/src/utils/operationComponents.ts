@@ -37,6 +37,10 @@ export const defaultModuleSettings: ModuleSettings = {
   showImmediateFeedback: true,
   enableSoundEffects: true,
   showAnswerWithExplanation: true, // Botón de ayuda que muestra respuesta con explicación
+  enableAdaptiveDifficulty: false, // Ajusta automáticamente la dificultad según desempeño
+  enableCompensation: false, // Añade problemas adicionales por respuestas incorrectas/reveladas
+  enableRewards: true, // Activar sistema de recompensas/premios
+  rewardType: "stars", // Tipo de premio a mostrar (medals, trophies, stars)
 };
 
 // List of all operation modules

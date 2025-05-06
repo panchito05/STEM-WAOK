@@ -151,16 +151,51 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
   
   const showAnswerWithExplanation = () => {
+    if (!settings.showAnswerWithExplanation) {
+      return;
+    }
+    
     const currentProblem = problems[currentProblemIndex];
     const quotient = Math.floor(currentProblem.dividend / currentProblem.divisor);
     const remainder = currentProblem.dividend % currentProblem.divisor;
     
+    // Mostramos la respuesta con explicación
     const answerText = remainder > 0 
       ? `${t('exercises.correctAnswerIs')} ${quotient}r${remainder}`
       : `${t('exercises.correctAnswerIs')} ${quotient}`;
+    
+    // Explicación detallada del proceso
+    const explanationText = `
+      ${currentProblem.dividend} ÷ ${currentProblem.divisor} = ${quotient} con resto ${remainder}
       
-    setFeedbackMessage(answerText);
+      Explicación:
+      ${quotient} × ${currentProblem.divisor} = ${quotient * currentProblem.divisor}
+      ${currentProblem.dividend} - ${quotient * currentProblem.divisor} = ${remainder}
+    `;
+    
+    // Actualizamos la interfaz para mostrar la respuesta y explicación
+    setFeedbackMessage(`${answerText}\n${explanationText}`);
     setFeedbackColor("green");
+    
+    // Si la compensación está habilitada, añadimos un problema adicional
+    if (settings.enableCompensation) {
+      // Añadir un problema adicional del mismo nivel
+      const newProblem = generateDivisionProblem(settings.difficulty);
+      setProblems(prev => [...prev, newProblem]);
+    }
+    
+    // Guardamos que el usuario usó el botón de mostrar respuesta
+    const answer: UserAnswer = {
+      problem: currentProblem,
+      userQuotient: -2, // Usamos -2 para indicar que se usó "Mostrar respuesta"
+      userRemainder: -2,
+      isCorrect: false
+    };
+    
+    setAnswers(prev => [...prev, answer]);
+    
+    // Esperamos a que el usuario presione continuar
+    setWaitingForContinue(true);
   };
 
   // Función centralizada para manejar cuando se agota el tiempo
@@ -456,11 +491,125 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
 
+  // Funciones para la revisión de problemas completados
+  const navigateReview = (direction: 'prev' | 'next') => {
+    if (direction === 'prev' && reviewIndex > 0) {
+      setReviewIndex(prev => prev - 1);
+    } else if (direction === 'next' && reviewIndex < answers.length - 1) {
+      setReviewIndex(prev => prev + 1);
+    }
+  };
+  
+  const exitReviewMode = () => {
+    setIsReviewing(false);
+    setShowingReview(false);
+    // Si terminamos la revisión después de completar el ejercicio, volvemos a la pantalla de resultados
+    if (exerciseCompleted) {
+      // Ya estamos en la pantalla de resultados, no hay que hacer nada
+    } else {
+      // Volvemos al problema actual
+      setReviewIndex(0);
+    }
+  };
+  
+  const renderReviewMode = () => {
+    if (answers.length === 0 || reviewIndex >= answers.length) {
+      return (
+        <div className="p-6 bg-gray-50 rounded-lg mb-6 text-center">
+          <p>No hay problemas para revisar.</p>
+        </div>
+      );
+    }
+    
+    const currentReview = answers[reviewIndex];
+    const problem = currentReview.problem;
+    const isCorrect = currentReview.isCorrect;
+    const userQuotient = currentReview.userQuotient;
+    const userRemainder = currentReview.userRemainder;
+    const correctQuotient = Math.floor(problem.dividend / problem.divisor);
+    const correctRemainder = problem.dividend % problem.divisor;
+    
+    return (
+      <>
+        <div className="p-6 bg-gray-50 rounded-lg mb-6">
+          <div className="text-center">
+            <h3 className="text-lg font-medium mb-4">Problema {reviewIndex + 1} de {answers.length}</h3>
+            
+            <div className="text-3xl font-bold mb-6 flex justify-center items-baseline">
+              <span className="text-right w-16">{problem.dividend}</span>
+              <span className="mx-4">÷</span>
+              <span className="text-right w-16">{problem.divisor}</span>
+              <span className="mx-4">=</span>
+              <div className="border-b-2 border-gray-400 w-20 px-2 py-1">
+                <span className={`${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                  {userQuotient === -1 ? "Tiempo agotado" : 
+                    userRemainder > 0 ? `${userQuotient}r${userRemainder}` : `${userQuotient}`}
+                </span>
+              </div>
+            </div>
+            
+            <div className={`text-lg mb-3 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+              {isCorrect ? "¡Correcto!" : "Incorrecto"}
+            </div>
+            
+            {!isCorrect && (
+              <div className="text-green-600 mb-2">
+                Respuesta correcta: {correctRemainder > 0 ? `${correctQuotient}r${correctRemainder}` : `${correctQuotient}`}
+              </div>
+            )}
+            
+            {problemAttempts[reviewIndex] && (
+              <p className="text-sm text-gray-500">
+                Intentos: {problemAttempts[reviewIndex]} | 
+                Tiempo: {problemTimes[reviewIndex] || 0}s
+              </p>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={() => navigateReview('prev')}
+            disabled={reviewIndex === 0}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Anterior
+          </Button>
+          <Button
+            variant="outline"
+            onClick={exitReviewMode}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Volver
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigateReview('next')}
+            disabled={reviewIndex === answers.length - 1}
+          >
+            Siguiente
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </>
+    );
+  };
+
   const completeExercise = () => {
     setExerciseCompleted(true);
     
+    // Detener todos los temporizadores
     if (timerRef.current) {
       clearInterval(timerRef.current);
+    }
+    
+    if (problemTimerRef.current) {
+      clearInterval(problemTimerRef.current);
+    }
+    
+    if (autoContinueTimeoutRef.current) {
+      clearTimeout(autoContinueTimeoutRef.current);
     }
     
     // Calculate score
@@ -532,6 +681,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <a href="/">{t('exercises.returnHome')}</a>
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  // Mostrar modo revisión si está activo
+  if (isReviewing && showingReview) {
+    return (
+      <div className="px-4 py-5 sm:p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Review Mode</h2>
+            <p className="text-sm text-gray-500">Review your answers</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exitReviewMode}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Exit Review
+          </Button>
+        </div>
+        
+        {renderReviewMode()}
       </div>
     );
   }
