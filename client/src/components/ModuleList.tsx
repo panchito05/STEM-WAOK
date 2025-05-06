@@ -34,6 +34,16 @@ export default function ModuleList() {
       }
       modules = orderedModules;
     }
+    
+    // Move favorite modules to the beginning of the list
+    if (favoriteModules.length > 0) {
+      // Separate favorites and non-favorites
+      const favorites = modules.filter(module => favoriteModules.includes(module.id));
+      const nonFavorites = modules.filter(module => !favoriteModules.includes(module.id));
+      
+      // Combine with favorites first
+      modules = [...favorites, ...nonFavorites];
+    }
 
     // Filter by search query
     if (searchQuery) {

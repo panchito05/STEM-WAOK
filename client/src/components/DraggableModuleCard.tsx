@@ -199,10 +199,18 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       className={`
         ${isDragging ? "opacity-50" : "opacity-100"}
         ${module.comingSoon ? "border-2 border-dashed border-gray-300" : ""}
+        ${isFavorite ? "ring-2 ring-yellow-400" : ""}
         overflow-hidden
+        transition-all
+        ${isFavorite ? "transform -translate-y-1" : ""}
       `}
       data-handler-id={handlerId}
     >
+      {isFavorite && (
+        <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1 shadow-md">
+          <Star className="h-4 w-4 text-white fill-current" />
+        </div>
+      )}
       {cardContent}
     </Card>
   );
