@@ -70,9 +70,12 @@ export interface ModuleSettingsData {
   problemCount: number;
   timeLimit: string;
   timeValue: number;
+  maxAttempts: number;
   showImmediateFeedback: boolean;
   enableSoundEffects: boolean;
-  showSolution: boolean;
+  showAnswerWithExplanation: boolean;
+  enableAdaptiveDifficulty: boolean;
+  enableCompensation: boolean;
   requireSimplified?: boolean;
   fractionType?: string;
   [key: string]: any;
@@ -89,12 +92,15 @@ export const exerciseProgressSchema = z.object({
 
 export const moduleSettingsSchema = z.object({
   difficulty: z.string(),
-  problemCount: z.number().int().min(1).max(50),
+  problemCount: z.number().int().min(1).max(100),
   timeLimit: z.string(),
-  timeValue: z.number().int().min(5).max(600),
+  timeValue: z.number().int().min(0).max(600),
+  maxAttempts: z.number().int().min(0).max(10),
   showImmediateFeedback: z.boolean(),
   enableSoundEffects: z.boolean(),
-  showSolution: z.boolean(),
+  showAnswerWithExplanation: z.boolean(),
+  enableAdaptiveDifficulty: z.boolean(),
+  enableCompensation: z.boolean(),
   requireSimplified: z.boolean().optional(),
   fractionType: z.string().optional(),
 });
