@@ -136,16 +136,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       startExercise();
     }
     
-    // Siempre mostrar la respuesta si showAnswerWithExplanation está habilitado
-    setShowingExplanation(true);
-    const currentProblem = problems[currentProblemIndex];
-    const correctAnswer = currentProblem.num1 - currentProblem.num2;
-    
-    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
-    setFeedbackColor("green");
-    
-    // Esperar 2 segundos y luego pasar al siguiente problema
-    setTimeout(() => {
+    // Solo se puede revelar la respuesta si hemos alcanzado el número máximo de intentos
+    // o si el maxAttempts está configurado a 0 (sin límite)
+    if (settings.maxAttempts === 0 || currentAttempts >= settings.maxAttempts) {
+      setShowingExplanation(true);
+      const currentProblem = problems[currentProblemIndex];
+      const correctAnswer = currentProblem.num1 - currentProblem.num2;
+      
+      setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+      setFeedbackColor("green");
+      
+      // Calcular tiempo empleado en el problema actual
+      const timeSpent = timer - problemStartTime;
+      
       // Guardar la respuesta como incorrecta
       const answer: UserAnswer = {
         problem: currentProblem,
@@ -154,8 +157,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       };
       
       setAnswers(prev => [...prev, answer]);
-      moveToNextProblem();
-    }, 2000);
+      
+      // Guardar el número de intentos para este problema
+      setProblemAttempts(prev => [...prev, currentAttempts]);
+      
+      // Guardar el tiempo empleado en este problema
+      setProblemTimes(prev => [...prev, timeSpent]);
+      
+      // Si la compensación está habilitada, añadimos un problema adicional por cada respuesta revelada
+      if (settings.enableCompensation) {
+        const newProblem = generateSubtractionProblem(settings.difficulty);
+        setProblems(prev => [...prev, newProblem]);
+      }
+      
+      // Esperamos a que el usuario haga clic en "Continuar"
+      setWaitingForContinue(true);
+    } else {
+      // Mostrar mensaje de que no se puede ver la respuesta hasta agotar los intentos
+      setFeedbackMessage(`Debes agotar tus ${settings.maxAttempts} intentos primero`);
+      setFeedbackColor("red");
+      
+      setTimeout(() => {
+        setFeedbackMessage(null);
+        setFeedbackColor(null);
+      }, 2000);
+    }
   };
 
   const startExercise = () => {
@@ -361,6 +387,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // Guardar el tiempo empleado en este problema
         setProblemTimes(prev => [...prev, timeSpent]);
+        
+        // Si la compensación está habilitada, añadimos un problema adicional por cada respuesta incorrecta
+        if (settings.enableCompensation) {
+          const newProblem = generateSubtractionProblem(settings.difficulty);
+          setProblems(prev => [...prev, newProblem]);
+        }
         
         // Esperar un momento para mostrar el mensaje de respuesta incorrecta
         setTimeout(() => {
@@ -907,7 +939,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <TooltipTrigger asChild>
               <Button 
                 variant="outline" 
-                disabled={!settings.showAnswerWithExplanation}
+                disabled={!settings.showAnswerWithExplanation || (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts)}
                 onClick={showAnswerWithExplanation}
               >
                 <Info className="mr-2 h-4 w-4" />
@@ -917,6 +949,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             {!settings.showAnswerWithExplanation ? (
               <TooltipContent>
                 <p>{t('tooltips.activateShowAnswer')}</p>
+              </TooltipContent>
+            ) : settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts ? (
+              <TooltipContent>
+                <p>Debes agotar los {settings.maxAttempts} intentos primero</p>
               </TooltipContent>
             ) : null}
           </Tooltip>
