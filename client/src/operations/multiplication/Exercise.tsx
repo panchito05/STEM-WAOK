@@ -520,6 +520,38 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
       <div className="p-6 bg-gray-50 rounded-lg mb-6">
         <div className="text-center">
+          {/* Animación de recompensa */}
+          {showReward && (
+            <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+              <div className="absolute inset-0 bg-black bg-opacity-30 animate-fade-in"></div>
+              <div className="relative bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg p-8 shadow-xl transform animate-bounce-in">
+                <div className="text-2xl font-bold text-white mb-4 text-center">
+                  ¡Recompensa!
+                </div>
+                <div className="flex justify-center">
+                  {rewardType === "stars" && (
+                    <div className="text-6xl text-yellow-200 animate-pulse">
+                      ⭐⭐⭐
+                    </div>
+                  )}
+                  {rewardType === "medals" && (
+                    <div className="text-6xl text-yellow-200 animate-pulse">
+                      🥇
+                    </div>
+                  )}
+                  {rewardType === "trophies" && (
+                    <div className="text-6xl text-yellow-200 animate-pulse">
+                      🏆
+                    </div>
+                  )}
+                </div>
+                <div className="text-white text-center mt-4 font-medium">
+                  ¡Excelente trabajo!
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div className={`text-3xl font-bold mb-6 flex justify-center items-baseline ${feedbackMessage ? (feedbackColor === "green" ? "text-green-600" : "text-red-600") : ""}`}>
             <span className="text-right w-16">{currentProblem.num1}</span>
             <span className="mx-4">×</span>
