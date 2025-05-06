@@ -469,6 +469,97 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     );
   }
 
+  // Modo de revisión
+  if (showingReview && answers.length > 0) {
+    const answer = answers[reviewIndex];
+    const attemptCount = problemAttempts[reviewIndex] || 0;
+    const timeSpent = problemTimes[reviewIndex] || 0;
+    
+    return (
+      <div className="px-4 py-5 sm:p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Revisión de Respuestas</h2>
+          <div className="text-sm text-gray-500">
+            {reviewIndex + 1} / {answers.length}
+          </div>
+        </div>
+        
+        <div className="p-6 bg-gray-50 rounded-lg mb-6 border border-gray-200">
+          <div className="flex justify-center items-center mb-6">
+            <div className="text-3xl font-bold flex items-baseline">
+              <span className="w-16 text-right">{answer.problem.num1}</span>
+              <span className="mx-4">-</span>
+              <span className="w-16 text-right">{answer.problem.num2}</span>
+              <span className="mx-4">=</span>
+              <span className="w-16 text-right">
+                <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
+                  {answer.userAnswer}
+                </span>
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-sm">
+              <span className="font-semibold">Resultado: </span>
+              {answer.isCorrect ? (
+                <span className="text-green-600 font-semibold">Correcto</span>
+              ) : (
+                <div>
+                  <span className="text-red-600 font-semibold">Incorrecto</span>
+                  <div className="mt-1">
+                    <span className="font-medium">Respuesta correcta: </span>
+                    <span className="text-green-600 font-semibold">
+                      {answer.problem.num1 - answer.problem.num2}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-1 text-sm text-right">
+              <div>
+                <span className="font-semibold">Tiempo: </span>
+                {formatTime(timeSpent)}
+              </div>
+              <div>
+                <span className="font-semibold">Intentos: </span>
+                {attemptCount}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex justify-between">
+          <Button 
+            variant="outline" 
+            onClick={prevReviewItem}
+            disabled={reviewIndex === 0}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Anterior
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            onClick={() => setShowingReview(false)}
+          >
+            Volver al Resumen
+          </Button>
+          
+          <Button 
+            onClick={nextReviewItem}
+            disabled={reviewIndex === answers.length - 1}
+          >
+            Siguiente
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Pantalla de resultados
   if (exerciseCompleted) {
     return (
       <div className="px-4 py-5 sm:p-6">
@@ -480,30 +571,83 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="font-semibold mb-2">Performance</h3>
+            <h3 className="font-semibold mb-2">Rendimiento</h3>
             <p className="text-sm">
-              Accuracy: {Math.round((score / problems.length) * 100)}%
+              Precisión: {Math.round((score / problems.length) * 100)}%
             </p>
             <p className="text-sm">
-              Average time per problem: {Math.round(timer / problems.length)} seconds
+              Tiempo promedio por problema: {Math.round(timer / problems.length)} segundos
             </p>
           </div>
           
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="font-semibold mb-2">Breakdown</h3>
+            <h3 className="font-semibold mb-2">Desglose</h3>
             <p className="text-sm">
-              Correct answers: {score}
+              Respuestas correctas: {score}
             </p>
             <p className="text-sm">
-              Incorrect answers: {problems.length - score}
+              Respuestas incorrectas: {problems.length - score}
             </p>
           </div>
         </div>
         
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Button onClick={generateProblems}>
+        {/* Tabla detallada de resultados */}
+        <div className="mb-8 overflow-x-auto">
+          <h3 className="font-semibold mb-4 text-lg">Reporte Detallado</h3>
+          <table className="min-w-full bg-white rounded-lg overflow-hidden">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="py-2 px-4 border-b text-left">#</th>
+                <th className="py-2 px-4 border-b text-left">Problema</th>
+                <th className="py-2 px-4 border-b text-left">Tu respuesta</th>
+                <th className="py-2 px-4 border-b text-left">Correcta</th>
+                <th className="py-2 px-4 border-b text-left">Tiempo</th>
+                <th className="py-2 px-4 border-b text-left">Intentos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {answers.map((answer, index) => (
+                <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                  <td className="py-2 px-4 border-b">{index + 1}</td>
+                  <td className="py-2 px-4 border-b">
+                    {answer.problem.num1} - {answer.problem.num2}
+                  </td>
+                  <td className="py-2 px-4 border-b font-medium">
+                    <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
+                      {answer.userAnswer}
+                    </span>
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {answer.isCorrect ? (
+                      <Check className="text-green-600 h-5 w-5" />
+                    ) : (
+                      <span className="text-green-600 font-medium">
+                        {answer.problem.num1 - answer.problem.num2}
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {formatTime(problemTimes[index] || 0)}
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {problemAttempts[index] || 0}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
+          <Button onClick={startReview} disabled={answers.length === 0}>
+            Revisar Respuestas
+          </Button>
+          <Button variant="outline" onClick={generateProblems}>
             {t('exercises.tryAgain')}
           </Button>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button variant="outline" onClick={onOpenSettings}>
             <Settings className="mr-2 h-4 w-4" />
             {t('common.settings')}
@@ -688,47 +832,62 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       </div>
 
       <div className="flex justify-between">
-        <Button
-          variant="outline"
-          disabled={currentProblemIndex === 0}
-          onClick={moveToPreviousProblem}
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          {t('common.prev')}
-        </Button>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                disabled={!settings.showAnswerWithExplanation || (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts)}
-                onClick={showAnswerWithExplanation}
-              >
-                <Info className="mr-2 h-4 w-4" />
-                {t('exercises.showAnswer')}
-              </Button>
-            </TooltipTrigger>
-            {!settings.showAnswerWithExplanation ? (
-              <TooltipContent>
-                <p>{t('tooltips.activateShowAnswer')}</p>
-              </TooltipContent>
-            ) : settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts ? (
-              <TooltipContent>
-                <p>Debes agotar los {settings.maxAttempts} intentos primero</p>
-              </TooltipContent>
-            ) : null}
-          </Tooltip>
-        </TooltipProvider>
-        <Button onClick={checkCurrentAnswer}>
-          {exerciseStarted ? (
-            <>
-              {t('exercises.check')}
-              <Check className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            <>{t('exercises.start')}</>
-          )}
-        </Button>
+        {waitingForContinue ? (
+          // Mostrar botón de continuar cuando estamos esperando
+          <Button 
+            variant="default"
+            className="mx-auto animate-pulse py-6 px-8 text-lg font-semibold"
+            onClick={handleContinue}
+          >
+            Continuar
+            <ChevronRight className="ml-2 h-5 w-5" />
+          </Button>
+        ) : (
+          // Mostrar botones normales
+          <>
+            <Button
+              variant="outline"
+              disabled={currentProblemIndex === 0}
+              onClick={moveToPreviousProblem}
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              {t('common.prev')}
+            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    disabled={!settings.showAnswerWithExplanation || (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts)}
+                    onClick={showAnswerWithExplanation}
+                  >
+                    <Info className="mr-2 h-4 w-4" />
+                    {t('exercises.showAnswer')}
+                  </Button>
+                </TooltipTrigger>
+                {!settings.showAnswerWithExplanation ? (
+                  <TooltipContent>
+                    <p>{t('tooltips.activateShowAnswer')}</p>
+                  </TooltipContent>
+                ) : settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts ? (
+                  <TooltipContent>
+                    <p>Debes agotar los {settings.maxAttempts} intentos primero</p>
+                  </TooltipContent>
+                ) : null}
+              </Tooltip>
+            </TooltipProvider>
+            <Button onClick={checkCurrentAnswer}>
+              {exerciseStarted ? (
+                <>
+                  {t('exercises.check')}
+                  <Check className="ml-2 h-4 w-4" />
+                </>
+              ) : (
+                <>{t('exercises.start')}</>
+              )}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
