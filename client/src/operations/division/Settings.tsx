@@ -276,6 +276,56 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               />
             </div>
           </div>
+          
+          <h3 className="text-lg font-medium text-gray-900 mt-6">Reward System</h3>
+          <div className="mt-2 space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="enable-rewards" className="cursor-pointer">
+                Enable reward system
+              </Label>
+              <Switch
+                id="enable-rewards"
+                checked={localSettings.enableRewards}
+                onCheckedChange={(checked) => handleUpdateSetting("enableRewards", checked)}
+              />
+            </div>
+            
+            {localSettings.enableRewards && (
+              <div>
+                <Label className="mb-2 block">Reward Type</Label>
+                <RadioGroup
+                  value={localSettings.rewardType || "stars"}
+                  onValueChange={(value) => 
+                    handleUpdateSetting("rewardType", value as "medals" | "trophies" | "stars")
+                  }
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="stars" id="stars" />
+                    <Label htmlFor="stars" className="flex items-center">
+                      Stars <span className="ml-2 text-lg">⭐</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="medals" id="medals" />
+                    <Label htmlFor="medals" className="flex items-center">
+                      Medals <span className="ml-2 text-lg">🥇</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="trophies" id="trophies" />
+                    <Label htmlFor="trophies" className="flex items-center">
+                      Trophies <span className="ml-2 text-lg">🏆</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+                <p className="mt-2 text-sm text-gray-500">
+                  Los premios aparecerán en momentos clave para motivar al estudiante. La frecuencia es controlada 
+                  para mantener su valor motivacional.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="pt-5">
