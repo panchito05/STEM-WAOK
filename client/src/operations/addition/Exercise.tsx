@@ -171,24 +171,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const currentProblem = problems[currentProblemIndex];
     const isCorrect = checkAnswer(currentProblem, parseInt(userAnswer) || 0);
     
-    // Save the answer
-    const answer: UserAnswer = {
-      problem: currentProblem,
-      userAnswer: parseInt(userAnswer) || 0,
-      isCorrect
-    };
-    
-    // Si la respuesta es correcta o hemos agotado los intentos máximos, guardamos la respuesta
-    // y avanzamos al siguiente problema
-    const maxAttemptsReached = settings.maxAttempts > 0 && newAttemptCount >= settings.maxAttempts;
-    
-    if (isCorrect || maxAttemptsReached) {
-      setAnswers(prev => [...prev, answer]);
+    // Si la respuesta es correcta, guardamos la respuesta y avanzamos al siguiente problema
+    if (isCorrect) {
+      // Save the answer
+      const answer: UserAnswer = {
+        problem: currentProblem,
+        userAnswer: parseInt(userAnswer) || 0,
+        isCorrect: true
+      };
       
-      // Incrementar contador de respuestas incorrectas si está habilitada la compensación
-      if (!isCorrect && settings.enableCompensation) {
-        setIncorrectAnswersCount(prev => prev + 1);
-      }
+      setAnswers(prev => [...prev, answer]);
       
       // Ajustar dificultad adaptativamente si está habilitada esa opción
       if (settings.enableAdaptiveDifficulty) {
@@ -202,53 +194,80 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             setAdaptiveDifficulty(difficulties[currentIndex + 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert");
           }
         }
-        
-        // Si lleva 2 respuestas incorrectas seguidas, disminuir dificultad
-        const lastTwoAnswers = [...answers, answer].slice(-2);
-        if (lastTwoAnswers.length === 2 && lastTwoAnswers.every(a => !a.isCorrect)) {
-          // Disminuir dificultad (si no está ya en el nivel mínimo)
-          const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
-          const currentIndex = difficulties.indexOf(adaptiveDifficulty);
-          if (currentIndex > 0) {
-            setAdaptiveDifficulty(difficulties[currentIndex - 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert");
-          }
-        }
       }
       
-      // Si se han agotado los intentos y la respuesta es incorrecta, mostrar la respuesta correcta
-      if (maxAttemptsReached && !isCorrect) {
-        const correctAnswer = currentProblem.num1 + currentProblem.num2;
-        setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
-        setFeedbackColor("green");
-        
-        setTimeout(() => {
-          setFeedbackMessage(null);
-          setFeedbackColor(null);
-          moveToNextProblem();
-        }, 2000); // Mayor tiempo para leer la respuesta correcta
-      }
-      // Si la respuesta es correcta, mostrar feedback y continuar
-      else if (isCorrect) {
-        setFeedbackMessage(t('exercises.correct'));
-        setFeedbackColor("green");
-        
-        setTimeout(() => {
-          setFeedbackMessage(null);
-          setFeedbackColor(null);
-          moveToNextProblem();
-        }, 1000);
-      }
-    } 
-    // Si no hemos agotado los intentos y la respuesta es incorrecta, permitir más intentos
-    else {
-      setFeedbackMessage(t('exercises.incorrect'));
-      setFeedbackColor("red");
+      // Mostrar feedback de respuesta correcta
+      setFeedbackMessage(t('exercises.correct'));
+      setFeedbackColor("green");
       
       setTimeout(() => {
         setFeedbackMessage(null);
         setFeedbackColor(null);
-        setUserAnswer(""); // Limpiar el campo para un nuevo intento
+        moveToNextProblem();
       }, 1000);
+    } 
+    // Si la respuesta es incorrecta...
+    else {
+      // Verificar si hemos alcanzado el máximo de intentos permitidos
+      const maxAttemptsReached = settings.maxAttempts > 0 && newAttemptCount >= settings.maxAttempts;
+      
+      // Mostrar mensaje de respuesta incorrecta
+      setFeedbackMessage(t('exercises.incorrect'));
+      setFeedbackColor("red");
+      
+      // Si hemos alcanzado el máximo de intentos, mostrar la respuesta correcta y avanzar
+      if (maxAttemptsReached) {
+        // Guardar la respuesta incorrecta
+        const answer: UserAnswer = {
+          problem: currentProblem,
+          userAnswer: parseInt(userAnswer) || 0,
+          isCorrect: false
+        };
+        
+        setAnswers(prev => [...prev, answer]);
+        
+        // Incrementar contador de respuestas incorrectas si está habilitada la compensación
+        if (settings.enableCompensation) {
+          setIncorrectAnswersCount(prev => prev + 1);
+        }
+        
+        // Ajustar dificultad adaptativamente si está habilitada esa opción
+        if (settings.enableAdaptiveDifficulty) {
+          // Si lleva 2 respuestas incorrectas seguidas, disminuir dificultad
+          const lastTwoAnswers = [...answers, answer].slice(-2);
+          if (lastTwoAnswers.length === 2 && lastTwoAnswers.every(a => !a.isCorrect)) {
+            // Disminuir dificultad (si no está ya en el nivel mínimo)
+            const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
+            const currentIndex = difficulties.indexOf(adaptiveDifficulty);
+            if (currentIndex > 0) {
+              setAdaptiveDifficulty(difficulties[currentIndex - 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert");
+            }
+          }
+        }
+        
+        // Esperar un momento para mostrar el mensaje de respuesta incorrecta
+        setTimeout(() => {
+          // Luego mostrar la respuesta correcta
+          const correctAnswer = currentProblem.num1 + currentProblem.num2;
+          setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+          setFeedbackColor("green");
+          
+          // Y finalmente avanzar al siguiente problema
+          setTimeout(() => {
+            setFeedbackMessage(null);
+            setFeedbackColor(null);
+            moveToNextProblem();
+          }, 2000); // Mayor tiempo para leer la respuesta correcta
+        }, 1000);
+      } 
+      // Si aún no hemos agotado los intentos, permitir intentar de nuevo
+      else {
+        setTimeout(() => {
+          setFeedbackMessage(null);
+          setFeedbackColor(null);
+          setUserAnswer(""); // Limpiar el campo para un nuevo intento
+        }, 1000);
+      }
     }
   };
 
@@ -438,8 +457,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <span>Score: {score}/{answers.length}</span>
         </div>
         {settings.maxAttempts > 0 && (
-          <div className="flex justify-end text-xs text-gray-500 mt-1">
-            <span>Intentos: {currentAttempts}/{settings.maxAttempts}</span>
+          <div className="flex justify-between items-center text-xs text-gray-600 mt-2 p-2 bg-gray-100 rounded-md">
+            <span className="font-semibold">Intentos permitidos: {settings.maxAttempts}</span>
+            <div className="flex gap-1">
+              {Array.from({ length: settings.maxAttempts }).map((_, index) => (
+                <div 
+                  key={index} 
+                  className={`w-3 h-3 rounded-full ${
+                    index < currentAttempts 
+                      ? "bg-red-500" // Intentos usados
+                      : "bg-gray-300" // Intentos disponibles
+                  }`}
+                />
+              ))}
+            </div>
+            <span>Usados: {currentAttempts}/{settings.maxAttempts}</span>
           </div>
         )}
       </div>
@@ -521,18 +553,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <TooltipTrigger asChild>
               <Button 
                 variant="outline" 
-                disabled={!settings.showAnswerWithExplanation}
+                disabled={!settings.showAnswerWithExplanation || (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts)}
                 onClick={showAnswerWithExplanation}
               >
                 <Info className="mr-2 h-4 w-4" />
                 {t('exercises.showAnswer')}
               </Button>
             </TooltipTrigger>
-            {!settings.showAnswerWithExplanation && (
+            {!settings.showAnswerWithExplanation ? (
               <TooltipContent>
                 <p>{t('tooltips.activateShowAnswer')}</p>
               </TooltipContent>
-            )}
+            ) : settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts ? (
+              <TooltipContent>
+                <p>Debes agotar los {settings.maxAttempts} intentos primero</p>
+              </TooltipContent>
+            ) : null}
           </Tooltip>
         </TooltipProvider>
         <Button onClick={checkCurrentAnswer}>
