@@ -293,6 +293,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
     
     moveToNextProblem();
+    
+    // Si el usuario ha activado el auto-continuar, programamos el siguiente problema
+    if (autoContinue && currentProblemIndex < problems.length - 1) {
+      // Activar el auto-continuar después de responder correctamente
+      autoContinueTimeoutRef.current = window.setTimeout(() => {
+        if (currentProblemIndex < problems.length - 1) {
+          checkCurrentAnswer();
+        }
+      }, 1000); // Esperar 1 segundo para darle tiempo al usuario a ver el problema
+    }
   };
 
   // Función para iniciar la revisión de respuestas
@@ -544,6 +554,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setFeedbackMessage(null);
       setFeedbackColor(null);
       setCurrentAttempts(0); // Reiniciamos el contador de intentos para el nuevo problema
+      
+      // Reiniciamos el temporizador para el nuevo problema
+      setProblemTimer(settings.timeValue);
+      
+      // Registramos el tiempo de inicio del nuevo problema
+      setProblemStartTime(timer);
     } else {
       completeExercise();
     }
@@ -789,8 +805,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <h2 className="text-xl font-bold text-gray-900">Multiplication Exercise</h2>
           <p className="text-sm text-gray-500">Solve the following multiplication problems</p>
         </div>
-        <div className="flex items-center">
-          <span className="mr-4 text-sm text-gray-500">
+        <div className="flex items-center space-x-4">
+          {/* Temporizador global */}
+          <span className="text-sm text-gray-500">
             <span className="inline-flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -809,6 +826,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               {formatTime(timer)}
             </span>
           </span>
+
+          {/* Temporizador por problema (solo visible si está configurado) */}
+          {settings.timeValue > 0 && exerciseStarted && (
+            <span className={`text-sm ${problemTimer <= 5 && problemTimer > 0 ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+              <span className="inline-flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 mr-1 ${problemTimer <= 5 && problemTimer > 0 ? 'text-red-500 animate-pulse' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Tiempo: {problemTimer}s
+              </span>
+            </span>
+          )}
+          
           <Button
             variant="outline"
             size="sm"
