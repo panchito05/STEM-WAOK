@@ -117,26 +117,26 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
 
   const cardContent = (
     <>
-      {/* Colored header with icon */}
       <div 
-        className="flex justify-center items-center p-6" 
+        className="flex justify-between items-center p-4 border-b border-gray-200"
         style={{ 
-          backgroundColor: module.color || '#6b7280',
+          backgroundColor: module.color || '#ffffff',
           color: 'white',
-          opacity: module.comingSoon ? 0.5 : 1 
+          opacity: module.comingSoon ? 0.7 : 1 
         }}
       >
-        {getModuleIcon()}
-      </div>
-      
-      <div className="flex justify-between items-center p-4 border-b border-gray-200">
         <div className="flex items-center">
-          <div className="mr-2 cursor-move text-gray-400" aria-hidden="true">
+          <div className="mr-2 cursor-move text-white" aria-hidden="true">
             <GripVertical className="h-5 w-5" />
           </div>
-          <h3 className={`text-lg font-semibold ${module.comingSoon ? "text-gray-400" : "text-gray-900"}`}>
-            {module.displayName}
-          </h3>
+          <div className="flex items-center">
+            <div className="mr-2 text-white">
+              {getModuleIcon()}
+            </div>
+            <h3 className={`text-lg font-semibold text-white`}>
+              {module.displayName}
+            </h3>
+          </div>
         </div>
         <div className="flex space-x-2">
           <button 
@@ -144,8 +144,8 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               module.comingSoon 
                 ? "text-gray-300 cursor-not-allowed" 
                 : isFavorite 
-                  ? "text-yellow-400 hover:text-gray-400" 
-                  : "text-gray-400 hover:text-yellow-400"
+                  ? "text-yellow-400 hover:text-white" 
+                  : "text-white hover:text-yellow-400"
             }`}
             onClick={() => !module.comingSoon && toggleFavorite(module.id)}
             disabled={module.comingSoon}
@@ -156,7 +156,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           {!module.comingSoon && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-500 h-8 w-8">
+                <Button variant="ghost" size="icon" className="text-white hover:text-gray-200 h-8 w-8">
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
