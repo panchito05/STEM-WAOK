@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { defaultModuleSettings } from "@/utils/operationComponents";
+import DifficultyExamples from "@/components/DifficultyExamples";
 
 interface SettingsProps {
   settings: ModuleSettings;
@@ -83,6 +84,11 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 </div>
               </div>
             </RadioGroup>
+            
+            {/* Visual examples of difficulty levels */}
+            <div className="mt-4 mb-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <DifficultyExamples operation="multiplication" />
+            </div>
             <p className="mt-2 text-sm text-gray-500">
               <span className="font-medium">Beginner:</span> Multiplicación de dígitos 1-5 (1×1 a 5×5)
             </p>
