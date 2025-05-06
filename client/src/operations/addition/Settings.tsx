@@ -282,6 +282,43 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 onCheckedChange={(checked) => handleUpdateSetting("enableCompensation", checked)}
               />
             </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="enable-rewards" className="cursor-pointer">
+                Activar sistema de recompensas para motivar al estudiante
+              </Label>
+              <Switch
+                id="enable-rewards"
+                checked={localSettings.enableRewards}
+                onCheckedChange={(checked) => handleUpdateSetting("enableRewards", checked)}
+              />
+            </div>
+            {localSettings.enableRewards && (
+              <div className="ml-6 mt-2">
+                <Label htmlFor="reward-type" className="block text-sm font-medium mb-1">
+                  Tipo de recompensa
+                </Label>
+                <RadioGroup
+                  value={localSettings.rewardType}
+                  onValueChange={(value) => 
+                    handleUpdateSetting("rewardType", value as "medals" | "trophies" | "stars")
+                  }
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="medals" id="reward-medals" />
+                    <Label htmlFor="reward-medals">Medallas</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="trophies" id="reward-trophies" />
+                    <Label htmlFor="reward-trophies">Trofeos</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="stars" id="reward-stars" />
+                    <Label htmlFor="reward-stars">Estrellas</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
           </div>
         </div>
 

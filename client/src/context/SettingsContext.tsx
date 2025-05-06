@@ -13,6 +13,8 @@ export interface ModuleSettings {
   showAnswerWithExplanation: boolean; // Botón de ayuda que muestra respuesta con explicación
   enableAdaptiveDifficulty: boolean; // Ajusta automáticamente la dificultad según desempeño
   enableCompensation: boolean; // Añade problemas adicionales por respuestas incorrectas/reveladas
+  enableRewards: boolean; // Activar sistema de recompensas/premios
+  rewardType: "medals" | "trophies" | "stars"; // Tipo de premio a mostrar
   
   // Campos adicionales para tipos específicos de módulos
   fractionType?: "addition" | "subtraction" | "comparison" | "mixed";
@@ -62,6 +64,8 @@ const defaultModuleSettings: ModuleSettings = {
   showAnswerWithExplanation: true, // Botón de ayuda que muestra respuesta con explicación
   enableAdaptiveDifficulty: false, // Desactivado por defecto
   enableCompensation: false, // Desactivado por defecto
+  enableRewards: true, // Sistema de recompensas activado por defecto
+  rewardType: "stars", // Por defecto, usar estrellas como recompensa
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
