@@ -2,34 +2,24 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 interface DifficultyExampleProps {
   level: string;
+  levelNumber: number;
   examples: string[];
+  active?: boolean;
 }
 
-function DifficultyExample({ level, examples }: DifficultyExampleProps) {
-  const getLevelColorClass = (level: string) => {
-    switch(level.toLowerCase()) {
-      case 'beginner':
-        return 'bg-blue-100 border-blue-500 text-blue-700';
-      case 'elementary': 
-        return 'bg-green-100 border-green-500 text-green-700';
-      case 'intermediate':
-        return 'bg-yellow-100 border-yellow-500 text-yellow-700';
-      case 'advanced':
-        return 'bg-orange-100 border-orange-500 text-orange-700';
-      case 'expert':
-        return 'bg-red-100 border-red-500 text-red-700';
-      default:
-        return 'bg-gray-100 border-gray-500 text-gray-700';
-    }
-  };
+function DifficultyExample({ level, levelNumber, examples, active = false }: DifficultyExampleProps) {
+  // Color para la tarjeta activa (seleccionada) y no activa
+  const activeClass = active 
+    ? "bg-blue-900 border-blue-700 text-white" 
+    : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700";
 
   return (
-    <Card className={`w-full border-2 ${getLevelColorClass(level)}`}>
+    <Card className={`w-full border border-gray-700 ${activeClass} transition-colors`}>
       <CardContent className="p-4">
-        <CardTitle className="text-lg font-bold mb-2">{level}</CardTitle>
-        <div className="space-y-1">
+        <CardTitle className="text-lg font-medium mb-2">Level {levelNumber} {levelNumber === 1 ? "(Initial)" : ""}</CardTitle>
+        <div className="space-y-1 mt-2">
           {examples.map((example, idx) => (
-            <p key={idx} className="font-mono">{example}</p>
+            <p key={idx} className="font-mono text-sm">{example}</p>
           ))}
         </div>
       </CardContent>
@@ -73,15 +63,35 @@ export default function DifficultyExamples({ operation = "addition" }: { operati
   const selectedOperation = operation in examples ? operation : "addition";
   const operationExamples = examples[selectedOperation as keyof typeof examples];
 
+  // Mapeo de niveles de dificultad a números de nivel (para coincidor con la imagen de ejemplo)
+  const difficultyToLevel = {
+    beginner: 1,
+    elementary: 2,
+    intermediate: 3,
+    advanced: 4,
+    expert: 5
+  };
+
   return (
     <div className="w-full">
-      <h3 className="text-xl font-bold mb-4">Ejemplos de Dificultad</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        <DifficultyExample level="Beginner" examples={operationExamples.beginner} />
-        <DifficultyExample level="Elementary" examples={operationExamples.elementary} />
-        <DifficultyExample level="Intermediate" examples={operationExamples.intermediate} />
-        <DifficultyExample level="Advanced" examples={operationExamples.advanced} />
-        <DifficultyExample level="Expert" examples={operationExamples.expert} />
+      <h3 className="text-xl font-bold mb-4">Difficulty Examples</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <DifficultyExample 
+          level="Beginner" 
+          levelNumber={difficultyToLevel.beginner}
+          examples={operationExamples.beginner} 
+          active={true} 
+        />
+        <DifficultyExample 
+          level="Intermediate" 
+          levelNumber={difficultyToLevel.intermediate} 
+          examples={operationExamples.intermediate} 
+        />
+        <DifficultyExample 
+          level="Expert" 
+          levelNumber={difficultyToLevel.expert} 
+          examples={operationExamples.expert} 
+        />
       </div>
     </div>
   );
