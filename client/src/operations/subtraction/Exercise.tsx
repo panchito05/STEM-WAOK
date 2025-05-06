@@ -940,29 +940,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         {waitingForContinue ? (
           // Contenedor para el botón Continuar y el checkbox Auto
-          <div className="flex items-center">
-            {/* Botón Continuar con color verde y más ancho */}
+          <div className="flex items-center space-x-2">
+            {/* Botón Continuar con color verde */}
             <Button 
               variant="default"
-              className="bg-green-600 hover:bg-green-700 min-w-[150px] py-2 font-semibold" 
+              className="bg-green-600 hover:bg-green-700 min-w-[120px]" 
               onClick={handleContinue}
             >
               Continuar
             </Button>
             
-            {/* Checkbox para Auto Continuar alineado a la derecha */}
-            <div className="flex items-center ml-2 bg-green-700 rounded px-2 py-1">
+            {/* Contenedor del checkbox Auto como un elemento separado */}
+            <div className="flex items-center border border-gray-300 rounded bg-white px-2 py-1">
               <Checkbox 
                 id="auto-continue" 
                 checked={autoContinue}
-                className="border-white" 
                 onCheckedChange={(checked) => {
                   setAutoContinue(checked === true);
                 }}
               />
               <label
                 htmlFor="auto-continue"
-                className="text-sm font-medium leading-none text-white ml-1"
+                className="text-sm font-medium leading-none ml-1"
               >
                 Auto
               </label>
