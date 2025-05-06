@@ -373,7 +373,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               disabled={showingExplanation}
             >
               <Info className="mr-2 h-4 w-4" />
-              Show Answer
+              Show Help
             </Button>
           )}
           <Button onClick={checkCurrentAnswer}>

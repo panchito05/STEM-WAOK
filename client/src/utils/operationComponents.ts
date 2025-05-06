@@ -36,7 +36,7 @@ export const defaultModuleSettings: ModuleSettings = {
   maxAttempts: 3, // Por defecto, 3 intentos por problema
   showImmediateFeedback: true,
   enableSoundEffects: true,
-  showAnswerWithExplanation: false, // Mostrar respuesta con explicación
+  showAnswerWithExplanation: true, // Botón de ayuda que muestra respuesta con explicación
 };
 
 // List of all operation modules

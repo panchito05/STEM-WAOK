@@ -10,7 +10,7 @@ export interface ModuleSettings {
   maxAttempts: number; // 0 para intentos ilimitados
   showImmediateFeedback: boolean;
   enableSoundEffects: boolean;
-  showAnswerWithExplanation: boolean; // Mostrar respuesta con explicación
+  showAnswerWithExplanation: boolean; // Botón de ayuda que muestra respuesta con explicación
   
   // Campos adicionales para tipos específicos de módulos
   fractionType?: "addition" | "subtraction" | "comparison" | "mixed";
@@ -49,7 +49,7 @@ const defaultModuleSettings: ModuleSettings = {
   maxAttempts: 3, // Por defecto, 3 intentos por problema
   showImmediateFeedback: true,
   enableSoundEffects: true,
-  showAnswerWithExplanation: false, // Mostrar respuesta con explicación
+  showAnswerWithExplanation: true, // Botón de ayuda que muestra respuesta con explicación
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
