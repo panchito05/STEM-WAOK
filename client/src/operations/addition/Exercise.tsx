@@ -203,13 +203,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Mostrar recompensa si está habilitado
       if (settings.enableRewards) {
+        // Mostrar mensaje específico para la recompensa
+        setFeedbackMessage("¡Excelente! ¡Has ganado una recompensa!");
+        setFeedbackColor("green");
+        // Mostrar recompensa con animación más larga
         setShowReward(true);
+        
+        // Mantenemos la recompensa visible por más tiempo para que sea evidente
         setTimeout(() => {
           setShowReward(false);
           setFeedbackMessage(null);
           setFeedbackColor(null);
           moveToNextProblem();
-        }, 1500);
+        }, 2500); // Aumentamos el tiempo para que sea más visible
       } else {
         setTimeout(() => {
           setFeedbackMessage(null);
@@ -492,34 +498,45 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-center">
           {/* Mostrar recompensa cuando corresponda */}
           {showReward && settings.enableRewards && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 animate-bounce">
-              {settings.rewardType === "stars" && (
-                <div className="flex">
-                  {[...Array(3)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className="h-16 w-16 text-yellow-400 drop-shadow-lg"
-                      fill="yellow" 
+            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
+              <div className="bg-white rounded-xl p-6 shadow-2xl text-center transform scale-110 transition-transform">
+                <h3 className="text-2xl font-bold text-green-600 mb-4">¡FELICIDADES!</h3>
+                
+                {settings.rewardType === "stars" && (
+                  <div className="flex justify-center mb-3">
+                    {[...Array(3)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        className={`h-20 w-20 text-yellow-400 drop-shadow-lg ${i === 1 ? 'scale-125 mx-2' : ''}`}
+                        fill="gold" 
+                        strokeWidth={1}
+                      />
+                    ))}
+                  </div>
+                )}
+                
+                {settings.rewardType === "medals" && (
+                  <div className="flex justify-center mb-3">
+                    <Award 
+                      className="h-32 w-32 text-yellow-600 drop-shadow-xl animate-pulse" 
+                      fill="gold"
+                      strokeWidth={1}
                     />
-                  ))}
-                </div>
-              )}
-              {settings.rewardType === "medals" && (
-                <div className="flex">
-                  <Award 
-                    className="h-24 w-24 text-yellow-600 drop-shadow-lg" 
-                    fill="gold"
-                  />
-                </div>
-              )}
-              {settings.rewardType === "trophies" && (
-                <div className="flex">
-                  <Trophy 
-                    className="h-24 w-24 text-yellow-500 drop-shadow-lg" 
-                    fill="gold"
-                  />
-                </div>
-              )}
+                  </div>
+                )}
+                
+                {settings.rewardType === "trophies" && (
+                  <div className="flex justify-center mb-3">
+                    <Trophy 
+                      className="h-32 w-32 text-yellow-500 drop-shadow-xl animate-pulse" 
+                      fill="gold"
+                      strokeWidth={1}
+                    />
+                  </div>
+                )}
+                
+                <p className="text-lg font-medium mt-2">¡Has ganado una recompensa por tu excelente trabajo!</p>
+              </div>
             </div>
           )}
         
