@@ -119,23 +119,40 @@ export default function Settings({ settings, onBack }: SettingsProps) {
         <div>
           <h3 className="text-lg font-medium text-gray-900">Number of Problems</h3>
           <div className="mt-2">
-            <Slider
-              value={[localSettings.problemCount]}
-              min={5}
-              max={20}
-              step={1}
-              onValueChange={(value) => handleUpdateSetting("problemCount", value[0])}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>5</span>
-              <span>10</span>
-              <span>15</span>
-              <span>20</span>
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <Slider
+                  value={[localSettings.problemCount]}
+                  min={1}
+                  max={50}
+                  step={1}
+                  onValueChange={(value) => handleUpdateSetting("problemCount", value[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>1</span>
+                  <span>25</span>
+                  <span>50</span>
+                </div>
+              </div>
+              <div className="w-20">
+                <Input
+                  type="number"
+                  value={localSettings.problemCount}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value) && value >= 1 && value <= 50) {
+                      handleUpdateSetting("problemCount", value);
+                    }
+                  }}
+                  min={1}
+                  max={50}
+                  className="w-full"
+                />
+              </div>
             </div>
             <p className="mt-2 text-sm text-gray-600">
-              Number of problems in the exercise:{" "}
-              <span className="font-medium">{localSettings.problemCount}</span>
+              Especifica cuántos problemas quieres resolver en este ejercicio (1-50)
             </p>
           </div>
         </div>
