@@ -52,6 +52,77 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const timerRef = useRef<number | null>(null);
   const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
   const { saveExerciseResult } = useProgress();
+  
+  // Función para manejar cuando el temporizador llega a cero
+  const handleTimeExpired = () => {
+    // Contamos como un intento usado
+    setCurrentAttempts(attempts => {
+      const newAttempts = attempts + 1;
+      console.log("Tiempo expirado: intento", newAttempts);
+      
+      // Mostramos mensaje de tiempo agotado
+      setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
+      setFeedbackColor("red");
+      
+      // Después de un momento, limpiamos el mensaje y decidimos que hacer
+      setTimeout(() => {
+        // Verificamos si ya se alcanzó el máximo de intentos con este nuevo intento
+        if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
+          // Si llegamos al máximo de intentos, mostramos la respuesta correcta
+          const thisProblem = problems[currentProblemIndex];
+          const correctAnswer = thisProblem.num1 - thisProblem.num2;
+          
+          setFeedbackMessage(`La respuesta correcta es: ${correctAnswer}`);
+          setFeedbackColor("green");
+          
+          // Guardar la respuesta como incorrecta
+          const answer: UserAnswer = {
+            problem: thisProblem,
+            userAnswer: -2, // Usamos -2 para indicar tiempo agotado
+            isCorrect: false
+          };
+          
+          setAnswers(prev => [...prev, answer]);
+          
+          // Guardar el número de intentos para este problema
+          setProblemAttempts(prev => [...prev, settings.maxAttempts]);
+          
+          // Guardar el tiempo empleado en este problema
+          setProblemTimes(prev => [...prev, settings.timeValue]);
+          
+          // Marcar como esperando para continuar
+          setWaitingForContinue(true);
+        } 
+        else {
+          // Si aún no hemos llegado al máximo de intentos
+          setFeedbackMessage(null);
+          setFeedbackColor(null);
+          
+          // Reiniciamos el temporizador
+          setProblemTimer(settings.timeValue);
+          problemTimerRef.current = window.setInterval(() => {
+            setProblemTimer(p => {
+              if (p <= 1) {
+                // Si vuelve a llegar a cero, repetimos el proceso
+                if (problemTimerRef.current) {
+                  clearInterval(problemTimerRef.current);
+                  problemTimerRef.current = null;
+                }
+                
+                // Llamamos a esta misma función para manejar la expiración
+                handleTimeExpired();
+                
+                return 0;
+              }
+              return p - 1;
+            });
+          }, 1000);
+        }
+      }, 1500);
+      
+      return newAttempts;
+    });
+  };
 
   // Generate problems when settings change or initially
   useEffect(() => {
@@ -141,10 +212,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
                   setFeedbackColor("red");
                   
-                  // Iniciamos un nuevo temporizador
+                                  // Iniciamos un nuevo temporizador con lógica simplificada
                   setProblemTimer(settings.timeValue);
                   problemTimerRef.current = window.setInterval(() => {
-                    setProblemTimer(p => p > 0 ? p - 1 : 0);
+                    setProblemTimer(p => {
+                      // Si el temporizador llega a cero
+                      if (p <= 1) {
+                        // Detenemos el temporizador
+                        if (problemTimerRef.current) {
+                          clearInterval(problemTimerRef.current);
+                          problemTimerRef.current = null;
+                        }
+                        
+                        // Contamos como un intento más y manejamos la expiración del tiempo
+                        handleTimeExpired();
+                        
+                        return 0;
+                      }
+                      return p - 1;
+                    });
                   }, 1000);
                   
                   // Limpiar el mensaje después de un momento
@@ -295,52 +381,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 problemTimerRef.current = null;
               }
               
-              // Contamos como un intento usado
-              setCurrentAttempts(attempts => attempts + 1);
-              
-              // Mostramos mensaje de tiempo agotado
-              setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
-              setFeedbackColor("red");
-              
-              // Después de un momento, limpiamos el mensaje y reiniciamos el temporizador
-              setTimeout(() => {
-                setFeedbackMessage(null);
-                setFeedbackColor(null);
-                
-                // Verificamos si hemos alcanzado el máximo de intentos
-                if (settings.maxAttempts > 0 && currentAttempts + 1 >= settings.maxAttempts) {
-                  const currentProblem = problems[currentProblemIndex];
-                  const correctAnswer = currentProblem.num1 - currentProblem.num2;
-                  
-                  // Mostrar la respuesta correcta
-                  setFeedbackMessage(`Respuesta correcta: ${correctAnswer}`);
-                  setFeedbackColor("green");
-                  
-                  // Guardar la respuesta como incorrecta
-                  const answer: UserAnswer = {
-                    problem: currentProblem,
-                    userAnswer: -2, // Usamos -2 para indicar tiempo agotado
-                    isCorrect: false
-                  };
-                  
-                  setAnswers(prev => [...prev, answer]);
-                  
-                  // Guardar el número de intentos para este problema
-                  setProblemAttempts(prev => [...prev, settings.maxAttempts]);
-                  
-                  // Guardar el tiempo empleado en este problema
-                  setProblemTimes(prev => [...prev, settings.timeValue]);
-                  
-                  // Marcar como esperando para continuar
-                  setWaitingForContinue(true);
-                } else {
-                  // Si aún no hemos alcanzado el máximo de intentos, reiniciamos el temporizador
-                  setProblemTimer(settings.timeValue);
-                  problemTimerRef.current = window.setInterval(() => {
-                    setProblemTimer(p => p > 0 ? p - 1 : 0);
-                  }, 1000);
-                }
-              }, 1500);
+              // Usamos la función handleTimeExpired para manejar cuando se agota el tiempo
+              handleTimeExpired();
               
               return 0;
             }
