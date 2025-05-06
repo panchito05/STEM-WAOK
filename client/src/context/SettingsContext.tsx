@@ -11,6 +11,8 @@ export interface ModuleSettings {
   showImmediateFeedback: boolean;
   enableSoundEffects: boolean;
   showAnswerWithExplanation: boolean; // Botón de ayuda que muestra respuesta con explicación
+  enableAdaptiveDifficulty: boolean; // Ajusta automáticamente la dificultad según desempeño
+  enableCompensation: boolean; // Añade problemas adicionales por respuestas incorrectas/reveladas
   
   // Campos adicionales para tipos específicos de módulos
   fractionType?: "addition" | "subtraction" | "comparison" | "mixed";
@@ -58,6 +60,8 @@ const defaultModuleSettings: ModuleSettings = {
   showImmediateFeedback: true,
   enableSoundEffects: true,
   showAnswerWithExplanation: true, // Botón de ayuda que muestra respuesta con explicación
+  enableAdaptiveDifficulty: false, // Desactivado por defecto
+  enableCompensation: false, // Desactivado por defecto
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);

@@ -255,6 +255,26 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 onCheckedChange={(checked) => handleUpdateSetting("showAnswerWithExplanation", checked)}
               />
             </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="enable-adaptive-difficulty" className="cursor-pointer">
+                Habilitar Dificultad Adaptativa
+              </Label>
+              <Switch
+                id="enable-adaptive-difficulty"
+                checked={localSettings.enableAdaptiveDifficulty}
+                onCheckedChange={(checked) => handleUpdateSetting("enableAdaptiveDifficulty", checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="enable-compensation" className="cursor-pointer">
+                Habilitar Compensación (Añadir 1 problema por cada incorrecto/revelado)
+              </Label>
+              <Switch
+                id="enable-compensation"
+                checked={localSettings.enableCompensation}
+                onCheckedChange={(checked) => handleUpdateSetting("enableCompensation", checked)}
+              />
+            </div>
           </div>
         </div>
 
