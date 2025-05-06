@@ -946,29 +946,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               className="bg-green-600 hover:bg-green-700 text-white py-2 w-[210px] text-center font-semibold flex justify-between items-center relative" 
               onClick={handleContinue}
             >
-              <span className="absolute left-0 right-0 mx-auto">Continuar</span>
-              
-              <div className="flex items-center ml-auto">
-                <div className="flex items-center bg-black/40 rounded px-2 py-1 h-[28px]">
-                  <Checkbox 
-                    id="auto-continue" 
-                    checked={autoContinue}
-                    className="border-white" 
-                    onCheckedChange={(checked) => {
-                      setAutoContinue(checked === true);
-                    }}
-                    onClick={(e) => e.stopPropagation()} // Evita que el botón se active al hacer clic en el checkbox
-                  />
-                  <label
-                    htmlFor="auto-continue"
-                    className="text-xs font-medium leading-none text-white ml-1"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Evita que el botón se active al hacer clic en la etiqueta
-                      setAutoContinue(!autoContinue);
-                    }}
-                  >
-                    Auto
-                  </label>
+              <div className="flex justify-between items-center w-full">
+                <span className="ml-5">Continuar</span>
+                
+                <div className="flex items-center">
+                  <div className="flex items-center bg-black/40 rounded px-2 py-1 h-[28px] mr-1">
+                    <Checkbox 
+                      id="auto-continue" 
+                      checked={autoContinue}
+                      className="border-white" 
+                      onCheckedChange={(checked) => {
+                        setAutoContinue(checked === true);
+                      }}
+                      onClick={(e) => e.stopPropagation()} // Evita que el botón se active al hacer clic en el checkbox
+                    />
+                    <label
+                      htmlFor="auto-continue"
+                      className="text-xs font-medium leading-none text-white ml-1"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Evita que el botón se active al hacer clic en la etiqueta
+                        setAutoContinue(!autoContinue);
+                      }}
+                    >
+                      Auto
+                    </label>
+                  </div>
                 </div>
               </div>
             </Button>
