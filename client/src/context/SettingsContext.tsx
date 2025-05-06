@@ -11,6 +11,7 @@ export interface ModuleSettings {
   showImmediateFeedback: boolean;
   enableSoundEffects: boolean;
   showSolution: boolean;
+  showAnswerWithExplanation: boolean; // Mostrar respuesta con explicación
   
   // Campos adicionales para tipos específicos de módulos
   fractionType?: "addition" | "subtraction" | "comparison" | "mixed";
@@ -50,6 +51,7 @@ const defaultModuleSettings: ModuleSettings = {
   showImmediateFeedback: true,
   enableSoundEffects: true,
   showSolution: false,
+  showAnswerWithExplanation: false, // Mostrar respuesta con explicación
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);

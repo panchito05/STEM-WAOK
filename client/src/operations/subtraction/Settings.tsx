@@ -255,6 +255,16 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 onCheckedChange={(checked) => handleUpdateSetting("showSolution", checked)}
               />
             </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="show-answer-explanation" className="cursor-pointer">
+                Show answer with explanation
+              </Label>
+              <Switch
+                id="show-answer-explanation"
+                checked={localSettings.showAnswerWithExplanation}
+                onCheckedChange={(checked) => handleUpdateSetting("showAnswerWithExplanation", checked)}
+              />
+            </div>
           </div>
         </div>
 

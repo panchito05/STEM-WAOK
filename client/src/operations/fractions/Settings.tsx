@@ -273,6 +273,16 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               />
             </div>
             <div className="flex items-center justify-between">
+              <Label htmlFor="show-answer-explanation" className="cursor-pointer">
+                Show answer with explanation
+              </Label>
+              <Switch
+                id="show-answer-explanation"
+                checked={localSettings.showAnswerWithExplanation}
+                onCheckedChange={(checked) => handleUpdateSetting("showAnswerWithExplanation", checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
               <Label htmlFor="require-simplified" className="cursor-pointer">
                 Require simplified answers
               </Label>

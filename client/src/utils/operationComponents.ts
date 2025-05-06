@@ -37,6 +37,7 @@ export const defaultModuleSettings: ModuleSettings = {
   showImmediateFeedback: true,
   enableSoundEffects: true,
   showSolution: false,
+  showAnswerWithExplanation: false, // Mostrar respuesta con explicación
 };
 
 // List of all operation modules
