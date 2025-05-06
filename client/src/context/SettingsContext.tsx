@@ -5,8 +5,8 @@ import { useToast } from "@/hooks/use-toast";
 export interface ModuleSettings {
   difficulty: "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
   problemCount: number;
-  timeLimit: "none" | "per-problem" | "total";
-  timeValue: number;
+  timeLimit: "per-problem"; // Simplificado para solo usar un tipo
+  timeValue: number; // 0 para sin límite
   maxAttempts: number; // 0 para intentos ilimitados
   showImmediateFeedback: boolean;
   enableSoundEffects: boolean;
@@ -44,8 +44,8 @@ const defaultGlobalSettings: GlobalSettings = {
 const defaultModuleSettings: ModuleSettings = {
   difficulty: "beginner",
   problemCount: 10,
-  timeLimit: "none",
-  timeValue: 30,
+  timeLimit: "per-problem",
+  timeValue: 30, // 0 para sin límite
   maxAttempts: 3, // Por defecto, 3 intentos por problema
   showImmediateFeedback: true,
   enableSoundEffects: true,

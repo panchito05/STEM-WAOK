@@ -31,8 +31,8 @@ export interface ModuleComponent {
 export const defaultModuleSettings: ModuleSettings = {
   difficulty: "beginner",
   problemCount: 10,
-  timeLimit: "none",
-  timeValue: 30,
+  timeLimit: "per-problem",
+  timeValue: 30, // 0 para sin límite
   maxAttempts: 3, // Por defecto, 3 intentos por problema
   showImmediateFeedback: true,
   enableSoundEffects: true,

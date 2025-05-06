@@ -158,46 +158,43 @@ export default function Settings({ settings, onBack }: SettingsProps) {
         </div>
 
         <div>
-          <h3 className="text-lg font-medium text-gray-900">Time Limit</h3>
+          <h3 className="text-lg font-medium text-gray-900">Límite de Tiempo</h3>
           <div className="mt-2">
-            <RadioGroup
-              value={localSettings.timeLimit}
-              onValueChange={(value) => handleUpdateSetting("timeLimit", value as "none" | "per-problem" | "total")}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="none" id="time-none" />
-                  <Label htmlFor="time-none">No Limit</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="per-problem" id="time-per-problem" />
-                  <Label htmlFor="time-per-problem">Per Problem</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="total" id="time-total" />
-                  <Label htmlFor="time-total">Total Time</Label>
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <Slider
+                  value={[localSettings.timeValue]}
+                  min={0}
+                  max={300}
+                  step={5}
+                  onValueChange={(value) => handleUpdateSetting("timeValue", value[0])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>0</span>
+                  <span>150</span>
+                  <span>300</span>
                 </div>
               </div>
-            </RadioGroup>
-
-            {localSettings.timeLimit !== "none" && (
-              <div className="mt-4">
-                <Label htmlFor="time-value" className="block text-sm font-medium text-gray-700">
-                  Time (seconds)
-                </Label>
-                <div className="mt-1">
-                  <Input
-                    type="number"
-                    id="time-value"
-                    value={localSettings.timeValue}
-                    onChange={(e) => handleUpdateSetting("timeValue", Number(e.target.value))}
-                    min={5}
-                    max={300}
-                    className="w-full"
-                  />
-                </div>
+              <div className="w-20">
+                <Input
+                  type="number"
+                  value={localSettings.timeValue}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value) && value >= 0 && value <= 300) {
+                      handleUpdateSetting("timeValue", value);
+                    }
+                  }}
+                  min={0}
+                  max={300}
+                  className="w-full"
+                />
               </div>
-            )}
+            </div>
+            <p className="mt-2 text-sm text-gray-600">
+              Tiempo en segundos (0 para sin límite)
+            </p>
           </div>
         </div>
 
