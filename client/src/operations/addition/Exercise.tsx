@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { generateAdditionProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/use-translations";
 
@@ -32,6 +32,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [revealedAnswersCount, setRevealedAnswersCount] = useState(0); // Contador para respuestas reveladas
   const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.difficulty); // Dificultad adaptiva
   const [currentAttempts, setCurrentAttempts] = useState(0); // Contador para intentos en el problema actual
+  const [showReward, setShowReward] = useState(false); // Estado para mostrar la recompensa
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const { saveExerciseResult } = useProgress();
@@ -200,11 +201,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setFeedbackMessage(t('exercises.correct'));
       setFeedbackColor("green");
       
-      setTimeout(() => {
-        setFeedbackMessage(null);
-        setFeedbackColor(null);
-        moveToNextProblem();
-      }, 1000);
+      // Mostrar recompensa si está habilitado
+      if (settings.enableRewards) {
+        setShowReward(true);
+        setTimeout(() => {
+          setShowReward(false);
+          setFeedbackMessage(null);
+          setFeedbackColor(null);
+          moveToNextProblem();
+        }, 1500);
+      } else {
+        setTimeout(() => {
+          setFeedbackMessage(null);
+          setFeedbackColor(null);
+          moveToNextProblem();
+        }, 1000);
+      }
     } 
     // Si la respuesta es incorrecta...
     else {
@@ -478,6 +490,39 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
       <div className="p-6 bg-gray-50 rounded-lg mb-6">
         <div className="text-center">
+          {/* Mostrar recompensa cuando corresponda */}
+          {showReward && settings.enableRewards && (
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 animate-bounce">
+              {settings.rewardType === "stars" && (
+                <div className="flex">
+                  {[...Array(3)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      className="h-16 w-16 text-yellow-400 drop-shadow-lg"
+                      fill="yellow" 
+                    />
+                  ))}
+                </div>
+              )}
+              {settings.rewardType === "medals" && (
+                <div className="flex">
+                  <Award 
+                    className="h-24 w-24 text-yellow-600 drop-shadow-lg" 
+                    fill="gold"
+                  />
+                </div>
+              )}
+              {settings.rewardType === "trophies" && (
+                <div className="flex">
+                  <Trophy 
+                    className="h-24 w-24 text-yellow-500 drop-shadow-lg" 
+                    fill="gold"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        
           <div className={`text-3xl font-bold mb-6 flex justify-center items-baseline ${feedbackMessage ? (feedbackColor === "green" ? "text-green-600" : "text-red-600") : ""}`}>
             <span className="text-right w-16">{currentProblem.num1}</span>
             <span className="mx-4">+</span>
