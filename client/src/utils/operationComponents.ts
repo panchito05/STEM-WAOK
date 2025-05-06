@@ -3,6 +3,7 @@ import * as Subtraction from "../operations/subtraction";
 import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
 import * as Fractions from "../operations/fractions";
+import * as Alphabet from "../operations/alphabet";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -67,6 +68,48 @@ export const operationModules: Module[] = [
     difficulty: "advanced",
   },
   {
+    id: "alphabet",
+    displayName: "Alphabet Learning",
+    description: "Learn the alphabet with interactive exercises",
+    difficulty: "beginner",
+  },
+  {
+    id: "counting",
+    displayName: "Counting Numbers",
+    description: "Practice counting with fun visualization",
+    difficulty: "beginner",
+  },
+  {
+    id: "combinedOperations",
+    displayName: "Combined Operations",
+    description: "Practice operations with PEMDAS/BODMAS rules",
+    difficulty: "advanced",
+  },
+  {
+    id: "numberConversions",
+    displayName: "Number Conversions",
+    description: "Convert between fractions, decimals, and percentages",
+    difficulty: "intermediate",
+  },
+  {
+    id: "geometry",
+    displayName: "Geometry",
+    description: "Calculate area and perimeter of shapes",
+    difficulty: "intermediate",
+  },
+  {
+    id: "equivalentFractions",
+    displayName: "Equivalent Fractions",
+    description: "Find equivalent fractions with specified denominators",
+    difficulty: "intermediate",
+  },
+  {
+    id: "fractionReducer",
+    displayName: "Fraction Reducer",
+    description: "Reduce fractions to their simplest form",
+    difficulty: "intermediate",
+  },
+  {
     id: "decimals",
     displayName: "Decimals",
     description: "Coming soon! Decimal operations and conversions",
@@ -82,4 +125,5 @@ export const operationComponents: Record<string, ModuleComponent> = {
   multiplication: Multiplication,
   division: Division,
   fractions: Fractions,
+  alphabet: Alphabet,
 };

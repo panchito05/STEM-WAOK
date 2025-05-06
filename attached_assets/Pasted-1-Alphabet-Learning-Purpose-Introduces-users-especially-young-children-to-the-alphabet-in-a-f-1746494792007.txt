@@ -1,0 +1,281 @@
+1. Alphabet Learning
+
+Purpose: Introduces users, especially young children, to the alphabet in a fun and interactive way.
+Exercise (Exercise.tsx):
+Presents one letter at a time, both uppercase and lowercase.
+Displays an image of an object or animal that starts with that letter.
+Plays the audio pronunciation of the letter and the object (if enabled).
+Allows users to tap the letter to reveal the associated image and word.
+Includes a quiz mode to test letter recognition.
+Provides navigation buttons to move to the next or previous letter.
+Settings (Settings.tsx):
+Language: Choose between English and Spanish.
+Show Lowercase: Toggle the display of lowercase letters.
+Audio Enabled: Enable or disable audio pronunciation.
+Animations Enabled: Turn animations on or off.
+Letter Style: Select from basic, fancy, or handwritten fonts.
+Learning Mode: Choose between explore (free navigation), guided (step-by-step), or quiz modes.
+Quiz Frequency: Set how often quizzes appear.
+2. Counting Numbers
+
+Purpose: Helps young learners develop basic counting skills.
+Exercise (Exercise.tsx):
+Displays a set of objects (animals, fruits, stars, etc.).
+Shows the current number to count to.
+Uses a "tap to count" style where users tap each object to count.
+Provides visual feedback as objects are tapped.
+Plays audio of the number being counted (if enabled).
+Offers a "progressive mode" where the maximum number gradually increases.
+Settings (Settings.tsx):
+Maximum Number: Set the highest number to count to.
+Object Set: Choose the type of objects to display (animals, fruits, etc.).
+Audio Enabled: Toggle audio pronunciation.
+Language: Choose between English and Spanish.
+Progressive Mode: Enable or disable the gradual increase in numbers.
+Counting Style: Select between "tap to count" and "sequence" modes.
+Reward Frequency: Set how often rewards are displayed.
+3. Combined Operations
+
+Purpose: Teaches and reinforces the order of operations (PEMDAS/BODMAS).
+Exercise (Exercise.tsx):
+Presents mathematical expressions with multiple operations (addition, subtraction, multiplication, division, exponents, parentheses).
+Requires users to input the correct answer.
+Provides step-by-step solutions to help users understand the process.
+Adapts the difficulty based on user performance.
+Settings (Settings.tsx):
+Difficulty Level: Adjust the complexity of the expressions.
+Number of Problems: Set the number of problems in the exercise.
+Time Limit: Set a time limit for each problem.
+Max Attempts: Limit the number of attempts per problem.
+Adaptive Difficulty: Enable or disable automatic difficulty adjustment.
+Enable Compensation: Add extra problems for incorrect answers.
+Auto-Continue: Automatically advance to the next problem after a correct answer.
+Language: Choose between English and Spanish.
+Show Steps Immediately: Show solution steps from the start.
+Use Decimals: Include decimal numbers in the expressions.
+Operators to Include: Select which mathematical operators to include in the problems.
+4. Addition
+
+Purpose: Provides practice with addition skills.
+Exercise (Exercise.tsx):
+Generates addition problems with varying difficulty levels.
+Allows users to input their answers.
+Provides immediate feedback on correctness.
+Offers adaptive difficulty to adjust to the user's skill level.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used in the problems.
+Number of Problems: Sets the number of addition problems in the exercise.
+Time Limit: Sets a time limit for each problem.
+Max Attempts: Limits the number of attempts per problem.
+Adaptive Difficulty: Enables or disables automatic difficulty adjustment.
+Enable Compensation: Adds extra problems for incorrect answers.
+5. Subtraction
+
+Purpose: Provides practice with subtraction skills.
+Exercise (Exercise.tsx):
+Generates subtraction problems with varying difficulty levels.
+Allows users to input their answers.
+Provides immediate feedback on correctness.
+Offers adaptive difficulty to adjust to the user's skill level.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used in the problems.
+Number of Problems: Sets the number of subtraction problems in the exercise.
+Time Limit: Sets a time limit for each problem.
+Max Attempts: Limits the number of attempts per problem.
+Adaptive Difficulty: Enables or disables automatic difficulty adjustment.
+Enable Compensation: Adds extra problems for incorrect answers.
+6. Multiplication
+
+Purpose: Provides practice with multiplication skills.
+Exercise (Exercise.tsx):
+Generates multiplication problems with varying difficulty levels.
+Allows users to input their answers.
+Provides immediate feedback on correctness.
+Offers adaptive difficulty to adjust to the user's skill level.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used in the problems.
+Number of Problems: Sets the number of multiplication problems in the exercise.
+Time Limit: Sets a time limit for each problem.
+Max Attempts: Limits the number of attempts per problem.
+Adaptive Difficulty: Enables or disables automatic difficulty adjustment.
+7. Division
+
+Purpose: Provides practice with division skills.
+Exercise (Exercise.tsx):
+Generates division problems with varying difficulty levels.
+Allows users to input their answers.
+Provides immediate feedback on correctness.
+Offers adaptive difficulty to adjust to the user's skill level.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used in the problems.
+Number of Problems: Sets the number of division problems in the exercise.
+Time Limit: Sets a time limit for each problem.
+Max Attempts: Limits the number of attempts per problem.
+Adaptive Difficulty: Enables or disables automatic difficulty adjustment.
+8. Fractions
+
+Purpose: Provides practice with fraction-related operations.
+Exercise (Exercise.tsx):
+Generates fraction problems with varying difficulty levels.
+Allows users to input their answers.
+Provides immediate feedback on correctness.
+Offers adaptive difficulty to adjust to the user's skill level.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used in the problems.
+Number of Problems: Sets the number of fraction problems in the exercise.
+Time Limit: Sets a time limit for each problem.
+Operations: Selects which operations to include (+, -, ×, ÷).
+Adaptive Difficulty: Enables or disables automatic difficulty adjustment.
+Require Simplified Answers: Requires users to simplify their answers.
+9. Tic Tac Toe
+
+Purpose: A classic game for strategic thinking.
+Exercise (TicTacToe.tsx):
+Presents a 3x3 game board.
+Allows two players (human vs. human or human vs. computer) to take turns placing their marks.
+Detects winning combinations and declares the winner.
+Settings (TicTacToe.tsx):
+Game Mode: Select between Player vs Player or Player vs Computer.
+First Player: Choose who goes first (human, computer, or random).
+10. Number Conversions
+
+Purpose: Helps users practice converting between different number formats (fractions, decimals, percentages).
+Exercise (Exercise.tsx):
+Presents conversion problems.
+Allows users to input their answers.
+Provides immediate feedback on correctness.
+Settings (Settings.tsx):
+(Settings details not provided in the file list)
+11. Geometry
+
+Purpose: Provides exercises related to geometry concepts.
+Exercise (Exercise.tsx):
+Presents problems related to calculating area and perimeter of geometric shapes.
+Allows users to input their answers.
+Provides immediate feedback on correctness.
+Settings (Settings.tsx):
+(Settings details not provided in the file list)
+12. World Continents
+
+Purpose: Helps users learn the names and locations of the seven continents.
+Exercise (Continents.tsx):
+Presents a drag-and-drop game where users must place continent images on a map.
+Provides information about each continent.
+Settings (Continents.tsx):
+(Settings details not provided in the file list)
+13. Maze Game
+
+Purpose: A fun game that helps users develop spatial reasoning skills.
+Exercise (Maze.tsx):
+Generates a random maze.
+Allows users to navigate the maze using arrow keys.
+Tracks the number of moves and time spent.
+Settings (Maze.tsx):
+(Settings details not provided in the file list)
+14. Fact Families
+
+Purpose: Reinforces the relationship between addition/subtraction and multiplication/division.
+Exercise (FactFamilies.tsx):
+Presents a "fact family" triangle with three related numbers.
+Requires users to fill in the four related equations.
+Settings (FactFamilies.tsx):
+Operation Type: Select between addition/subtraction and multiplication/division.
+Maximum Number: Set the range of numbers used in the fact families.
+15. Pre-Algebra
+
+Purpose: Introduces basic algebraic concepts.
+Exercise (PreAlgebra.tsx):
+Presents problems involving variables, expressions, and equations.
+Requires users to evaluate expressions or solve for variables.
+Settings (PreAlgebra.tsx):
+Difficulty Level: Controls the complexity of the algebraic problems.
+Topics: Select which topics to include (evaluate, solve, simplify).
+16. Integer Numbers
+
+Purpose: Provides practice with operations involving positive and negative integers.
+Exercise (Integers.tsx):
+Generates problems with addition, subtraction, multiplication, and division of integers.
+Allows users to input their answers.
+Settings (Integers.tsx):
+Operations: Select which operations to include (+, -, ×, ÷).
+Difficulty Level: Controls the range of integers used in the problems.
+17. Commutative Property
+
+Purpose: Helps users understand the commutative property of addition and multiplication.
+Exercise (Commutative.tsx):
+(Exercise details not provided in the file list)
+Settings (Commutative.tsx):
+(Settings details not provided in the file list)
+18. Associative Property
+
+Purpose: Helps users understand the associative property of addition and multiplication.
+Exercise (Associative.tsx):
+(Exercise details not provided in the file list)
+Settings (Associative.tsx):
+(Settings details not provided in the file list)
+19. Distributive Property
+
+Purpose: Helps users understand the distributive property of multiplication over addition and subtraction.
+Exercise (Distributive.tsx):
+(Exercise details not provided in the file list)
+Settings (Distributive.tsx):
+(Settings details not provided in the file list)
+20. Sudoku
+
+Purpose: A logic-based number placement puzzle.
+Exercise (Sudoku.tsx):
+Presents a Sudoku grid.
+Allows users to fill in the missing numbers.
+Provides feedback on correctness.
+Settings (Sudoku.tsx):
+(Settings details not provided in the file list)
+21. Mixed to Fraction Converter
+
+Purpose: Helps users practice converting mixed numbers to improper fractions.
+Exercise (Exercise.tsx):
+Presents a mixed number.
+Requires users to input the equivalent improper fraction.
+Provides step-by-step guidance.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used in the mixed numbers.
+22. Whole to Fraction Converter
+
+Purpose: Helps users practice converting whole numbers to fractions.
+Exercise (Exercise.tsx):
+Presents a whole number.
+Requires users to input the equivalent fraction with a specified denominator.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used.
+23. Improper Fraction to Mixed Number
+
+Purpose: Helps users practice converting improper fractions to mixed numbers.
+Exercise (Exercise.tsx):
+Presents an improper fraction.
+Requires users to input the equivalent mixed number.
+Provides step-by-step guidance.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used.
+24. Equivalent Fractions
+
+Purpose: Helps users practice finding equivalent fractions.
+Exercise (Exercise.tsx):
+Presents a fraction.
+Requires users to find an equivalent fraction with a specified denominator.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used.
+25. Fraction Reducer
+
+Purpose: Helps users practice reducing fractions to their simplest form.
+Exercise (Exercise.tsx):
+Presents a fraction.
+Requires users to reduce it to an equivalent fraction with a smaller denominator.
+Settings (Settings.tsx):
+Difficulty Level: Controls the range of numbers used.
+26. Fraction Types
+
+Purpose: Helps users learn to identify different types of fractions (proper, improper, mixed).
+Exercise (Exercise.tsx):
+Presents a fraction or mixed number.
+Requires users to identify its type.
+Settings (Settings.tsx):
+(Settings details not provided in the file list)
