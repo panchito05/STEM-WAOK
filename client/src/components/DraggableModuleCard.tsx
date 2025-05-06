@@ -4,7 +4,11 @@ import { Card } from "@/components/ui/card";
 import { useAccessibleDnd } from "./AccessibleDndContext";
 import { useModuleStore } from "@/store/moduleStore";
 import { Module } from "@/utils/operationComponents";
-import { GripVertical, MoreVertical, Star } from "lucide-react";
+import { 
+  GripVertical, MoreVertical, Star, Plus, Minus, X, 
+  DivideIcon, PieChart, BookOpen, Hash, Calculator, 
+  ArrowLeftRight, Square, Percent, Triangle, LucideIcon
+} from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -90,8 +94,41 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     }
   };
 
+  // Función para obtener el icono correspondiente
+  const getModuleIcon = () => {
+    if (!module.icon) return <Plus className="h-6 w-6" />;
+    
+    switch (module.icon) {
+      case "Plus": return <Plus className="h-6 w-6" />;
+      case "Minus": return <Minus className="h-6 w-6" />;
+      case "X": return <X className="h-6 w-6" />;
+      case "DivideIcon": return <DivideIcon className="h-6 w-6" />;
+      case "PieChart": return <PieChart className="h-6 w-6" />;
+      case "BookOpen": return <BookOpen className="h-6 w-6" />;
+      case "Hash": return <Hash className="h-6 w-6" />;
+      case "Calculator": return <Calculator className="h-6 w-6" />;
+      case "ArrowLeftRight": return <ArrowLeftRight className="h-6 w-6" />;
+      case "Square": return <Square className="h-6 w-6" />;
+      case "Percent": return <Percent className="h-6 w-6" />;
+      case "Triangle": return <Triangle className="h-6 w-6" />;
+      default: return <Plus className="h-6 w-6" />;
+    }
+  };
+
   const cardContent = (
     <>
+      {/* Colored header with icon */}
+      <div 
+        className="flex justify-center items-center p-6" 
+        style={{ 
+          backgroundColor: module.color || '#6b7280',
+          color: 'white',
+          opacity: module.comingSoon ? 0.5 : 1 
+        }}
+      >
+        {getModuleIcon()}
+      </div>
+      
       <div className="flex justify-between items-center p-4 border-b border-gray-200">
         <div className="flex items-center">
           <div className="mr-2 cursor-move text-gray-400" aria-hidden="true">
@@ -141,7 +178,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
-            <Button disabled variant="primary" className="text-white bg-gray-300 cursor-not-allowed">
+            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed">
               Start
             </Button>
           ) : (
