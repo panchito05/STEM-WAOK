@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { generateDivisionProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, ArrowLeft, ArrowRight, RefreshCw } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/use-translations";
 
@@ -56,7 +56,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     generateProblems();
   }, [settings]);
 
-  // Timer logic
+  // Timer logic para el temporizador global
   useEffect(() => {
     if (exerciseStarted && !exerciseCompleted) {
       timerRef.current = window.setInterval(() => {
@@ -70,6 +70,47 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     };
   }, [exerciseStarted, exerciseCompleted]);
+  
+  // Timer logic para el temporizador por problema
+  useEffect(() => {
+    // Solo iniciamos el temporizador si hay un límite de tiempo configurado (timeValue > 0)
+    // y si el ejercicio está activo y no estamos esperando que el usuario presione continuar
+    if (exerciseStarted && !exerciseCompleted && !waitingForContinue && settings.timeValue > 0) {
+      // Limpiamos el temporizador anterior si existe
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+        problemTimerRef.current = null;
+      }
+      
+      // Iniciamos un nuevo temporizador para el problema actual
+      setProblemTimer(settings.timeValue); // Reiniciamos el temporizador con el valor configurado
+      
+      problemTimerRef.current = window.setInterval(() => {
+        setProblemTimer(prev => {
+          if (prev <= 1) {
+            // Cuando llega a cero, lo manejamos como timeOut
+            if (problemTimerRef.current) {
+              clearInterval(problemTimerRef.current);
+              problemTimerRef.current = null;
+            }
+            
+            // Usamos la función handleTimeExpired para manejar cuando se agota el tiempo
+            handleTimeExpired();
+            
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+        problemTimerRef.current = null;
+      }
+    };
+  }, [exerciseStarted, exerciseCompleted, currentProblemIndex, waitingForContinue, settings.timeValue]);
 
   // Focus input when current problem changes
   useEffect(() => {
@@ -122,8 +163,69 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setFeedbackColor("green");
   };
 
+  // Función centralizada para manejar cuando se agota el tiempo
+  const handleTimeExpired = () => {
+    // Contamos como un intento usado
+    setCurrentAttempts(attempts => {
+      const newAttempts = attempts + 1;
+      console.log("Tiempo expirado: intento", newAttempts);
+      
+      // Mostramos mensaje de tiempo agotado
+      setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
+      setFeedbackColor("red");
+      
+      // Verificamos si hemos alcanzado el máximo de intentos
+      if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
+        const currentProblem = problems[currentProblemIndex];
+        const quotient = Math.floor(currentProblem.dividend / currentProblem.divisor);
+        const remainder = currentProblem.dividend % currentProblem.divisor;
+        
+        setTimeout(() => {
+          // Mostrar la respuesta correcta
+          const answerText = remainder > 0 
+            ? `${t('exercises.correctAnswerIs')} ${quotient}r${remainder}`
+            : `${t('exercises.correctAnswerIs')} ${quotient}`;
+          
+          setFeedbackMessage(answerText);
+          setFeedbackColor("green");
+          
+          // Guardar la respuesta como incorrecta
+          const answer: UserAnswer = {
+            problem: currentProblem,
+            userQuotient: -1, // Usamos -1 para indicar tiempo agotado
+            userRemainder: -1,
+            isCorrect: false
+          };
+          
+          setAnswers(prev => [...prev, answer]);
+          
+          // Guardar el número de intentos para este problema
+          setProblemAttempts(prev => [...prev, newAttempts]);
+          
+          // Guardar el tiempo empleado en este problema
+          setProblemTimes(prev => [...prev, settings.timeValue]);
+          
+          // Si la compensación está habilitada, añadimos un problema adicional 
+          if (settings.enableCompensation) {
+            const newProblem = generateDivisionProblem(settings.difficulty);
+            setProblems(prev => [...prev, newProblem]);
+          }
+          
+          // Esperamos a que el usuario presione Continuar
+          setWaitingForContinue(true);
+        }, 1000);
+      }
+      
+      return newAttempts;
+    });
+  };
+
   const startExercise = () => {
     setExerciseStarted(true);
+    // Registrar el tiempo de inicio del primer problema
+    setProblemStartTime(0);
+    // Inicializar el temporizador por problema si está configurado
+    setProblemTimer(settings.timeValue);
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -155,6 +257,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       return;
     }
     
+    // Si estamos esperando a que el usuario presione continuar, no permitimos verificar la respuesta
+    if (waitingForContinue) {
+      return;
+    }
+    
     const currentProblem = problems[currentProblemIndex];
     
     // Parse the answer including potential remainder
@@ -172,38 +279,165 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     const isCorrect = checkAnswer(currentProblem, quotient, remainder);
     
-    // Save the answer
-    const answer: UserAnswer = {
-      problem: currentProblem,
-      userQuotient: quotient,
-      userRemainder: remainder,
-      isCorrect
-    };
+    // Incrementamos el contador de intentos
+    setCurrentAttempts(attempts => {
+      const newAttempts = attempts + 1;
+      
+      // Guardamos la información para estadísticas
+      if (isCorrect || (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts)) {
+        // Guardamos el número de intentos que tomó
+        setProblemAttempts(prev => [...prev, newAttempts]);
+        
+        // Guardamos el tiempo empleado
+        const timeUsed = settings.timeValue - problemTimer;
+        setProblemTimes(prev => [...prev, timeUsed]);
+        
+        // Manejamos respuestas consecutivas correctas para mostrar recompensas
+        if (isCorrect) {
+          setConsecutiveCorrectAnswers(prev => prev + 1);
+        } else {
+          setConsecutiveCorrectAnswers(0);
+        }
+        
+        // Mostramos recompensa si corresponde
+        const shouldShowReward = (
+          settings.enableRewards && 
+          (
+            // Mostrar recompensa en mitad del ejercicio
+            (currentProblemIndex === Math.floor(problems.length / 2) - 1 && !rewardsShownIndices.includes(currentProblemIndex)) ||
+            // Mostrar recompensa en último problema
+            (currentProblemIndex === problems.length - 1 && !rewardsShownIndices.includes(currentProblemIndex)) ||
+            // Mostrar recompensa por respuestas consecutivas correctas
+            (isCorrect && consecutiveCorrectAnswers >= 5 && Math.random() < 0.4) ||
+            // Mostrar recompensa sorpresa con baja probabilidad
+            (isCorrect && Math.random() < 0.03 && totalRewardsShown < 3)
+          )
+        );
+        
+        // Si debemos mostrar recompensa, la configuramos
+        if (shouldShowReward) {
+          setRewardType(settings.rewardType || "stars");
+          setShowReward(true);
+          setRewardsShownIndices(prev => [...prev, currentProblemIndex]);
+          setTotalRewardsShown(prev => prev + 1);
+          
+          // Esperar a que el usuario presione continuar
+          setWaitingForContinue(true);
+          return newAttempts;
+        }
+        
+        // Si la compensación está habilitada y la respuesta es incorrecta, añadimos un problema adicional
+        if (!isCorrect && settings.enableCompensation) {
+          // Añadir un problema adicional del mismo nivel
+          const newProblem = generateDivisionProblem(settings.difficulty);
+          setProblems(prev => [...prev, newProblem]);
+        }
+        
+        // Esperar a que el usuario presione continuar si la respuesta es correcta o alcanzamos los intentos máximos
+        setWaitingForContinue(true);
+      }
+      
+      return newAttempts;
+    });
     
-    setAnswers(prev => [...prev, answer]);
-    
-    // Show feedback if enabled
-    if (settings.showImmediateFeedback) {
+    // Mostramos feedback según el resultado
+    if (settings.showImmediateFeedback || isCorrect || (settings.maxAttempts > 0 && currentAttempts + 1 >= settings.maxAttempts)) {
       setFeedbackMessage(isCorrect ? t('exercises.correct') : t('exercises.incorrect'));
       setFeedbackColor(isCorrect ? "green" : "red");
       
-      setTimeout(() => {
-        setFeedbackMessage(null);
-        setFeedbackColor(null);
-        moveToNextProblem();
-      }, 1000);
-    } else {
-      moveToNextProblem();
+      // Si llegamos al máximo de intentos y la respuesta es incorrecta, mostramos la respuesta correcta
+      if (!isCorrect && settings.maxAttempts > 0 && currentAttempts + 1 >= settings.maxAttempts) {
+        setTimeout(() => {
+          // Mostrar la respuesta correcta
+          const correctQuotient = Math.floor(currentProblem.dividend / currentProblem.divisor);
+          const correctRemainder = currentProblem.dividend % currentProblem.divisor;
+          
+          const answerText = correctRemainder > 0 
+            ? `${t('exercises.correctAnswerIs')} ${correctQuotient}r${correctRemainder}`
+            : `${t('exercises.correctAnswerIs')} ${correctQuotient}`;
+          
+          setFeedbackMessage(answerText);
+          setFeedbackColor("green");
+        }, 1000);
+      }
+    }
+    
+    // Guardar la respuesta solo si es la última o es correcta
+    if (isCorrect || (settings.maxAttempts > 0 && currentAttempts + 1 >= settings.maxAttempts)) {
+      const answer: UserAnswer = {
+        problem: currentProblem,
+        userQuotient: quotient,
+        userRemainder: remainder,
+        isCorrect
+      };
+      
+      setAnswers(prev => [...prev, answer]);
+      
+      // Si no estamos esperando continuar, movemos al siguiente problema
+      if (!waitingForContinue && !showReward) {
+        setTimeout(() => {
+          setFeedbackMessage(null);
+          setFeedbackColor(null);
+          moveToNextProblem();
+        }, 1500);
+      }
     }
   };
 
+  // Función para continuar al siguiente problema (botón verde)
+  const handleContinue = () => {
+    // Si hay un timeout pendiente para auto-continuar, lo cancelamos
+    if (autoContinueTimeoutRef.current !== null) {
+      clearTimeout(autoContinueTimeoutRef.current);
+      autoContinueTimeoutRef.current = null;
+    }
+    
+    // Limpiamos el estado de feedback
+    setFeedbackMessage(null);
+    setFeedbackColor(null);
+    setShowReward(false);
+    setWaitingForContinue(false);
+    
+    // Reiniciamos los intentos para el siguiente problema
+    setCurrentAttempts(0);
+    
+    // Pasamos al siguiente problema
+    moveToNextProblem();
+  };
+  
+  // Función para activar/desactivar el auto-continuar
+  const toggleAutoContinue = () => {
+    setAutoContinue(prev => !prev);
+  };
+  
   const moveToNextProblem = () => {
     if (currentProblemIndex < problems.length - 1) {
+      // Avanzamos al siguiente problema
       setCurrentProblemIndex(prev => prev + 1);
       setUserAnswer("");
+      
+      // Reiniciamos el temporizador del problema si está configurado
+      if (settings.timeValue > 0) {
+        setProblemTimer(settings.timeValue);
+      }
+      
+      // Si el auto-continuar está habilitado, programamos avanzar automáticamente
+      // después de mostrar la respuesta (usualmente 2 segundos)
+      if (autoContinue && waitingForContinue) {
+        autoContinueTimeoutRef.current = window.setTimeout(() => {
+          handleContinue();
+        }, 2000);
+      }
     } else {
       completeExercise();
     }
+  };
+  
+  // Función para iniciar el modo revisión para ver todas las respuestas
+  const startReviewMode = () => {
+    setIsReviewing(true);
+    setShowingReview(true);
+    setReviewIndex(0);
   };
 
   const moveToPreviousProblem = () => {
@@ -309,8 +543,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <h2 className="text-xl font-bold text-gray-900">Division Exercise</h2>
           <p className="text-sm text-gray-500">Solve the following division problems</p>
         </div>
-        <div className="flex items-center">
-          <span className="mr-4 text-sm text-gray-500">
+        <div className="flex items-center space-x-4">
+          {/* Temporizador global */}
+          <span className="text-sm text-gray-500">
             <span className="inline-flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -329,6 +564,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               {formatTime(timer)}
             </span>
           </span>
+
+          {/* Temporizador por problema (solo visible si está configurado) */}
+          {settings.timeValue > 0 && exerciseStarted && (
+            <span className={`text-sm ${problemTimer <= 5 && problemTimer > 0 ? 'text-red-500 font-semibold' : 'text-gray-500'}`}>
+              <span className="inline-flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 mr-1 ${problemTimer <= 5 && problemTimer > 0 ? 'text-red-500 animate-pulse' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Tiempo: {problemTimer}s
+              </span>
+            </span>
+          )}
+          
           <Button
             variant="outline"
             size="sm"
@@ -346,6 +605,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <span>Problem {currentProblemIndex + 1} of {problems.length}</span>
           <span>Score: {score}/{answers.length}</span>
         </div>
+        {settings.maxAttempts > 0 && exerciseStarted && (
+          <div className="flex justify-center items-center mt-2">
+            <div className="flex gap-1 items-center">
+              <span className="text-xs text-gray-500 mr-1">Intentos:</span>
+              {/* Mostrar círculos que representan los intentos usados (rojo) y disponibles (gris) */}
+              {Array.from({ length: settings.maxAttempts }).map((_, i) => (
+                <span 
+                  key={i}
+                  className={`inline-block w-3 h-3 rounded-full ${
+                    i < currentAttempts ? 'bg-red-500' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="p-6 bg-gray-50 rounded-lg mb-6">
@@ -420,44 +695,118 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       </div>
 
       <div className="flex justify-between">
-        <Button
-          variant="outline"
-          disabled={currentProblemIndex === 0}
-          onClick={moveToPreviousProblem}
-        >
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          {t('common.prev')}
-        </Button>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
+        {/* Controles principales */}
+        {waitingForContinue ? (
+          // Cuando estamos esperando que el usuario continúe, mostramos el botón verde de Continuar
+          <div className="flex justify-between w-full">
+            <Button
+              variant="outline"
+              onClick={startReviewMode}
+              disabled={answers.length <= 1}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Review Answers
+            </Button>
+            
+            <div className="relative" style={{ width: "210px" }}>
               <Button 
-                variant="outline" 
-                disabled={!settings.showAnswerWithExplanation}
-                onClick={showAnswerWithExplanation}
+                className="bg-green-500 hover:bg-green-600 text-white w-full flex justify-between items-center"
+                onClick={handleContinue}
               >
-                <Info className="mr-2 h-4 w-4" />
-                {t('exercises.showAnswer')}
+                Continue
+                <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
-            </TooltipTrigger>
-            {!settings.showAnswerWithExplanation && (
-              <TooltipContent>
-                <p>{t('tooltips.activateShowAnswer')}</p>
-              </TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
-        <Button onClick={checkCurrentAnswer}>
-          {exerciseStarted ? (
-            <>
-              {t('exercises.check')}
-              <Check className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            <>{t('exercises.start')}</>
-          )}
-        </Button>
+              
+              {/* Checkbox para auto-continuar con fondo semi-transparente */}
+              <div className="absolute bottom-full left-0 mb-1 flex items-center bg-black bg-opacity-40 rounded px-2 py-1">
+                <input
+                  type="checkbox"
+                  id="auto-continue"
+                  checked={autoContinue}
+                  onChange={toggleAutoContinue}
+                  className="mr-2 cursor-pointer"
+                />
+                <label htmlFor="auto-continue" className="text-white text-xs cursor-pointer">
+                  Auto
+                </label>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Controles normales cuando el usuario está resolviendo el problema
+          <>
+            <Button
+              variant="outline"
+              disabled={currentProblemIndex === 0}
+              onClick={moveToPreviousProblem}
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              {t('common.prev')}
+            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    disabled={!settings.showAnswerWithExplanation}
+                    onClick={showAnswerWithExplanation}
+                  >
+                    <Info className="mr-2 h-4 w-4" />
+                    {t('exercises.showAnswer')}
+                  </Button>
+                </TooltipTrigger>
+                {!settings.showAnswerWithExplanation && (
+                  <TooltipContent>
+                    <p>{t('tooltips.activateShowAnswer')}</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
+            <Button onClick={checkCurrentAnswer}>
+              {exerciseStarted ? (
+                <>
+                  {t('exercises.check')}
+                  <Check className="ml-2 h-4 w-4" />
+                </>
+              ) : (
+                <>{t('exercises.start')}</>
+              )}
+            </Button>
+          </>
+        )}
       </div>
+      
+      {/* Mostrar recompensa si corresponde */}
+      {showReward && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 animate-bounce-slow text-center">
+            <h2 className="text-2xl font-bold text-center mb-4">¡Excelente trabajo!</h2>
+            
+            {rewardType === "stars" && (
+              <div className="flex justify-center space-x-2 text-6xl text-yellow-400">
+                <span>⭐</span><span>⭐</span><span>⭐</span>
+              </div>
+            )}
+            
+            {rewardType === "medals" && (
+              <div className="flex justify-center space-x-2 text-6xl">
+                <span>🥇</span>
+              </div>
+            )}
+            
+            {rewardType === "trophies" && (
+              <div className="flex justify-center space-x-2 text-6xl">
+                <span>🏆</span>
+              </div>
+            )}
+            
+            <p className="mt-4 text-lg">¡Sigue así!</p>
+            <Button className="mt-6 bg-green-500 hover:bg-green-600 text-white" onClick={handleContinue}>
+              Continuar
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
