@@ -146,6 +146,24 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   useEffect(() => {
     saveSettingsToLocalStorage();
   }, [globalSettings, moduleSettings]);
+  
+  // Verificar si hay cambios en almacenamiento local (otro tab o ventana)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "globalSettings" && e.newValue) {
+        setGlobalSettings(JSON.parse(e.newValue));
+      }
+      
+      if (e.key === "moduleSettings" && e.newValue) {
+        setModuleSettings(JSON.parse(e.newValue));
+      }
+    };
+    
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   const updateGlobalSettings = async (settings: Partial<GlobalSettings>) => {
     const updatedSettings = { ...globalSettings, ...settings };
