@@ -49,7 +49,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     generateProblems();
   }, [settings]);
 
-  // Timer logic
+  // Timer logic for overall exercise
   useEffect(() => {
     if (exerciseStarted && !exerciseCompleted) {
       timerRef.current = window.setInterval(() => {
@@ -63,6 +63,97 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     };
   }, [exerciseStarted, exerciseCompleted]);
+  
+  // Timer logic for problem time limit
+  useEffect(() => {
+    // Solo iniciamos el temporizador si hay un límite de tiempo configurado (timeValue > 0)
+    if (exerciseStarted && !exerciseCompleted && settings.timeValue > 0) {
+      // Limpiamos el temporizador anterior si existe
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+      }
+      
+      // Iniciamos un nuevo temporizador para el problema actual
+      setProblemTimer(settings.timeValue); // Reiniciamos el temporizador con el valor configurado
+      
+      problemTimerRef.current = window.setInterval(() => {
+        setProblemTimer(prev => {
+          // Si el temporizador llega a cero, contamos como un intento usado
+          if (prev <= 1) {
+            // Limpiamos este intervalo
+            if (problemTimerRef.current) {
+              clearInterval(problemTimerRef.current);
+            }
+            
+            // Incrementamos el contador de intentos
+            setCurrentAttempts(attempts => {
+              const newAttempts = attempts + 1;
+              
+              // Si hemos alcanzado el máximo de intentos, mostramos la respuesta y avanzamos
+              if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
+                const currentProblem = problems[currentProblemIndex];
+                const correctAnswer = currentProblem.num1 + currentProblem.num2;
+                
+                // Mostrar mensaje de tiempo agotado
+                setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+                setFeedbackColor("red");
+                
+                // Guardar la respuesta como incorrecta
+                const answer: UserAnswer = {
+                  problem: currentProblem,
+                  userAnswer: parseInt(userAnswer) || 0,
+                  isCorrect: false
+                };
+                
+                setAnswers(prev => [...prev, answer]);
+                
+                // Si está habilitada la compensación, incrementar contador
+                if (settings.enableCompensation) {
+                  setIncorrectAnswersCount(prev => prev + 1);
+                }
+                
+                // Avanzar al siguiente problema después de un breve retraso
+                setTimeout(() => {
+                  setFeedbackMessage(null);
+                  setFeedbackColor(null);
+                  moveToNextProblem();
+                }, 2000);
+              } else {
+                // Si aún no hemos agotado todos los intentos, reiniciamos el temporizador
+                setTimeout(() => {
+                  setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
+                  setFeedbackColor("red");
+                  
+                  // Iniciamos un nuevo temporizador
+                  setProblemTimer(settings.timeValue);
+                  problemTimerRef.current = window.setInterval(() => {
+                    setProblemTimer(p => p > 0 ? p - 1 : 0);
+                  }, 1000);
+                  
+                  // Limpiar el mensaje después de un momento
+                  setTimeout(() => {
+                    setFeedbackMessage(null);
+                    setFeedbackColor(null);
+                  }, 1500);
+                }, 500);
+              }
+              
+              return newAttempts;
+            });
+            
+            return 0;
+          }
+          return prev - 1; // Decrementar el temporizador
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+      }
+    };
+  }, [exerciseStarted, exerciseCompleted, currentProblemIndex, settings.timeValue, settings.maxAttempts]);
 
   // Focus input when current problem changes
   useEffect(() => {
@@ -83,6 +174,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setUserAnswer("");
     setAnswers([]);
     setTimer(0);
+    setProblemTimer(settings.timeValue); // Inicializar el temporizador del problema con el valor configurado
     setExerciseStarted(false);
     setExerciseCompleted(false);
     setFeedbackMessage(null);
@@ -103,43 +195,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       startExercise();
     }
     
-    // Solo se puede revelar la respuesta si hemos alcanzado el número máximo de intentos
-    // o si el maxAttempts está configurado a 0 (sin límite)
-    if (settings.maxAttempts === 0 || currentAttempts >= settings.maxAttempts) {
-      setShowingExplanation(true);
-      const currentProblem = problems[currentProblemIndex];
-      const correctAnswer = currentProblem.num1 + currentProblem.num2;
-      
-      setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
-      setFeedbackColor("green");
-  
-      // Incrementar contador de respuestas reveladas si está habilitada la compensación
-      if (settings.enableCompensation) {
-        setRevealedAnswersCount(prev => prev + 1);
-      }
-      
-      // Esperar 2 segundos y luego pasar al siguiente problema
-      setTimeout(() => {
-        // Guardar la respuesta como incorrecta
-        const answer: UserAnswer = {
-          problem: currentProblem,
-          userAnswer: -1, // Usamos -1 para indicar que se reveló la respuesta
-          isCorrect: false
-        };
-        
-        setAnswers(prev => [...prev, answer]);
-        moveToNextProblem();
-      }, 2000);
-    } else {
-      // Mostrar mensaje de que no se puede ver la respuesta hasta agotar los intentos
-      setFeedbackMessage(`Debes agotar tus ${settings.maxAttempts} intentos primero`);
-      setFeedbackColor("red");
-      
-      setTimeout(() => {
-        setFeedbackMessage(null);
-        setFeedbackColor(null);
-      }, 2000);
+    // Siempre permitimos mostrar la respuesta cuando showAnswerWithExplanation está activado
+    setShowingExplanation(true);
+    const currentProblem = problems[currentProblemIndex];
+    const correctAnswer = currentProblem.num1 + currentProblem.num2;
+    
+    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+    setFeedbackColor("green");
+
+    // Incrementar contador de respuestas reveladas si está habilitada la compensación
+    if (settings.enableCompensation) {
+      setRevealedAnswersCount(prev => prev + 1);
     }
+    
+    // Si hay un temporizador activo, lo detenemos
+    if (problemTimerRef.current) {
+      clearInterval(problemTimerRef.current);
+      problemTimerRef.current = null;
+    }
+    
+    // Esperar 2 segundos y luego pasar al siguiente problema
+    setTimeout(() => {
+      // Guardar la respuesta como incorrecta
+      const answer: UserAnswer = {
+        problem: currentProblem,
+        userAnswer: -1, // Usamos -1 para indicar que se reveló la respuesta
+        isCorrect: false
+      };
+      
+      setAnswers(prev => [...prev, answer]);
+      moveToNextProblem();
+    }, 2000);
   };
 
   const startExercise = () => {
@@ -148,6 +234,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (settings.showAnswerWithExplanation) {
       setShowHelpButton(true);
     }
+    
+    // Inicializar el temporizador del problema si está configurado
+    if (settings.timeValue > 0) {
+      setProblemTimer(settings.timeValue);
+    }
+    
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -400,12 +492,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const moveToNextProblem = () => {
     if (currentProblemIndex < problems.length - 1) {
+      // Limpiar el temporizador del problema actual si existe
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+        problemTimerRef.current = null;
+      }
+      
       setCurrentProblemIndex(prev => prev + 1);
       setUserAnswer("");
       setShowingExplanation(false);
       setFeedbackMessage(null);
       setFeedbackColor(null);
       setCurrentAttempts(0); // Reiniciamos el contador de intentos para el nuevo problema
+      setProblemTimer(settings.timeValue); // Reiniciamos el temporizador para el nuevo problema
     } else {
       completeExercise();
     }
@@ -566,6 +665,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               {formatTime(timer)}
             </span>
           </span>
+          
+          {/* Mostrar temporizador por problema si está configurado */}
+          {settings.timeValue > 0 && (
+            <span className={`mr-4 text-sm ${problemTimer <= 5 ? "text-red-600 font-bold animate-pulse" : "text-gray-500"}`}>
+              <span className="inline-flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 mr-1 ${problemTimer <= 5 ? "text-red-600" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Tiempo: {problemTimer}s
+              </span>
+            </span>
+          )}
+          
           <Button
             variant="outline"
             size="sm"
@@ -724,7 +847,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <TooltipTrigger asChild>
               <Button 
                 variant="outline" 
-                disabled={!settings.showAnswerWithExplanation || (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts)}
+                disabled={!settings.showAnswerWithExplanation}
                 onClick={showAnswerWithExplanation}
               >
                 <Info className="mr-2 h-4 w-4" />
@@ -734,10 +857,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             {!settings.showAnswerWithExplanation ? (
               <TooltipContent>
                 <p>{t('tooltips.activateShowAnswer')}</p>
-              </TooltipContent>
-            ) : settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts ? (
-              <TooltipContent>
-                <p>Debes agotar los {settings.maxAttempts} intentos primero</p>
               </TooltipContent>
             ) : null}
           </Tooltip>
