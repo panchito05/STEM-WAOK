@@ -136,38 +136,26 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       startExercise();
     }
     
-    // Solo se puede revelar la respuesta si hemos alcanzado el número máximo de intentos
-    // o si el maxAttempts está configurado a 0 (sin límite)
-    if (settings.maxAttempts === 0 || currentAttempts >= settings.maxAttempts) {
-      setShowingExplanation(true);
-      const currentProblem = problems[currentProblemIndex];
-      const correctAnswer = currentProblem.num1 - currentProblem.num2;
+    // Siempre mostrar la respuesta si showAnswerWithExplanation está habilitado
+    setShowingExplanation(true);
+    const currentProblem = problems[currentProblemIndex];
+    const correctAnswer = currentProblem.num1 - currentProblem.num2;
+    
+    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+    setFeedbackColor("green");
+    
+    // Esperar 2 segundos y luego pasar al siguiente problema
+    setTimeout(() => {
+      // Guardar la respuesta como incorrecta
+      const answer: UserAnswer = {
+        problem: currentProblem,
+        userAnswer: -1, // Usamos -1 para indicar que se reveló la respuesta
+        isCorrect: false
+      };
       
-      setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
-      setFeedbackColor("green");
-      
-      // Esperar 2 segundos y luego pasar al siguiente problema
-      setTimeout(() => {
-        // Guardar la respuesta como incorrecta
-        const answer: UserAnswer = {
-          problem: currentProblem,
-          userAnswer: -1, // Usamos -1 para indicar que se reveló la respuesta
-          isCorrect: false
-        };
-        
-        setAnswers(prev => [...prev, answer]);
-        moveToNextProblem();
-      }, 2000);
-    } else {
-      // Mostrar mensaje de que no se puede ver la respuesta hasta agotar los intentos
-      setFeedbackMessage(`Debes agotar tus ${settings.maxAttempts} intentos primero`);
-      setFeedbackColor("red");
-      
-      setTimeout(() => {
-        setFeedbackMessage(null);
-        setFeedbackColor(null);
-      }, 2000);
-    }
+      setAnswers(prev => [...prev, answer]);
+      moveToNextProblem();
+    }, 2000);
   };
 
   const startExercise = () => {
@@ -919,7 +907,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <TooltipTrigger asChild>
               <Button 
                 variant="outline" 
-                disabled={!settings.showAnswerWithExplanation || (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts)}
+                disabled={!settings.showAnswerWithExplanation}
                 onClick={showAnswerWithExplanation}
               >
                 <Info className="mr-2 h-4 w-4" />
@@ -929,10 +917,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             {!settings.showAnswerWithExplanation ? (
               <TooltipContent>
                 <p>{t('tooltips.activateShowAnswer')}</p>
-              </TooltipContent>
-            ) : settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts ? (
-              <TooltipContent>
-                <p>Debes agotar los {settings.maxAttempts} intentos primero</p>
               </TooltipContent>
             ) : null}
           </Tooltip>
