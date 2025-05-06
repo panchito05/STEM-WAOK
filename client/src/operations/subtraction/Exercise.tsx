@@ -408,7 +408,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <Check className="ml-2 h-4 w-4" />
             </>
           ) : (
-            t('exercises.start')
+            <>{t('exercises.start')}</>
           )}
         </Button>
       </div>

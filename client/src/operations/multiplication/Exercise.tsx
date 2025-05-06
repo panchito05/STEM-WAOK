@@ -9,6 +9,7 @@ import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -16,6 +17,7 @@ interface ExerciseProps {
 }
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
+  const { t } = useTranslations();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
@@ -78,7 +80,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const currentProblem = problems[currentProblemIndex];
     const correctAnswer = currentProblem.num1 * currentProblem.num2;
     
-    setFeedbackMessage(`The correct answer is = ${correctAnswer}`);
+    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
     setFeedbackColor("green");
   };
 
@@ -124,7 +126,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Show feedback if enabled
     if (settings.showImmediateFeedback) {
-      setFeedbackMessage(isCorrect ? "Correct!" : "Incorrect!");
+      setFeedbackMessage(isCorrect ? t('exercises.correct') : t('exercises.incorrect'));
       setFeedbackColor(isCorrect ? "green" : "red");
       
       setTimeout(() => {
@@ -192,9 +194,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return (
       <div className="px-4 py-5 sm:p-6">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Exercise Completed!</h2>
-          <p className="text-gray-600">Your score: {score}/{problems.length}</p>
-          <p className="text-gray-600">Time taken: {formatTime(timer)}</p>
+          <h2 className="text-2xl font-bold text-gray-900">{t('exercises.completed')}</h2>
+          <p className="text-gray-600">{t('exercises.score')}: {score}/{problems.length}</p>
+          <p className="text-gray-600">{t('exercises.timeTaken')}: {formatTime(timer)}</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -221,14 +223,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button onClick={generateProblems}>
-            Try Again
+            {t('exercises.tryAgain')}
           </Button>
           <Button variant="outline" onClick={onOpenSettings}>
             <Settings className="mr-2 h-4 w-4" />
-            Settings
+            {t('common.settings')}
           </Button>
           <Button variant="outline" asChild>
-            <a href="/">Return Home</a>
+            <a href="/">{t('exercises.returnHome')}</a>
           </Button>
         </div>
       </div>
@@ -351,7 +353,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           onClick={moveToPreviousProblem}
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
-          Previous
+          {t('common.prev')}
         </Button>
         <TooltipProvider>
           <Tooltip>
@@ -362,12 +364,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 onClick={showAnswerWithExplanation}
               >
                 <Info className="mr-2 h-4 w-4" />
-                Show Answer
+                {t('exercises.showAnswer')}
               </Button>
             </TooltipTrigger>
             {!settings.showAnswerWithExplanation && (
               <TooltipContent>
-                <p>To activate this option, go to Settings</p>
+                <p>{t('tooltips.activateShowAnswer')}</p>
               </TooltipContent>
             )}
           </Tooltip>
@@ -375,11 +377,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <Button onClick={checkCurrentAnswer}>
           {exerciseStarted ? (
             <>
-              Check Answer
+              {t('exercises.check')}
               <Check className="ml-2 h-4 w-4" />
             </>
           ) : (
-            "Start Exercise"
+            <>{t('exercises.start')}</>
           )}
         </Button>
       </div>
