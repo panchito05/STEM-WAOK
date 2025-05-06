@@ -77,7 +77,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const currentProblem = problems[currentProblemIndex];
     const correctAnswer = currentProblem.num1 * currentProblem.num2;
     
-    setFeedbackMessage(`The correct answer is ${correctAnswer}. ${currentProblem.num1} × ${currentProblem.num2} = ${correctAnswer}`);
+    setFeedbackMessage(`The correct answer is = ${correctAnswer}`);
     setFeedbackColor("green");
   };
 
@@ -354,6 +354,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </Button>
         <Button 
           variant="outline" 
+          disabled={!settings.showAnswerWithExplanation}
           onClick={showAnswerWithExplanation}
         >
           <Info className="mr-2 h-4 w-4" />

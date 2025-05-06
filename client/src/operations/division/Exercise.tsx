@@ -79,8 +79,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const remainder = currentProblem.dividend % currentProblem.divisor;
     
     const answerText = remainder > 0 
-      ? `The correct answer is ${quotient}r${remainder}. ${currentProblem.dividend} ÷ ${currentProblem.divisor} = ${quotient} with remainder ${remainder}`
-      : `The correct answer is ${quotient}. ${currentProblem.dividend} ÷ ${currentProblem.divisor} = ${quotient}`;
+      ? `The correct answer is = ${quotient}r${remainder}`
+      : `The correct answer is = ${quotient}`;
       
     setFeedbackMessage(answerText);
     setFeedbackColor("green");
@@ -394,6 +394,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </Button>
         <Button 
           variant="outline" 
+          disabled={!settings.showAnswerWithExplanation}
           onClick={showAnswerWithExplanation}
         >
           <Info className="mr-2 h-4 w-4" />
