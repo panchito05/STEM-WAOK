@@ -24,6 +24,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | null>(null);
+  const [showHelpButton, setShowHelpButton] = useState(false); // Control si mostramos el botón de ayuda
   const [showingExplanation, setShowingExplanation] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
@@ -73,6 +74,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setFeedbackMessage(null);
     setFeedbackColor(null);
     setShowingExplanation(false);
+    setShowHelpButton(false); // Reiniciamos el estado del botón de ayuda
   };
   
   const showAnswerWithExplanation = () => {
@@ -90,6 +92,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const startExercise = () => {
     setExerciseStarted(true);
+    // Una vez que empieza el ejercicio, mostrar el botón de ayuda si está configurado
+    if (settings.showAnswerWithExplanation) {
+      setShowHelpButton(true);
+    }
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -366,7 +372,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           Previous
         </Button>
         <div className="flex gap-2">
-          {settings.showAnswerWithExplanation && (
+          {settings.showAnswerWithExplanation && showHelpButton && (
             <Button 
               variant="outline" 
               onClick={showAnswerWithExplanation}
