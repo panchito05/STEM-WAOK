@@ -218,6 +218,42 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const completeExercise = () => {
+    // Verificar si necesitamos añadir problemas de compensación
+    if (settings.enableCompensation && (incorrectAnswersCount > 0 || revealedAnswersCount > 0)) {
+      const compensationProblemsNeeded = incorrectAnswersCount + revealedAnswersCount;
+      
+      if (compensationProblemsNeeded > 0) {
+        // Crear nuevos problemas de compensación
+        const newProblems: Problem[] = [];
+        
+        for (let i = 0; i < compensationProblemsNeeded; i++) {
+          // Usamos la dificultad adaptativa si está habilitada, o la configurada si no
+          const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+          newProblems.push(generateAdditionProblem(difficultyToUse));
+        }
+        
+        // Añadir estos problemas a la lista existente
+        setProblems(prev => [...prev, ...newProblems]);
+        
+        // Mostrar mensaje informativo sobre problemas adicionales
+        setFeedbackMessage(`Añadidos ${compensationProblemsNeeded} problemas de compensación`);
+        setFeedbackColor("green");
+        
+        // Reiniciar los contadores
+        setIncorrectAnswersCount(0);
+        setRevealedAnswersCount(0);
+        
+        // Continuar con el ejercicio en lugar de completarlo
+        setTimeout(() => {
+          setFeedbackMessage(null);
+          setFeedbackColor(null);
+        }, 2000);
+        
+        return; // No completamos el ejercicio todavía
+      }
+    }
+    
+    // Si no hay compensación o ya hemos añadido los problemas, completar el ejercicio
     setExerciseCompleted(true);
     
     if (timerRef.current) {
