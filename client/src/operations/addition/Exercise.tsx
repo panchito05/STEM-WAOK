@@ -192,9 +192,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Ajustar dificultad adaptativamente si está habilitada esa opción
       if (settings.enableAdaptiveDifficulty) {
-        // Si lleva 3 respuestas correctas seguidas, aumentar dificultad
-        const lastThreeAnswers = [...answers, answer].slice(-3);
-        if (lastThreeAnswers.length === 3 && lastThreeAnswers.every(a => a.isCorrect)) {
+        // Si lleva 10 respuestas correctas seguidas, aumentar dificultad
+        const lastTenAnswers = [...answers, answer].slice(-10);
+        if (lastTenAnswers.length === 10 && lastTenAnswers.every(a => a.isCorrect)) {
           // Aumentar dificultad (si no está ya en el nivel máximo)
           const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
           const currentIndex = difficulties.indexOf(adaptiveDifficulty);
@@ -358,9 +358,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // Ajustar dificultad adaptativamente si está habilitada esa opción
         if (settings.enableAdaptiveDifficulty) {
-          // Si lleva 2 respuestas incorrectas seguidas, disminuir dificultad
-          const lastTwoAnswers = [...answers, answer].slice(-2);
-          if (lastTwoAnswers.length === 2 && lastTwoAnswers.every(a => !a.isCorrect)) {
+          // Si lleva 5 respuestas incorrectas seguidas, disminuir dificultad
+          const lastFiveAnswers = [...answers, answer].slice(-5);
+          if (lastFiveAnswers.length === 5 && lastFiveAnswers.every(a => !a.isCorrect)) {
             // Disminuir dificultad (si no está ya en el nivel mínimo)
             const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
             const currentIndex = difficulties.indexOf(adaptiveDifficulty);
