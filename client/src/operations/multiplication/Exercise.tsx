@@ -197,6 +197,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setUserAnswer("");
     setAnswers([]);
     setTimer(0);
+    setProblemTimer(settings.timeValue);
+    setProblemStartTime(0);
     setExerciseStarted(false);
     setExerciseCompleted(false);
     setFeedbackMessage(null);
@@ -208,6 +210,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setRewardsShownIndices([]);
     setTotalRewardsShown(0);
     setShowReward(false);
+    setWaitingForContinue(false);
+    setAutoContinue(false);
+    setIsReviewing(false);
+    setShowingReview(false);
+    setReviewIndex(0);
+    setProblemAttempts([]);
+    setProblemTimes([]);
+    
+    if (autoContinueTimeoutRef.current) {
+      window.clearTimeout(autoContinueTimeoutRef.current);
+      autoContinueTimeoutRef.current = null;
+    }
   };
   
   const showAnswerWithExplanation = () => {
@@ -256,8 +270,50 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (settings.showAnswerWithExplanation) {
       setShowHelpButton(true);
     }
+    
+    // Registramos el tiempo de inicio para el primer problema
+    setProblemStartTime(timer);
+    
     if (inputRef.current) {
       inputRef.current.focus();
+    }
+  };
+  
+  // Función para continuar al siguiente problema después de esperar la acción del usuario
+  const handleContinue = () => {
+    setShowReward(false);
+    setFeedbackMessage(null);
+    setFeedbackColor(null);
+    setWaitingForContinue(false);
+    
+    // Si tenemos habilitado el auto-continuar, recordamos la configuración para el siguiente problema
+    if (autoContinueTimeoutRef.current) {
+      window.clearTimeout(autoContinueTimeoutRef.current);
+      autoContinueTimeoutRef.current = null;
+    }
+    
+    moveToNextProblem();
+  };
+
+  // Función para iniciar la revisión de respuestas
+  const startReview = () => {
+    setShowingReview(true);
+    setReviewIndex(0);
+  };
+  
+  // Funciones para navegar entre las respuestas en modo revisión
+  const nextReviewItem = () => {
+    if (reviewIndex < answers.length - 1) {
+      setReviewIndex(prev => prev + 1);
+    } else {
+      // Si llegamos al final, volvemos a la pantalla de resumen
+      setShowingReview(false);
+    }
+  };
+  
+  const prevReviewItem = () => {
+    if (reviewIndex > 0) {
+      setReviewIndex(prev => prev - 1);
     }
   };
 
@@ -291,6 +347,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Si la respuesta es correcta
     if (isCorrect) {
+      // Calcular tiempo empleado en el problema actual
+      const timeSpent = timer - problemStartTime;
+      
       // Guardar la respuesta
       const answer: UserAnswer = {
         problem: currentProblem,
@@ -299,6 +358,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       };
       
       setAnswers(prev => [...prev, answer]);
+      
+      // Guardar el número de intentos para este problema
+      setProblemAttempts(prev => [...prev, newAttemptCount]);
+      
+      // Guardar el tiempo empleado en este problema
+      setProblemTimes(prev => [...prev, timeSpent]);
       
       // Incrementar el contador de respuestas correctas consecutivas
       const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
@@ -397,31 +462,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           // Mostrar recompensa con animación
           setShowReward(true);
           
-          // Mantenemos la recompensa visible por más tiempo para que sea evidente
-          setTimeout(() => {
-            setShowReward(false);
-            setFeedbackMessage(null);
-            setFeedbackColor(null);
-            moveToNextProblem();
-          }, 2500); // Aumentamos el tiempo para que sea más visible
+          // Ahora esperamos a que el usuario haga clic en "Continuar"
+          setWaitingForContinue(true);
           
           // Reiniciar contador de respuestas correctas consecutivas para variar la frecuencia
           setConsecutiveCorrectAnswers(0);
         } else {
-          // Si no hay recompensa, simplemente avanzamos al siguiente problema
-          setTimeout(() => {
-            setFeedbackMessage(null);
-            setFeedbackColor(null);
-            moveToNextProblem();
-          }, 1000);
+          // Si no hay recompensa, esperamos a que el usuario haga clic en "Continuar"
+          setWaitingForContinue(true);
         }
       } else {
-        // Si las recompensas están desactivadas, simplemente avanzamos
-        setTimeout(() => {
-          setFeedbackMessage(null);
-          setFeedbackColor(null);
-          moveToNextProblem();
-        }, 1000);
+        // Si las recompensas están desactivadas, esperamos a que el usuario haga clic en "Continuar"
+        setWaitingForContinue(true);
       }
     } 
     // Si la respuesta es incorrecta
@@ -438,6 +490,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Si hemos alcanzado el máximo de intentos, mostrar la respuesta correcta y avanzar
       if (maxAttemptsReached) {
+        // Calcular tiempo empleado en el problema actual
+        const timeSpent = timer - problemStartTime;
+        
         // Guardar la respuesta incorrecta
         const answer: UserAnswer = {
           problem: currentProblem,
@@ -447,6 +502,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         setAnswers(prev => [...prev, answer]);
         
+        // Guardar el número de intentos para este problema
+        setProblemAttempts(prev => [...prev, newAttemptCount]);
+        
+        // Guardar el tiempo empleado en este problema
+        setProblemTimes(prev => [...prev, timeSpent]);
+        
+        // Si la compensación está habilitada, añadimos un problema adicional por cada respuesta incorrecta
+        if (settings.enableCompensation) {
+          const newProblem = generateMultiplicationProblem(settings.difficulty);
+          setProblems(prev => [...prev, newProblem]);
+        }
+        
         // Esperar un momento para mostrar el mensaje de respuesta incorrecta
         setTimeout(() => {
           // Luego mostrar la respuesta correcta
@@ -454,12 +521,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
           setFeedbackColor("green");
           
-          // Y finalmente avanzar al siguiente problema
-          setTimeout(() => {
-            setFeedbackMessage(null);
-            setFeedbackColor(null);
-            moveToNextProblem();
-          }, 2000); // Mayor tiempo para leer la respuesta correcta
+          // Esperamos a que el usuario haga clic en "Continuar"
+          setWaitingForContinue(true);
         }, 1000);
       } 
       // Si aún no hemos agotado los intentos, permitir intentar de nuevo
@@ -528,6 +591,97 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     );
   }
 
+  // Modo de revisión
+  if (showingReview && answers.length > 0) {
+    const answer = answers[reviewIndex];
+    const attemptCount = problemAttempts[reviewIndex] || 0;
+    const timeSpent = problemTimes[reviewIndex] || 0;
+    
+    return (
+      <div className="px-4 py-5 sm:p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Revisión de Respuestas</h2>
+          <div className="text-sm text-gray-500">
+            {reviewIndex + 1} / {answers.length}
+          </div>
+        </div>
+        
+        <div className="p-6 bg-gray-50 rounded-lg mb-6 border border-gray-200">
+          <div className="flex justify-center items-center mb-6">
+            <div className="text-3xl font-bold flex items-baseline">
+              <span className="w-16 text-right">{answer.problem.num1}</span>
+              <span className="mx-4">×</span>
+              <span className="w-16 text-right">{answer.problem.num2}</span>
+              <span className="mx-4">=</span>
+              <span className="w-16 text-right">
+                <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
+                  {answer.userAnswer}
+                </span>
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex justify-between items-center mb-4">
+            <div className="text-sm">
+              <span className="font-semibold">Resultado: </span>
+              {answer.isCorrect ? (
+                <span className="text-green-600 font-semibold">Correcto</span>
+              ) : (
+                <div>
+                  <span className="text-red-600 font-semibold">Incorrecto</span>
+                  <div className="mt-1">
+                    <span className="font-medium">Respuesta correcta: </span>
+                    <span className="text-green-600 font-semibold">
+                      {answer.problem.num1 * answer.problem.num2}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-1 text-sm text-right">
+              <div>
+                <span className="font-semibold">Tiempo: </span>
+                {formatTime(timeSpent)}
+              </div>
+              <div>
+                <span className="font-semibold">Intentos: </span>
+                {attemptCount}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex justify-between">
+          <Button 
+            variant="outline" 
+            onClick={prevReviewItem}
+            disabled={reviewIndex === 0}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Anterior
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            onClick={() => setShowingReview(false)}
+          >
+            Volver al Resumen
+          </Button>
+          
+          <Button 
+            onClick={nextReviewItem}
+            disabled={reviewIndex === answers.length - 1}
+          >
+            Siguiente
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Pantalla de resultados
   if (exerciseCompleted) {
     return (
       <div className="px-4 py-5 sm:p-6">
@@ -539,30 +693,83 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="font-semibold mb-2">Performance</h3>
+            <h3 className="font-semibold mb-2">Rendimiento</h3>
             <p className="text-sm">
-              Accuracy: {Math.round((score / problems.length) * 100)}%
+              Precisión: {Math.round((score / problems.length) * 100)}%
             </p>
             <p className="text-sm">
-              Average time per problem: {Math.round(timer / problems.length)} seconds
+              Tiempo promedio por problema: {Math.round(timer / problems.length)} segundos
             </p>
           </div>
           
           <div className="bg-white p-4 rounded-lg shadow-sm">
-            <h3 className="font-semibold mb-2">Breakdown</h3>
+            <h3 className="font-semibold mb-2">Desglose</h3>
             <p className="text-sm">
-              Correct answers: {score}
+              Respuestas correctas: {score}
             </p>
             <p className="text-sm">
-              Incorrect answers: {problems.length - score}
+              Respuestas incorrectas: {problems.length - score}
             </p>
           </div>
         </div>
         
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Button onClick={generateProblems}>
+        {/* Tabla detallada de resultados */}
+        <div className="mb-8 overflow-x-auto">
+          <h3 className="font-semibold mb-4 text-lg">Reporte Detallado</h3>
+          <table className="min-w-full bg-white rounded-lg overflow-hidden">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="py-2 px-4 border-b text-left">#</th>
+                <th className="py-2 px-4 border-b text-left">Problema</th>
+                <th className="py-2 px-4 border-b text-left">Tu respuesta</th>
+                <th className="py-2 px-4 border-b text-left">Correcta</th>
+                <th className="py-2 px-4 border-b text-left">Tiempo</th>
+                <th className="py-2 px-4 border-b text-left">Intentos</th>
+              </tr>
+            </thead>
+            <tbody>
+              {answers.map((answer, index) => (
+                <tr key={index} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
+                  <td className="py-2 px-4 border-b">{index + 1}</td>
+                  <td className="py-2 px-4 border-b">
+                    {answer.problem.num1} × {answer.problem.num2}
+                  </td>
+                  <td className="py-2 px-4 border-b font-medium">
+                    <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
+                      {answer.userAnswer}
+                    </span>
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {answer.isCorrect ? (
+                      <Check className="text-green-600 h-5 w-5" />
+                    ) : (
+                      <span className="text-green-600 font-medium">
+                        {answer.problem.num1 * answer.problem.num2}
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {formatTime(problemTimes[index] || 0)}
+                  </td>
+                  <td className="py-2 px-4 border-b">
+                    {problemAttempts[index] || 0}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
+          <Button onClick={startReview} disabled={answers.length === 0}>
+            Revisar Respuestas
+          </Button>
+          <Button variant="outline" onClick={generateProblems}>
             {t('exercises.tryAgain')}
           </Button>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button variant="outline" onClick={onOpenSettings}>
             <Settings className="mr-2 h-4 w-4" />
             {t('common.settings')}
@@ -735,7 +942,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       <div className="flex justify-between">
         <Button
           variant="outline"
-          disabled={currentProblemIndex === 0}
+          disabled={currentProblemIndex === 0 || waitingForContinue}
           onClick={moveToPreviousProblem}
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
@@ -760,16 +967,49 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             )}
           </Tooltip>
         </TooltipProvider>
-        <Button onClick={checkCurrentAnswer}>
-          {exerciseStarted ? (
-            <>
-              {t('exercises.check')}
-              <Check className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            <>{t('exercises.start')}</>
-          )}
-        </Button>
+        
+        {/* Condicional: botón check o botón continuar */}
+        {waitingForContinue ? (
+          <div className="relative">
+            <Button 
+              className="bg-green-500 hover:bg-green-600 min-w-[210px]"
+              onClick={handleContinue}
+            >
+              Continuar
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+            
+            {/* Checkbox para auto-continuar */}
+            <div 
+              className="absolute right-0 -bottom-8 flex items-center space-x-2 bg-black bg-opacity-40 rounded-md px-2 py-1"
+            >
+              <Checkbox 
+                id="autoContinue" 
+                checked={autoContinue}
+                onCheckedChange={(checked) => {
+                  setAutoContinue(checked === true);
+                }}
+              />
+              <label 
+                htmlFor="autoContinue" 
+                className="text-sm font-medium text-white"
+              >
+                Auto
+              </label>
+            </div>
+          </div>
+        ) : (
+          <Button onClick={checkCurrentAnswer}>
+            {exerciseStarted ? (
+              <>
+                {t('exercises.check')}
+                <Check className="ml-2 h-4 w-4" />
+              </>
+            ) : (
+              <>{t('exercises.start')}</>
+            )}
+          </Button>
+        )}
       </div>
     </div>
   );
