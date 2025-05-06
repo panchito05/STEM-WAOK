@@ -8,6 +8,7 @@ import { generateSubtractionProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -379,14 +380,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <ChevronLeft className="mr-2 h-4 w-4" />
           Previous
         </Button>
-        <Button 
-          variant="outline" 
-          disabled={!settings.showAnswerWithExplanation}
-          onClick={showAnswerWithExplanation}
-        >
-          <Info className="mr-2 h-4 w-4" />
-          Show Answer
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                disabled={!settings.showAnswerWithExplanation}
+                onClick={showAnswerWithExplanation}
+              >
+                <Info className="mr-2 h-4 w-4" />
+                Show Answer
+              </Button>
+            </TooltipTrigger>
+            {!settings.showAnswerWithExplanation && (
+              <TooltipContent>
+                <p>To activate this option, go to Settings</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
         <Button onClick={checkCurrentAnswer}>
           {exerciseStarted ? (
             <>
