@@ -940,33 +940,33 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         {waitingForContinue ? (
           // Contenedor para el botón Continuar y el checkbox Auto
-          <div className="flex items-center space-x-2">
-            {/* Checkbox para Auto Continuar */}
-            <div className="flex items-center space-x-2">
+          <div className="flex items-center">
+            {/* Botón Continuar con color verde y más ancho */}
+            <Button 
+              variant="default"
+              className="bg-green-600 hover:bg-green-700 min-w-[150px] py-2 font-semibold" 
+              onClick={handleContinue}
+            >
+              Continuar
+            </Button>
+            
+            {/* Checkbox para Auto Continuar alineado a la derecha */}
+            <div className="flex items-center ml-2 bg-green-700 rounded px-2 py-1">
               <Checkbox 
                 id="auto-continue" 
                 checked={autoContinue}
+                className="border-white" 
                 onCheckedChange={(checked) => {
                   setAutoContinue(checked === true);
                 }}
               />
               <label
                 htmlFor="auto-continue"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium leading-none text-white ml-1"
               >
                 Auto
               </label>
             </div>
-            
-            {/* Botón Continuar con color verde */}
-            <Button 
-              variant="default"
-              className="bg-green-600 hover:bg-green-700" 
-              onClick={handleContinue}
-            >
-              Continuar
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
           </div>
         ) : (
           // Botón Check Answer
