@@ -136,52 +136,39 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       startExercise();
     }
     
-    // Solo se puede revelar la respuesta si hemos alcanzado el número máximo de intentos
-    // o si el maxAttempts está configurado a 0 (sin límite)
-    if (settings.maxAttempts === 0 || currentAttempts >= settings.maxAttempts) {
-      setShowingExplanation(true);
-      const currentProblem = problems[currentProblemIndex];
-      const correctAnswer = currentProblem.num1 - currentProblem.num2;
-      
-      setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
-      setFeedbackColor("green");
-      
-      // Calcular tiempo empleado en el problema actual
-      const timeSpent = timer - problemStartTime;
-      
-      // Guardar la respuesta como incorrecta
-      const answer: UserAnswer = {
-        problem: currentProblem,
-        userAnswer: -1, // Usamos -1 para indicar que se reveló la respuesta
-        isCorrect: false
-      };
-      
-      setAnswers(prev => [...prev, answer]);
-      
-      // Guardar el número de intentos para este problema
-      setProblemAttempts(prev => [...prev, currentAttempts]);
-      
-      // Guardar el tiempo empleado en este problema
-      setProblemTimes(prev => [...prev, timeSpent]);
-      
-      // Si la compensación está habilitada, añadimos un problema adicional por cada respuesta revelada
-      if (settings.enableCompensation) {
-        const newProblem = generateSubtractionProblem(settings.difficulty);
-        setProblems(prev => [...prev, newProblem]);
-      }
-      
-      // Esperamos a que el usuario haga clic en "Continuar"
-      setWaitingForContinue(true);
-    } else {
-      // Mostrar mensaje de que no se puede ver la respuesta hasta agotar los intentos
-      setFeedbackMessage(`Debes agotar tus ${settings.maxAttempts} intentos primero`);
-      setFeedbackColor("red");
-      
-      setTimeout(() => {
-        setFeedbackMessage(null);
-        setFeedbackColor(null);
-      }, 2000);
+    setShowingExplanation(true);
+    const currentProblem = problems[currentProblemIndex];
+    const correctAnswer = currentProblem.num1 - currentProblem.num2;
+    
+    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+    setFeedbackColor("green");
+    
+    // Calcular tiempo empleado en el problema actual
+    const timeSpent = timer - problemStartTime;
+    
+    // Guardar la respuesta como incorrecta
+    const answer: UserAnswer = {
+      problem: currentProblem,
+      userAnswer: -1, // Usamos -1 para indicar que se reveló la respuesta
+      isCorrect: false
+    };
+    
+    setAnswers(prev => [...prev, answer]);
+    
+    // Guardar el número de intentos para este problema
+    setProblemAttempts(prev => [...prev, currentAttempts]);
+    
+    // Guardar el tiempo empleado en este problema
+    setProblemTimes(prev => [...prev, timeSpent]);
+    
+    // Si la compensación está habilitada, añadimos un problema adicional por cada respuesta revelada
+    if (settings.enableCompensation) {
+      const newProblem = generateSubtractionProblem(settings.difficulty);
+      setProblems(prev => [...prev, newProblem]);
     }
+    
+    // Esperamos a que el usuario haga clic en "Continuar"
+    setWaitingForContinue(true);
   };
 
   const startExercise = () => {
@@ -223,7 +210,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setCurrentAttempts(newAttemptCount);
     
     const currentProblem = problems[currentProblemIndex];
-    const isCorrect = checkAnswer(currentProblem, parseInt(userAnswer) || 0);
+    
+    // Verificar si la respuesta está vacía
+    if (userAnswer.trim() === "") {
+      setFeedbackMessage("Por favor, ingresa una respuesta");
+      setFeedbackColor("red");
+      
+      // Decrementar el contador de intentos si la respuesta está vacía
+      setCurrentAttempts(newAttemptCount - 1);
+      
+      setTimeout(() => {
+        setFeedbackMessage(null);
+        setFeedbackColor(null);
+      }, 1500);
+      
+      return;
+    }
+    
+    const isCorrect = checkAnswer(currentProblem, parseInt(userAnswer));
     
     // Si la respuesta es correcta, guardamos la respuesta y esperamos a que el usuario presione "Continuar"
     if (isCorrect) {
@@ -939,7 +943,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <TooltipTrigger asChild>
               <Button 
                 variant="outline" 
-                disabled={!settings.showAnswerWithExplanation || (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts)}
+                disabled={!settings.showAnswerWithExplanation}
                 onClick={showAnswerWithExplanation}
               >
                 <Info className="mr-2 h-4 w-4" />
@@ -949,10 +953,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             {!settings.showAnswerWithExplanation ? (
               <TooltipContent>
                 <p>{t('tooltips.activateShowAnswer')}</p>
-              </TooltipContent>
-            ) : settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts ? (
-              <TooltipContent>
-                <p>Debes agotar los {settings.maxAttempts} intentos primero</p>
               </TooltipContent>
             ) : null}
           </Tooltip>
