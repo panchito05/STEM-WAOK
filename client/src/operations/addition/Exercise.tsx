@@ -22,6 +22,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [userAnswer, setUserAnswer] = useState("");
   const [answers, setAnswers] = useState<UserAnswer[]>([]);
   const [timer, setTimer] = useState(0);
+  const [problemTimer, setProblemTimer] = useState(0); // Temporizador para el problema actual
   const [exerciseStarted, setExerciseStarted] = useState(false);
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [totalRewardsShown, setTotalRewardsShown] = useState(0); // Contador total de recompensas mostradas
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
+  const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
   const { saveExerciseResult } = useProgress();
   const { t } = useTranslations();
 
