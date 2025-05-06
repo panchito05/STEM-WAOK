@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { generateAdditionProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -24,6 +24,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | null>(null);
+  const [showingExplanation, setShowingExplanation] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const { saveExerciseResult } = useProgress();
@@ -71,6 +72,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setExerciseCompleted(false);
     setFeedbackMessage(null);
     setFeedbackColor(null);
+    setShowingExplanation(false);
+  };
+  
+  const showAnswerWithExplanation = () => {
+    if (!exerciseStarted) {
+      startExercise();
+    }
+    
+    setShowingExplanation(true);
+    const currentProblem = problems[currentProblemIndex];
+    const correctAnswer = currentProblem.num1 + currentProblem.num2;
+    
+    setFeedbackMessage(`The correct answer is ${correctAnswer}. ${currentProblem.num1} + ${currentProblem.num2} = ${correctAnswer}`);
+    setFeedbackColor("green");
   };
 
   const startExercise = () => {
@@ -132,6 +147,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (currentProblemIndex < problems.length - 1) {
       setCurrentProblemIndex(prev => prev + 1);
       setUserAnswer("");
+      setShowingExplanation(false);
+      setFeedbackMessage(null);
+      setFeedbackColor(null);
     } else {
       completeExercise();
     }
@@ -143,6 +161,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Set the input to the previously entered answer if available
       const previousAnswer = answers[currentProblemIndex - 1];
       setUserAnswer(previousAnswer ? previousAnswer.userAnswer.toString() : "");
+      setShowingExplanation(false);
+      setFeedbackMessage(null);
+      setFeedbackColor(null);
     }
   };
 
@@ -344,16 +365,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <ChevronLeft className="mr-2 h-4 w-4" />
           Previous
         </Button>
-        <Button onClick={checkCurrentAnswer}>
-          {exerciseStarted ? (
-            <>
-              Check Answer
-              <Check className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            "Start Exercise"
+        <div className="flex gap-2">
+          {settings.showAnswerWithExplanation && (
+            <Button 
+              variant="outline" 
+              onClick={showAnswerWithExplanation}
+              disabled={showingExplanation}
+            >
+              <Info className="mr-2 h-4 w-4" />
+              Show Answer
+            </Button>
           )}
-        </Button>
+          <Button onClick={checkCurrentAnswer}>
+            {exerciseStarted ? (
+              <>
+                Check Answer
+                <Check className="ml-2 h-4 w-4" />
+              </>
+            ) : (
+              "Start Exercise"
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

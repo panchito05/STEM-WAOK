@@ -36,7 +36,6 @@ export const defaultModuleSettings: ModuleSettings = {
   maxAttempts: 3, // Por defecto, 3 intentos por problema
   showImmediateFeedback: true,
   enableSoundEffects: true,
-  showSolution: false,
   showAnswerWithExplanation: false, // Mostrar respuesta con explicación
 };
 
