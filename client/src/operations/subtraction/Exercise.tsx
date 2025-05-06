@@ -534,6 +534,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setFeedbackMessage(null);
     setFeedbackColor(null);
     setWaitingForContinue(false);
+    
+    // Si hay un temporizador activo, lo detenemos
+    if (problemTimerRef.current) {
+      clearInterval(problemTimerRef.current);
+      problemTimerRef.current = null;
+    }
+    
+    // Reiniciamos el contador de intentos para el siguiente problema
+    setCurrentAttempts(0);
+    
+    // Reiniciamos el temporizador del problema si está configurado
+    if (settings.timeValue > 0) {
+      setProblemTimer(settings.timeValue);
+    }
+    
     moveToNextProblem();
   };
   
@@ -565,6 +580,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setIsReviewing(false);
     }
     
+    // Si hay un temporizador activo del problema anterior, lo detenemos
+    if (problemTimerRef.current) {
+      clearInterval(problemTimerRef.current);
+      problemTimerRef.current = null;
+    }
+    
     if (currentProblemIndex < problems.length - 1) {
       setCurrentProblemIndex(prev => prev + 1);
       setUserAnswer("");
@@ -572,6 +593,68 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setFeedbackMessage(null);
       setFeedbackColor(null);
       setCurrentAttempts(0); // Reiniciamos el contador de intentos para el nuevo problema
+      
+      // Reiniciamos el temporizador del problema si hay un límite configurado
+      if (settings.timeValue > 0) {
+        setProblemTimer(settings.timeValue);
+        
+        // Iniciamos un nuevo temporizador para el problema
+        problemTimerRef.current = window.setInterval(() => {
+          setProblemTimer(prev => {
+            if (prev <= 1) {
+              // Cuando llega a cero, lo manejamos como timeOut
+              if (problemTimerRef.current) {
+                clearInterval(problemTimerRef.current);
+                problemTimerRef.current = null;
+              }
+              
+              // Contamos como un intento usado
+              setCurrentAttempts(attempts => attempts + 1);
+              
+              // Mostramos mensaje de tiempo agotado
+              setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
+              setFeedbackColor("red");
+              
+              // Después de un momento, limpiamos el mensaje y reiniciamos el temporizador
+              setTimeout(() => {
+                setFeedbackMessage(null);
+                setFeedbackColor(null);
+                
+                // Verificamos si hemos alcanzado el máximo de intentos
+                if (settings.maxAttempts > 0 && currentAttempts + 1 >= settings.maxAttempts) {
+                  const nextProblem = problems[currentProblemIndex]; // El problema actual
+                  const correctAnswer = nextProblem.num1 - nextProblem.num2;
+                  
+                  // Mostrar la respuesta correcta
+                  setFeedbackMessage(`Respuesta correcta: ${correctAnswer}`);
+                  setFeedbackColor("green");
+                  
+                  // Guardar la respuesta como incorrecta
+                  const answer: UserAnswer = {
+                    problem: currentProblem,
+                    userAnswer: -2, // Usamos -2 para indicar tiempo agotado
+                    isCorrect: false
+                  };
+                  
+                  setAnswers(prev => [...prev, answer]);
+                  
+                  // Marcar como esperando para continuar
+                  setWaitingForContinue(true);
+                } else {
+                  // Si aún no hemos alcanzado el máximo de intentos, reiniciamos el temporizador
+                  setProblemTimer(settings.timeValue);
+                  problemTimerRef.current = window.setInterval(() => {
+                    setProblemTimer(p => p > 0 ? p - 1 : 0);
+                  }, 1000);
+                }
+              }, 1500);
+              
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
     } else {
       completeExercise();
     }
@@ -855,6 +938,29 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               {formatTime(timer)}
             </span>
           </span>
+          
+          {/* Temporizador del problema actual, solo visible si hay un límite configurado */}
+          {settings.timeValue > 0 && exerciseStarted && !waitingForContinue && !isReviewing && (
+            <span className={`mr-4 text-sm ${problemTimer < settings.timeValue * 0.25 ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+              <span className="inline-flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 mr-1 ${problemTimer < settings.timeValue * 0.25 ? 'text-red-500' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {formatTime(problemTimer)}
+              </span>
+            </span>
+          )}
           <Button
             variant="outline"
             size="sm"
