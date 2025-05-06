@@ -943,13 +943,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <div className="flex justify-center">
             <Button 
               variant="default"
-              className="bg-green-600 hover:bg-green-700 text-white py-3 w-[300px] text-center font-semibold flex justify-between items-center relative" 
+              className="bg-green-600 hover:bg-green-700 text-white py-2 w-[210px] text-center font-semibold flex justify-between items-center relative" 
               onClick={handleContinue}
             >
               <span className="absolute left-0 right-0 mx-auto">Continuar</span>
               
               <div className="flex items-center ml-auto">
-                <div className="flex items-center bg-gray-800 rounded px-2 py-1 h-[30px]">
+                <div className="flex items-center bg-black/40 rounded px-2 py-1 h-[28px]">
                   <Checkbox 
                     id="auto-continue" 
                     checked={autoContinue}
@@ -961,7 +961,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   />
                   <label
                     htmlFor="auto-continue"
-                    className="text-sm font-medium leading-none text-white ml-1"
+                    className="text-xs font-medium leading-none text-white ml-1"
                     onClick={(e) => {
                       e.stopPropagation(); // Evita que el botón se active al hacer clic en la etiqueta
                       setAutoContinue(!autoContinue);
