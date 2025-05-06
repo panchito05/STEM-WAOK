@@ -22,6 +22,10 @@ export interface GlobalSettings {
   fontSize: "small" | "medium" | "large";
   highContrast: boolean;
   language: string;
+  soundEffects: boolean;
+  immediateFeedback: boolean;
+  showSolutions: boolean;
+  extendedTime: boolean;
 }
 
 interface SettingsContextType {

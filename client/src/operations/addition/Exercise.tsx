@@ -9,6 +9,7 @@ import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -30,6 +31,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const { saveExerciseResult } = useProgress();
+  const { t } = useTranslations();
 
   // Generate problems when settings change or initially
   useEffect(() => {
@@ -87,7 +89,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const currentProblem = problems[currentProblemIndex];
     const correctAnswer = currentProblem.num1 + currentProblem.num2;
     
-    setFeedbackMessage(`The correct answer is = ${correctAnswer}`);
+    setFeedbackMessage(`${t('exercises.correctAnswerIs')}${correctAnswer}`);
     setFeedbackColor("green");
   };
 
@@ -137,7 +139,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Show feedback if enabled
     if (settings.showImmediateFeedback) {
-      setFeedbackMessage(isCorrect ? "Correct!" : "Incorrect!");
+      setFeedbackMessage(isCorrect ? t('exercises.correct') : t('exercises.incorrect'));
       setFeedbackColor(isCorrect ? "green" : "red");
       
       setTimeout(() => {
@@ -370,7 +372,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           onClick={moveToPreviousProblem}
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
-          Previous
+          {t('common.prev')}
         </Button>
         <TooltipProvider>
           <Tooltip>
@@ -381,12 +383,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 onClick={showAnswerWithExplanation}
               >
                 <Info className="mr-2 h-4 w-4" />
-                Show Answer
+                {t('exercises.showAnswer')}
               </Button>
             </TooltipTrigger>
             {!settings.showAnswerWithExplanation && (
               <TooltipContent>
-                <p>To activate this option, go to Settings</p>
+                <p>{t('tooltips.activateShowAnswer')}</p>
               </TooltipContent>
             )}
           </Tooltip>
@@ -394,11 +396,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <Button onClick={checkCurrentAnswer}>
           {exerciseStarted ? (
             <>
-              Check Answer
+              {t('exercises.check')}
               <Check className="ml-2 h-4 w-4" />
             </>
           ) : (
-            "Start Exercise"
+            t('exercises.start')
           )}
         </Button>
       </div>
