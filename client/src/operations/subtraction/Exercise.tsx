@@ -940,31 +940,34 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         {waitingForContinue ? (
           // Contenedor para el botón Continuar y el checkbox Auto
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center">
             {/* Botón Continuar con color verde */}
-            <Button 
-              variant="default"
-              className="bg-green-600 hover:bg-green-700 min-w-[120px]" 
-              onClick={handleContinue}
-            >
-              Continuar
-            </Button>
-            
-            {/* Contenedor del checkbox Auto como un elemento separado */}
-            <div className="flex items-center border border-gray-300 rounded bg-white px-2 py-1">
-              <Checkbox 
-                id="auto-continue" 
-                checked={autoContinue}
-                onCheckedChange={(checked) => {
-                  setAutoContinue(checked === true);
-                }}
-              />
-              <label
-                htmlFor="auto-continue"
-                className="text-sm font-medium leading-none ml-1"
+            <div className="flex w-full justify-between">
+              <Button 
+                variant="default"
+                className="bg-green-600 hover:bg-green-700 text-white py-3 w-[240px] text-center font-semibold" 
+                onClick={handleContinue}
               >
-                Auto
-              </label>
+                Continue
+              </Button>
+              
+              {/* Contenedor del checkbox Auto como un elemento separado */}
+              <div className="flex items-center bg-gray-800 rounded px-2 py-1 ml-3 h-[44px]">
+                <Checkbox 
+                  id="auto-continue" 
+                  checked={autoContinue}
+                  className="border-white" 
+                  onCheckedChange={(checked) => {
+                    setAutoContinue(checked === true);
+                  }}
+                />
+                <label
+                  htmlFor="auto-continue"
+                  className="text-sm font-medium leading-none text-white ml-1"
+                >
+                  Auto
+                </label>
+              </div>
             </div>
           </div>
         ) : (
