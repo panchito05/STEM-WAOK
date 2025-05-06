@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { generateMultiplicationProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/use-translations";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -23,6 +24,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [userAnswer, setUserAnswer] = useState("");
   const [answers, setAnswers] = useState<UserAnswer[]>([]);
   const [timer, setTimer] = useState(0);
+  const [problemTimer, setProblemTimer] = useState(0); // Temporizador para el problema actual
+  const [problemStartTime, setProblemStartTime] = useState(0); // Tiempo en que se inició el problema actual
   const [exerciseStarted, setExerciseStarted] = useState(false);
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -35,8 +38,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [rewardType, setRewardType] = useState<"medals" | "trophies" | "stars">("stars"); // Tipo de recompensa a mostrar
   const [rewardsShownIndices, setRewardsShownIndices] = useState<number[]>([]); // Índices donde se han mostrado recompensas
   const [totalRewardsShown, setTotalRewardsShown] = useState(0); // Contador total de recompensas mostradas
+  const [waitingForContinue, setWaitingForContinue] = useState(false); // Estado para esperar a que el usuario continúe
+  const [autoContinue, setAutoContinue] = useState(false); // Estado para continuar automáticamente
+  const [isReviewing, setIsReviewing] = useState(false); // Estado para modo revisión
+  const [showingReview, setShowingReview] = useState(false); // Estado para mostrar vista de revisión
+  const [reviewIndex, setReviewIndex] = useState(0); // Índice actual en modo revisión
+  const [problemAttempts, setProblemAttempts] = useState<number[]>([]); // Número de intentos por problema
+  const [problemTimes, setProblemTimes] = useState<number[]>([]); // Tiempo empleado por problema
+  
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
+  const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
+  const autoContinueTimeoutRef = useRef<number | null>(null); // Referencia para el timeout de auto continuar
   const { saveExerciseResult } = useProgress();
 
   // Generate problems when settings change or initially
@@ -44,7 +57,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     generateProblems();
   }, [settings]);
 
-  // Timer logic
+  // Timer logic for overall exercise
   useEffect(() => {
     if (exerciseStarted && !exerciseCompleted) {
       timerRef.current = window.setInterval(() => {
@@ -58,13 +71,119 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     };
   }, [exerciseStarted, exerciseCompleted]);
+  
+  // Timer logic for problem time limit
+  useEffect(() => {
+    // Solo iniciamos el temporizador si hay un límite de tiempo configurado (timeValue > 0)
+    // y si el ejercicio está activo y no estamos esperando que el usuario presione continuar
+    if (exerciseStarted && !exerciseCompleted && !waitingForContinue && settings.timeValue > 0) {
+      // Limpiamos el temporizador anterior si existe
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+        problemTimerRef.current = null;
+      }
+      
+      // Iniciamos un nuevo temporizador para el problema actual
+      setProblemTimer(settings.timeValue); // Reiniciamos el temporizador con el valor configurado
+      
+      problemTimerRef.current = window.setInterval(() => {
+        setProblemTimer(prev => {
+          if (prev <= 1) {
+            // Cuando llega a cero, lo manejamos como timeOut
+            if (problemTimerRef.current) {
+              clearInterval(problemTimerRef.current);
+              problemTimerRef.current = null;
+            }
+            
+            // Usamos la función handleTimeExpired para manejar cuando se agota el tiempo
+            handleTimeExpired();
+            
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+        problemTimerRef.current = null;
+      }
+    };
+  }, [exerciseStarted, exerciseCompleted, currentProblemIndex, waitingForContinue, settings.timeValue]);
+
+  // Función centralizada para manejar cuando se agota el tiempo
+  const handleTimeExpired = () => {
+    // Contamos como un intento usado
+    setCurrentAttempts(attempts => {
+      const newAttempts = attempts + 1;
+      console.log("Tiempo expirado: intento", newAttempts);
+      
+      // Mostramos mensaje de tiempo agotado
+      setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
+      setFeedbackColor("red");
+      
+      // Verificamos si hemos alcanzado el máximo de intentos
+      if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
+        const currentProblem = problems[currentProblemIndex];
+        const correctAnswer = currentProblem.num1 * currentProblem.num2;
+        
+        setTimeout(() => {
+          // Mostrar la respuesta correcta
+          setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+          setFeedbackColor("green");
+          
+          // Guardar la respuesta como incorrecta
+          const answer: UserAnswer = {
+            problem: currentProblem,
+            userAnswer: -2, // Usamos -2 para indicar tiempo agotado
+            isCorrect: false
+          };
+          
+          setAnswers(prev => [...prev, answer]);
+          
+          // Guardar el número de intentos para este problema
+          setProblemAttempts(prev => [...prev, newAttempts]);
+          
+          // Guardar el tiempo empleado en este problema
+          setProblemTimes(prev => [...prev, settings.timeValue]);
+          
+          // Marcar como esperando para continuar
+          setWaitingForContinue(true);
+          
+          // Si está habilitada la compensación, añadimos un problema adicional
+          if (settings.enableCompensation) {
+            const newProblem = generateMultiplicationProblem(settings.difficulty);
+            setProblems(prev => [...prev, newProblem]);
+          }
+        }, 1500);
+      } else {
+        // Si aún no hemos alcanzado el máximo de intentos, reiniciamos el temporizador
+        setTimeout(() => {
+          setFeedbackMessage(null);
+          setFeedbackColor(null);
+          
+          // Reiniciamos el temporizador
+          setProblemTimer(settings.timeValue);
+          if (!problemTimerRef.current && settings.timeValue > 0) {
+            problemTimerRef.current = window.setInterval(() => {
+              setProblemTimer(p => p > 0 ? p - 1 : 0);
+            }, 1000);
+          }
+        }, 1500);
+      }
+      
+      return newAttempts;
+    });
+  };
 
   // Focus input when current problem changes
   useEffect(() => {
-    if (inputRef.current) {
+    if (inputRef.current && !waitingForContinue) {
       inputRef.current.focus();
     }
-  }, [currentProblemIndex]);
+  }, [currentProblemIndex, waitingForContinue]);
 
   const generateProblems = () => {
     const newProblems: Problem[] = [];
