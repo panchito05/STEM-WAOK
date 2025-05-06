@@ -2,12 +2,11 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 interface DifficultyExampleProps {
   level: string;
-  levelNumber: number;
   examples: string[];
   active?: boolean;
 }
 
-function DifficultyExample({ level, levelNumber, examples, active = false }: DifficultyExampleProps) {
+function DifficultyExample({ level, examples, active = false }: DifficultyExampleProps) {
   // Color para la tarjeta activa (seleccionada) y no activa
   const activeClass = active 
     ? "bg-blue-900 border-blue-700 text-white" 
@@ -16,7 +15,7 @@ function DifficultyExample({ level, levelNumber, examples, active = false }: Dif
   return (
     <Card className={`w-full border border-gray-700 ${activeClass} transition-colors`}>
       <CardContent className="p-4">
-        <CardTitle className="text-lg font-medium mb-2">Level {levelNumber} {levelNumber === 1 ? "(Initial)" : ""}</CardTitle>
+        <CardTitle className="text-lg font-medium mb-2">{level}</CardTitle>
         <div className="space-y-1 mt-2">
           {examples.map((example, idx) => (
             <p key={idx} className="font-mono text-sm">{example}</p>
@@ -63,33 +62,29 @@ export default function DifficultyExamples({ operation = "addition" }: { operati
   const selectedOperation = operation in examples ? operation : "addition";
   const operationExamples = examples[selectedOperation as keyof typeof examples];
 
-  // Mapeo de niveles de dificultad a números de nivel (para coincidor con la imagen de ejemplo)
-  const difficultyToLevel = {
-    beginner: 1,
-    elementary: 2,
-    intermediate: 3,
-    advanced: 4,
-    expert: 5
-  };
-
   return (
     <div className="w-full">
       <h3 className="text-xl font-bold mb-4">Difficulty Examples</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <DifficultyExample 
-          level="Beginner" 
-          levelNumber={difficultyToLevel.beginner}
+          level="Beginner"
           examples={operationExamples.beginner} 
           active={true} 
         />
         <DifficultyExample 
-          level="Intermediate" 
-          levelNumber={difficultyToLevel.intermediate} 
+          level="Elementary"
+          examples={operationExamples.elementary} 
+        />
+        <DifficultyExample 
+          level="Intermediate"
           examples={operationExamples.intermediate} 
         />
         <DifficultyExample 
-          level="Expert" 
-          levelNumber={difficultyToLevel.expert} 
+          level="Advanced"
+          examples={operationExamples.advanced} 
+        />
+        <DifficultyExample 
+          level="Expert"
           examples={operationExamples.expert} 
         />
       </div>
