@@ -379,16 +379,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <ChevronLeft className="mr-2 h-4 w-4" />
           Previous
         </Button>
-        {settings.showAnswerWithExplanation && showHelpButton && (
-          <Button 
-            variant="outline" 
-            onClick={showAnswerWithExplanation}
-            disabled={showingExplanation}
-          >
-            <Info className="mr-2 h-4 w-4" />
-            Show Help
-          </Button>
-        )}
+        <Button 
+          variant="outline" 
+          onClick={showAnswerWithExplanation}
+        >
+          <Info className="mr-2 h-4 w-4" />
+          Show Answer
+        </Button>
         <Button onClick={checkCurrentAnswer}>
           {exerciseStarted ? (
             <>

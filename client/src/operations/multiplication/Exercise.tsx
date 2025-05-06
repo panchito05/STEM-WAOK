@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { generateMultiplicationProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -71,6 +71,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setExerciseCompleted(false);
     setFeedbackMessage(null);
     setFeedbackColor(null);
+  };
+  
+  const showAnswerWithExplanation = () => {
+    const currentProblem = problems[currentProblemIndex];
+    const correctAnswer = currentProblem.num1 * currentProblem.num2;
+    
+    setFeedbackMessage(`The correct answer is ${correctAnswer}. ${currentProblem.num1} × ${currentProblem.num2} = ${correctAnswer}`);
+    setFeedbackColor("green");
   };
 
   const startExercise = () => {
@@ -343,6 +351,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
           Previous
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={showAnswerWithExplanation}
+        >
+          <Info className="mr-2 h-4 w-4" />
+          Show Answer
         </Button>
         <Button onClick={checkCurrentAnswer}>
           {exerciseStarted ? (
