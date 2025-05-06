@@ -21,6 +21,7 @@ interface ModuleState {
   toggleShowOnlyFavorites: () => void;
   toggleShowHidden: () => void;
   resetModuleOrder: () => void;
+  resetHiddenModules: () => void;
 }
 
 export const useModuleStore = create<ModuleState>()(
@@ -68,6 +69,9 @@ export const useModuleStore = create<ModuleState>()(
       
       resetModuleOrder: () =>
         set({ customModuleOrder: operationModules.map(module => module.id) }),
+        
+      resetHiddenModules: () =>
+        set({ hiddenModules: [] }),
     }),
     {
       name: 'math-waok-module-storage',

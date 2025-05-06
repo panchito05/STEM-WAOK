@@ -11,7 +11,8 @@ export default function ModuleList() {
     favoriteModules, 
     hiddenModules, 
     showOnlyFavorites,
-    showHidden 
+    showHidden,
+    resetHiddenModules
   } = useModuleStore();
 
   const filteredModules = useMemo(() => {
@@ -58,8 +59,11 @@ export default function ModuleList() {
       modules = modules.filter(module => favoriteModules.includes(module.id));
     }
 
-    // Filter out hidden modules unless we're showing them
-    if (!showHidden) {
+    // If "Show Hidden" is active, only display hidden modules
+    if (showHidden) {
+      modules = modules.filter(module => hiddenModules.includes(module.id));
+    } else {
+      // Otherwise, filter out hidden modules
       modules = modules.filter(module => !hiddenModules.includes(module.id));
     }
 
@@ -72,6 +76,26 @@ export default function ModuleList() {
         searchQuery={searchQuery} 
         setSearchQuery={setSearchQuery} 
       />
+      
+      {showHidden && hiddenModules.length > 0 && (
+        <div className="mb-6 flex justify-center">
+          <button
+            onClick={resetHiddenModules}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-5 w-5" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Restaurar Todos los Módulos
+          </button>
+        </div>
+      )}
       
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {filteredModules.map((module, index) => (
@@ -89,7 +113,10 @@ export default function ModuleList() {
           <p className="mt-1 text-sm text-gray-500">
             {showOnlyFavorites 
               ? "You don't have any favorites yet. Add some by clicking the star icon."
-              : "Try adjusting your filters or search query."}
+              : showHidden
+                ? "No hidden modules. You can hide modules using the 'Hide' button on each card."
+                : "Try adjusting your filters or search query."
+            }
           </p>
         </div>
       )}

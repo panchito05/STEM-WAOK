@@ -7,7 +7,8 @@ import { Module } from "@/utils/operationComponents";
 import { 
   GripVertical, MoreVertical, Star, Plus, Minus, X, 
   DivideIcon, PieChart, BookOpen, Hash, Calculator, 
-  ArrowLeftRight, Square, Percent, Triangle, LucideIcon
+  ArrowLeftRight, Square, Percent, Triangle, LucideIcon,
+  Eye, EyeOff
 } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -30,10 +31,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     toggleFavorite, 
     toggleHidden, 
     moveModule,
-    favoriteModules
+    favoriteModules,
+    hiddenModules
   } = useModuleStore();
 
   const isFavorite = favoriteModules.includes(module.id);
+  const isHidden = hiddenModules.includes(module.id);
 
   const [{ isDragging }, drag] = useDragItem(() => ({
     type: "MODULE_CARD",
@@ -162,7 +165,19 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => toggleHidden(module.id)}>
-                  Hide module
+                  <div className="flex items-center">
+                    {isHidden ? (
+                      <>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Restaurar módulo
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-4 w-4 mr-2" />
+                        Ocultar módulo
+                      </>
+                    )}
+                  </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -200,6 +215,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
         ${isDragging ? "opacity-50" : "opacity-100"}
         ${module.comingSoon ? "border-2 border-dashed border-gray-300" : ""}
         ${isFavorite ? "ring-2 ring-yellow-400" : ""}
+        ${isHidden ? "ring-2 ring-purple-400 border-purple-200" : ""}
         overflow-hidden
         transition-all
         ${isFavorite ? "transform -translate-y-1" : ""}
@@ -209,6 +225,11 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       {isFavorite && (
         <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1 shadow-md">
           <Star className="h-4 w-4 text-white fill-current" />
+        </div>
+      )}
+      {isHidden && (
+        <div className="absolute -top-2 -left-2 bg-purple-500 rounded-full p-1 shadow-md">
+          <EyeOff className="h-4 w-4 text-white" />
         </div>
       )}
       {cardContent}
