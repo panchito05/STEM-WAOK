@@ -43,6 +43,10 @@ const defaultGlobalSettings: GlobalSettings = {
   fontSize: "medium",
   highContrast: false,
   language: "en",
+  soundEffects: true,
+  immediateFeedback: true,
+  showSolutions: true,
+  extendedTime: false,
 };
 
 const defaultModuleSettings: ModuleSettings = {

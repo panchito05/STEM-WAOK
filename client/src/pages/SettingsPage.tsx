@@ -9,9 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertTriangle } from "lucide-react";
+import { useTranslations } from "@/hooks/use-translations";
 
 export default function SettingsPage() {
   const { globalSettings, updateGlobalSettings, resetAllSettings } = useSettings();
+  const { t } = useTranslations();
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -37,25 +39,25 @@ export default function SettingsPage() {
       </Helmet>
       
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('common.settings')}</h1>
         
         <Tabs defaultValue="general">
           <TabsList className="mb-6">
-            <TabsTrigger value="general">General Settings</TabsTrigger>
-            <TabsTrigger value="appearance">Appearance</TabsTrigger>
-            <TabsTrigger value="accessibility">Accessibility</TabsTrigger>
+            <TabsTrigger value="general">{t('settings.general')}</TabsTrigger>
+            <TabsTrigger value="appearance">{t('settings.appearance')}</TabsTrigger>
+            <TabsTrigger value="accessibility">{t('settings.accessibility')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="general">
             <Card>
               <CardHeader>
-                <CardTitle>General Settings</CardTitle>
+                <CardTitle>{t('settings.general')}</CardTitle>
                 <CardDescription>Configure general application settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="sound-effects">Sound Effects</Label>
+                    <Label htmlFor="sound-effects">{t('settings.soundEffects')}</Label>
                     <p className="text-sm text-gray-500">Enable sound effects for interactions</p>
                   </div>
                   <Switch
@@ -68,7 +70,7 @@ export default function SettingsPage() {
                 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="immediate-feedback">Immediate Feedback</Label>
+                    <Label htmlFor="immediate-feedback">{t('settings.immediateFeedback')}</Label>
                     <p className="text-sm text-gray-500">Show feedback immediately after answering</p>
                   </div>
                   <Switch
@@ -81,8 +83,8 @@ export default function SettingsPage() {
                 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="language">Language</Label>
-                    <p className="text-sm text-gray-500">Select application language</p>
+                    <Label htmlFor="language">{t('settings.language')}</Label>
+                    <p className="text-sm text-gray-500">{t('settings.selectLanguage')}</p>
                   </div>
                   <Select
                     value={globalSettings.language}
@@ -90,7 +92,7 @@ export default function SettingsPage() {
                     disabled={isSaving}
                   >
                     <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select language" />
+                      <SelectValue placeholder={t('settings.selectLanguage')} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="en">English</SelectItem>
@@ -105,13 +107,13 @@ export default function SettingsPage() {
           <TabsContent value="appearance">
             <Card>
               <CardHeader>
-                <CardTitle>Appearance Settings</CardTitle>
+                <CardTitle>{t('settings.appearance')}</CardTitle>
                 <CardDescription>Customize the appearance of the application</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="dark-mode">Dark Mode</Label>
+                    <Label htmlFor="dark-mode">{t('settings.darkMode')}</Label>
                     <p className="text-sm text-gray-500">Enable dark mode for the application</p>
                   </div>
                   <Switch
@@ -201,7 +203,7 @@ export default function SettingsPage() {
             <Alert variant="destructive" className="mb-4">
               <AlertTriangle className="h-4 w-4 mr-2" />
               <AlertDescription className="flex items-center justify-between">
-                <span>This will reset all settings to default values. Are you sure?</span>
+                <span>{t('settings.resetConfirmation')}</span>
                 <div className="flex space-x-2">
                   <Button 
                     variant="outline" 
@@ -209,7 +211,7 @@ export default function SettingsPage() {
                     onClick={() => setShowResetConfirm(false)}
                     disabled={isResetting}
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </Button>
                   <Button 
                     variant="destructive" 
@@ -223,7 +225,7 @@ export default function SettingsPage() {
                         Resetting...
                       </>
                     ) : (
-                      "Confirm Reset"
+                      t('common.confirm')
                     )}
                   </Button>
                 </div>
@@ -235,7 +237,7 @@ export default function SettingsPage() {
               onClick={() => setShowResetConfirm(true)}
               disabled={isSaving || isResetting}
             >
-              Reset to Default Settings
+              {t('settings.resetToDefault')}
             </Button>
           )}
         </div>
