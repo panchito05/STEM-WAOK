@@ -197,7 +197,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               Start
             </Button>
           ) : (
-            <Link href={`/operations/${module.id}`}>
+            <Link href={`/operation/${module.id}`}>
               <Button variant="default" className="text-white">
                 Start
               </Button>

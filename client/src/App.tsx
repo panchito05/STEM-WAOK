@@ -54,7 +54,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/operations/:operation" component={SettingsWrappedOperation} />
+      <Route path="/operation/:operation" component={SettingsWrappedOperation} />
       <Route path="/progress" component={ProtectedRoute(SettingsWrappedProgressPage)} />
       <Route path="/settings" component={ProtectedRoute(SettingsWrappedSettingsPage)} />
       <Route path="/profile" component={ProtectedRoute(SettingsWrappedProfilePage)} />

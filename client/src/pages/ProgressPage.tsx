@@ -282,7 +282,7 @@ export default function ProgressPage() {
                               </div>
                             </div>
                             <Button variant="outline" className="w-full" asChild>
-                              <a href={`/operations/${module.id}`}>Practice Again</a>
+                              <a href={`/operation/${module.id}`}>Practice Again</a>
                             </Button>
                           </div>
                         </CardContent>
