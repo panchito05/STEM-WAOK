@@ -4,6 +4,7 @@ import { ModuleSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { generateSubtractionProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
@@ -44,6 +45,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [problemTimes, setProblemTimes] = useState<number[]>([]); // Tiempos para cada problema
   const [problemStartTime, setProblemStartTime] = useState(0); // Tiempo de inicio del problema actual
   const [problemAttempts, setProblemAttempts] = useState<number[]>([]); // Intentos para cada problema
+  const [autoContinue, setAutoContinue] = useState(false); // Controla si continuamos automáticamente al siguiente problema
   
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
@@ -83,6 +85,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       inputRef.current.focus();
     }
   }, [currentProblemIndex]);
+  
+  // Efecto para manejar continuación automática
+  useEffect(() => {
+    if (autoContinue && waitingForContinue) {
+      // Añadimos un pequeño retraso para que el usuario vea el resultado
+      const autoTimer = setTimeout(() => {
+        handleContinue();
+      }, 1500);
+      
+      return () => clearTimeout(autoTimer);
+    }
+  }, [autoContinue, waitingForContinue]);
 
   const generateProblems = () => {
     const newProblems: Problem[] = [];
@@ -114,6 +128,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setProblemTimes([]);
     setProblemStartTime(0);
     setProblemAttempts([]);
+    setAutoContinue(false);
   };
 
   const showAnswerWithExplanation = () => {
@@ -924,15 +939,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </TooltipProvider>
         
         {waitingForContinue ? (
-          // Botón Continuar con color verde
-          <Button 
-            variant="default"
-            className="bg-green-600 hover:bg-green-700" 
-            onClick={handleContinue}
-          >
-            Continuar
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
+          // Contenedor para el botón Continuar y el checkbox Auto
+          <div className="flex items-center space-x-2">
+            {/* Checkbox para Auto Continuar */}
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="auto-continue" 
+                checked={autoContinue}
+                onCheckedChange={(checked) => {
+                  setAutoContinue(checked === true);
+                }}
+              />
+              <label
+                htmlFor="auto-continue"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Auto
+              </label>
+            </div>
+            
+            {/* Botón Continuar con color verde */}
+            <Button 
+              variant="default"
+              className="bg-green-600 hover:bg-green-700" 
+              onClick={handleContinue}
+            >
+              Continuar
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         ) : (
           // Botón Check Answer
           <Button onClick={checkCurrentAnswer}>
