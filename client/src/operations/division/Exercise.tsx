@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { generateDivisionProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -71,6 +71,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setExerciseCompleted(false);
     setFeedbackMessage(null);
     setFeedbackColor(null);
+  };
+  
+  const showAnswerWithExplanation = () => {
+    const currentProblem = problems[currentProblemIndex];
+    const quotient = Math.floor(currentProblem.dividend / currentProblem.divisor);
+    const remainder = currentProblem.dividend % currentProblem.divisor;
+    
+    const answerText = remainder > 0 
+      ? `The correct answer is ${quotient}r${remainder}. ${currentProblem.dividend} ÷ ${currentProblem.divisor} = ${quotient} with remainder ${remainder}`
+      : `The correct answer is ${quotient}. ${currentProblem.dividend} ÷ ${currentProblem.divisor} = ${quotient}`;
+      
+    setFeedbackMessage(answerText);
+    setFeedbackColor("green");
   };
 
   const startExercise = () => {
@@ -378,6 +391,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
           Previous
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={showAnswerWithExplanation}
+        >
+          <Info className="mr-2 h-4 w-4" />
+          Show Answer
         </Button>
         <Button onClick={checkCurrentAnswer}>
           {exerciseStarted ? (
