@@ -247,7 +247,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             </div>
             <div className="flex items-center justify-between">
               <Label htmlFor="show-answer-explanation" className="cursor-pointer">
-                Show answer with explanation
+                Desactive Buttom Show answer with explanation for help Student
               </Label>
               <Switch
                 id="show-answer-explanation"
