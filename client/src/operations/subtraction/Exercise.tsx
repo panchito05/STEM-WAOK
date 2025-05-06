@@ -739,46 +739,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 problemTimerRef.current = null;
               }
               
-              // Contamos como un intento usado
-              setCurrentAttempts(attempts => attempts + 1);
-              
-              // Mostramos mensaje de tiempo agotado
-              setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
-              setFeedbackColor("red");
-              
-              // Después de un momento, limpiamos el mensaje y reiniciamos el temporizador
-              setTimeout(() => {
-                setFeedbackMessage(null);
-                setFeedbackColor(null);
-                
-                // Verificamos si hemos alcanzado el máximo de intentos
-                if (settings.maxAttempts > 0 && currentAttempts + 1 >= settings.maxAttempts) {
-                  const nextProblem = problems[currentProblemIndex]; // El problema actual
-                  const correctAnswer = nextProblem.num1 - nextProblem.num2;
-                  
-                  // Mostrar la respuesta correcta
-                  setFeedbackMessage(`Respuesta correcta: ${correctAnswer}`);
-                  setFeedbackColor("green");
-                  
-                  // Guardar la respuesta como incorrecta
-                  const answer: UserAnswer = {
-                    problem: currentProblem,
-                    userAnswer: -2, // Usamos -2 para indicar tiempo agotado
-                    isCorrect: false
-                  };
-                  
-                  setAnswers(prev => [...prev, answer]);
-                  
-                  // Marcar como esperando para continuar
-                  setWaitingForContinue(true);
-                } else {
-                  // Si aún no hemos alcanzado el máximo de intentos, reiniciamos el temporizador
-                  setProblemTimer(settings.timeValue);
-                  problemTimerRef.current = window.setInterval(() => {
-                    setProblemTimer(p => p > 0 ? p - 1 : 0);
-                  }, 1000);
-                }
-              }, 1500);
+              // Usamos la función handleTimeExpired para manejar cuando se agota el tiempo
+              handleTimeExpired();
               
               return 0;
             }
