@@ -263,16 +263,6 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label htmlFor="show-solution" className="cursor-pointer">
-                Show solution on incorrect answer
-              </Label>
-              <Switch
-                id="show-solution"
-                checked={localSettings.showSolution}
-                onCheckedChange={(checked) => handleUpdateSetting("showSolution", checked)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
               <Label htmlFor="show-answer-explanation" className="cursor-pointer">
                 Show answer with explanation
               </Label>

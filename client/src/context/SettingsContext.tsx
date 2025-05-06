@@ -10,7 +10,6 @@ export interface ModuleSettings {
   maxAttempts: number; // 0 para intentos ilimitados
   showImmediateFeedback: boolean;
   enableSoundEffects: boolean;
-  showSolution: boolean;
   showAnswerWithExplanation: boolean; // Mostrar respuesta con explicación
   
   // Campos adicionales para tipos específicos de módulos
@@ -50,7 +49,6 @@ const defaultModuleSettings: ModuleSettings = {
   maxAttempts: 3, // Por defecto, 3 intentos por problema
   showImmediateFeedback: true,
   enableSoundEffects: true,
-  showSolution: false,
   showAnswerWithExplanation: false, // Mostrar respuesta con explicación
 };
 
