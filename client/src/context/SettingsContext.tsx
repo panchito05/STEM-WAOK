@@ -3,7 +3,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export interface ModuleSettings {
-  difficulty: "beginner" | "intermediate" | "advanced";
+  difficulty: "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
   problemCount: number;
   timeLimit: "none" | "per-problem" | "total";
   timeValue: number;

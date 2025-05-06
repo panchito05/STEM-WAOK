@@ -58,12 +58,16 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           <div className="mt-2">
             <RadioGroup
               value={localSettings.difficulty}
-              onValueChange={(value) => handleUpdateSetting("difficulty", value as "beginner" | "intermediate" | "advanced")}
+              onValueChange={(value) => handleUpdateSetting("difficulty", value as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")}
             >
-              <div className="flex items-center space-x-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="beginner" id="beginner" />
                   <Label htmlFor="beginner">Beginner</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="elementary" id="elementary" />
+                  <Label htmlFor="elementary">Elementary</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="intermediate" id="intermediate" />
@@ -73,16 +77,26 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   <RadioGroupItem value="advanced" id="advanced" />
                   <Label htmlFor="advanced">Advanced</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="expert" id="expert" />
+                  <Label htmlFor="expert">Expert</Label>
+                </div>
               </div>
             </RadioGroup>
-            <p className="mt-1 text-sm text-gray-500">
-              <span className="font-medium">Beginner:</span> Single-digit subtraction with positive answers
+            <p className="mt-2 text-sm text-gray-500">
+              <span className="font-medium">Beginner:</span> Single-digit subtraction (9-1 to 9-9)
             </p>
             <p className="text-sm text-gray-500">
-              <span className="font-medium">Intermediate:</span> Two-digit subtraction without borrowing
+              <span className="font-medium">Elementary:</span> Two-digit - single-digit, no borrowing (25-3, 48-5)
             </p>
             <p className="text-sm text-gray-500">
-              <span className="font-medium">Advanced:</span> Two-digit subtraction with borrowing
+              <span className="font-medium">Intermediate:</span> Two-digit - two-digit, no borrowing (89-54, 76-21)
+            </p>
+            <p className="text-sm text-gray-500">
+              <span className="font-medium">Advanced:</span> Two-digit - two-digit with borrowing (52-38, 71-47)
+            </p>
+            <p className="text-sm text-gray-500">
+              <span className="font-medium">Expert:</span> Three-digit subtraction with multiple borrowing (524-276, 832-567)
             </p>
           </div>
         </div>
