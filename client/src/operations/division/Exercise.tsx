@@ -23,12 +23,32 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [userAnswer, setUserAnswer] = useState("");
   const [answers, setAnswers] = useState<UserAnswer[]>([]);
   const [timer, setTimer] = useState(0);
+  const [problemTimer, setProblemTimer] = useState(0); // Temporizador para el problema actual
+  const [problemStartTime, setProblemStartTime] = useState(0); // Tiempo en que se inició el problema actual
   const [exerciseStarted, setExerciseStarted] = useState(false);
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | null>(null);
+  const [showHelpButton, setShowHelpButton] = useState(false); // Control si mostramos el botón de ayuda
+  const [showingExplanation, setShowingExplanation] = useState(false); // Control si mostramos la explicación
+  const [currentAttempts, setCurrentAttempts] = useState(0); // Contador para intentos en el problema actual
+  const [showReward, setShowReward] = useState(false); // Estado para mostrar la recompensa
+  const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(0); // Contador para respuestas correctas consecutivas
+  const [rewardType, setRewardType] = useState<"medals" | "trophies" | "stars">("stars"); // Tipo de recompensa a mostrar
+  const [rewardsShownIndices, setRewardsShownIndices] = useState<number[]>([]); // Índices donde se han mostrado recompensas
+  const [totalRewardsShown, setTotalRewardsShown] = useState(0); // Contador total de recompensas mostradas
+  const [waitingForContinue, setWaitingForContinue] = useState(false); // Estado para esperar a que el usuario continúe
+  const [autoContinue, setAutoContinue] = useState(false); // Estado para continuar automáticamente
+  const [isReviewing, setIsReviewing] = useState(false); // Estado para modo revisión
+  const [showingReview, setShowingReview] = useState(false); // Estado para mostrar vista de revisión
+  const [reviewIndex, setReviewIndex] = useState(0); // Índice actual en modo revisión
+  const [problemAttempts, setProblemAttempts] = useState<number[]>([]); // Número de intentos por problema
+  const [problemTimes, setProblemTimes] = useState<number[]>([]); // Tiempo empleado por problema
+  
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
+  const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
+  const autoContinueTimeoutRef = useRef<number | null>(null); // Referencia para el timeout de auto continuar
   const { saveExerciseResult } = useProgress();
 
   // Generate problems when settings change or initially
@@ -70,10 +90,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setUserAnswer("");
     setAnswers([]);
     setTimer(0);
+    setProblemTimer(settings.timeValue); // Reiniciar el temporizador por problema
+    setProblemStartTime(0);
     setExerciseStarted(false);
     setExerciseCompleted(false);
     setFeedbackMessage(null);
     setFeedbackColor(null);
+    setCurrentAttempts(0);
+    setConsecutiveCorrectAnswers(0);
+    setShowReward(false);
+    setRewardsShownIndices([]);
+    setTotalRewardsShown(0);
+    setWaitingForContinue(false);
+    setAutoContinue(false);
+    setShowingReview(false);
+    setReviewIndex(0);
+    setProblemAttempts([]);
+    setProblemTimes([]);
   };
   
   const showAnswerWithExplanation = () => {
