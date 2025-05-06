@@ -889,62 +889,62 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       </div>
 
       <div className="flex justify-between">
+        <Button
+          variant="outline"
+          // Habilitar el botón solo cuando haya un problema anterior y no estemos esperando "Continuar"
+          disabled={currentProblemIndex === 0}
+          onClick={moveToPreviousProblem}
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          {t('common.prev')}
+        </Button>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                disabled={!settings.showAnswerWithExplanation || (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts)}
+                onClick={showAnswerWithExplanation}
+              >
+                <Info className="mr-2 h-4 w-4" />
+                {t('exercises.showAnswer')}
+              </Button>
+            </TooltipTrigger>
+            {!settings.showAnswerWithExplanation ? (
+              <TooltipContent>
+                <p>{t('tooltips.activateShowAnswer')}</p>
+              </TooltipContent>
+            ) : settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts ? (
+              <TooltipContent>
+                <p>Debes agotar los {settings.maxAttempts} intentos primero</p>
+              </TooltipContent>
+            ) : null}
+          </Tooltip>
+        </TooltipProvider>
+        
         {waitingForContinue ? (
-          // Mostrar botón de continuar cuando estamos esperando
+          // Botón Continuar con color verde
           <Button 
             variant="default"
-            className="mx-auto animate-pulse py-6 px-8 text-lg font-semibold"
+            className="bg-green-600 hover:bg-green-700" 
             onClick={handleContinue}
           >
             Continuar
-            <ChevronRight className="ml-2 h-5 w-5" />
+            <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          // Mostrar botones normales
-          <>
-            <Button
-              variant="outline"
-              // Habilitar el botón solo cuando haya un problema anterior y no estemos esperando "Continuar"
-              disabled={currentProblemIndex === 0 || waitingForContinue}
-              onClick={moveToPreviousProblem}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              {t('common.prev')}
-            </Button>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    disabled={!settings.showAnswerWithExplanation || (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts)}
-                    onClick={showAnswerWithExplanation}
-                  >
-                    <Info className="mr-2 h-4 w-4" />
-                    {t('exercises.showAnswer')}
-                  </Button>
-                </TooltipTrigger>
-                {!settings.showAnswerWithExplanation ? (
-                  <TooltipContent>
-                    <p>{t('tooltips.activateShowAnswer')}</p>
-                  </TooltipContent>
-                ) : settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts ? (
-                  <TooltipContent>
-                    <p>Debes agotar los {settings.maxAttempts} intentos primero</p>
-                  </TooltipContent>
-                ) : null}
-              </Tooltip>
-            </TooltipProvider>
-            <Button onClick={checkCurrentAnswer}>
-              {exerciseStarted ? (
-                <>
-                  {t('exercises.check')}
-                  <Check className="ml-2 h-4 w-4" />
-                </>
-              ) : (
-                <>{t('exercises.start')}</>
-              )}
-            </Button>
-          </>
+          // Botón Check Answer
+          <Button onClick={checkCurrentAnswer}>
+            {exerciseStarted ? (
+              <>
+                {t('exercises.check')}
+                <Check className="ml-2 h-4 w-4" />
+              </>
+            ) : (
+              <>{t('exercises.start')}</>
+            )}
+          </Button>
         )}
       </div>
     </div>
