@@ -8,6 +8,8 @@ import { generateDivisionProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -15,6 +17,7 @@ interface ExerciseProps {
 }
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
+  const { t } = useTranslations();
   const [problems, setProblems] = useState<Problem[]>([]);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
@@ -79,8 +82,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const remainder = currentProblem.dividend % currentProblem.divisor;
     
     const answerText = remainder > 0 
-      ? `The correct answer is = ${quotient}r${remainder}`
-      : `The correct answer is = ${quotient}`;
+      ? `${t('exercises.correctAnswerIs')} ${quotient}r${remainder}`
+      : `${t('exercises.correctAnswerIs')} ${quotient}`;
       
     setFeedbackMessage(answerText);
     setFeedbackColor("green");
@@ -148,7 +151,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Show feedback if enabled
     if (settings.showImmediateFeedback) {
-      setFeedbackMessage(isCorrect ? "Correct!" : "Incorrect!");
+      setFeedbackMessage(isCorrect ? t('exercises.correct') : t('exercises.incorrect'));
       setFeedbackColor(isCorrect ? "green" : "red");
       
       setTimeout(() => {
@@ -214,7 +217,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   if (problems.length === 0) {
     return (
       <div className="text-center py-8">
-        <p>Loading problems...</p>
+        <p>{t('exercises.loading')}</p>
       </div>
     );
   }
@@ -223,9 +226,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return (
       <div className="px-4 py-5 sm:p-6">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Exercise Completed!</h2>
-          <p className="text-gray-600">Your score: {score}/{problems.length}</p>
-          <p className="text-gray-600">Time taken: {formatTime(timer)}</p>
+          <h2 className="text-2xl font-bold text-gray-900">{t('exercises.completed')}</h2>
+          <p className="text-gray-600">{t('exercises.score')}: {score}/{problems.length}</p>
+          <p className="text-gray-600">{t('exercises.timeTaken')}: {formatTime(timer)}</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
@@ -252,14 +255,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button onClick={generateProblems}>
-            Try Again
+            {t('exercises.tryAgain')}
           </Button>
           <Button variant="outline" onClick={onOpenSettings}>
             <Settings className="mr-2 h-4 w-4" />
-            Settings
+            {t('common.settings')}
           </Button>
           <Button variant="outline" asChild>
-            <a href="/">Return Home</a>
+            <a href="/">{t('exercises.returnHome')}</a>
           </Button>
         </div>
       </div>
@@ -299,7 +302,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             onClick={onOpenSettings}
           >
             <Cog className="mr-2 h-4 w-4" />
-            Settings
+            {t('common.settings')}
           </Button>
         </div>
       </div>
@@ -390,24 +393,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           onClick={moveToPreviousProblem}
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
-          Previous
+          {t('common.prev')}
         </Button>
-        <Button 
-          variant="outline" 
-          disabled={!settings.showAnswerWithExplanation}
-          onClick={showAnswerWithExplanation}
-        >
-          <Info className="mr-2 h-4 w-4" />
-          Show Answer
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                disabled={!settings.showAnswerWithExplanation}
+                onClick={showAnswerWithExplanation}
+              >
+                <Info className="mr-2 h-4 w-4" />
+                {t('exercises.showAnswer')}
+              </Button>
+            </TooltipTrigger>
+            {!settings.showAnswerWithExplanation && (
+              <TooltipContent>
+                <p>{t('tooltips.activateShowAnswer')}</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
         <Button onClick={checkCurrentAnswer}>
           {exerciseStarted ? (
             <>
-              Check Answer
+              {t('exercises.check')}
               <Check className="ml-2 h-4 w-4" />
             </>
           ) : (
-            "Start Exercise"
+            <>{t('exercises.start')}</>
           )}
         </Button>
       </div>
