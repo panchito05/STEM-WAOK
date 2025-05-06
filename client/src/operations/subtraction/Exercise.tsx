@@ -39,6 +39,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Nuevos estados para las funcionalidades solicitadas
   const [waitingForContinue, setWaitingForContinue] = useState(false); // Controla si estamos esperando a que el usuario haga clic en "Continuar"
   const [showingReview, setShowingReview] = useState(false); // Controla si estamos mostrando la pantalla de revisión
+  const [isReviewing, setIsReviewing] = useState(false); // Controla si estamos revisando un problema anterior
   const [reviewIndex, setReviewIndex] = useState(0); // Índice del problema que estamos revisando
   const [problemTimes, setProblemTimes] = useState<number[]>([]); // Tiempos para cada problema
   const [problemStartTime, setProblemStartTime] = useState(0); // Tiempo de inicio del problema actual
@@ -412,6 +413,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const moveToNextProblem = () => {
+    // Si estamos en modo revisión, salimos del modo primero
+    if (isReviewing) {
+      setIsReviewing(false);
+    }
+    
     if (currentProblemIndex < problems.length - 1) {
       setCurrentProblemIndex(prev => prev + 1);
       setUserAnswer("");
@@ -426,44 +432,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const moveToPreviousProblem = () => {
     if (currentProblemIndex > 0) {
-      // Eliminar la respuesta anterior para permitir un nuevo intento
-      setAnswers(prev => {
-        const newAnswers = [...prev];
-        if (newAnswers.length >= currentProblemIndex) {
-          // Eliminar la última respuesta que corresponde al problema actual
-          newAnswers.pop();
-        }
-        return newAnswers;
-      });
-      
-      // Remover también el tiempo y los intentos del problema actual
-      setProblemTimes(prev => {
-        const newTimes = [...prev];
-        if (newTimes.length >= currentProblemIndex) {
-          newTimes.pop();
-        }
-        return newTimes;
-      });
-      
-      setProblemAttempts(prev => {
-        const newAttempts = [...prev];
-        if (newAttempts.length >= currentProblemIndex) {
-          newAttempts.pop();
-        }
-        return newAttempts;
-      });
+      // Marcar que estamos en modo revisión
+      setIsReviewing(true);
       
       // Ir al problema anterior
       setCurrentProblemIndex(prev => prev - 1);
-      // Limpiar la entrada para permitir una nueva respuesta
-      setUserAnswer("");
-      setShowingExplanation(false);
-      setFeedbackMessage(null);
-      setFeedbackColor(null);
-      setCurrentAttempts(0); // Resetear intentos para este problema
       
-      // También resetear el temporizador del problema
-      setProblemStartTime(timer);
+      // Obtener la respuesta del problema anterior
+      const previousAnswer = answers[currentProblemIndex - 1];
+      if (previousAnswer) {
+        setUserAnswer(previousAnswer.userAnswer.toString());
+        
+        // Mostrar retroalimentación apropiada
+        if (previousAnswer.isCorrect) {
+          setFeedbackMessage(t('exercises.correct'));
+          setFeedbackColor("green");
+        } else {
+          setFeedbackMessage(t('exercises.incorrect') + ". " + 
+                            t('exercises.correctAnswerIs') + " " + 
+                            (previousAnswer.problem.num1 - previousAnswer.problem.num2));
+          setFeedbackColor("red");
+        }
+      }
     }
   };
 
@@ -757,28 +747,61 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
       <div className="p-6 bg-gray-50 rounded-lg mb-6">
         <div className="text-center">
-          <div className={`text-3xl font-bold mb-6 flex justify-center items-baseline ${feedbackMessage ? (feedbackColor === "green" ? "text-green-600" : "text-red-600") : ""}`}>
-            <span className="text-right w-16">{currentProblem.num1}</span>
-            <span className="mx-4">-</span>
-            <span className="text-right w-16">{currentProblem.num2}</span>
-            <span className="mx-4">=</span>
-            <div className="border-b-2 border-gray-400 w-16 relative">
-              <Input
-                type="text"
-                ref={inputRef}
-                className="w-full text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2"
-                value={userAnswer}
-                onChange={handleInputChange}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    checkCurrentAnswer();
-                  }
-                }}
-                pattern="-?[0-9]*"
-                inputMode="numeric"
-              />
+          {isReviewing ? (
+            // Modo de revisión: Mostrar la respuesta sin posibilidad de cambiar
+            <div className="mb-4">
+              <div className="text-center mb-2">
+                <div className="text-gray-600 text-sm font-medium mb-2">Revisando Problema {currentProblemIndex + 1}</div>
+              </div>
+              <div className={`text-3xl font-bold mb-6 flex justify-center items-baseline`}>
+                <span className="text-right w-16">{currentProblem.num1}</span>
+                <span className="mx-4">-</span>
+                <span className="text-right w-16">{currentProblem.num2}</span>
+                <span className="mx-4">=</span>
+                <span className="w-16 text-right">
+                  <span className={feedbackColor === "green" ? "text-green-600" : "text-red-600"}>
+                    {userAnswer}
+                  </span>
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center my-4 px-4 text-sm">
+                <div className="text-gray-600">
+                  <div>Nivel: {settings.difficulty}</div>
+                  <div>Intentos: {problemAttempts[currentProblemIndex] || 0}</div>
+                </div>
+                <div className="text-gray-600">
+                  <div>Tiempo: {formatTime(problemTimes[currentProblemIndex] || 0)}</div>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            // Modo normal: Mostrar el problema con posibilidad de responder
+            <div className={`text-3xl font-bold mb-6 flex justify-center items-baseline ${feedbackMessage ? (feedbackColor === "green" ? "text-green-600" : "text-red-600") : ""}`}>
+              <span className="text-right w-16">{currentProblem.num1}</span>
+              <span className="mx-4">-</span>
+              <span className="text-right w-16">{currentProblem.num2}</span>
+              <span className="mx-4">=</span>
+              <div className="border-b-2 border-gray-400 w-16 relative">
+                <Input
+                  type="text"
+                  ref={inputRef}
+                  className="w-full text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2"
+                  value={userAnswer}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      checkCurrentAnswer();
+                    }
+                  }}
+                  pattern="-?[0-9]*"
+                  inputMode="numeric"
+                  readOnly={isReviewing}
+                />
+              </div>
+            </div>
+          )}
+          
           {feedbackMessage && (
             <div className={`text-lg font-medium ${feedbackColor === "green" ? "text-green-600" : "text-red-600"}`}>
               {feedbackMessage}
@@ -824,42 +847,45 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         </div>
 
-        <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((num) => (
+        {/* No mostrar el teclado virtual en modo revisión */}
+        {!isReviewing && (
+          <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
+            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((num) => (
+              <button
+                key={num}
+                className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
+                onClick={() => handleKeyboardInput(num)}
+              >
+                {num}
+              </button>
+            ))}
             <button
-              key={num}
               className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
-              onClick={() => handleKeyboardInput(num)}
+              onClick={() => handleKeyboardInput("negative")}
             >
-              {num}
+              +/-
             </button>
-          ))}
-          <button
-            className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
-            onClick={() => handleKeyboardInput("negative")}
-          >
-            +/-
-          </button>
-          <button
-            className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
-            onClick={() => handleKeyboardInput("backspace")}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 mx-auto"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+            <button
+              className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
+              onClick={() => handleKeyboardInput("backspace")}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
-              />
-            </svg>
-          </button>
-        </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 mx-auto"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-between">
