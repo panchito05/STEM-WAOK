@@ -940,10 +940,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         {waitingForContinue ? (
           // Botón Continuar que incluye el checkbox Auto
-          <div className="w-full">
+          <div className="flex justify-center">
             <Button 
               variant="default"
-              className="bg-green-600 hover:bg-green-700 text-white py-3 w-full text-center font-semibold flex justify-between items-center relative" 
+              className="bg-green-600 hover:bg-green-700 text-white py-3 w-[300px] text-center font-semibold flex justify-between items-center relative" 
               onClick={handleContinue}
             >
               <span className="absolute left-0 right-0 mx-auto">Continuar</span>
