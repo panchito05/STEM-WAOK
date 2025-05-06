@@ -939,36 +939,39 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </TooltipProvider>
         
         {waitingForContinue ? (
-          // Contenedor para el botón Continuar y el checkbox Auto
-          <div className="flex items-center">
-            {/* Botón Continuar con color verde */}
-            <div className="flex w-full justify-between">
-              <Button 
-                variant="default"
-                className="bg-green-600 hover:bg-green-700 text-white py-3 w-[240px] text-center font-semibold" 
-                onClick={handleContinue}
-              >
-                Continue
-              </Button>
+          // Botón Continuar que incluye el checkbox Auto
+          <div className="w-full">
+            <Button 
+              variant="default"
+              className="bg-green-600 hover:bg-green-700 text-white py-3 w-full text-center font-semibold flex justify-between items-center relative" 
+              onClick={handleContinue}
+            >
+              <span className="absolute left-0 right-0 mx-auto">Continuar</span>
               
-              {/* Contenedor del checkbox Auto como un elemento separado */}
-              <div className="flex items-center bg-gray-800 rounded px-2 py-1 ml-3 h-[44px]">
-                <Checkbox 
-                  id="auto-continue" 
-                  checked={autoContinue}
-                  className="border-white" 
-                  onCheckedChange={(checked) => {
-                    setAutoContinue(checked === true);
-                  }}
-                />
-                <label
-                  htmlFor="auto-continue"
-                  className="text-sm font-medium leading-none text-white ml-1"
-                >
-                  Auto
-                </label>
+              <div className="flex items-center ml-auto">
+                <div className="flex items-center bg-gray-800 rounded px-2 py-1 h-[30px]">
+                  <Checkbox 
+                    id="auto-continue" 
+                    checked={autoContinue}
+                    className="border-white" 
+                    onCheckedChange={(checked) => {
+                      setAutoContinue(checked === true);
+                    }}
+                    onClick={(e) => e.stopPropagation()} // Evita que el botón se active al hacer clic en el checkbox
+                  />
+                  <label
+                    htmlFor="auto-continue"
+                    className="text-sm font-medium leading-none text-white ml-1"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Evita que el botón se active al hacer clic en la etiqueta
+                      setAutoContinue(!autoContinue);
+                    }}
+                  >
+                    Auto
+                  </label>
+                </div>
               </div>
-            </div>
+            </Button>
           </div>
         ) : (
           // Botón Check Answer
