@@ -28,6 +28,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | null>(null);
   const [showHelpButton, setShowHelpButton] = useState(false); // Control si mostramos el botón de ayuda
   const [showingExplanation, setShowingExplanation] = useState(false);
+  const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0); // Contador para respuestas incorrectas
+  const [revealedAnswersCount, setRevealedAnswersCount] = useState(0); // Contador para respuestas reveladas
+  const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.difficulty); // Dificultad adaptiva
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const { saveExerciseResult } = useProgress();
@@ -78,6 +81,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setFeedbackColor(null);
     setShowingExplanation(false);
     setShowHelpButton(false); // Reiniciamos el estado del botón de ayuda
+    setIncorrectAnswersCount(0); // Reiniciamos el contador de respuestas incorrectas
+    setRevealedAnswersCount(0); // Reiniciamos el contador de respuestas reveladas
+    setAdaptiveDifficulty(settings.difficulty); // Reiniciamos la dificultad adaptativa
   };
   
   const showAnswerWithExplanation = () => {
@@ -91,6 +97,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     setFeedbackMessage(`${t('exercises.correctAnswerIs')}${correctAnswer}`);
     setFeedbackColor("green");
+
+    // Incrementar contador de respuestas reveladas si está habilitada la compensación
+    if (settings.enableCompensation) {
+      setRevealedAnswersCount(prev => prev + 1);
+    }
   };
 
   const startExercise = () => {
@@ -136,6 +147,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     };
     
     setAnswers(prev => [...prev, answer]);
+    
+    // Incrementar contador de respuestas incorrectas si está habilitada la compensación
+    if (!isCorrect && settings.enableCompensation) {
+      setIncorrectAnswersCount(prev => prev + 1);
+    }
+    
+    // Ajustar dificultad adaptativamente si está habilitada esa opción
+    if (settings.enableAdaptiveDifficulty) {
+      // Si lleva 3 respuestas correctas seguidas, aumentar dificultad
+      const lastThreeAnswers = [...answers, answer].slice(-3);
+      if (lastThreeAnswers.length === 3 && lastThreeAnswers.every(a => a.isCorrect)) {
+        // Aumentar dificultad (si no está ya en el nivel máximo)
+        const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
+        const currentIndex = difficulties.indexOf(adaptiveDifficulty);
+        if (currentIndex < difficulties.length - 1) {
+          setAdaptiveDifficulty(difficulties[currentIndex + 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert");
+        }
+      }
+      
+      // Si lleva 2 respuestas incorrectas seguidas, disminuir dificultad
+      const lastTwoAnswers = [...answers, answer].slice(-2);
+      if (lastTwoAnswers.length === 2 && lastTwoAnswers.every(a => !a.isCorrect)) {
+        // Disminuir dificultad (si no está ya en el nivel mínimo)
+        const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
+        const currentIndex = difficulties.indexOf(adaptiveDifficulty);
+        if (currentIndex > 0) {
+          setAdaptiveDifficulty(difficulties[currentIndex - 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert");
+        }
+      }
+    }
     
     // Show feedback if enabled
     if (settings.showImmediateFeedback) {
