@@ -1,0 +1,105 @@
+Application Overview
+
+The application, named "Math W+A+O+K", is designed to help users improve their math skills through interactive exercises. It features a user-friendly interface with a focus on providing a variety of math-related modules, each addressing different mathematical concepts. The application uses React, TypeScript, Tailwind CSS, and other modern web development tools. It also incorporates features like user authentication, progress tracking, and customizable settings to enhance the learning experience.
+
+Overall Structure
+
+The application follows a component-based architecture, typical of React applications. It's structured into several key directories and files:
+
+src/: This is the main directory containing all the source code for the application.
+public/: This directory typically holds static assets like images, fonts, or other files that don't need processing by the build tool.
+index.html: This is the main HTML file that serves as the entry point for the application. It contains the basic HTML structure and loads the React application.
+package.json: This file contains metadata about the application, including dependencies, scripts, and other configuration information.
+vite.config.ts: This file configures the Vite build tool, which is used for compiling and bundling the application's code.
+tailwind.config.js: This file configures Tailwind CSS, a utility-first CSS framework used for styling the application.
+eslint.config.js: This file configures ESLint, a linting tool used to enforce code quality and style guidelines.
+postcss.config.js: This file configures PostCSS, a tool for transforming CSS with JavaScript.
+Detailed Directory and File Breakdown
+
+Root Level Files:
+
+index.html: The root HTML file where the React app is mounted. It includes the basic HTML structure and links to the bundled JavaScript and CSS files.
+package.json: Defines project dependencies (React, React Router, Tailwind CSS, etc.) and build/development scripts.
+vite.config.ts: Configuration file for Vite, the build tool. It specifies plugins (like the React plugin) and optimization settings.
+tailwind.config.js: Configuration file for Tailwind CSS, defining the project's design system, including colors, fonts, and responsive breakpoints.
+postcss.config.js: Configuration for PostCSS, often used with Tailwind CSS for additional CSS transformations.
+eslint.config.js: Configuration for ESLint, a linter that enforces code style and helps catch errors.
+src Directory:
+
+main.tsx: The main entry point for the React application. It renders the App component into the HTML element with the ID "root".
+index.css: The main CSS file where Tailwind CSS directives are used to inject Tailwind's styles.
+App.tsx: The root component of the application. It sets up the React Router and defines the main routes.
+vite-env.d.ts: TypeScript declaration file for Vite environment variables.
+src/components Directory:
+
+This directory contains reusable React components used throughout the application.
+AccessibleDndContext.tsx: Provides accessible drag-and-drop functionality using React DnD, enhancing usability for users with disabilities.
+DraggableModuleCard.tsx: Represents a draggable card for each module on the home page, enabling users to reorder them.
+FilterBar.tsx: Implements a filter bar component for filtering modules based on favorites and hidden status.
+Layout/: Contains layout-related components like Navbar and Footer for consistent UI structure.
+Layout/Layout.tsx: Provides the main layout structure, including the navigation bar, main content area, and footer.
+Layout/Navbar.tsx: Implements the navigation bar with links to different sections of the application.
+Layout/Footer.tsx: Implements the footer with links and copyright information.
+ModuleList.tsx: Renders a list of modules, allowing users to search, filter, and reorder them.
+ProtectedRoute.tsx: A wrapper component that protects certain routes, requiring the user to be authenticated before accessing them.
+src/context Directory:
+
+This directory contains React Context providers for managing global state.
+AuthContext.tsx: Manages user authentication state (login, register, logout) and provides it to the application.
+ProgressContext.tsx: Manages user progress data, including completed exercises and performance metrics.
+SettingsContext.tsx: Manages application-wide settings such as theme, font size, and sound preferences.
+src/pages Directory:
+
+This directory contains React components that represent different pages of the application.
+HomePage.tsx: The main landing page, displaying a list of available math modules.
+LoginPage.tsx: Implements the login page, allowing users to sign in to their accounts.
+RegisterPage.tsx: Implements the registration page, allowing new users to create accounts.
+ProfilePage.tsx: Displays the user's profile information and allows them to edit it.
+SettingsPage.tsx: Provides a user interface for managing application settings.
+ProgressPage.tsx: Displays the user's progress data, including completed exercises and performance metrics.
+OperationPage.tsx: A generic page component that loads and renders a specific math operation module based on the URL parameter.
+SoonPage.tsx: A placeholder page indicating that the module is under development.
+src/operations Directory:
+
+This directory contains self-contained modules for different math operations. Each module typically includes:
+Exercise.tsx: The main component that implements the interactive exercise for the module.
+Settings.tsx: A component that allows users to customize settings for the module (e.g., difficulty level, time limit).
+types.ts: TypeScript definitions for the data structures used within the module (e.g., Problem, UserAnswer, Settings).
+utils.ts: Utility functions for generating problems, checking answers, and performing other calculations.
+index.ts: Exports the Exercise and Settings components for use in other parts of the application.
+Examples of operation modules:
+src/operations/addition/: Contains the addition exercise and settings.
+src/operations/subtraction/: Contains the subtraction exercise and settings.
+src/operations/multiplication/: Contains the multiplication exercise and settings.
+src/operations/division/: Contains the division exercise and settings.
+src/operations/fractions/: Contains the fractions exercise and settings.
+Other operation modules follow a similar structure, each implementing a different math concept or game.
+src/store Directory:
+
+moduleStore.ts: Uses Zustand to manage the state of the modules, including favorite modules, hidden modules, and custom module order.
+src/utils Directory:
+
+operationComponents.ts: A central registry that maps operation IDs to their corresponding React components and display names.
+Other utility files may be present for tasks such as data formatting, API calls, or other shared functionality.
+Self-Contained Modules
+
+Each directory inside src/operations represents a self-contained module. For example, the src/operations/addition/ directory contains all the code necessary for the addition exercise. This modular structure promotes code reusability, maintainability, and testability.
+
+Key characteristics of these modules:
+
+Encapsulation: Each module encapsulates its own logic, data structures, and UI components.
+Reusability: Modules can be easily reused in other parts of the application or in other projects.
+Testability: Modules can be tested independently, making it easier to ensure code quality.
+Maintainability: Changes to one module are less likely to affect other parts of the application.
+Specific Examples of Modules
+
+Addition Module (src/operations/addition/)
+Addition.tsx: Implements the interactive addition exercise, including generating problems, handling user input, and providing feedback.
+AdditionSettings.tsx: Provides a user interface for customizing the addition exercise, such as setting the difficulty level and number of problems.
+types.ts: Defines the data structures used in the addition module, such as the Problem and UserAnswer interfaces.
+utils.ts: Contains utility functions for generating addition problems and checking answers.
+Subtraction Module (src/operations/subtraction/)
+Similar structure to the addition module, but implements subtraction-specific logic and UI.
+Other Modules
+The other modules in the src/operations/ directory follow a similar pattern, each implementing a different math concept or game.
+In summary, the application is well-structured, modular, and uses modern web development practices to create an engaging and effective learning experience. The use of React Context, React Router, Tailwind CSS, and other tools contributes to the application's overall quality and maintainability.
