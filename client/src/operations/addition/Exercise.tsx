@@ -33,6 +33,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.difficulty); // Dificultad adaptiva
   const [currentAttempts, setCurrentAttempts] = useState(0); // Contador para intentos en el problema actual
   const [showReward, setShowReward] = useState(false); // Estado para mostrar la recompensa
+  const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(0); // Contador para respuestas correctas consecutivas
+  const [rewardType, setRewardType] = useState<"medals" | "trophies" | "stars">("stars"); // Tipo de recompensa a mostrar
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const { saveExerciseResult } = useProgress();
@@ -87,6 +89,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setRevealedAnswersCount(0); // Reiniciamos el contador de respuestas reveladas
     setAdaptiveDifficulty(settings.difficulty); // Reiniciamos la dificultad adaptativa
     setCurrentAttempts(0); // Reiniciamos el contador de intentos actuales
+    setConsecutiveCorrectAnswers(0); // Reiniciamos el contador de respuestas correctas consecutivas
   };
   
   const showAnswerWithExplanation = () => {
@@ -197,26 +200,79 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }
       }
       
+      // Incrementar el contador de respuestas correctas consecutivas
+      const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
+      setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
+      
       // Mostrar feedback de respuesta correcta
       setFeedbackMessage(t('exercises.correct'));
       setFeedbackColor("green");
       
-      // Mostrar recompensa si está habilitado
+      // Decidir si mostrar recompensa basado en diferentes criterios
       if (settings.enableRewards) {
-        // Mostrar mensaje específico para la recompensa
-        setFeedbackMessage("¡Excelente! ¡Has ganado una recompensa!");
-        setFeedbackColor("green");
-        // Mostrar recompensa con animación más larga
-        setShowReward(true);
+        // Calcular si debemos mostrar recompensa
+        // Criterios: 
+        // 1. Primer problema correcto: 30% de probabilidad
+        // 2. Tres respuestas correctas consecutivas: 80% de probabilidad
+        // 3. Cinco respuestas correctas consecutivas: 100% de probabilidad
+        // 4. Caso especial: Al final del ejercicio si acierta el último problema: 100%
         
-        // Mantenemos la recompensa visible por más tiempo para que sea evidente
-        setTimeout(() => {
-          setShowReward(false);
-          setFeedbackMessage(null);
-          setFeedbackColor(null);
-          moveToNextProblem();
-        }, 2500); // Aumentamos el tiempo para que sea más visible
+        let shouldShowReward = false;
+        
+        // Criterio 1: Para el primer problema (probabilidad baja)
+        if (currentProblemIndex === 0 && Math.random() < 0.3) {
+          shouldShowReward = true;
+        }
+        // Criterio 2: Tres respuestas correctas consecutivas (probabilidad media)
+        else if (newConsecutiveCorrectAnswers === 3 && Math.random() < 0.8) {
+          shouldShowReward = true;
+        }
+        // Criterio 3: Cinco respuestas correctas consecutivas (probabilidad alta)
+        else if (newConsecutiveCorrectAnswers >= 5) {
+          shouldShowReward = true;
+        }
+        // Criterio 4: Último problema del ejercicio (siempre)
+        else if (currentProblemIndex === problems.length - 1) {
+          shouldShowReward = true;
+        }
+        // Criterio adicional: De vez en cuando, para sorprender (probabilidad muy baja)
+        else if (Math.random() < 0.15) {
+          shouldShowReward = true;
+        }
+        
+        if (shouldShowReward) {
+          // Seleccionar aleatoriamente el tipo de recompensa (medallas, trofeos o estrellas)
+          const rewardTypes: ("medals" | "trophies" | "stars")[] = ["medals", "trophies", "stars"];
+          const randomRewardType = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
+          setRewardType(randomRewardType);
+          
+          // Mostrar mensaje específico para la recompensa
+          setFeedbackMessage("¡Excelente! ¡Has ganado una recompensa!");
+          setFeedbackColor("green");
+          
+          // Mostrar recompensa con animación
+          setShowReward(true);
+          
+          // Mantenemos la recompensa visible por más tiempo para que sea evidente
+          setTimeout(() => {
+            setShowReward(false);
+            setFeedbackMessage(null);
+            setFeedbackColor(null);
+            moveToNextProblem();
+          }, 2500); // Aumentamos el tiempo para que sea más visible
+          
+          // Reiniciar contador de respuestas correctas consecutivas para variar la frecuencia
+          setConsecutiveCorrectAnswers(0);
+        } else {
+          // Si no hay recompensa, simplemente avanzamos al siguiente problema
+          setTimeout(() => {
+            setFeedbackMessage(null);
+            setFeedbackColor(null);
+            moveToNextProblem();
+          }, 1000);
+        }
       } else {
+        // Si las recompensas están desactivadas, simplemente avanzamos
         setTimeout(() => {
           setFeedbackMessage(null);
           setFeedbackColor(null);
@@ -226,6 +282,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     } 
     // Si la respuesta es incorrecta...
     else {
+      // Reiniciar el contador de respuestas correctas consecutivas
+      setConsecutiveCorrectAnswers(0);
+      
       // Verificar si hemos alcanzado el máximo de intentos permitidos
       const maxAttemptsReached = settings.maxAttempts > 0 && newAttemptCount >= settings.maxAttempts;
       
@@ -502,7 +561,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <div className="bg-white rounded-xl p-6 shadow-2xl text-center transform scale-110 transition-transform">
                 <h3 className="text-2xl font-bold text-green-600 mb-4">¡FELICIDADES!</h3>
                 
-                {settings.rewardType === "stars" && (
+                {rewardType === "stars" && (
                   <div className="flex justify-center mb-3">
                     {[...Array(3)].map((_, i) => (
                       <Star 
@@ -515,7 +574,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   </div>
                 )}
                 
-                {settings.rewardType === "medals" && (
+                {rewardType === "medals" && (
                   <div className="flex justify-center mb-3">
                     <Award 
                       className="h-32 w-32 text-yellow-600 drop-shadow-xl animate-pulse" 
@@ -525,7 +584,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   </div>
                 )}
                 
-                {settings.rewardType === "trophies" && (
+                {rewardType === "trophies" && (
                   <div className="flex justify-center mb-3">
                     <Trophy 
                       className="h-32 w-32 text-yellow-500 drop-shadow-xl animate-pulse" 
