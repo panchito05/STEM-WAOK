@@ -94,6 +94,14 @@ export const operationModules: Module[] = [
     icon: "BookOpen",
   },
   {
+    id: "alphabet2",
+    displayName: "Alphabet Journey",
+    description: "Explore alphabet islands in an immersive narrative adventure",
+    difficulty: "beginner",
+    color: "#b45eff", // Lila más intenso que el original
+    icon: "MapIcon",
+  },
+  {
     id: "counting",
     displayName: "Counting Numbers",
     description: "Practice counting with fun visualization",
