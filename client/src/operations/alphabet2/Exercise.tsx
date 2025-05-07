@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { ModuleSettings } from '@/context/SettingsContext';
-import { useProgress } from '@/context/ProgressContext';
 import { Button } from '@/components/ui/button';
 import { 
   Volume2, 
@@ -14,6 +13,8 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
+import { useSettings } from '@/context/SettingsContext';
+import { useProgress } from '@/context/ProgressContext';
 import { formatTime } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -76,7 +77,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [attemptCount, setAttemptCount] = useState(0);
   
   // Contextos
-  const { saveExerciseResult } = useProgress();
   const { user } = useAuth();
   const { globalSettings } = useSettings();
   const selectedLanguage = globalSettings.language === 'english' ? 'english' : 'spanish';
