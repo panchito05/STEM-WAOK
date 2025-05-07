@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, EyeIcon } from 'lucide-react';
@@ -11,14 +11,15 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Progress } from '@/components/ui/progress';
 import { useTranslations } from '@/hooks/use-translations';
-// Importamos el store de Zustand y los tipos
-import { useAlphabetStore, Letter, ExerciseType } from '@/store/alphabetStore';
+// Importamos solo el tipo de ExerciseType, ya que usamos nuestra propia definición de Letter
+import { ExerciseType } from '@/store/alphabetStore';
 
 interface ExerciseProps {
   settings: ModuleSettings;
   onOpenSettings: () => void;
 }
 
+// Renombramos la interfaz para evitar conflictos
 interface Letter {
   uppercase: string;
   lowercase: string;
@@ -116,8 +117,10 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Quiz mode variables
   const [quizOptions, setQuizOptions] = useState<Letter[]>([]);
   const [selectedOption, setSelectedOption] = useState<Letter | null>(null);
-  // NUEVA SOLUCIÓN: Agregar un estado separado para la letra correcta en el modo quiz
+  // SOLUCIÓN OPCIÓN 5: Usar identificadores únicos para cada pregunta
   const [quizCorrectLetter, setQuizCorrectLetter] = useState<Letter | null>(null);
+  const [currentQuestionId, setCurrentQuestionId] = useState<string>("");
+  const [correctAnswersMap, setCorrectAnswersMap] = useState<Record<string, Letter>>({});
   
   // Matching mode variables
   const [matchingImage, setMatchingImage] = useState<string>('');
@@ -178,10 +181,13 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setAdjacentInputs({ before: '', after: '' });
     setAdjacentResults({ before: false, after: false });
     
-    // SOLUCIÓN FINAL: Limpiamos el estado de letra correcta cuando cambiamos de ejercicio
-    // Esto es importante para evitar confusiones si cambiamos de ejercicio durante el modo quiz
+    // SOLUCIÓN OPCIÓN 5: Limpiar registros anteriores cuando cambiamos de ejercicio
     if (exerciseType !== 'quiz') {
+      // Al salir del modo quiz, limpiamos el mapa de respuestas para evitar
+      // que crezca demasiado con respuestas antiguas
       setQuizCorrectLetter(null);
+      setCurrentQuestionId("");
+      setCorrectAnswersMap({});
     }
   };
   
@@ -205,19 +211,30 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Generate quiz options: one correct, three random
   const prepareQuizOptions = () => {
-    // SOLUCIÓN COMPLETA AL PROBLEMA DE DESFASE:
-    // 1. Creamos una copia de la letra actual
+    // SOLUCIÓN OPCIÓN 5: Usar ID único para cada pregunta
+    // 1. Generamos un ID único para esta pregunta específica
+    const questionId = `quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setCurrentQuestionId(questionId);
+    
+    // 2. Creamos una copia de la letra actual
     const letterToUse = {...alphabet[currentIndex]};
     
-    // 2. Guardamos esta letra en nuestro estado independiente
+    // 3. Guardamos esta letra en nuestro estado independiente y en el mapa de respuestas
     setQuizCorrectLetter(letterToUse);
     
-    console.log("🎯 NUEVA SOLUCIÓN - Letra correcta para quiz:", letterToUse.uppercase, letterToUse.word, letterToUse.image);
+    // 4. Agregamos esta respuesta al mapa de respuestas correctas con el ID como clave
+    setCorrectAnswersMap(prev => ({
+      ...prev,
+      [questionId]: letterToUse
+    }));
     
-    // 3. Generamos opciones de respuesta incluyendo la correcta
+    console.log("🔑 SOLUCIÓN OPCIÓN 5 - ID de pregunta:", questionId);
+    console.log("🎯 Letra correcta guardada:", letterToUse.uppercase, letterToUse.word, letterToUse.image);
+    
+    // 5. Generamos opciones de respuesta incluyendo la correcta
     let options = [letterToUse]; 
     
-    // 4. Añadimos tres letras aleatorias que son diferentes
+    // 6. Añadimos tres letras aleatorias que son diferentes
     while (options.length < 4) {
       const randomIndex = Math.floor(Math.random() * alphabet.length);
       const randomLetter = alphabet[randomIndex];
@@ -228,7 +245,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     }
     
-    // 5. Barajamos las opciones para que la correcta no siempre esté en la misma posición
+    // 7. Barajamos las opciones para que la correcta no siempre esté en la misma posición
     setQuizOptions(shuffleArray(options));
   };
   
@@ -315,13 +332,18 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         playSound(`${currentLetter.uppercase}. ${currentLetter.word}`);
         break;
       case 'quiz':
-        // SOLUCIÓN FINAL: Usamos la letra correcta del estado independiente
-        if (quizCorrectLetter) {
-          setSelectedOption(quizCorrectLetter);
+        // SOLUCIÓN OPCIÓN 5: Usar el mapa de respuestas correctas con ID
+        const correctLetter = correctAnswersMap[currentQuestionId];
+        
+        if (correctLetter) {
+          setSelectedOption(correctLetter);
           setShowDetails(true);
-          playSound(`${quizCorrectLetter.uppercase} is for ${quizCorrectLetter.word}`);
+          playSound(`${correctLetter.uppercase} is for ${correctLetter.word}`);
+          
+          console.log("🔑 Mostrando respuesta para ID:", currentQuestionId);
+          console.log("📝 Respuesta correcta:", correctLetter.uppercase, correctLetter.word);
         } else {
-          console.error("No hay letra correcta definida para mostrar la respuesta");
+          console.error("No hay respuesta correcta definida para esta pregunta (ID:", currentQuestionId, ")");
         }
         break;
       case 'matching':
@@ -364,21 +386,23 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleQuizOptionSelect = (letter: Letter) => {
     setSelectedOption(letter);
     
-    // SOLUCIÓN FINAL PARA DESFASE:
-    // Usamos la letra correcta almacenada en un estado independiente
-    // que no cambia cuando cambia currentIndex
-    if (!quizCorrectLetter) {
-      console.error("Error: No hay letra correcta definida para el quiz");
+    // SOLUCIÓN OPCIÓN 5: Usar mapa de respuestas correctas con ID único
+    // Obtenemos la respuesta correcta del mapa usando el ID de la pregunta actual
+    const correctLetter = correctAnswersMap[currentQuestionId];
+    
+    if (!correctLetter) {
+      console.error("Error: No hay respuesta correcta definida para esta pregunta (ID:", currentQuestionId, ")");
       return;
     }
     
-    // Comprobación por ID, que es único para cada letra
-    const isAnswerCorrect = letter.id === quizCorrectLetter.id;
+    // Comparación por ID de letra, que es único para cada letra del alfabeto
+    const isAnswerCorrect = letter.id === correctLetter.id;
     
-    // Debugging para verificar el problema
-    console.log("▶️ Quiz: Usuario seleccionó:", letter.uppercase, letter.word);
-    console.log("✓ Quiz: Letra correcta:", quizCorrectLetter.uppercase, quizCorrectLetter.word);
-    console.log("Quiz: ¿Es correcta?:", isAnswerCorrect);
+    // Logging detallado para depuración
+    console.log("🔑 ID de pregunta actual:", currentQuestionId);
+    console.log("👆 Usuario seleccionó:", letter.uppercase, letter.word);
+    console.log("✓ Respuesta correcta del mapa:", correctLetter.uppercase, correctLetter.word);
+    console.log("✅ ¿Es correcta?:", isAnswerCorrect);
     
     setIsCorrect(isAnswerCorrect);
     setShowDetails(true);
@@ -388,7 +412,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (isAnswerCorrect) {
       playSound("Correct! Good job!");
     } else {
-      playSound(`Incorrect. The letter is ${quizCorrectLetter.uppercase} for ${quizCorrectLetter.word}`);
+      playSound(`Incorrect. The letter is ${correctLetter.uppercase} for ${correctLetter.word}`);
     }
   };
   
