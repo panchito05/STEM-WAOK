@@ -1,8 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw } from 'lucide-react';
+import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, Award } from 'lucide-react';
 import { ModuleSettings } from '@/context/SettingsContext';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAccessibleDnd } from '@/components/AccessibleDndContext';
 
 interface ExerciseProps {
   settings: ModuleSettings;

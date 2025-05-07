@@ -22,6 +22,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     difficulty: settings.difficulty,
     showImmediateFeedback: settings.showImmediateFeedback,
     enableSoundEffects: settings.enableSoundEffects,
+    enableRewards: settings.enableRewards || true,
+    rewardType: settings.rewardType || "stars",
+    enableAdaptiveDifficulty: settings.enableAdaptiveDifficulty || false,
   });
   
   const handleSettingChange = <K extends keyof typeof localSettings>(
@@ -79,15 +82,57 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="beginner">Beginner - Just Letters</SelectItem>
-                  <SelectItem value="intermediate">Intermediate - With Quiz</SelectItem>
-                  <SelectItem value="advanced">Advanced - Challenging Quiz</SelectItem>
+                  <SelectItem value="beginner">Beginner - Basic Letter Recognition</SelectItem>
+                  <SelectItem value="elementary">Elementary - Letter & Word Matching</SelectItem>
+                  <SelectItem value="intermediate">Intermediate - Letter Quiz</SelectItem>
+                  <SelectItem value="advanced">Advanced - Alphabet Ordering</SelectItem>
+                  <SelectItem value="expert">Expert - Previous/Next Letter & Mixed</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
             <p className="text-sm text-gray-500 mt-1">
-              Higher difficulty levels introduce quizzes and faster transitions.
+              Cada nivel añade nuevos ejercicios y desafíos para el aprendizaje del alfabeto.
             </p>
+            
+            <div className="mt-4">
+              <h4 className="text-md font-medium mb-2">Difficulty Examples</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                {/* Beginner */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "beginner" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Beginner</p>
+                  <p className="text-sm">Reconocimiento básico</p>
+                  <p className="text-sm">A → Apple 🍎</p>
+                </div>
+                
+                {/* Elementary */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "elementary" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Elementary</p>
+                  <p className="text-sm">Emparejamiento</p>
+                  <p className="text-sm">B = ? [Ball ⚽]</p>
+                </div>
+                
+                {/* Intermediate */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "intermediate" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Intermediate</p>
+                  <p className="text-sm">Quiz de letras</p>
+                  <p className="text-sm">🐱 = ? (A, C, P, R)</p>
+                </div>
+                
+                {/* Advanced */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "advanced" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Advanced</p>
+                  <p className="text-sm">Drag & Drop</p>
+                  <p className="text-sm">Ordenar: D, A, C, B</p>
+                </div>
+                
+                {/* Expert */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "expert" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Expert</p>
+                  <p className="text-sm">Anterior/Siguiente</p>
+                  <p className="text-sm">K → J y L</p>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div className="flex items-center justify-between">
@@ -116,6 +161,62 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               checked={localSettings.enableSoundEffects}
               onCheckedChange={(checked) => handleSettingChange('enableSoundEffects', checked)}
             />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="enable-adaptive">Adaptive Difficulty</Label>
+              <p className="text-sm text-gray-500">
+                Adjust difficulty based on performance
+              </p>
+            </div>
+            <Switch
+              id="enable-adaptive"
+              checked={localSettings.enableAdaptiveDifficulty}
+              onCheckedChange={(checked) => handleSettingChange('enableAdaptiveDifficulty', checked)}
+            />
+          </div>
+          
+          <div className="space-y-4 mt-4">
+            <h3 className="text-lg font-medium">Reward System</h3>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="enable-rewards">Enable Rewards</Label>
+                <p className="text-sm text-gray-500">
+                  Show rewards for correct answers
+                </p>
+              </div>
+              <Switch
+                id="enable-rewards"
+                checked={localSettings.enableRewards}
+                onCheckedChange={(checked) => handleSettingChange('enableRewards', checked)}
+              />
+            </div>
+            
+            {localSettings.enableRewards && (
+              <div>
+                <Label className="mb-2 block">Reward Type</Label>
+                <Select
+                  value={localSettings.rewardType}
+                  onValueChange={(value) => handleSettingChange('rewardType', value as "stars" | "medals" | "trophies")}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select reward type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="stars">Stars ⭐</SelectItem>
+                      <SelectItem value="medals">Medals 🥇</SelectItem>
+                      <SelectItem value="trophies">Trophies 🏆</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-gray-500 mt-2">
+                  Las recompensas aparecerán en momentos clave para motivar al estudiante.
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
         
