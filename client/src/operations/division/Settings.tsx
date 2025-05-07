@@ -83,21 +83,47 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 </div>
               </div>
             </RadioGroup>
-            <p className="mt-2 text-sm text-gray-500">
-              <span className="font-medium">Beginner:</span> Divisiones simples sin resto (10÷2, 15÷3)
-            </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Elementary:</span> Divisiones con tablas hasta 5, sin resto (25÷5, 16÷4)
-            </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Intermediate:</span> Divisiones con tablas hasta 10, sin resto (81÷9, 64÷8)
-            </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Advanced:</span> Divisiones con resto (25÷4, 89÷6)
-            </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Expert:</span> Divisiones largas de dos cifras (156÷13,, 225÷15)
-            </p>
+            
+            {/* Ejemplos de dificultad visuales */}
+            <div className="mt-4">
+              <h4 className="text-md font-medium mb-2">Difficulty Examples</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                {/* Beginner */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "beginner" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Beginner</p>
+                  <p className="text-sm">6 ÷ 2 = ?</p>
+                  <p className="text-sm">8 ÷ 4 = ?</p>
+                </div>
+                
+                {/* Elementary */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "elementary" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Elementary</p>
+                  <p className="text-sm">15 ÷ 3 = ?</p>
+                  <p className="text-sm">24 ÷ 6 = ?</p>
+                </div>
+                
+                {/* Intermediate */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "intermediate" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Intermediate</p>
+                  <p className="text-sm">72 ÷ 9 = ?</p>
+                  <p className="text-sm">125 ÷ 5 = ?</p>
+                </div>
+                
+                {/* Advanced */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "advanced" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Advanced</p>
+                  <p className="text-sm">196 ÷ 14 = ?</p>
+                  <p className="text-sm">374 ÷ 11 = ?</p>
+                </div>
+                
+                {/* Expert */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "expert" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Expert</p>
+                  <p className="text-sm">2856 ÷ 24 = ?</p>
+                  <p className="text-sm">9317 ÷ 37 = ?</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

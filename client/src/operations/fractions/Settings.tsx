@@ -58,12 +58,16 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           <div className="mt-2">
             <RadioGroup
               value={localSettings.difficulty}
-              onValueChange={(value) => handleUpdateSetting("difficulty", value as "beginner" | "intermediate" | "advanced")}
+              onValueChange={(value) => handleUpdateSetting("difficulty", value as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")}
             >
-              <div className="flex items-center space-x-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="beginner" id="beginner" />
                   <Label htmlFor="beginner">Beginner</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="elementary" id="elementary" />
+                  <Label htmlFor="elementary">Elementary</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="intermediate" id="intermediate" />
@@ -73,17 +77,53 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   <RadioGroupItem value="advanced" id="advanced" />
                   <Label htmlFor="advanced">Advanced</Label>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="expert" id="expert" />
+                  <Label htmlFor="expert">Expert</Label>
+                </div>
               </div>
             </RadioGroup>
-            <p className="mt-1 text-sm text-gray-500">
-              <span className="font-medium">Beginner:</span> Simple fractions with like denominators
-            </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Intermediate:</span> Fractions with unlike denominators and comparison
-            </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Advanced:</span> Complex fraction operations with simplification
-            </p>
+            
+            {/* Ejemplos de dificultad visuales */}
+            <div className="mt-4">
+              <h4 className="text-md font-medium mb-2">Difficulty Examples</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                {/* Beginner */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "beginner" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Beginner</p>
+                  <p className="text-sm">1/4 + 2/4 = ?</p>
+                  <p className="text-sm">3/5 - 1/5 = ?</p>
+                </div>
+                
+                {/* Elementary */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "elementary" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Elementary</p>
+                  <p className="text-sm">2/3 + 1/6 = ?</p>
+                  <p className="text-sm">3/4 - 1/8 = ?</p>
+                </div>
+                
+                {/* Intermediate */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "intermediate" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Intermediate</p>
+                  <p className="text-sm">2/5 + 3/8 = ?</p>
+                  <p className="text-sm">4/7 compared to 5/9</p>
+                </div>
+                
+                {/* Advanced */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "advanced" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Advanced</p>
+                  <p className="text-sm">2 3/4 + 1 5/6 = ?</p>
+                  <p className="text-sm">3 1/3 - 1 2/5 = ?</p>
+                </div>
+                
+                {/* Expert */}
+                <div className={`p-3 rounded-md ${localSettings.difficulty === "expert" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
+                  <p className="font-semibold mb-1">Expert</p>
+                  <p className="text-sm">5 2/3 ÷ 2 1/2 = ?</p>
+                  <p className="text-sm">3 3/4 × 2 2/5 = ?</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -282,6 +322,76 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 onCheckedChange={(checked) => handleUpdateSetting("requireSimplified", checked)}
               />
             </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="enable-adaptive-difficulty" className="cursor-pointer">
+                Habilitar Dificultad Adaptativa
+              </Label>
+              <Switch
+                id="enable-adaptive-difficulty"
+                checked={localSettings.enableAdaptiveDifficulty || false}
+                onCheckedChange={(checked) => handleUpdateSetting("enableAdaptiveDifficulty", checked)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="enable-compensation" className="cursor-pointer">
+                Habilitar Compensación (Añadir 1 problema por cada incorrecto/revelado)
+              </Label>
+              <Switch
+                id="enable-compensation"
+                checked={localSettings.enableCompensation || false}
+                onCheckedChange={(checked) => handleUpdateSetting("enableCompensation", checked)}
+              />
+            </div>
+          </div>
+          
+          <h3 className="text-lg font-medium text-gray-900 mt-6">Reward System</h3>
+          <div className="mt-2 space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="enable-rewards" className="cursor-pointer">
+                Enable reward system
+              </Label>
+              <Switch
+                id="enable-rewards"
+                checked={localSettings.enableRewards || true}
+                onCheckedChange={(checked) => handleUpdateSetting("enableRewards", checked)}
+              />
+            </div>
+            
+            {(localSettings.enableRewards || true) && (
+              <div>
+                <Label className="mb-2 block">Reward Type</Label>
+                <RadioGroup
+                  value={localSettings.rewardType || "stars"}
+                  onValueChange={(value) => 
+                    handleUpdateSetting("rewardType", value as "medals" | "trophies" | "stars")
+                  }
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="stars" id="stars" />
+                    <Label htmlFor="stars" className="flex items-center">
+                      Stars <span className="ml-2 text-lg">⭐</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="medals" id="medals" />
+                    <Label htmlFor="medals" className="flex items-center">
+                      Medals <span className="ml-2 text-lg">🥇</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="trophies" id="trophies" />
+                    <Label htmlFor="trophies" className="flex items-center">
+                      Trophies <span className="ml-2 text-lg">🏆</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+                <p className="mt-2 text-sm text-gray-500">
+                  Los premios aparecerán en momentos clave para motivar al estudiante. La frecuencia es controlada 
+                  para mantener su valor motivacional.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
