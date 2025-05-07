@@ -209,10 +209,17 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Generate quiz options: one correct, three random
   const prepareQuizOptions = () => {
-    // NUEVA SOLUCIÓN: Crear un objeto de pregunta atómico
+    // SOLUCIÓN COMPENSACIÓN: Aplicar un desfase en el índice para compensar el problema de sincronización
     
-    // 1. Creamos una copia de la letra actual
-    const correctLetter = {...alphabet[currentIndex]};
+    // IMPORTANTE: Aplicamos un desfase "rotacional" hacia atrás (contra las manecillas del reloj)
+    // Esto compensa el problema de sincronización que se presenta en la interfaz
+    const desfaseIndex = (currentIndex - 1 + alphabet.length) % alphabet.length;
+    
+    // 1. Creamos una copia de la letra con desfase
+    const correctLetter = {...alphabet[desfaseIndex]};
+    
+    console.log("🔄 DESFASE APLICADO - Usando letra de índice:", desfaseIndex, "en lugar de", currentIndex);
+    console.log("🔠 Letra actual (con desfase):", correctLetter.uppercase, correctLetter.word);
     
     // 2. Generamos opciones de respuesta incluyendo la correcta
     let options = [correctLetter]; 
@@ -231,7 +238,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // 4. Barajamos las opciones para que la correcta no siempre esté en la misma posición
     const shuffledOptions = shuffleArray(options);
     
-    // 5. Creamos el objeto de pregunta atómico
+    // 5. Creamos el objeto de pregunta atómico con el desfase aplicado
     const newQuestion: QuizQuestion = {
       image: correctLetter.image,
       correctLetter: correctLetter,
@@ -241,7 +248,6 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // 6. Guardamos el objeto completo en el estado
     setCurrentQuestion(newQuestion);
     
-    console.log("✅ NUEVA SOLUCIÓN - Pregunta creada:", correctLetter.uppercase, correctLetter.word);
     console.log("📝 Imagen:", correctLetter.image);
     console.log("🎲 Opciones generadas:", shuffledOptions.map(o => o.uppercase).join(", "));
   };
