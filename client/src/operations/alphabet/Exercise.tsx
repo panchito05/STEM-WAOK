@@ -662,7 +662,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </Button>
         )}
         
-        {showDetails && (
+        {/* SIEMPRE mostrar información adicional cuando la respuesta es correcta 
+            (o cuando se muestra usando el botón "Show Answer") */}
+        {(showDetails || (selectedOption !== null && isCorrect)) && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
               {selectedLanguage === 'spanish'
@@ -670,6 +672,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 : `${currentLetter.uppercase} is for ${currentLetter.word}`}
             </div>
             <div className="text-6xl mt-2">{currentLetter.image}</div>
+            
+            {/* Indicador de respuesta correcta */}
+            {isCorrect && (
+              <div className="mt-2 text-green-500 font-bold">
+                {selectedLanguage === 'spanish' ? '¡Correcto!' : 'Correct!'}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -759,7 +768,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </Button>
         )}
         
-        {showDetails && (
+        {/* SIEMPRE mostrar información adicional cuando la respuesta es correcta 
+            (o cuando se muestra usando el botón "Show Answer") */}
+        {(showDetails || (selectedOption !== null && isCorrect)) && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
               {selectedLanguage === 'spanish'
@@ -767,6 +778,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 : `${currentLetter.uppercase} is for ${currentLetter.word}`}
             </div>
             <div className="text-6xl mt-2">{currentLetter.image}</div>
+            
+            {/* Indicador de respuesta correcta */}
+            {isCorrect && (
+              <div className="mt-2 text-green-500 font-bold">
+                {selectedLanguage === 'spanish' ? '¡Correcto!' : 'Correct!'}
+              </div>
+            )}
           </div>
         )}
       </div>
