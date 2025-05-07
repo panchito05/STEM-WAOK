@@ -87,7 +87,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     trophies: ['🏆', '🏅', '🎖️']
   };
   
-  // Definimos alfabetos en ambos idiomas
+  // Definimos alfabetos en ambos idiomas con emojis simplificados para mayor compatibilidad
   const alphabetSpanish = [
     { uppercase: 'A', lowercase: 'a', word: 'Avión', image: '✈️' },
     { uppercase: 'B', lowercase: 'b', word: 'Barco', image: '🚢' },
@@ -97,15 +97,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     { uppercase: 'F', lowercase: 'f', word: 'Foca', image: '🦭' },
     { uppercase: 'G', lowercase: 'g', word: 'Gato', image: '🐱' },
     { uppercase: 'H', lowercase: 'h', word: 'Helado', image: '🍦' },
-    { uppercase: 'I', lowercase: 'i', word: 'Iguana', image: '🦎' },
+    { uppercase: 'I', lowercase: 'i', word: 'Iglesia', image: '⛪' },
     { uppercase: 'J', lowercase: 'j', word: 'Jirafa', image: '🦒' },
     { uppercase: 'K', lowercase: 'k', word: 'Kiwi', image: '🥝' },
     { uppercase: 'L', lowercase: 'l', word: 'León', image: '🦁' },
     { uppercase: 'M', lowercase: 'm', word: 'Manzana', image: '🍎' },
     { uppercase: 'N', lowercase: 'n', word: 'Nube', image: '☁️' },
-    { uppercase: 'Ñ', lowercase: 'ñ', word: 'Ñandú', image: '🦢' },
+    { uppercase: 'Ñ', lowercase: 'ñ', word: 'Ñu', image: '🐂' },
     { uppercase: 'O', lowercase: 'o', word: 'Oso', image: '🐻' },
-    { uppercase: 'P', lowercase: 'p', word: 'Pez', image: '🐠' },
+    { uppercase: 'P', lowercase: 'p', word: 'Pez', image: '🐟' },
     { uppercase: 'Q', lowercase: 'q', word: 'Queso', image: '🧀' },
     { uppercase: 'R', lowercase: 'r', word: 'Ratón', image: '🐭' },
     { uppercase: 'S', lowercase: 's', word: 'Sol', image: '☀️' },
@@ -113,39 +113,39 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     { uppercase: 'U', lowercase: 'u', word: 'Uva', image: '🍇' },
     { uppercase: 'V', lowercase: 'v', word: 'Vaca', image: '🐄' },
     { uppercase: 'W', lowercase: 'w', word: 'Wifi', image: '📶' },
-    { uppercase: 'X', lowercase: 'x', word: 'Xilófono', image: '🎵' },
-    { uppercase: 'Y', lowercase: 'y', word: 'Yo-yo', image: '🪀' },
+    { uppercase: 'X', lowercase: 'x', word: 'Xilófono', image: '🎹' },
+    { uppercase: 'Y', lowercase: 'y', word: 'Yogur', image: '🥛' },
     { uppercase: 'Z', lowercase: 'z', word: 'Zapato', image: '👞' }
   ];
   
   // Alfabeto en inglés (palabras adaptadas al idioma)
   const alphabetEnglish = [
     { uppercase: 'A', lowercase: 'a', word: 'Airplane', image: '✈️' },
-    { uppercase: 'B', lowercase: 'b', word: 'Boat', image: '🚢' },
-    { uppercase: 'C', lowercase: 'c', word: 'Cat', image: '🐱' }, // Cat en inglés empieza con C
-    { uppercase: 'D', lowercase: 'd', word: 'Dice', image: '🎲' },
+    { uppercase: 'B', lowercase: 'b', word: 'Ball', image: '⚽' },
+    { uppercase: 'C', lowercase: 'c', word: 'Cat', image: '🐱' },
+    { uppercase: 'D', lowercase: 'd', word: 'Dog', image: '🐶' },
     { uppercase: 'E', lowercase: 'e', word: 'Elephant', image: '🐘' },
-    { uppercase: 'F', lowercase: 'f', word: 'Fish', image: '🐠' }, // Fish en inglés para pez
-    { uppercase: 'G', lowercase: 'g', word: 'Giraffe', image: '🦒' }, // Jirafa en inglés es Giraffe que empieza con G
-    { uppercase: 'H', lowercase: 'h', word: 'House', image: '🏠' }, // House para casa en inglés
-    { uppercase: 'I', lowercase: 'i', word: 'Iguana', image: '🦎' },
-    { uppercase: 'J', lowercase: 'j', word: 'Juice', image: '🧃' }, // Juice para jugo
-    { uppercase: 'K', lowercase: 'k', word: 'Kiwi', image: '🥝' },
+    { uppercase: 'F', lowercase: 'f', word: 'Fish', image: '🐟' },
+    { uppercase: 'G', lowercase: 'g', word: 'Giraffe', image: '🦒' },
+    { uppercase: 'H', lowercase: 'h', word: 'House', image: '🏠' },
+    { uppercase: 'I', lowercase: 'i', word: 'Ice cream', image: '🍦' },
+    { uppercase: 'J', lowercase: 'j', word: 'Juice', image: '🧃' },
+    { uppercase: 'K', lowercase: 'k', word: 'Kite', image: '🪁' },
     { uppercase: 'L', lowercase: 'l', word: 'Lion', image: '🦁' },
-    { uppercase: 'M', lowercase: 'm', word: 'Moon', image: '🌙' }, // Moon en lugar de manzana
-    { uppercase: 'N', lowercase: 'n', word: 'Nest', image: '🪺' }, // Nest para nido
-    { uppercase: 'O', lowercase: 'o', word: 'Orange', image: '🍊' }, // Orange para naranja
+    { uppercase: 'M', lowercase: 'm', word: 'Moon', image: '🌙' },
+    { uppercase: 'N', lowercase: 'n', word: 'Nose', image: '👃' },
+    { uppercase: 'O', lowercase: 'o', word: 'Orange', image: '🍊' },
     { uppercase: 'P', lowercase: 'p', word: 'Pizza', image: '🍕' },
-    { uppercase: 'Q', lowercase: 'q', word: 'Queen', image: '👸' }, // Queen para reina
-    { uppercase: 'R', lowercase: 'r', word: 'Rainbow', image: '🌈' }, // Rainbow para arcoíris
+    { uppercase: 'Q', lowercase: 'q', word: 'Queen', image: '👑' },
+    { uppercase: 'R', lowercase: 'r', word: 'Rainbow', image: '🌈' },
     { uppercase: 'S', lowercase: 's', word: 'Sun', image: '☀️' },
-    { uppercase: 'T', lowercase: 't', word: 'Turtle', image: '🐢' },
-    { uppercase: 'U', lowercase: 'u', word: 'Umbrella', image: '☂️' }, // Umbrella para paraguas
-    { uppercase: 'V', lowercase: 'v', word: 'Volcano', image: '🌋' }, // Volcano para volcán
-    { uppercase: 'W', lowercase: 'w', word: 'Watermelon', image: '🍉' }, // Watermelon para sandía
-    { uppercase: 'X', lowercase: 'x', word: 'Xylophone', image: '🎵' },
+    { uppercase: 'T', lowercase: 't', word: 'Tree', image: '🌳' },
+    { uppercase: 'U', lowercase: 'u', word: 'Umbrella', image: '☂️' },
+    { uppercase: 'V', lowercase: 'v', word: 'Volcano', image: '🌋' },
+    { uppercase: 'W', lowercase: 'w', word: 'Watermelon', image: '🍉' },
+    { uppercase: 'X', lowercase: 'x', word: 'Xylophone', image: '🎹' },
     { uppercase: 'Y', lowercase: 'y', word: 'Yo-yo', image: '🪀' },
-    { uppercase: 'Z', lowercase: 'z', word: 'Zebra', image: '🦓' } // Zebra para cebra
+    { uppercase: 'Z', lowercase: 'z', word: 'Zebra', image: '🦓' }
   ];
   
   // Alternativas en español
