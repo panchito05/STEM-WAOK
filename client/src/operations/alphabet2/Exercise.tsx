@@ -175,10 +175,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Generar nuevo ejercicio si cambia el índice actual o la dificultad
   useEffect(() => {
-    console.log("Difficulty changed from " + prevDifficulty + " to " + settings.difficulty);
-    setPrevDifficulty(settings.difficulty);
+    if (prevDifficulty !== settings.difficulty) {
+      console.log("Difficulty changed from " + prevDifficulty + " to " + settings.difficulty);
+      setPrevDifficulty(settings.difficulty);
+    }
     generateExercise();
-  }, [currentIndex, settings.difficulty]);
+  }, [currentIndex, settings.difficulty, prevDifficulty]);
   
   // Mostrar recompensa después de cierto número de respuestas correctas consecutivas
   useEffect(() => {
@@ -223,12 +225,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     switch (settings.difficulty) {
       case 'beginner':
         setExerciseMode('letter_to_image');
-        generateLetterToImageExercise(currentLetter);
+        const exerciseBeginner = generateLetterToImageExercise(currentLetter);
         break;
       
       case 'elementary':
         setExerciseMode('letter_to_image');
-        generateLetterToImageExercise(currentLetter);
+        const exerciseElementary = generateLetterToImageExercise(currentLetter);
         break;
       
       case 'intermediate':
@@ -239,14 +241,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       case 'advanced':
         setExerciseMode('drag_and_drop');
         const exerciseAdvanced = generateAdvancedExercise(currentLetter, alphabetSubset);
-        if (exerciseAdvanced && 'currentOrder' in exerciseAdvanced) {
-          setAdvancedUserOrder(exerciseAdvanced.currentOrder);
-        }
+        setAdvancedUserOrder(exerciseAdvanced.currentOrder);
         break;
       
       case 'expert':
         setExerciseMode('sequence_relations');
-        generateSequenceExercise(currentLetter, alphabetSubset);
+        const exerciseExpert = generateSequenceExercise(currentLetter, alphabetSubset);
         break;
       
       default:
@@ -263,7 +263,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
   
   // Generar ejercicio de letra a imagen
-  const generateLetterToImageExercise = (currentLetterItem: Letter) => {
+  const generateLetterToImageExercise = (currentLetterItem: Letter): LetterToImageExercise => {
     const alphabetSubset = getAlphabetSubset();
     
     // Crear opciones (una correcta, el resto incorrectas)
@@ -287,16 +287,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       option => option.word === correctOption.word
     );
     
-    // Configurar ejercicio actual
-    setCurrentExercise({
+    // Crear y devolver el ejercicio
+    const exercise: LetterToImageExercise = {
       letter: currentLetterItem,
       options: allOptions,
       correctIndex
-    } as LetterToImageExercise);
+    };
+    
+    // Configurar ejercicio actual
+    setCurrentExercise(exercise);
+    
+    return exercise;
   };
   
   // Generar ejercicio de imagen a letra
-  const generateImageToLetterExercise = (currentLetterItem: Letter) => {
+  const generateImageToLetterExercise = (currentLetterItem: Letter): ImageToLetterExercise => {
     const alphabetSubset = getAlphabetSubset();
     
     // Crear imagen correcta
@@ -319,16 +324,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       option => option.uppercase === currentLetterItem.uppercase
     );
     
-    // Configurar ejercicio actual
-    setCurrentExercise({
+    // Crear y devolver el ejercicio
+    const exercise: ImageToLetterExercise = {
       image: correctImage,
       options: allOptions,
       correctIndex
-    } as ImageToLetterExercise);
+    };
+    
+    // Configurar ejercicio actual
+    setCurrentExercise(exercise);
+    
+    return exercise;
   };
   
   // Generar ejercicio avanzado (drag & drop)
-  const generateAdvancedExercise = (currentLetterItem: Letter, alphabetSubset: Letter[]) => {
+  const generateAdvancedExercise = (currentLetterItem: Letter, alphabetSubset: Letter[]): DragAndDropExercise => {
     // Para este ejercicio, seleccionamos 3-5 letras que incluyen la letra actual
     // El objetivo es ordenarlas alfabéticamente
     
@@ -364,16 +374,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       randomOrder = [...correctOrder].sort(() => 0.5 - Math.random());
     } while (JSON.stringify(randomOrder) === JSON.stringify(correctOrder));
     
-    // Configurar ejercicio actual
-    setCurrentExercise({
+    // Crear y devolver el ejercicio
+    const exercise: DragAndDropExercise = {
       letters: selectedLetters,
       correctOrder,
       currentOrder: randomOrder
-    } as DragAndDropExercise);
+    };
+    
+    // Configurar ejercicio actual
+    setCurrentExercise(exercise);
+    
+    return exercise;
   };
   
   // Generar ejercicio experto (relaciones de secuencia)
-  const generateSequenceExercise = (currentLetterItem: Letter, alphabetSubset: Letter[]) => {
+  const generateSequenceExercise = (currentLetterItem: Letter, alphabetSubset: Letter[]): SequenceRelationsExercise => {
     // Para este ejercicio, el usuario debe identificar la letra anterior y posterior
     const currentIndex = alphabetSubset.findIndex(letter => 
       letter.uppercase === currentLetterItem.uppercase
@@ -411,15 +426,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       option => option.uppercase === nextLetter.uppercase
     );
     
-    // Configurar ejercicio actual
-    setCurrentExercise({
+    // Crear y devolver el ejercicio
+    const exercise: SequenceRelationsExercise = {
       currentLetter: currentLetterItem,
       previousLetter,
       nextLetter,
       options,
       correctPrevIndex,
       correctNextIndex
-    } as SequenceRelationsExercise);
+    };
+    
+    // Configurar ejercicio actual
+    setCurrentExercise(exercise);
+    
+    return exercise;
   };
   
   // Reproducir sonido de una letra
