@@ -52,6 +52,23 @@ interface ImageToLetterExercise {
   correctIndex: number;
 }
 
+// Datos de ejercicio para el modo de drag & drop (nivel advanced)
+interface DragAndDropExercise {
+  letters: Letter[];
+  correctOrder: string[];
+  currentOrder: string[];
+}
+
+// Datos de ejercicio para el modo de secuencias (nivel expert)
+interface SequenceRelationsExercise {
+  currentLetter: Letter;
+  previousLetter: Letter;
+  nextLetter: Letter;
+  options: Letter[];
+  correctPrevIndex: number;
+  correctNextIndex: number;
+}
+
 // Este componente implementa el módulo Alphabet Journey pero con una arquitectura interna diferente
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Referencias para audio, recompensas y seguimiento de dificultad
@@ -61,8 +78,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Estados de la aplicación
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [exerciseMode, setExerciseMode] = useState<'letter_to_image' | 'image_to_letter'>('letter_to_image');
-  const [currentExercise, setCurrentExercise] = useState<LetterToImageExercise | ImageToLetterExercise | null>(null);
+  const [exerciseMode, setExerciseMode] = useState<'letter_to_image' | 'image_to_letter' | 'drag_and_drop' | 'sequence_relations'>('letter_to_image');
+  const [currentExercise, setCurrentExercise] = useState<LetterToImageExercise | ImageToLetterExercise | DragAndDropExercise | SequenceRelationsExercise | null>(null);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -320,12 +337,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Quiz: mostrar imagen y elegir entre varias letras
         return 'image_to_letter';
       case 'advanced':
-        // Para advanced y expert usamos los mismos tipos básicos
-        // pero la implementación debería incluir drag & drop
+        // Para advanced usamos alternancia entre modos para preparar el drag & drop
         return Math.random() > 0.5 ? 'letter_to_image' : 'image_to_letter';
       case 'expert':
         // Expert: secuencias de letras (anterior/siguiente)
-        return Math.random() > 0.5 ? 'letter_to_image' : 'image_to_letter';
+        return 'sequence_relations';
       default:
         return 'letter_to_image';
     }
@@ -356,13 +372,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
       case 'advanced':
         // Drag & Drop Ordenar A, C, B
-        // Usamos subconjuntos de letras para ordenar
-        return alphabet;
+        // Usamos subconjuntos de letras para ordenar (al menos 3 para poder ordenar)
+        const advancedSubset = [];
+        // Creamos un subconjunto de 3 letras aleatorias
+        const usedIndexes = new Set();
+        while (advancedSubset.length < 3) {
+          const randIndex = Math.floor(Math.random() * alphabet.length);
+          if (!usedIndexes.has(randIndex)) {
+            usedIndexes.add(randIndex);
+            advancedSubset.push(alphabet[randIndex]);
+          }
+        }
+        return advancedSubset;
         
       case 'expert':
         // Anterior/Siguiente (K → J y L)
         // Necesitamos todo el alfabeto para poder identificar letras adyacentes
-        return alphabet;
+        // Excluimos la primera y última letra para que siempre haya anterior y siguiente
+        return alphabet.filter((_, index) => index > 0 && index < alphabet.length - 1);
         
       default:
         // Por defecto, usar el alfabeto completo
