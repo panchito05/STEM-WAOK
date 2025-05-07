@@ -4,6 +4,7 @@ import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
 import * as Fractions from "../operations/fractions";
 import * as Alphabet from "../operations/alphabet";
+import * as Alphabet2 from "../operations/alphabet2";
 import * as Counting from "../operations/counting";
 import { ModuleSettings } from "@/context/SettingsContext";
 
@@ -184,5 +185,6 @@ export const operationComponents: Record<string, ModuleComponent> = {
   division: Division,
   fractions: Fractions,
   alphabet: Alphabet,
+  alphabet2: Alphabet2,
   counting: Counting,
 };
