@@ -689,14 +689,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Resetear el contador de respuestas incorrectas consecutivas
       setConsecutiveIncorrectAnswers(0);
       
-      // SIEMPRE verificamos si se alcanzaron 10 respuestas correctas y subimos de nivel
-      // independientemente de si la dificultad adaptativa está habilitada o no
-      if (newConsecutiveCorrectAnswers >= 10) {
-        console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se alcanzaron ${newConsecutiveCorrectAnswers} respuestas correctas! Aplicando subida de nivel...`);
+      // IMPORTANTE: Esta es la nueva lógica para subir de nivel
+      // Solo subimos de nivel cuando conseguimos EXACTAMENTE 10 respuestas correctas
+      if (newConsecutiveCorrectAnswers === 10) {
+        console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se alcanzaron EXACTAMENTE ${newConsecutiveCorrectAnswers} respuestas correctas! Subiendo de nivel...`);
         
         // Determinar qué nivel de dificultad se está usando actualmente
-        // Si la dificultad adaptativa está habilitada, usamos el nivel adaptativo
-        // Si no, usamos el nivel configurado en settings
         const currentDifficultyLevel = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
         
         // Lista de dificultades disponibles
@@ -717,7 +715,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           // y guardar la nueva configuración completa
           try {
             if (!settings.enableAdaptiveDifficulty) {
-              console.log(`[ADAPTIVE DIFFICULTY] Activando automáticamente la dificultad adaptativa`);
+              console.log(`[ADAPTIVE DIFFICULTY] Activando la dificultad adaptativa automáticamente`);
               
               // Actualizar las settings locales (esto actualiza la UI inmediatamente)
               updateModuleSettings("addition", { 
@@ -757,23 +755,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             console.error("[ADAPTIVE DIFFICULTY] Error al guardar en localStorage:", error);
           }
           
-          // 4. Mostrar recompensa y mensaje de felicitación
-          setFeedbackMessage(`¡Felicidades! Has demostrado un dominio excepcional. Has subido al nivel ${newDifficulty}.`);
-          setFeedbackColor("green");
-          setShowLevelUpReward(true);
+          // 4. CRÍTICO: Detener el avance automático al siguiente problema
+          // y mostrar el mensaje de nivel superado
+          console.log(`[ADAPTIVE DIFFICULTY] Mostrando mensaje de NIVEL SUPERADO con bloqueo de progresión`);
+          setWaitingForContinue(true); // Esto evita que se avance automáticamente
+          setShowLevelUpReward(true);  // Mostrar el mensaje de nivel superado
           
           // 5. Reiniciar contador de respuestas correctas
           setConsecutiveCorrectAnswers(0);
           localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+          
+          // No avanzamos al siguiente problema automáticamente.
+          // El botón "¡Continuar el Desafío!" se encargará de eso.
+          return;
         } else {
           // Ya estamos en el nivel máximo
           console.log(`[ADAPTIVE DIFFICULTY] Ya estás en el nivel máximo (${currentDifficultyLevel}). ¡Felicidades!`);
           setFeedbackMessage("¡Excelente! Sigues manteniendo un alto nivel de precisión en el nivel máximo.");
           setFeedbackColor("green");
         }
+      } else if (newConsecutiveCorrectAnswers > 10) {
+        // Si por alguna razón tenemos más de 10 respuestas correctas, evitamos duplicar el mensaje
+        console.log(`[ADAPTIVE DIFFICULTY] Se detectaron ${newConsecutiveCorrectAnswers} respuestas correctas (más de 10). Evitando duplicar mensajes.`);
+        
+        // Mensaje estándar para evitar duplicados
+        setFeedbackMessage(t('exercises.correct'));
+        setFeedbackColor("green");
+        
       } else {
-        // Si aún no llegamos a 10 respuestas correctas, simplemente mostramos feedback
-        // según si la dificultad adaptativa está habilitada o no
+        // Aún no hemos llegado a 10 respuestas correctas
         if (settings.enableAdaptiveDifficulty) {
           console.log(`[ADAPTIVE DIFFICULTY] ✓ Respuesta correcta. Consecutivas: ${newConsecutiveCorrectAnswers}/${10} necesarias para subir de nivel`);
           console.log(`[ADAPTIVE DIFFICULTY] Dificultad actual: ${adaptiveDifficulty}`);
@@ -877,18 +887,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           setRewardsShownIndices(prev => [...prev, currentProblemIndex]);
           setTotalRewardsShown(prev => prev + 1);
           
-          // Mantenemos la recompensa visible por más tiempo para que sea evidente
-          setTimeout(() => {
-            setShowReward(false);
-            setFeedbackMessage(null);
-            setFeedbackColor(null);
-            moveToNextProblem();
-          }, 2500); // Aumentamos el tiempo para que sea más visible
+          // Verificar si estamos a punto de subir de nivel (9 respuestas correctas)
+          // Si es así, no avanzamos automáticamente para no interferir con la subida de nivel
+          if (consecutiveCorrectAnswers === 9) {
+            console.log(`[ADAPTIVE DIFFICULTY] Detectado contador en 9, próxima respuesta subirá nivel. No avanzando automáticamente.`);
+            
+            // Solo ocultamos la recompensa sin avanzar al siguiente problema
+            setTimeout(() => {
+              setShowReward(false);
+              setFeedbackMessage("¡Correcta! Una respuesta correcta más y subirás de nivel.");
+              setFeedbackColor("green");
+              // No llamamos a moveToNextProblem() para que la siguiente respuesta active la subida de nivel
+            }, 2500);
+          } else {
+            // Para cualquier otro valor de contador, comportamiento normal
+            setTimeout(() => {
+              setShowReward(false);
+              setFeedbackMessage(null);
+              setFeedbackColor(null);
+              moveToNextProblem();
+            }, 2500);
+          }
           
-          // Ya no reiniciamos el contador de respuestas correctas consecutivas
-          // para permitir alcanzar el umbral de 10 respuestas correctas y subir de nivel
+          // NO reiniciamos el contador de respuestas correctas consecutivas
+          // para permitir llegar a 10 y subir de nivel
           console.log(`[ADAPTIVE DIFFICULTY] Mostrando recompensa pero manteniendo contador de respuestas correctas: ${consecutiveCorrectAnswers}`);
-          // NO: setConsecutiveCorrectAnswers(0);
         } else {
           // Si no hay recompensa, simplemente avanzamos al siguiente problema
           setTimeout(() => {
