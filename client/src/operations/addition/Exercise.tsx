@@ -262,8 +262,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const generateProblems = () => {
     const newProblems: Problem[] = [];
     
+    // Elegir la dificultad correcta - si la dificultad adaptativa está habilitada, usamos esa
+    const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+    console.log(`[GENERATE PROBLEMS] Generando ${settings.problemCount} problemas con dificultad: ${difficultyToUse}`);
+    console.log(`[GENERATE PROBLEMS] Dificultad adaptativa: ${settings.enableAdaptiveDifficulty ? "ACTIVADA" : "DESACTIVADA"}`);
+    
     for (let i = 0; i < settings.problemCount; i++) {
-      newProblems.push(generateAdditionProblem(settings.difficulty));
+      newProblems.push(generateAdditionProblem(difficultyToUse));
     }
     
     setProblems(newProblems);
@@ -278,10 +283,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setFeedbackColor(null);
     setShowingExplanation(false);
     setShowHelpButton(false); // Reiniciamos el estado del botón de ayuda
-    // Ya no utilizamos estos contadores
-    // setIncorrectAnswersCount(0); 
-    // setRevealedAnswersCount(0);
-    setAdaptiveDifficulty(settings.difficulty); // Reiniciamos la dificultad adaptativa
+    
+    // Reiniciamos la dificultad adaptativa solo si estamos empezando un nuevo ejercicio
+    // No lo reiniciamos cuando usamos "Try Again" para conservar el nivel adaptado
+    if (!settings.enableAdaptiveDifficulty) {
+      setAdaptiveDifficulty(settings.difficulty);
+    } else {
+      console.log(`[ADAPTIVE DIFFICULTY] Manteniendo nivel actual: ${adaptiveDifficulty}`);
+    }
+    
     setCurrentAttempts(0); // Reiniciamos el contador de intentos actuales
     setConsecutiveCorrectAnswers(0); // Reiniciamos el contador de respuestas correctas consecutivas
     setConsecutiveIncorrectAnswers(0); // Reiniciamos el contador de respuestas incorrectas consecutivas
@@ -539,6 +549,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (settings.enableAdaptiveDifficulty) {
         // Incrementar el contador de respuestas correctas consecutivas
         const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
+        console.log(`[ADAPTIVE DIFFICULTY] ✓ Respuesta correcta. Consecutivas: ${newConsecutiveCorrectAnswers}/${10} necesarias para subir de nivel`);
+        console.log(`[ADAPTIVE DIFFICULTY] Dificultad actual: ${adaptiveDifficulty}, Habilitada: ${settings.enableAdaptiveDifficulty}`);
+        
         setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
         
         // Resetear el contador de respuestas incorrectas consecutivas
@@ -546,11 +559,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // Si lleva 10 respuestas correctas seguidas, aumentar dificultad
         if (newConsecutiveCorrectAnswers >= 10) {
+          console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se alcanzaron ${newConsecutiveCorrectAnswers} respuestas correctas! Intentando subir nivel...`);
+          
           // Aumentar dificultad (si no está ya en el nivel máximo)
           const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
           const currentIndex = difficulties.indexOf(adaptiveDifficulty);
+          console.log(`[ADAPTIVE DIFFICULTY] Nivel actual index: ${currentIndex}, de total: ${difficulties.length - 1}`);
+          
           if (currentIndex < difficulties.length - 1) {
             const newDifficulty = difficulties[currentIndex + 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
+            console.log(`[ADAPTIVE DIFFICULTY] ¡SUBIENDO DE NIVEL! De ${adaptiveDifficulty} a ${newDifficulty}`);
+            
+            // Actualizar la dificultad adaptativa
             setAdaptiveDifficulty(newDifficulty);
             
             // Mostrar mensaje de felicitación y activar recompensa especial
@@ -560,11 +580,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             
             // Reiniciar contador de respuestas correctas consecutivas
             setConsecutiveCorrectAnswers(0);
+          } else {
+            console.log(`[ADAPTIVE DIFFICULTY] Ya estás en el nivel máximo: ${adaptiveDifficulty}`);
           }
         }
       } else {
         // Si no está habilitada la dificultad adaptativa, simplemente incrementamos el contador
         const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
+        console.log(`[CONTADOR] Respuestas correctas consecutivas: ${newConsecutiveCorrectAnswers} (dificultad adaptativa deshabilitada)`);
         setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
       }
       
