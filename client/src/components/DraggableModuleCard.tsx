@@ -114,7 +114,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       case "Square": return <Square className="h-6 w-6" />;
       case "Percent": return <Percent className="h-6 w-6" />;
       case "Triangle": return <Triangle className="h-6 w-6" />;
-      case "Map": return <MapIcon className="h-6 w-6" />;
+      case "MapIcon": return <MapIcon className="h-6 w-6" />;
       default: return <Plus className="h-6 w-6" />;
     }
   };
