@@ -49,6 +49,15 @@
       console.error('Error al inicializar sonidos:', error);
     }
     
+    // Crear una secuencia de letras para mostrar
+    if (letter) {
+      // Si se proporcionó una letra específica, empezamos por ella
+      currentLetter = letter;
+    } else {
+      // Si no, empezamos por la A
+      currentLetter = 'A';
+    }
+    
     // Iniciar secuencia de animación
     startLearningSequence();
     
@@ -70,21 +79,23 @@
   
   // Actualizar los datos de la letra actual
   function updateLetterData() {
-    if (!letter) return;
+    // Usar la letra actual para obtener los datos
+    const letterToUse = currentLetter || letter;
+    if (!letterToUse) return;
     
     // Obtener datos de la letra según el idioma
-    if (letterExamples[language] && letterExamples[language][letter]) {
+    if (letterExamples[language] && letterExamples[language][letterToUse]) {
       letterData = {
-        uppercase: letter,
-        lowercase: letter.toLowerCase(),
-        word: letterExamples[language][letter].word,
-        imageUrl: letterExamples[language][letter].imageUrl
+        uppercase: letterToUse,
+        lowercase: letterToUse.toLowerCase(),
+        word: letterExamples[language][letterToUse].word,
+        imageUrl: letterExamples[language][letterToUse].imageUrl
       };
     } else {
       // Fallback por si no existe el dato
       letterData = {
-        uppercase: letter,
-        lowercase: letter.toLowerCase(),
+        uppercase: letterToUse,
+        lowercase: letterToUse.toLowerCase(),
         word: language === 'english' ? 'Example' : 'Ejemplo',
         imageUrl: 'https://em-content.zobj.net/thumbs/240/apple/354/question-mark_2753.png'
       };
@@ -175,8 +186,23 @@
         activityId: 'letter-recognition'
       });
     } else {
-      // Después de un breve delay, pasar al siguiente ciclo
+      // Después de un breve delay, avanzar a la siguiente letra y comenzar nuevo ciclo
       setTimeout(() => {
+        // Avanzamos a la siguiente letra del alfabeto
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const currentIndex = alphabet.indexOf(currentLetter);
+        
+        // Si es la última letra, volvemos a la A, de lo contrario avanzamos
+        if (currentIndex === alphabet.length - 1 || currentIndex === -1) {
+          currentLetter = 'A';
+        } else {
+          currentLetter = alphabet[currentIndex + 1];
+        }
+        
+        // Actualizar datos de la nueva letra
+        updateLetterData();
+        
+        // Resetear estado y comenzar nuevo ciclo
         answerState = 'waiting';
         startLearningSequence();
       }, 2000);
