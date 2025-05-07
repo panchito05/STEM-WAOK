@@ -4,6 +4,7 @@ import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
 import * as Fractions from "../operations/fractions";
 import * as Counting from "../operations/counting";
+import * as Alphabet from "../operations/alphabet";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -84,7 +85,14 @@ export const operationModules: Module[] = [
     color: "#ff5c57", // Rojo-naranja
     icon: "PieChart",
   },
-
+  {
+    id: "alphabet",
+    displayName: "Alphabet Learning",
+    description: "Learn the alphabet with interactive exercises",
+    difficulty: "beginner",
+    color: "#9c5cff", // Lila
+    icon: "BookOpen",
+  },
   {
     id: "counting",
     displayName: "Counting Numbers",
@@ -167,5 +175,6 @@ export const operationComponents: Record<string, ModuleComponent> = {
   multiplication: Multiplication,
   division: Division,
   fractions: Fractions,
+  alphabet: Alphabet,
   counting: Counting,
 };
