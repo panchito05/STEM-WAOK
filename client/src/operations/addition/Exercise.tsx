@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useProgress } from "@/context/ProgressContext";
-import { ModuleSettings } from "@/context/SettingsContext";
+import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -46,6 +46,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const timerRef = useRef<number | null>(null);
   const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
   const { saveExerciseResult } = useProgress();
+  const { updateModuleSettings } = useSettings();
   const { t } = useTranslations();
 
   // Generate problems when settings change or initially
@@ -578,8 +579,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             const newDifficulty = difficulties[currentIndex + 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
             console.log(`[ADAPTIVE DIFFICULTY] ¡SUBIENDO DE NIVEL! De ${adaptiveDifficulty} a ${newDifficulty}`);
             
-            // Actualizar la dificultad adaptativa
+            // Actualizar la dificultad adaptativa localmente
             setAdaptiveDifficulty(newDifficulty);
+            
+            // Guardar en la configuración del módulo para que persista entre sesiones
+            // Esto es crítico para mantener el progreso del usuario
+            try {
+              console.log(`[ADAPTIVE DIFFICULTY] Guardando nueva dificultad en configuración: ${newDifficulty}`);
+              // IMPORTANTE: Solo actualizamos el campo difficulty, no toda la configuración
+              updateModuleSettings("addition", { difficulty: newDifficulty });
+            } catch (error) {
+              console.error("[ADAPTIVE DIFFICULTY] Error al guardar nueva dificultad:", error);
+            }
             
             // Mostrar mensaje de felicitación y activar recompensa especial
             setFeedbackMessage(`¡Felicidades! Has demostrado excelentes capacidades matemáticas. Has subido al nivel ${newDifficulty} para un mayor desafío intelectual.`);
@@ -790,8 +801,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               const newDifficulty = difficulties[currentIndex - 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
               console.log(`[ADAPTIVE DIFFICULTY] ¡BAJANDO DE NIVEL! De ${adaptiveDifficulty} a ${newDifficulty}`);
               
-              // Actualizar la dificultad adaptativa
+              // Actualizar la dificultad adaptativa localmente
               setAdaptiveDifficulty(newDifficulty);
+              
+              // Guardar en la configuración del módulo para que persista entre sesiones
+              // Esto es crítico para mantener el progreso del usuario
+              try {
+                console.log(`[ADAPTIVE DIFFICULTY] Guardando nueva dificultad (reducida) en configuración: ${newDifficulty}`);
+                // IMPORTANTE: Solo actualizamos el campo difficulty, no toda la configuración
+                updateModuleSettings("addition", { difficulty: newDifficulty });
+              } catch (error) {
+                console.error("[ADAPTIVE DIFFICULTY] Error al guardar nueva dificultad (reducida):", error);
+              }
               
               // Mostrar mensaje informativo sobre la reducción de nivel
               setTimeout(() => {
