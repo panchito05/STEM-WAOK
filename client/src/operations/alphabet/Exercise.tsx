@@ -685,8 +685,8 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   );
   
   const renderQuizMode = () => {
-    // Si no hay opciones disponibles o letra correcta, mostramos un estado de carga
-    if (quizOptions.length === 0 || !quizCorrectLetter) {
+    // NUEVA SOLUCIÓN: Usar el objeto atómico de pregunta
+    if (!currentQuestion) {
       return <div className="flex flex-col items-center">
         <div className="text-xl">Loading quiz options...</div>
       </div>;
@@ -697,13 +697,13 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-2xl font-medium mb-4">
           {t('whichLetterMakesThisSound')}
         </div>
-        {/* SOLUCIÓN FINAL: Usamos la imagen de la letra almacenada en el estado independiente */}
-        <div className="text-6xl mb-6">{quizCorrectLetter.image}</div>
+        {/* Imagen de la letra desde el objeto atómico */}
+        <div className="text-6xl mb-6">{currentQuestion.image}</div>
         
         <div className="grid grid-cols-2 gap-4">
-          {quizOptions.map((option) => {
-            // Comparamos con la letra correcta desde el estado independiente
-            const isThisCorrect = option.id === quizCorrectLetter.id;
+          {currentQuestion.options.map((option) => {
+            // Comparación con la letra correcta desde el objeto atómico
+            const isThisCorrect = option.id === currentQuestion.correctLetter.id;
             const isSelected = selectedOption?.id === option.id;
             
             return (
@@ -742,9 +742,9 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {showDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
-              {`${quizCorrectLetter.uppercase} ${t('isFor')} ${quizCorrectLetter.word}`}
+              {`${currentQuestion.correctLetter.uppercase} ${t('isFor')} ${currentQuestion.correctLetter.word}`}
             </div>
-            <div className="text-6xl mt-2">{quizCorrectLetter.image}</div>
+            <div className="text-6xl mt-2">{currentQuestion.image}</div>
           </div>
         )}
       </div>
