@@ -543,12 +543,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         console.log("[COMPENSATION] Nuevos problemas generados:", newProblems.length);
         
-        // Añadir estos problemas a la lista existente
-        setProblems(prev => {
-          const updatedProblems = [...prev, ...newProblems];
-          console.log("[COMPENSATION] Total de problemas ahora:", updatedProblems.length);
-          return updatedProblems;
-        });
+        // En lugar de combinar los arreglos, primero actualizamos el arreglo existente y guardamos una referencia
+        const updatedProblems = [...problems, ...newProblems];
+        console.log("[COMPENSATION] Total de problemas ahora:", updatedProblems.length);
+        
+        // Actualizamos el estado con los problemas completos
+        setProblems(updatedProblems);
         
         // Mostrar mensaje informativo sobre problemas adicionales
         setFeedbackMessage(`Añadidos ${compensationProblemsNeeded} problemas de compensación`);
@@ -563,16 +563,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           setFeedbackMessage(null);
           setFeedbackColor(null);
           
-          // Importante: como se han añadido nuevos problemas pero current index no cambia, 
-          // es necesario continuar en lugar de terminar el ejercicio
-          if (currentProblemIndex >= problems.length - compensationProblemsNeeded - 1) {
-            console.log("[COMPENSATION] Continuando con el problema:", currentProblemIndex + 1);
-            
-            // NO completamos el ejercicio, continuamos con los problemas de compensación
-            setCurrentProblemIndex(currentProblemIndex + 1);
-            setUserAnswer("");
-            setShowingExplanation(false);
-          }
+          // Avanzamos al siguiente problema 
+          // Ya que sabemos el índice exacto del próximo problema (actual + 1), lo asignamos directamente
+          setCurrentProblemIndex(currentProblemIndex + 1);
+          setUserAnswer("");
+          setShowingExplanation(false);
+          
+          console.log("[COMPENSATION] Continuando con el problema:", currentProblemIndex + 1);
         }, 2000);
         
         return; // No completamos el ejercicio todavía
@@ -793,28 +790,34 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         
-          <div className={`text-3xl font-bold mb-6 flex justify-center items-baseline ${feedbackMessage ? (feedbackColor === "green" ? "text-green-600" : "text-red-600") : ""}`}>
-            <span className="text-right w-16">{currentProblem.num1}</span>
-            <span className="mx-4">+</span>
-            <span className="text-right w-16">{currentProblem.num2}</span>
-            <span className="mx-4">=</span>
-            <div className="border-b-2 border-gray-400 w-16 relative">
-              <Input
-                type="text"
-                ref={inputRef}
-                className="w-full text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2"
-                value={userAnswer}
-                onChange={handleInputChange}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    checkCurrentAnswer();
-                  }
-                }}
-                pattern="[0-9]*"
-                inputMode="numeric"
-              />
+          {currentProblem ? (
+            <div className={`text-3xl font-bold mb-6 flex justify-center items-baseline ${feedbackMessage ? (feedbackColor === "green" ? "text-green-600" : "text-red-600") : ""}`}>
+              <span className="text-right w-16">{currentProblem.num1}</span>
+              <span className="mx-4">+</span>
+              <span className="text-right w-16">{currentProblem.num2}</span>
+              <span className="mx-4">=</span>
+              <div className="border-b-2 border-gray-400 w-16 relative">
+                <Input
+                  type="text"
+                  ref={inputRef}
+                  className="w-full text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2"
+                  value={userAnswer}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      checkCurrentAnswer();
+                    }
+                  }}
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-4">
+              <p>Cargando el siguiente problema...</p>
+            </div>
+          )}
           {feedbackMessage && (
             <div className={`text-lg font-medium ${feedbackColor === "green" ? "text-green-600" : "text-red-600"}`}>
               {feedbackMessage}
