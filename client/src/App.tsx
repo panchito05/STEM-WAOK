@@ -19,47 +19,16 @@ import { SettingsProvider } from "@/context/SettingsContext";
 import { ProgressProvider } from "@/context/ProgressContext";
 import LevelUpHandler from "@/components/LevelUpHandler";
 
-// Wrap pages that need settings
-const SettingsWrappedOperation = (props: any) => (
-  <SettingsProvider>
-    <ProgressProvider>
-      <OperationPage {...props} />
-    </ProgressProvider>
-  </SettingsProvider>
-);
-
-const SettingsWrappedSettingsPage = (props: any) => (
-  <SettingsProvider>
-    <ProgressProvider>
-      <SettingsPage {...props} />
-    </ProgressProvider>
-  </SettingsProvider>
-);
-
-const SettingsWrappedProgressPage = (props: any) => (
-  <SettingsProvider>
-    <ProgressProvider>
-      <ProgressPage {...props} />
-    </ProgressProvider>
-  </SettingsProvider>
-);
-
-const SettingsWrappedProfilePage = (props: any) => (
-  <SettingsProvider>
-    <ProgressProvider>
-      <ProfilePage {...props} />
-    </ProgressProvider>
-  </SettingsProvider>
-);
+// Los providers ahora están a nivel global, ya no necesitamos wrappers adicionales
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/operation/:operation" component={SettingsWrappedOperation} />
-      <Route path="/progress" component={ProtectedRoute(SettingsWrappedProgressPage)} />
-      <Route path="/settings" component={ProtectedRoute(SettingsWrappedSettingsPage)} />
-      <Route path="/profile" component={ProtectedRoute(SettingsWrappedProfilePage)} />
+      <Route path="/operation/:operation" component={OperationPage} />
+      <Route path="/progress" component={ProtectedRoute(ProgressPage)} />
+      <Route path="/settings" component={ProtectedRoute(SettingsPage)} />
+      <Route path="/profile" component={ProtectedRoute(ProfilePage)} />
       <Route path="/login" component={LoginPage} />
       <Route path="/quick-login" component={SimpleLoginPage} />
       <Route path="/register" component={RegisterPage} />
@@ -74,11 +43,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <SettingsProvider>
-          <Layout>
-            <Router />
-          </Layout>
-          <Toaster />
-          <LevelUpHandler />
+          <ProgressProvider>
+            <Layout>
+              <Router />
+            </Layout>
+            <Toaster />
+            <LevelUpHandler />
+          </ProgressProvider>
         </SettingsProvider>
       </AuthProvider>
     </QueryClientProvider>

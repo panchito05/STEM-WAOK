@@ -32,12 +32,19 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     [updateModuleSettings]
   );
   
-  // Guardar automáticamente cada vez que cambia un ajuste (con debounce)
+  // Guardar automáticamente cada vez que cambia un ajuste
   const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
     const updatedSettings = { ...localSettings, [key]: value };
     setLocalSettings(updatedSettings);
-    // Usar debounce para evitar múltiples llamadas de guardado
-    debouncedSave(updatedSettings);
+    
+    // Para cambios de dificultad, aplicar cambio inmediatamente
+    if (key === "difficulty") {
+      console.log("[ADDITION] Guardando configuración de dificultad inmediatamente:", value);
+      updateModuleSettings("addition", updatedSettings);
+    } else {
+      // Para otros ajustes, usar debounce para evitar múltiples llamadas de guardado
+      debouncedSave(updatedSettings);
+    }
   };
   
   // Para poder navegar entre la configuración y el ejercicio sin perder cambios
