@@ -161,6 +161,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     setExerciseType(newType);
     resetExerciseState();
+    // Preparamos el ejercicio después de resetear el estado
     prepareExercise(newType);
   }, [settings.difficulty, currentIndex, language, correctStreak]);
 
@@ -194,9 +195,13 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Generate quiz options: one correct, three random
   const prepareQuizOptions = () => {
-    // Start with the correct answer
-    // NOTE: Se utiliza el currentLetter directamente, que corresponde a la letra mostrada
-    let options = [currentLetter];
+    // Primero verificamos que currentLetter esté definido correctamente
+    // console.log("Preparando quiz para:", currentLetter);
+    
+    // Start with the correct answer - esta debe ser la letra que corresponde a la imagen mostrada
+    // El problema estaba aquí, ya que existía un desfase entre la imagen mostrada y la letra esperada
+    const correctLetter = currentLetter; // Aseguramos que la letra correcta es la actual
+    let options = [correctLetter];
     
     // Add three random letters that are different from current
     while (options.length < 4) {
@@ -340,9 +345,17 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleQuizOptionSelect = (letter: Letter) => {
     setSelectedOption(letter);
     
-    // La respuesta correcta DEBE ser la letra actual que se muestra
+    // La respuesta correcta DEBE ser la letra actual que se muestra en la UI
     // y debe corresponder con la imagen mostrada
+    // IMPORTANTE: La validación debe hacerse contra currentLetter 
+    // (la letra correspondiente a la imagen mostrada)
     const isAnswerCorrect = letter.id === currentLetter.id;
+    
+    // Debugging (descomentar si es necesario)
+    // console.log("Usuario seleccionó:", letter.uppercase, letter.word);
+    // console.log("Letra correcta:", currentLetter.uppercase, currentLetter.word);
+    // console.log("¿Es correcta?:", isAnswerCorrect);
+    
     setIsCorrect(isAnswerCorrect);
     setShowDetails(true);
     
