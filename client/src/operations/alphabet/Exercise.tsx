@@ -221,8 +221,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Crear un nuevo ID único para esta generación
       const newExerciseId = `quiz-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-      // Obtener una copia independiente de la letra actual
-      const currentQuizLetter = { ...currentLetter };
+      // ----- INICIO DESFASE SOLICITADO -----
+      // Desfasamos la letra correcta un espacio hacia la derecha (avanzando una posición en el alfabeto)
+      // Determinar el índice de la nueva letra correcta
+      const nextIndex = (currentIndex + 1) % alphabet.length;
+      // Utilizar la letra desfasada como la correcta
+      const currentQuizLetter = { ...alphabet[nextIndex] };
+      // ----- FIN DESFASE SOLICITADO -----
       
       // Crear el conjunto de opciones (3 aleatorias + la correcta)
       let optionsSet: Letter[] = [currentQuizLetter];
@@ -241,9 +246,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Mezclar las opciones
       const shuffledOptions = [...optionsSet].sort(() => Math.random() - 0.5);
       
-      // Crear el paquete de datos sincronizado
+      // Crear el paquete de datos sincronizado con la letra desfasada
       const newQuizData = {
-        correctLetter: currentQuizLetter,
+        correctLetter: currentQuizLetter,  // Esta es la letra desfasada
         options: shuffledOptions,
         exerciseId: newExerciseId
       };
@@ -251,11 +256,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Actualizar el estado con el paquete completo
       setQuizData(newQuizData);
       
-      console.log('QUIZ DATA UPDATE:');
+      console.log('QUIZ DATA UPDATE (CON DESFASE):');
       console.log('- ID:', newExerciseId);
       console.log('- Opciones:', shuffledOptions.map(l => l.uppercase).join(', '));
       console.log('- Letra correcta:', currentQuizLetter.uppercase);
       console.log('- Imagen correcta:', currentQuizLetter.image);
+      console.log('- Índice original:', currentIndex);
+      console.log('- Índice desfasado:', nextIndex);
     }
   }, [currentLetter, alphabet, exerciseType, currentIndex]);
   
@@ -265,16 +272,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Crear un nuevo ID único para esta generación
       const newExerciseId = `matching-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       
-      // Obtener una copia independiente de la letra actual
-      const currentMatchingLetter = { ...currentLetter };
+      // ----- INICIO DESFASE SOLICITADO -----
+      // Desfasamos la letra correcta un espacio hacia la derecha (avanzando una posición en el alfabeto)
+      // Determinar el índice de la nueva letra correcta
+      const nextIndex = (currentIndex + 1) % alphabet.length;
+      // Utilizar la letra desfasada como la correcta
+      const currentMatchingLetter = { ...alphabet[nextIndex] };
+      // ----- FIN DESFASE SOLICITADO -----
       
       // Generar conjunto de opciones aleatorias para el matching
       const letterIndices: number[] = [];
       
-      // Elegir índices aleatorios para 7 letras diferentes (excluyendo la actual)
+      // Elegir índices aleatorios para 7 letras diferentes (excluyendo la actual y la siguiente)
       while (letterIndices.length < 7) {
         const randomIndex = Math.floor(Math.random() * alphabet.length);
-        if (randomIndex !== currentIndex && !letterIndices.includes(randomIndex)) {
+        if (randomIndex !== currentIndex && 
+            randomIndex !== nextIndex && 
+            !letterIndices.includes(randomIndex)) {
           letterIndices.push(randomIndex);
         }
       }
@@ -282,13 +296,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Convertir índices en letras
       const randomLetters = letterIndices.map(index => ({ ...alphabet[index] }));
       
-      // Agregar la letra actual y mezclar
+      // Agregar la letra desfasada y mezclar
       const allOptions = [...randomLetters, currentMatchingLetter];
       const shuffledOptions = [...allOptions].sort(() => Math.random() - 0.5);
       
-      // Crear el paquete de datos sincronizado
+      // Crear el paquete de datos sincronizado con la letra desfasada
       const newMatchingData = {
-        correctLetter: currentMatchingLetter,
+        correctLetter: currentMatchingLetter, // Esta es la letra desfasada
         options: shuffledOptions,
         exerciseId: newExerciseId
       };
@@ -296,11 +310,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Actualizar estado con el paquete completo
       setMatchingData(newMatchingData);
       
-      console.log('MATCHING DATA UPDATE:');
+      console.log('MATCHING DATA UPDATE (CON DESFASE):');
       console.log('- ID:', newExerciseId);
       console.log('- Opciones:', shuffledOptions.map(l => l.uppercase).join(', '));
       console.log('- Letra correcta:', currentMatchingLetter.uppercase);
       console.log('- Imagen correcta:', currentMatchingLetter.image);
+      console.log('- Índice original:', currentIndex);
+      console.log('- Índice desfasado:', nextIndex);
     }
   }, [currentLetter, alphabet, currentIndex, exerciseType]);
   
@@ -545,22 +561,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       letter => letter.uppercase === currentLetter.uppercase
     );
     
+    // ----- INICIO DESFASE SOLICITADO -----
+    // Para mantener la consistencia con los otros tipos de ejercicios, 
+    // también aplicamos el desfase aquí - avanzamos un índice
+    const shiftedIdx = (currentIdx + 1) % alphabet.length;
+    // ----- FIN DESFASE SOLICITADO -----
+    
     // Obtener letras adyacentes correctas
     let beforeCorrect = false;
     let afterCorrect = false;
     
-    // Verificar letra anterior
-    if (currentIdx > 0) {
-      const correctBeforeLetter = alphabet[currentIdx - 1].uppercase;
+    // Verificar letra anterior - usando el índice desplazado
+    if (shiftedIdx > 0) {
+      const correctBeforeLetter = alphabet[shiftedIdx - 1].uppercase;
       beforeCorrect = adjacentLetterInputs.before.toUpperCase() === correctBeforeLetter;
     } else {
       // Si es la primera letra, no hay "anterior"
       beforeCorrect = adjacentLetterInputs.before === "";
     }
     
-    // Verificar letra siguiente
-    if (currentIdx < alphabet.length - 1) {
-      const correctAfterLetter = alphabet[currentIdx + 1].uppercase;
+    // Verificar letra siguiente - usando el índice desplazado
+    if (shiftedIdx < alphabet.length - 1) {
+      const correctAfterLetter = alphabet[shiftedIdx + 1].uppercase;
       afterCorrect = adjacentLetterInputs.after.toUpperCase() === correctAfterLetter;
     } else {
       // Si es la última letra, no hay "siguiente"
@@ -612,16 +634,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       letter => letter.uppercase === currentLetter.uppercase
     );
     
-    // Obtener y mostrar letras adyacentes correctas
+    // ----- INICIO DESFASE SOLICITADO -----
+    // Aplicar el mismo desfase aquí también para mantener consistencia
+    const shiftedIdx = (currentIdx + 1) % alphabet.length;
+    // ----- FIN DESFASE SOLICITADO -----
+    
+    // Obtener y mostrar letras adyacentes correctas usando el índice desplazado
     let beforeLetter = "";
     let afterLetter = "";
     
-    if (currentIdx > 0) {
-      beforeLetter = alphabet[currentIdx - 1].uppercase;
+    if (shiftedIdx > 0) {
+      beforeLetter = alphabet[shiftedIdx - 1].uppercase;
     }
     
-    if (currentIdx < alphabet.length - 1) {
-      afterLetter = alphabet[currentIdx + 1].uppercase;
+    if (shiftedIdx < alphabet.length - 1) {
+      afterLetter = alphabet[shiftedIdx + 1].uppercase;
     }
     
     setAdjacentLetterInputs({
