@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, EyeIcon } from 'lucide-react';
@@ -11,6 +11,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Progress } from '@/components/ui/progress';
 import { useTranslations } from '@/hooks/use-translations';
+// Importamos el store de Zustand y los tipos
+import { useAlphabetStore, Letter, ExerciseType } from '@/store/alphabetStore';
 
 interface ExerciseProps {
   settings: ModuleSettings;
