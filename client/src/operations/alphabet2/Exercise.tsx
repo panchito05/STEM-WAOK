@@ -232,25 +232,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // El resto del alfabeto seguiría con el mismo patrón
   };
   
-  // Efecto para detectar cambios en los ajustes y nivel de dificultad
+  // Efecto específico para manejar cambios en la dificultad
   useEffect(() => {
     // Verificar si ha cambiado el nivel de dificultad
     if (prevDifficultyRef.current !== settings.difficulty) {
       console.log(`[ALPHABET2] Dificultad cambiada: ${prevDifficultyRef.current} -> ${settings.difficulty}`);
       prevDifficultyRef.current = settings.difficulty;
       
-      // Reiniciar estados cuando cambia la dificultad
+      // Reiniciar todos los estados cuando cambia la dificultad
       setCurrentIndex(0);
       setCorrectAnswers(0);
       setIncorrectAnswers(0);
       setConsecutiveCorrectAnswers(0);
+      setSelectedOptionIndex(null);
+      setShowDetails(false);
+      setIsCorrect(null);
+      setAttemptCount(0);
       
-      // Mostrar mensaje al usuario
-      console.log(`[ALPHABET2] Contenido actualizado para nivel: ${settings.difficulty}`);
+      // Forzar regeneración del ejercicio con el nuevo nivel de dificultad
+      setTimeout(() => {
+        console.log(`[ALPHABET2] Regenerando ejercicio para nivel: ${settings.difficulty}`);
+        generateExercise();
+      }, 50);
+    }
+  }, [settings.difficulty]);
+  
+  // Efecto para otros cambios en el estado del ejercicio
+  useEffect(() => {
+    // No regenerar ejercicio si acabamos de cambiar la dificultad (ya manejado arriba)
+    if (prevDifficultyRef.current === settings.difficulty) {
+      // Generar nuevo ejercicio con el contenido apropiado para este nivel
+      generateExercise();
     }
     
-    // Generar nuevo ejercicio con el contenido apropiado para este nivel
-    generateExercise();
+    // Iniciar o resetear el temporizador
     startTimer();
     
     // Limpieza
@@ -258,7 +273,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (timerId) clearInterval(timerId);
       if (rewardTimeoutRef.current) clearTimeout(rewardTimeoutRef.current);
     };
-  }, [currentIndex, exerciseMode, settings.difficulty, globalSettings.language]);
+  }, [currentIndex, exerciseMode, settings.language]);
   
   // Iniciar temporizador
   const startTimer = () => {
