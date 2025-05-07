@@ -446,9 +446,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     console.log("🔄 Actualizando isCorrect:", isAnswerCorrect);
     setIsCorrect(isAnswerCorrect);
     
-    // IMPORTANTE: Siempre mostrar detalles después de seleccionar cualquier opción
-    console.log("🔍 Mostrando detalles:", true);
-    setShowDetails(true);
+    // IMPORTANTE: Solo mostrar detalles si la respuesta es correcta
+    // Si es incorrecta, NO mostrar la respuesta, dejar que el usuario use el botón "Show Answer"
+    if (isAnswerCorrect) {
+      console.log("🔍 Mostrando detalles (respuesta correcta):", true);
+      setShowDetails(true);
+    } else {
+      console.log("❌ Respuesta incorrecta, no mostrar detalles");
+      setShowDetails(false);
+    }
     
     // Si la respuesta es correcta, incrementar los contadores
     if (isAnswerCorrect) {
@@ -550,8 +556,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     }
     
-    // Show the answer regardless of correctness
-    setShowDetails(true);
+    // Ya no necesitamos esta línea, ya que la lógica de mostrar detalles 
+    // está controlada por la condición anterior (mostrar solo si es correcta)
   };
 
   const renderLetterDisplay = () => {
