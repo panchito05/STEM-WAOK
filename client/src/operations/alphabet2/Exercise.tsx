@@ -307,45 +307,66 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return selectedLanguage === 'spanish' ? alternativesSpanish : alternativesEnglish;
   };
   
+  // Determinar el tipo de ejercicio según el nivel de dificultad
+  const getExerciseType = () => {
+    switch (settings.difficulty) {
+      case 'beginner':
+        // Reconocimiento básico: mostrar letra y elegir imagen
+        return 'letter_to_image';
+      case 'elementary':
+        // Emparejamiento: mostrar letra y buscar su pareja
+        return 'letter_to_image';
+      case 'intermediate':
+        // Quiz: mostrar imagen y elegir entre varias letras
+        return 'image_to_letter';
+      case 'advanced':
+        // Para advanced y expert usamos los mismos tipos básicos
+        // pero la implementación debería incluir drag & drop
+        return Math.random() > 0.5 ? 'letter_to_image' : 'image_to_letter';
+      case 'expert':
+        // Expert: secuencias de letras (anterior/siguiente)
+        return Math.random() > 0.5 ? 'letter_to_image' : 'image_to_letter';
+      default:
+        return 'letter_to_image';
+    }
+  };
+
   // Función para obtener un subconjunto del alfabeto según la dificultad
   const getAlphabetSubset = () => {
     const alphabet = getAlphabet();
     
+    // Logging para depuración
+    console.log(`🖼️ Generando ejercicio de ${exerciseMode === 'letter_to_image' ? 'letra a imágenes' : 'imagen a letras'} para ${settings.difficulty}`);
+    
     switch (settings.difficulty) {
       case 'beginner':
-        // Nivel principiante: Solo primeras 5 letras (A-E)
-        // Este nivel es para usuarios que están empezando a aprender el alfabeto
-        return alphabet.slice(0, 5);
+        // Para principiantes usamos todo el alfabeto, pero con ejercicios básicos
+        // Reconocimiento básico (A → Apple 🍎)
+        return alphabet;
         
       case 'elementary':
-        // Nivel elemental: Primeras 10 letras (A-J)
-        // Un paso adelante del nivel principiante, incorpora más letras
-        return alphabet.slice(0, 10);
+        // Emparejamiento: B = ? [Ball ⚽]
+        // Mismas letras pero diferente contexto
+        return alphabet;
         
       case 'intermediate':
-        // Nivel intermedio: Primeras 15 letras (A-O/Ñ)
-        // Para estudiantes que ya dominan la primera mitad del alfabeto
-        return alphabet.slice(0, 15);
+        // Quiz de letras: 🍌 = ? [A, C, P, R]
+        // Usamos todo el alfabeto, pero en el modo de imagen a letra
+        return alphabet;
         
       case 'advanced':
-        // Nivel avanzado: Primeras 21 letras (A-U)
-        // Incluye letras menos comunes y más desafiantes
-        return alphabet.slice(0, 21);
+        // Drag & Drop Ordenar A, C, B
+        // Usamos subconjuntos de letras para ordenar
+        return alphabet;
         
       case 'expert':
-        // Nivel experto: Alfabeto completo con desafío adicional
-        if (correctAnswers >= 10) {
-          // Después de 10 respuestas correctas, mezclamos el alfabeto para mayor desafío
-          // También incluimos combinaciones más difíciles y todas las letras
-          const shuffled = [...alphabet].sort(() => Math.random() - 0.5);
-          return shuffled;
-        }
-        // Alfabeto completo en orden normal para las primeras 10 preguntas
+        // Anterior/Siguiente (K → J y L)
+        // Necesitamos todo el alfabeto para poder identificar letras adyacentes
         return alphabet;
         
       default:
-        // Por defecto, usar configuración de principiante
-        return alphabet.slice(0, 5);
+        // Por defecto, usar el alfabeto completo
+        return alphabet;
     }
   };
   
@@ -358,9 +379,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const safeIndex = currentIndex % alphabetSubset.length;
     const currentLetterItem = alphabetSubset[safeIndex];
     
-    // Alternar entre los dos modos de ejercicio
-    const newExerciseMode = Math.random() > 0.5 ? 'letter_to_image' : 'image_to_letter';
+    // Determinar el tipo de ejercicio según el nivel de dificultad
+    const newExerciseMode = getExerciseType();
     setExerciseMode(newExerciseMode);
+    
+    console.log(`🖼️ Generando ejercicio de ${newExerciseMode === 'letter_to_image' ? 'letra a imágenes' : 'imagen a letras'} para ${currentLetterItem.uppercase}. Opción correcta en posición ${Math.floor(Math.random() * 4)}`);
     
     // Resetear estados
     setSelectedOptionIndex(null);
@@ -525,15 +548,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const getDifficultyText = () => {
     switch (settings.difficulty) {
       case 'beginner':
-        return selectedLanguage === 'spanish' ? 'Principiante (A-E)' : 'Beginner (A-E)';
+        return selectedLanguage === 'spanish' ? 'Principiante (Reconocimiento)' : 'Beginner (Recognition)';
       case 'elementary':
-        return selectedLanguage === 'spanish' ? 'Elemental (A-J)' : 'Elementary (A-J)';
+        return selectedLanguage === 'spanish' ? 'Elemental (Emparejamiento)' : 'Elementary (Matching)';
       case 'intermediate':
-        return selectedLanguage === 'spanish' ? 'Intermedio (A-O)' : 'Intermediate (A-O)';
+        return selectedLanguage === 'spanish' ? 'Intermedio (Quiz)' : 'Intermediate (Quiz)';
       case 'advanced':
-        return selectedLanguage === 'spanish' ? 'Avanzado (A-U)' : 'Advanced (A-U)';
+        return selectedLanguage === 'spanish' ? 'Avanzado (Drag & Drop)' : 'Advanced (Drag & Drop)';
       case 'expert':
-        return selectedLanguage === 'spanish' ? 'Experto (A-Z)' : 'Expert (A-Z)';
+        return selectedLanguage === 'spanish' ? 'Experto (Secuencias)' : 'Expert (Sequences)';
       default:
         return settings.difficulty;
     }
@@ -544,24 +567,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     switch (settings.difficulty) {
       case 'beginner':
         return selectedLanguage === 'spanish' 
-          ? 'Primeras 5 letras del alfabeto' 
-          : 'First 5 letters of the alphabet';
+          ? 'Reconocimiento básico de letras y palabras' 
+          : 'Basic recognition of letters and words';
       case 'elementary':
         return selectedLanguage === 'spanish' 
-          ? 'Primeras 10 letras del alfabeto' 
-          : 'First 10 letters of the alphabet';
+          ? 'Emparejamiento de letras con imágenes' 
+          : 'Matching letters with images';
       case 'intermediate':
         return selectedLanguage === 'spanish' 
-          ? 'Primeras 15 letras del alfabeto' 
-          : 'First 15 letters of the alphabet';
+          ? 'Quiz de múltiples opciones para letras' 
+          : 'Multiple choice letter quiz';
       case 'advanced':
         return selectedLanguage === 'spanish' 
-          ? 'Primeras 21 letras del alfabeto' 
-          : 'First 21 letters of the alphabet';
+          ? 'Ejercicios de arrastrar y soltar para ordenar letras' 
+          : 'Drag and drop exercises to order letters';
       case 'expert':
         return selectedLanguage === 'spanish' 
-          ? 'Alfabeto completo con desafíos adicionales' 
-          : 'Complete alphabet with additional challenges';
+          ? 'Secuencias de letras, anterior y siguiente en el alfabeto' 
+          : 'Letter sequences, next and previous in alphabet';
       default:
         return '';
     }

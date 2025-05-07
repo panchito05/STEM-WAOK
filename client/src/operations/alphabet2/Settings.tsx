@@ -156,42 +156,42 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                         <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
                           <div className={`p-3 rounded-md ${form.watch("difficulty") === "beginner" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
                             <div className="font-bold mb-2 text-center">Beginner</div>
-                            <div className="text-center">A - E</div>
-                            <div className="text-center font-mono text-sm mt-2">Avión, Barco...</div>
+                            <div className="text-center">Reconocimiento básico</div>
+                            <div className="text-center font-mono text-sm mt-2">A → Apple 🍎</div>
                           </div>
                           
                           <div className={`p-3 rounded-md ${form.watch("difficulty") === "elementary" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
                             <div className="font-bold mb-2 text-center">Elementary</div>
-                            <div className="text-center">A - J</div>
-                            <div className="text-center font-mono text-sm mt-2">A...Jirafa</div>
+                            <div className="text-center">Emparejamiento</div>
+                            <div className="text-center font-mono text-sm mt-2">B = ? [Ball ⚽]</div>
                           </div>
                           
                           <div className={`p-3 rounded-md ${form.watch("difficulty") === "intermediate" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
                             <div className="font-bold mb-2 text-center">Intermediate</div>
-                            <div className="text-center">A - O</div>
-                            <div className="text-center font-mono text-sm mt-2">A...Oso</div>
+                            <div className="text-center">Quiz de letras</div>
+                            <div className="text-center font-mono text-sm mt-2">🍌 = ? [A, C, P, R]</div>
                           </div>
                           
                           <div className={`p-3 rounded-md ${form.watch("difficulty") === "advanced" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
                             <div className="font-bold mb-2 text-center">Advanced</div>
-                            <div className="text-center">A - U</div>
-                            <div className="text-center font-mono text-sm mt-2">A...Uva</div>
+                            <div className="text-center">Drag & Drop</div>
+                            <div className="text-center font-mono text-sm mt-2">Ordenar: A, C, B</div>
                           </div>
                           
                           <div className={`p-3 rounded-md ${form.watch("difficulty") === "expert" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
                             <div className="font-bold mb-2 text-center">Expert</div>
-                            <div className="text-center">A - Z</div>
-                            <div className="text-center font-mono text-sm mt-2">Alfabeto completo</div>
+                            <div className="text-center">Anterior/Siguiente</div>
+                            <div className="text-center font-mono text-sm mt-2">K → J y L</div>
                           </div>
                         </div>
                       </div>
                       
                       <div className="text-sm text-gray-500 mb-4">
-                        <strong>Beginner:</strong> 5 primeras letras (A-E)<br/>
-                        <strong>Elementary:</strong> 10 primeras letras (A-J)<br/>
-                        <strong>Intermediate:</strong> 15 primeras letras (A-O)<br/>
-                        <strong>Advanced:</strong> 21 primeras letras (A-U)<br/>
-                        <strong>Expert:</strong> Alfabeto completo (A-Z) con desafíos especiales
+                        <strong>Beginner:</strong> Reconocimiento básico de letras y palabras<br/>
+                        <strong>Elementary:</strong> Emparejamiento de letras con imágenes correspondientes<br/>
+                        <strong>Intermediate:</strong> Quiz de múltiples opciones con letras<br/>
+                        <strong>Advanced:</strong> Ejercicios de arrastrar y soltar para ordenar letras<br/>
+                        <strong>Expert:</strong> Secuencias de letras, reconocimiento de anterior y siguiente
                       </div>
                     </div>
                     
