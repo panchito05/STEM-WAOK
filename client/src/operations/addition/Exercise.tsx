@@ -32,12 +32,56 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Ya no necesitamos estos contadores porque agregamos problemas inmediatamente
   // const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0); // Contador para respuestas incorrectas
   // const [revealedAnswersCount, setRevealedAnswersCount] = useState(0); // Contador para respuestas reveladas
-  const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.difficulty); // Dificultad adaptiva
+  // Cargar la dificultad adaptativa al iniciar, basado en la configuración o localStorage
+  const [adaptiveDifficulty, setAdaptiveDifficulty] = useState<"beginner" | "elementary" | "intermediate" | "advanced" | "expert">(() => {
+    // Intentar cargar desde localStorage primero
+    try {
+      const storedSettings = localStorage.getItem('moduleSettings');
+      if (storedSettings) {
+        const parsedSettings = JSON.parse(storedSettings);
+        if (parsedSettings.addition && parsedSettings.addition.difficulty) {
+          console.log('[ADAPTIVE DIFFICULTY] Cargando dificultad desde localStorage:', parsedSettings.addition.difficulty);
+          return parsedSettings.addition.difficulty;
+        }
+      }
+    } catch (error) {
+      console.error('[ADAPTIVE DIFFICULTY] Error al cargar dificultad desde localStorage:', error);
+    }
+    
+    // Si no hay datos en localStorage, usar la configuración actual
+    return settings.difficulty;
+  });
   const [currentAttempts, setCurrentAttempts] = useState(0); // Contador para intentos en el problema actual
   const [showReward, setShowReward] = useState(false); // Estado para mostrar la recompensa
   const [showLevelUpReward, setShowLevelUpReward] = useState(false); // Recompensa especial para subida de nivel
-  const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(0); // Contador para respuestas correctas consecutivas
-  const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(0); // Contador para respuestas incorrectas consecutivas
+  // Inicializar contadores con valores almacenados en localStorage si existen
+  const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(() => {
+    try {
+      const stored = localStorage.getItem('addition_consecutiveCorrectAnswers');
+      if (stored) {
+        const value = parseInt(stored, 10);
+        console.log('[ADAPTIVE DIFFICULTY] Recuperando contador de respuestas correctas consecutivas:', value);
+        return value;
+      }
+    } catch (error) {
+      console.error('[ADAPTIVE DIFFICULTY] Error al recuperar contador de respuestas correctas:', error);
+    }
+    return 0;
+  });
+  
+  const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => {
+    try {
+      const stored = localStorage.getItem('addition_consecutiveIncorrectAnswers');
+      if (stored) {
+        const value = parseInt(stored, 10);
+        console.log('[ADAPTIVE DIFFICULTY] Recuperando contador de respuestas incorrectas consecutivas:', value);
+        return value;
+      }
+    } catch (error) {
+      console.error('[ADAPTIVE DIFFICULTY] Error al recuperar contador de respuestas incorrectas:', error);
+    }
+    return 0;
+  });
   const [rewardType, setRewardType] = useState<"medals" | "trophies" | "stars">("stars"); // Tipo de recompensa a mostrar
   const [rewardsShownIndices, setRewardsShownIndices] = useState<number[]>([]); // Índices donde se han mostrado recompensas
   const [totalRewardsShown, setTotalRewardsShown] = useState(0); // Contador total de recompensas mostradas
@@ -259,6 +303,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       inputRef.current.focus();
     }
   }, [currentProblemIndex]);
+  
+  // Guardar contadores en localStorage cuando cambien
+  useEffect(() => {
+    localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString());
+    console.log('[ADAPTIVE DIFFICULTY] Guardando contador de respuestas correctas consecutivas:', consecutiveCorrectAnswers);
+  }, [consecutiveCorrectAnswers]);
+  
+  useEffect(() => {
+    localStorage.setItem('addition_consecutiveIncorrectAnswers', consecutiveIncorrectAnswers.toString());
+    console.log('[ADAPTIVE DIFFICULTY] Guardando contador de respuestas incorrectas consecutivas:', consecutiveIncorrectAnswers);
+  }, [consecutiveIncorrectAnswers]);
 
   const generateProblems = () => {
     const newProblems: Problem[] = [];
@@ -299,7 +354,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // De esta forma podemos mantener el progreso de respuestas consecutivas entre ejercicios
     if (!settings.enableAdaptiveDifficulty) {
       setConsecutiveCorrectAnswers(0);
+      localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
       setConsecutiveIncorrectAnswers(0);
+      localStorage.setItem('addition_consecutiveIncorrectAnswers', '0');
       console.log(`[ADAPTIVE DIFFICULTY] Reiniciando contadores porque no está habilitada la dificultad adaptativa`);
     } else {
       console.log(`[ADAPTIVE DIFFICULTY] Manteniendo contadores para conservar progreso: Correctas=${consecutiveCorrectAnswers}, Incorrectas=${consecutiveIncorrectAnswers}`);
