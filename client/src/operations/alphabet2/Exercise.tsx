@@ -232,8 +232,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // El resto del alfabeto seguiría con el mismo patrón
   };
   
-  // Efecto para inicializar el ejercicio
+  // Efecto para detectar cambios en los ajustes y nivel de dificultad
   useEffect(() => {
+    // Verificar si ha cambiado el nivel de dificultad
+    if (prevDifficultyRef.current !== settings.difficulty) {
+      console.log(`[ALPHABET2] Dificultad cambiada: ${prevDifficultyRef.current} -> ${settings.difficulty}`);
+      prevDifficultyRef.current = settings.difficulty;
+      
+      // Reiniciar estados cuando cambia la dificultad
+      setCurrentIndex(0);
+      setCorrectAnswers(0);
+      setIncorrectAnswers(0);
+      setConsecutiveCorrectAnswers(0);
+      
+      // Mostrar mensaje al usuario
+      console.log(`[ALPHABET2] Contenido actualizado para nivel: ${settings.difficulty}`);
+    }
+    
+    // Generar nuevo ejercicio con el contenido apropiado para este nivel
     generateExercise();
     startTimer();
     
@@ -279,20 +295,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Función para obtener un subconjunto del alfabeto según la dificultad
   const getAlphabetSubset = () => {
     const alphabet = getAlphabet();
-    
-    // Registra cambio de dificultad en consola para depuración
-    if (prevDifficultyRef.current !== settings.difficulty) {
-      console.log(`[ALPHABET2] Cambiando dificultad de ${prevDifficultyRef.current} a ${settings.difficulty}`);
-      prevDifficultyRef.current = settings.difficulty;
-      
-      // Resetear el índice cuando cambia la dificultad para empezar desde el principio
-      setCurrentIndex(0);
-      
-      // Resetear los contadores
-      setCorrectAnswers(0);
-      setIncorrectAnswers(0);
-      setConsecutiveCorrectAnswers(0);
-    }
     
     switch (settings.difficulty) {
       case 'beginner':
@@ -508,17 +510,45 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const getDifficultyText = () => {
     switch (settings.difficulty) {
       case 'beginner':
-        return selectedLanguage === 'spanish' ? 'Principiante' : 'Beginner';
+        return selectedLanguage === 'spanish' ? 'Principiante (A-E)' : 'Beginner (A-E)';
       case 'elementary':
-        return selectedLanguage === 'spanish' ? 'Elemental' : 'Elementary';
+        return selectedLanguage === 'spanish' ? 'Elemental (A-J)' : 'Elementary (A-J)';
       case 'intermediate':
-        return selectedLanguage === 'spanish' ? 'Intermedio' : 'Intermediate';
+        return selectedLanguage === 'spanish' ? 'Intermedio (A-O)' : 'Intermediate (A-O)';
       case 'advanced':
-        return selectedLanguage === 'spanish' ? 'Avanzado' : 'Advanced';
+        return selectedLanguage === 'spanish' ? 'Avanzado (A-U)' : 'Advanced (A-U)';
       case 'expert':
-        return selectedLanguage === 'spanish' ? 'Experto' : 'Expert';
+        return selectedLanguage === 'spanish' ? 'Experto (A-Z)' : 'Expert (A-Z)';
       default:
         return settings.difficulty;
+    }
+  };
+  
+  // Función para obtener descripción del nivel actual
+  const getDifficultyDescription = () => {
+    switch (settings.difficulty) {
+      case 'beginner':
+        return selectedLanguage === 'spanish' 
+          ? 'Primeras 5 letras del alfabeto' 
+          : 'First 5 letters of the alphabet';
+      case 'elementary':
+        return selectedLanguage === 'spanish' 
+          ? 'Primeras 10 letras del alfabeto' 
+          : 'First 10 letters of the alphabet';
+      case 'intermediate':
+        return selectedLanguage === 'spanish' 
+          ? 'Primeras 15 letras del alfabeto' 
+          : 'First 15 letters of the alphabet';
+      case 'advanced':
+        return selectedLanguage === 'spanish' 
+          ? 'Primeras 21 letras del alfabeto' 
+          : 'First 21 letters of the alphabet';
+      case 'expert':
+        return selectedLanguage === 'spanish' 
+          ? 'Alfabeto completo con desafíos adicionales' 
+          : 'Complete alphabet with additional challenges';
+      default:
+        return '';
     }
   };
   
@@ -820,14 +850,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   return (
     <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">
-          {selectedLanguage === 'spanish' ? 'Viaje Alfabético' : 'Alphabet Journey'}
-        </h2>
+      <div className="flex justify-between items-center mb-2">
+        <div>
+          <h2 className="text-2xl font-bold">
+            {selectedLanguage === 'spanish' ? 'Viaje Alfabético' : 'Alphabet Journey'}
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {getDifficultyDescription()}
+          </p>
+        </div>
         <div className="flex items-center space-x-2">
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
             {selectedLanguage === 'spanish' ? 'Nivel: ' : 'Level: '}
-            {getDifficultyText()}
+            <span className="font-medium">{getDifficultyText()}</span>
           </div>
           <Button
             variant="ghost"
