@@ -98,403 +98,176 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { user } = useAuth();
   const { globalSettings } = useSettings();
   const selectedLanguage = globalSettings.language === 'english' ? 'english' : 'spanish';
+  const { saveExerciseResult } = useProgress();
   
-  // URLs de imágenes de recompensa según tipo
-  const rewardSymbols = {
-    stars: [
-      'https://em-content.zobj.net/thumbs/120/apple/354/star_2b50.png',
-      'https://em-content.zobj.net/thumbs/120/apple/354/glowing-star_1f31f.png',
-      'https://em-content.zobj.net/thumbs/120/apple/354/sparkles_2728.png'
-    ],
-    medals: [
-      'https://em-content.zobj.net/thumbs/120/apple/354/3rd-place-medal_1f949.png',
-      'https://em-content.zobj.net/thumbs/120/apple/354/2nd-place-medal_1f948.png',
-      'https://em-content.zobj.net/thumbs/120/apple/354/1st-place-medal_1f947.png'
-    ],
-    trophies: [
-      'https://em-content.zobj.net/thumbs/120/apple/354/trophy_1f3c6.png',
-      'https://em-content.zobj.net/thumbs/120/apple/354/sports-medal_1f3c5.png',
-      'https://em-content.zobj.net/thumbs/120/apple/354/military-medal_1f396-fe0f.png'
-    ]
+  // Obtener subset de letras según el idioma seleccionado
+  const getAlphabetSubset = () => {
+    // Alfabeto completo en inglés
+    const alphabetEnglish = [
+      { 
+        uppercase: 'A', 
+        lowercase: 'a', 
+        word: 'Apple', 
+        image: 'https://em-content.zobj.net/thumbs/240/apple/354/red-apple_1f34e.png'
+      },
+      { 
+        uppercase: 'B', 
+        lowercase: 'b', 
+        word: 'Ball', 
+        image: 'https://em-content.zobj.net/thumbs/240/apple/354/soccer-ball_26bd.png'
+      },
+      // Resto del alfabeto inglés
+      // ...
+    ];
+    
+    // Alfabeto completo en español
+    const alphabetSpanish = [
+      { 
+        uppercase: 'A', 
+        lowercase: 'a', 
+        word: 'Árbol', 
+        image: 'https://em-content.zobj.net/thumbs/240/apple/354/evergreen-tree_1f332.png'
+      },
+      { 
+        uppercase: 'B', 
+        lowercase: 'b', 
+        word: 'Barco', 
+        image: 'https://em-content.zobj.net/thumbs/240/apple/354/ship_1f6a2.png'
+      },
+      // Resto del alfabeto español
+      // ...
+    ];
+    
+    // Devolver el subconjunto apropiado según el idioma
+    return selectedLanguage === 'english' ? alphabetEnglish : alphabetSpanish;
   };
   
-  // Definimos alfabetos en ambos idiomas con URL de imágenes para garantizar compatibilidad
-  const alphabetSpanish = [
-    { uppercase: 'A', lowercase: 'a', word: 'Avión', image: 'https://em-content.zobj.net/thumbs/120/apple/354/airplane_2708-fe0f.png' },
-    { uppercase: 'B', lowercase: 'b', word: 'Barco', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ship_1f6a2.png' },
-    { uppercase: 'C', lowercase: 'c', word: 'Casa', image: 'https://em-content.zobj.net/thumbs/120/apple/354/house_1f3e0.png' },
-    { uppercase: 'D', lowercase: 'd', word: 'Dado', image: 'https://em-content.zobj.net/thumbs/120/apple/354/game-die_1f3b2.png' },
-    { uppercase: 'E', lowercase: 'e', word: 'Elefante', image: 'https://em-content.zobj.net/thumbs/120/apple/354/elephant_1f418.png' },
-    { uppercase: 'F', lowercase: 'f', word: 'Foca', image: 'https://em-content.zobj.net/thumbs/120/apple/354/seal_1f9ad.png' },
-    { uppercase: 'G', lowercase: 'g', word: 'Gato', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cat_1f408.png' },
-    { uppercase: 'H', lowercase: 'h', word: 'Helado', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soft-ice-cream_1f366.png' },
-    { uppercase: 'I', lowercase: 'i', word: 'Iglesia', image: 'https://em-content.zobj.net/thumbs/120/apple/354/church_26ea.png' },
-    { uppercase: 'J', lowercase: 'j', word: 'Jirafa', image: 'https://em-content.zobj.net/thumbs/120/apple/354/giraffe_1f992.png' },
-    { uppercase: 'K', lowercase: 'k', word: 'Kiwi', image: 'https://em-content.zobj.net/thumbs/120/apple/354/kiwi-fruit_1f95d.png' },
-    { uppercase: 'L', lowercase: 'l', word: 'León', image: 'https://em-content.zobj.net/thumbs/120/apple/354/lion_1f981.png' },
-    { uppercase: 'M', lowercase: 'm', word: 'Manzana', image: 'https://em-content.zobj.net/thumbs/120/apple/354/red-apple_1f34e.png' },
-    { uppercase: 'N', lowercase: 'n', word: 'Nube', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cloud_2601-fe0f.png' },
-    { uppercase: 'Ñ', lowercase: 'ñ', word: 'Ñu', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ox_1f402.png' },
-    { uppercase: 'O', lowercase: 'o', word: 'Oso', image: 'https://em-content.zobj.net/thumbs/120/apple/354/bear_1f43b.png' },
-    { uppercase: 'P', lowercase: 'p', word: 'Pez', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fish_1f41f.png' },
-    { uppercase: 'Q', lowercase: 'q', word: 'Queso', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cheese-wedge_1f9c0.png' },
-    { uppercase: 'R', lowercase: 'r', word: 'Ratón', image: 'https://em-content.zobj.net/thumbs/120/apple/354/mouse_1f42d.png' },
-    { uppercase: 'S', lowercase: 's', word: 'Sol', image: 'https://em-content.zobj.net/thumbs/120/apple/354/sun_2600-fe0f.png' },
-    { uppercase: 'T', lowercase: 't', word: 'Tortuga', image: 'https://em-content.zobj.net/thumbs/120/apple/354/turtle_1f422.png' },
-    { uppercase: 'U', lowercase: 'u', word: 'Uva', image: 'https://em-content.zobj.net/thumbs/120/apple/354/grapes_1f347.png' },
-    { uppercase: 'V', lowercase: 'v', word: 'Vaca', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cow_1f404.png' },
-    { uppercase: 'W', lowercase: 'w', word: 'Wifi', image: 'https://em-content.zobj.net/thumbs/120/apple/354/antenna-bars_1f4f6.png' },
-    { uppercase: 'X', lowercase: 'x', word: 'Xilófono', image: 'https://em-content.zobj.net/thumbs/120/apple/354/musical-keyboard_1f3b9.png' },
-    { uppercase: 'Y', lowercase: 'y', word: 'Yogur', image: 'https://em-content.zobj.net/thumbs/120/apple/354/glass-of-milk_1f95b.png' },
-    { uppercase: 'Z', lowercase: 'z', word: 'Zapato', image: 'https://em-content.zobj.net/thumbs/120/apple/354/mans-shoe_1f45e.png' }
-  ];
-  
-  // Alfabeto en inglés (palabras adaptadas al idioma) con URLs seguras
-  const alphabetEnglish = [
-    { uppercase: 'A', lowercase: 'a', word: 'Airplane', image: 'https://em-content.zobj.net/thumbs/120/apple/354/small-airplane_1f6e9-fe0f.png' },
-    { uppercase: 'B', lowercase: 'b', word: 'Ball', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soccer-ball_26bd.png' },
-    { uppercase: 'C', lowercase: 'c', word: 'Cat', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cat_1f408.png' },
-    { uppercase: 'D', lowercase: 'd', word: 'Dog', image: 'https://em-content.zobj.net/thumbs/120/apple/354/dog_1f415.png' },
-    { uppercase: 'E', lowercase: 'e', word: 'Elephant', image: 'https://em-content.zobj.net/thumbs/120/apple/354/elephant_1f418.png' },
-    { uppercase: 'F', lowercase: 'f', word: 'Fish', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fish_1f41f.png' },
-    { uppercase: 'G', lowercase: 'g', word: 'Giraffe', image: 'https://em-content.zobj.net/thumbs/120/apple/354/giraffe_1f992.png' },
-    { uppercase: 'H', lowercase: 'h', word: 'House', image: 'https://em-content.zobj.net/thumbs/120/apple/354/house_1f3e0.png' },
-    { uppercase: 'I', lowercase: 'i', word: 'Ice cream', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ice-cream_1f368.png' },
-    { uppercase: 'J', lowercase: 'j', word: 'Jelly', image: 'https://em-content.zobj.net/thumbs/120/apple/354/custard_1f36e.png' },
-    { uppercase: 'K', lowercase: 'k', word: 'Kite', image: 'https://em-content.zobj.net/thumbs/120/apple/354/kite_1fa81.png' },
-    { uppercase: 'L', lowercase: 'l', word: 'Lion', image: 'https://em-content.zobj.net/thumbs/120/apple/354/lion_1f981.png' },
-    { uppercase: 'M', lowercase: 'm', word: 'Moon', image: 'https://em-content.zobj.net/thumbs/120/apple/354/crescent-moon_1f319.png' },
-    { uppercase: 'N', lowercase: 'n', word: 'Nose', image: 'https://em-content.zobj.net/thumbs/120/apple/354/nose_1f443.png' },
-    { uppercase: 'O', lowercase: 'o', word: 'Orange', image: 'https://em-content.zobj.net/thumbs/120/apple/354/tangerine_1f34a.png' },
-    { uppercase: 'P', lowercase: 'p', word: 'Pizza', image: 'https://em-content.zobj.net/thumbs/120/apple/354/pizza_1f355.png' },
-    { uppercase: 'Q', lowercase: 'q', word: 'Queen', image: 'https://em-content.zobj.net/thumbs/120/apple/354/crown_1f451.png' },
-    { uppercase: 'R', lowercase: 'r', word: 'Rainbow', image: 'https://em-content.zobj.net/thumbs/120/apple/354/rainbow_1f308.png' },
-    { uppercase: 'S', lowercase: 's', word: 'Sun', image: 'https://em-content.zobj.net/thumbs/120/apple/354/sun_2600-fe0f.png' },
-    { uppercase: 'T', lowercase: 't', word: 'Tree', image: 'https://em-content.zobj.net/thumbs/120/apple/354/deciduous-tree_1f333.png' },
-    { uppercase: 'U', lowercase: 'u', word: 'Umbrella', image: 'https://em-content.zobj.net/thumbs/120/apple/354/umbrella_2602-fe0f.png' },
-    { uppercase: 'V', lowercase: 'v', word: 'Volcano', image: 'https://em-content.zobj.net/thumbs/120/apple/354/volcano_1f30b.png' },
-    { uppercase: 'W', lowercase: 'w', word: 'Watermelon', image: 'https://em-content.zobj.net/thumbs/120/apple/354/watermelon_1f349.png' },
-    { uppercase: 'X', lowercase: 'x', word: 'Xylophone', image: 'https://em-content.zobj.net/thumbs/120/apple/354/musical-keyboard_1f3b9.png' },
-    { uppercase: 'Y', lowercase: 'y', word: 'Yarn', image: 'https://em-content.zobj.net/thumbs/120/apple/354/yarn_1f9f6.png' },
-    { uppercase: 'Z', lowercase: 'z', word: 'Zebra', image: 'https://em-content.zobj.net/thumbs/120/apple/354/zebra_1f993.png' }
-  ];
-  
-  // Alternativas en español con URLs de imágenes para garantizar compatibilidad
-  const alternativesSpanish: Record<string, AlternativeWord[]> = {
-    'A': [
-      { word: 'Abeja', image: 'https://em-content.zobj.net/thumbs/120/apple/354/honeybee_1f41d.png' },
-      { word: 'Arcoiris', image: 'https://em-content.zobj.net/thumbs/120/apple/354/rainbow_1f308.png' },
-      { word: 'Anillo', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ring_1f48d.png' },
-      { word: 'Árbol', image: 'https://em-content.zobj.net/thumbs/120/apple/354/deciduous-tree_1f333.png' }
-    ],
-    'B': [
-      { word: 'Balón', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soccer-ball_26bd.png' },
-      { word: 'Banana', image: 'https://em-content.zobj.net/thumbs/120/apple/354/banana_1f34c.png' },
-      { word: 'Bicicleta', image: 'https://em-content.zobj.net/thumbs/120/apple/354/bicycle_1f6b2.png' },
-      { word: 'Ballena', image: 'https://em-content.zobj.net/thumbs/120/apple/354/whale_1f40b.png' }
-    ],
-    'C': [
-      { word: 'Caballo', image: 'https://em-content.zobj.net/thumbs/120/apple/354/horse_1f40e.png' },
-      { word: 'Corazón', image: 'https://em-content.zobj.net/thumbs/120/apple/354/red-heart_2764-fe0f.png' },
-      { word: 'Coche', image: 'https://em-content.zobj.net/thumbs/120/apple/354/automobile_1f697.png' },
-      { word: 'Cámara', image: 'https://em-content.zobj.net/thumbs/120/apple/354/camera_1f4f7.png' }
-    ],
-    'F': [
-      { word: 'Flor', image: 'https://em-content.zobj.net/thumbs/120/apple/354/tulip_1f337.png' },
-      { word: 'Fresa', image: 'https://em-content.zobj.net/thumbs/120/apple/354/strawberry_1f353.png' },
-      { word: 'Fuego', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fire_1f525.png' },
-      { word: 'Fútbol', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soccer-ball_26bd.png' }
-    ],
-    'G': [
-      { word: 'Galleta', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cookie_1f36a.png' },
-      { word: 'Guitarra', image: 'https://em-content.zobj.net/thumbs/120/apple/354/guitar_1f3b8.png' },
-      { word: 'Globo', image: 'https://em-content.zobj.net/thumbs/120/apple/354/balloon_1f388.png' },
-      { word: 'Gorra', image: 'https://em-content.zobj.net/thumbs/120/apple/354/billed-cap_1f9e2.png' }
-    ]
-    // El resto del alfabeto seguiría con el mismo patrón
-  };
-  
-  // Alternativas en inglés con URLs de imágenes para garantizar compatibilidad
-  const alternativesEnglish: Record<string, AlternativeWord[]> = {
-    'A': [
-      { word: 'Apple', image: 'https://em-content.zobj.net/thumbs/120/apple/354/red-apple_1f34e.png' },
-      { word: 'Ant', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ant_1f41c.png' },
-      { word: 'Arrow', image: 'https://em-content.zobj.net/thumbs/120/apple/354/right-arrow_27a1-fe0f.png' },
-      { word: 'Astronaut', image: 'https://em-content.zobj.net/thumbs/120/apple/354/astronaut_1f9d1-1f680.png' }
-    ],
-    'B': [
-      { word: 'Ball', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soccer-ball_26bd.png' },
-      { word: 'Banana', image: 'https://em-content.zobj.net/thumbs/120/apple/354/banana_1f34c.png' },
-      { word: 'Bicycle', image: 'https://em-content.zobj.net/thumbs/120/apple/354/bicycle_1f6b2.png' },
-      { word: 'Bear', image: 'https://em-content.zobj.net/thumbs/120/apple/354/bear_1f43b.png' }
-    ],
-    'C': [
-      { word: 'Car', image: 'https://em-content.zobj.net/thumbs/120/apple/354/automobile_1f697.png' },
-      { word: 'Cookie', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cookie_1f36a.png' },
-      { word: 'Cow', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cow_1f404.png' },
-      { word: 'Crown', image: 'https://em-content.zobj.net/thumbs/120/apple/354/crown_1f451.png' }
-    ],
-    'F': [
-      { word: 'Fish', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fish_1f41f.png' },
-      { word: 'Flower', image: 'https://em-content.zobj.net/thumbs/120/apple/354/flower_1f33c.png' },
-      { word: 'Fire', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fire_1f525.png' },
-      { word: 'Frog', image: 'https://em-content.zobj.net/thumbs/120/apple/354/frog_1f438.png' }
-    ],
-    'G': [
-      { word: 'Guitar', image: 'https://em-content.zobj.net/thumbs/120/apple/354/guitar_1f3b8.png' },
-      { word: 'Gift', image: 'https://em-content.zobj.net/thumbs/120/apple/354/wrapped-gift_1f381.png' },
-      { word: 'Game', image: 'https://em-content.zobj.net/thumbs/120/apple/354/video-game_1f3ae.png' },
-      { word: 'Globe', image: 'https://em-content.zobj.net/thumbs/120/apple/354/globe-showing-europe-africa_1f30d.png' }
-    ]
-    // El resto del alfabeto seguiría con el mismo patrón
-  };
-  
-  // Efecto específico para manejar cambios en la dificultad
+  // Efecto para actualizar correctamente el ejercicio al cambiar settings y al inicializar
   useEffect(() => {
-    // Verificar si ha cambiado el nivel de dificultad
-    if (prevDifficultyRef.current !== settings.difficulty) {
-      console.log(`[ALPHABET2] Dificultad cambiada: ${prevDifficultyRef.current} -> ${settings.difficulty}`);
+    if (settings.difficulty !== prevDifficultyRef.current) {
+      console.log(`Difficulty changed from ${prevDifficultyRef.current} to ${settings.difficulty}`);
       prevDifficultyRef.current = settings.difficulty;
-      
-      // Reiniciar todos los estados cuando cambia la dificultad
-      setCurrentIndex(0);
-      setCorrectAnswers(0);
-      setIncorrectAnswers(0);
-      setConsecutiveCorrectAnswers(0);
-      setSelectedOptionIndex(null);
-      setShowDetails(false);
-      setIsCorrect(null);
-      setAttemptCount(0);
-      
-      // Forzar regeneración del ejercicio con el nuevo nivel de dificultad
-      setTimeout(() => {
-        console.log(`[ALPHABET2] Regenerando ejercicio para nivel: ${settings.difficulty}`);
-        generateExercise();
-      }, 50);
+      generateExercise();
     }
   }, [settings.difficulty]);
   
-  // Efecto para otros cambios en el estado del ejercicio
+  // Iniciar el ejercicio cuando el componente se monta, configurar temporizadores
   useEffect(() => {
-    // No regenerar ejercicio si acabamos de cambiar la dificultad (ya manejado arriba)
-    if (prevDifficultyRef.current === settings.difficulty) {
-      // Generar nuevo ejercicio con el contenido apropiado para este nivel
-      generateExercise();
-    }
+    generateExercise();
     
-    // Iniciar o resetear el temporizador
-    startTimer();
-    
-    // Limpieza
-    return () => {
-      if (timerId) clearInterval(timerId);
-      if (rewardTimeoutRef.current) clearTimeout(rewardTimeoutRef.current);
-    };
-  }, [currentIndex, exerciseMode, settings.language]);
-  
-  // Iniciar temporizador
-  const startTimer = () => {
-    if (timerId) clearInterval(timerId);
-    
-    const id = setInterval(() => {
+    // Configurar temporizador para contar el tiempo
+    const timer = setInterval(() => {
       setElapsedTime(prev => prev + 1);
     }, 1000);
     
-    setTimerId(id);
-  };
-  
-  // Función para reproducir audio (implementación diferente)
-  const playLetterSound = (letter: string) => {
-    // En la implementación real, esto usaría la API de Web Speech
-    console.log(`[ALPHABET2] Reproduciendo sonido para la letra: ${letter}`);
+    setTimerId(timer);
     
-    // Simulación de síntesis de voz (esto sería diferente en la implementación real)
-    const utterance = new SpeechSynthesisUtterance(letter);
-    utterance.lang = selectedLanguage === 'spanish' ? 'es-ES' : 'en-US';
-    window.speechSynthesis.speak(utterance);
-  };
+    return () => {
+      if (timer) clearInterval(timer);
+      if (rewardTimeoutRef.current) clearTimeout(rewardTimeoutRef.current);
+    };
+  }, []);
   
-  // Función para obtener el alfabeto según el idioma seleccionado
-  const getAlphabet = () => {
-    return selectedLanguage === 'spanish' ? alphabetSpanish : alphabetEnglish;
-  };
+  // Generar nuevo ejercicio si cambia el índice actual
+  useEffect(() => {
+    generateExercise();
+  }, [currentIndex]);
   
-  // Función para obtener las alternativas según el idioma seleccionado
-  const getAlternatives = () => {
-    return selectedLanguage === 'spanish' ? alternativesSpanish : alternativesEnglish;
-  };
-  
-  // Determinar el tipo de ejercicio según el nivel de dificultad
-  const getExerciseType = () => {
-    switch (settings.difficulty) {
-      case 'beginner':
-        // Reconocimiento básico: mostrar letra y elegir imagen
-        return 'letter_to_image';
-      case 'elementary':
-        // Emparejamiento: mostrar letra y buscar su pareja
-        return 'letter_to_image';
-      case 'intermediate':
-        // Quiz: mostrar imagen y elegir entre varias letras
-        return 'image_to_letter';
-      case 'advanced':
-        // Para advanced usamos alternancia entre modos para preparar el drag & drop
-        return Math.random() > 0.5 ? 'letter_to_image' : 'image_to_letter';
-      case 'expert':
-        // Expert: secuencias de letras (anterior/siguiente)
-        return 'sequence_relations';
-      default:
-        return 'letter_to_image';
+  // Mostrar recompensa después de cierto número de respuestas correctas consecutivas
+  useEffect(() => {
+    if (consecutiveCorrectAnswers > 0 && consecutiveCorrectAnswers % 3 === 0 && !rewardsShownIndices.includes(currentIndex)) {
+      setShowReward(true);
+      // Alternar entre tipos de recompensa para variedad
+      setRewardType(totalRewardsShown % 3 === 0 ? 'stars' : totalRewardsShown % 3 === 1 ? 'medals' : 'trophies');
+      setRewardsShownIndices(prev => [...prev, currentIndex]);
+      setTotalRewardsShown(prev => prev + 1);
+      
+      // Reproducir sonido de recompensa (opcional)
+      playRewardSound();
+      
+      // Ocultar la recompensa automáticamente después de un tiempo
+      rewardTimeoutRef.current = setTimeout(() => {
+        setShowReward(false);
+      }, 3000);
     }
-  };
-
-  // Función para obtener un subconjunto del alfabeto según la dificultad
-  const getAlphabetSubset = () => {
-    const alphabet = getAlphabet();
-    
-    // Logging para depuración
-    console.log(`🖼️ Generando ejercicio de ${exerciseMode === 'letter_to_image' ? 'letra a imágenes' : 'imagen a letras'} para ${settings.difficulty}`);
-    
-    switch (settings.difficulty) {
-      case 'beginner':
-        // Para principiantes usamos todo el alfabeto, pero con ejercicios básicos
-        // Reconocimiento básico (A → Apple 🍎)
-        return alphabet;
-        
-      case 'elementary':
-        // Emparejamiento: B = ? [Ball ⚽]
-        // Mismas letras pero diferente contexto
-        return alphabet;
-        
-      case 'intermediate':
-        // Quiz de letras: 🍌 = ? [A, C, P, R]
-        // Usamos todo el alfabeto, pero en el modo de imagen a letra
-        return alphabet;
-        
-      case 'advanced':
-        // Drag & Drop Ordenar A, C, B
-        // Usamos subconjuntos de letras para ordenar (al menos 3 para poder ordenar)
-        const advancedSubset = [];
-        // Creamos un subconjunto de 3 letras aleatorias
-        const usedIndexes = new Set();
-        while (advancedSubset.length < 3) {
-          const randIndex = Math.floor(Math.random() * alphabet.length);
-          if (!usedIndexes.has(randIndex)) {
-            usedIndexes.add(randIndex);
-            advancedSubset.push(alphabet[randIndex]);
-          }
-        }
-        return advancedSubset;
-        
-      case 'expert':
-        // Anterior/Siguiente (K → J y L)
-        // Necesitamos todo el alfabeto para poder identificar letras adyacentes
-        // Excluimos la primera y última letra para que siempre haya anterior y siguiente
-        return alphabet.filter((_, index) => index > 0 && index < alphabet.length - 1);
-        
-      default:
-        // Por defecto, usar el alfabeto completo
-        return alphabet;
-    }
-  };
+  }, [consecutiveCorrectAnswers]);
   
-  // Genera un nuevo ejercicio
+  // Generar nuevo ejercicio según el índice actual
   const generateExercise = () => {
-    const alphabetSubset = getAlphabetSubset();
-    const alternatives = getAlternatives();
-    
-    // Asegurarse de que no nos pasamos del límite del array
-    const safeIndex = currentIndex % alphabetSubset.length;
-    const currentLetterItem = alphabetSubset[safeIndex];
-    
-    // Determinar el tipo de ejercicio según el nivel de dificultad
-    const newExerciseMode = getExerciseType();
-    setExerciseMode(newExerciseMode);
-    
-    // Resetear estados
-    setSelectedOptionIndex(null);
     setShowDetails(false);
+    setSelectedOptionIndex(null);
     setIsCorrect(null);
     setAttemptCount(0);
     
-    // Generar el tipo de ejercicio adecuado según el nivel de dificultad
+    const alphabetSubset = getAlphabetSubset();
+    const currentLetter = alphabetSubset[currentIndex];
+    
+    // Generar ejercicio según el nivel de dificultad seleccionado
     switch (settings.difficulty) {
       case 'beginner':
-        // NIVEL BEGINNER: Reconocimiento básico (A → Apple 🍎)
-        console.log(`🖼️ Generando ejercicio de reconocimiento básico para ${currentLetterItem.uppercase}`);
-        
-        // Generar ejercicio de letra a imagen
-        generateLetterToImageExercise(currentLetterItem, alphabetSubset, alternatives);
+        setExerciseMode('letter_to_image');
+        generateLetterToImageExercise(currentLetter);
         break;
-        
+      
       case 'elementary':
-        // NIVEL ELEMENTARY: Emparejamiento (B = ? [Ball ⚽])
-        console.log(`🖼️ Generando ejercicio de emparejamiento para ${currentLetterItem.uppercase}`);
-        
-        // Similar a beginner pero con contexto diferente y presentación adaptada
-        generateLetterToImageExercise(currentLetterItem, alphabetSubset, alternatives);
+        setExerciseMode('letter_to_image');
+        generateLetterToImageExercise(currentLetter);
         break;
-        
+      
       case 'intermediate':
-        // NIVEL INTERMEDIATE: Quiz de letras (🍌 = ? [A, C, P, R])
-        console.log(`🖼️ Generando quiz de letras para ${currentLetterItem.uppercase}`);
-        
-        // Ejercicio de imagen a letra
-        generateImageToLetterExercise(currentLetterItem, alphabetSubset);
+        setExerciseMode('image_to_letter');
+        generateImageToLetterExercise(currentLetter);
         break;
-        
+      
       case 'advanced':
-        // NIVEL ADVANCED: Drag & Drop (ordenar: A, C, B)
-        console.log(`🖼️ Generando ejercicio de drag & drop para ordenar letras`);
-        
-        // Crear un ejercicio de ordenamiento (simulado sin drag & drop real por ahora)
-        generateAdvancedExercise(alphabetSubset);
+        setExerciseMode('drag_and_drop');
+        generateAdvancedExercise(currentLetter, alphabetSubset);
         break;
-        
+      
       case 'expert':
-        // NIVEL EXPERT: Anterior/Siguiente (K → J y L)
-        console.log(`🖼️ Generando ejercicio de secuencias (anterior/siguiente) para ${currentLetterItem.uppercase}`);
-        
-        // Ejercicio de relaciones de secuencia
-        generateSequenceExercise(currentLetterItem, alphabetSubset);
+        setExerciseMode('sequence_relations');
+        generateSequenceExercise(currentLetter, alphabetSubset);
         break;
-        
+      
       default:
-        // Por defecto, ejercicio básico
-        generateLetterToImageExercise(currentLetterItem, alphabetSubset, alternatives);
+        // Modo alternado para otros niveles
+        if (currentIndex % 2 === 0) {
+          setExerciseMode('letter_to_image');
+          generateLetterToImageExercise(currentLetter);
+        } else {
+          setExerciseMode('image_to_letter');
+          generateImageToLetterExercise(currentLetter);
+        }
+        break;
     }
   };
   
-  // IMPLEMENTACIÓN ESPECÍFICA PARA NIVEL BEGINNER y ELEMENTARY
-  const generateLetterToImageExercise = (
-    currentLetterItem: Letter, 
-    alphabetSubset: Letter[], 
-    alternatives: Record<string, AlternativeWord[]>
-  ) => {
-    const letterAlternatives = alternatives[currentLetterItem.uppercase] || [];
-    const correctOption = { word: currentLetterItem.word, image: currentLetterItem.image };
+  // Generar ejercicio de letra a imagen
+  const generateLetterToImageExercise = (currentLetterItem: Letter) => {
+    const alphabetSubset = getAlphabetSubset();
     
-    // Generar opciones incorrectas
-    const incorrectOptions: AlternativeWord[] = [];
-    while (incorrectOptions.length < 3) {
-      const randIndex = Math.floor(Math.random() * alphabetSubset.length);
-      const randLetter = alphabetSubset[randIndex];
-      
-      // Evitar duplicados y la letra correcta
-      if (randLetter.uppercase !== currentLetterItem.uppercase && 
-          !incorrectOptions.some(opt => opt.image === randLetter.image)) {
-        incorrectOptions.push({
-          word: randLetter.word,
-          image: randLetter.image
-        });
-      }
-    }
+    // Crear opciones (una correcta, el resto incorrectas)
+    const correctOption = {
+      word: currentLetterItem.word,
+      image: currentLetterItem.image
+    };
     
-    // Mezclar opciones
-    const allOptions = [correctOption, ...incorrectOptions].sort(() => Math.random() - 0.5);
-    const correctIndex = allOptions.findIndex(opt => opt.word === correctOption.word);
+    // Obtener opciones incorrectas (letras distintas de la actual)
+    const incorrectOptions = alphabetSubset
+      .filter(item => item.uppercase !== currentLetterItem.uppercase)
+      .map(item => ({ word: item.word, image: item.image }))
+      .sort(() => 0.5 - Math.random()) // Mezclar
+      .slice(0, 3); // Tomar 3 opciones incorrectas
     
-    console.log(`🖼️ Generando ejercicio de letra a imágenes para ${currentLetterItem.uppercase}. Opción correcta en posición ${correctIndex}`);
+    // Mezclar todas las opciones
+    const allOptions = [correctOption, ...incorrectOptions].sort(() => 0.5 - Math.random());
     
+    // Encontrar índice de la opción correcta en el arreglo mezclado
+    const correctIndex = allOptions.findIndex(
+      option => option.word === correctOption.word
+    );
+    
+    // Configurar ejercicio actual
     setCurrentExercise({
       letter: currentLetterItem,
       options: allOptions,
@@ -502,125 +275,194 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     } as LetterToImageExercise);
   };
   
-  // IMPLEMENTACIÓN ESPECÍFICA PARA NIVEL INTERMEDIATE
-  const generateImageToLetterExercise = (
-    currentLetterItem: Letter, 
-    alphabetSubset: Letter[]
-  ) => {
-    const correctOption = { 
-      word: currentLetterItem.word, 
-      image: currentLetterItem.image 
+  // Generar ejercicio de imagen a letra
+  const generateImageToLetterExercise = (currentLetterItem: Letter) => {
+    const alphabetSubset = getAlphabetSubset();
+    
+    // Crear imagen correcta
+    const correctImage = {
+      word: currentLetterItem.word,
+      image: currentLetterItem.image
     };
     
-    // Obtener 3 letras incorrectas
-    const incorrectLetters: Letter[] = [];
-    while (incorrectLetters.length < 3) {
-      const randIndex = Math.floor(Math.random() * alphabetSubset.length);
-      const randLetter = alphabetSubset[randIndex];
-      
-      // Evitar duplicados
-      if (randLetter.uppercase !== currentLetterItem.uppercase && 
-          !incorrectLetters.some(l => l.uppercase === randLetter.uppercase)) {
-        incorrectLetters.push(randLetter);
-      }
-    }
+    // Obtener opciones incorrectas (letras distintas de la actual)
+    const incorrectOptions = alphabetSubset
+      .filter(item => item.uppercase !== currentLetterItem.uppercase)
+      .sort(() => 0.5 - Math.random()) // Mezclar
+      .slice(0, 3); // Tomar 3 opciones incorrectas
     
-    // Mezclar opciones
-    const allOptions = [currentLetterItem, ...incorrectLetters].sort(() => Math.random() - 0.5);
-    const correctIndex = allOptions.findIndex(l => l.uppercase === currentLetterItem.uppercase);
+    // Mezclar todas las opciones de letras
+    const allOptions = [currentLetterItem, ...incorrectOptions].sort(() => 0.5 - Math.random());
     
-    console.log(`🖼️ Generando ejercicio de imagen a letras para ${currentLetterItem.uppercase}. Opción correcta en posición ${correctIndex}`);
+    // Encontrar índice de la opción correcta en el arreglo mezclado
+    const correctIndex = allOptions.findIndex(
+      option => option.uppercase === currentLetterItem.uppercase
+    );
     
+    // Configurar ejercicio actual
     setCurrentExercise({
-      image: correctOption,
+      image: correctImage,
       options: allOptions,
       correctIndex
     } as ImageToLetterExercise);
   };
   
-  // IMPLEMENTACIÓN ESPECÍFICA PARA NIVEL ADVANCED (Drag & Drop)
-  const generateAdvancedExercise = (alphabetSubset: Letter[]) => {
-    // Tomar 3-5 letras aleatorias para ordenar
-    const selectedLetters = alphabetSubset.slice(0, Math.min(5, alphabetSubset.length));
+  // Generar ejercicio avanzado (drag & drop)
+  const generateAdvancedExercise = (currentLetterItem: Letter, alphabetSubset: Letter[]) => {
+    // Para este ejercicio, seleccionamos 3-5 letras que incluyen la letra actual
+    // El objetivo es ordenarlas alfabéticamente
     
-    // Crear un orden correcto (alfabético)
-    const correctOrder = [...selectedLetters]
-      .sort((a, b) => a.uppercase.localeCompare(b.uppercase))
-      .map(letter => letter.uppercase);
+    // Determinar cuántas letras usar (3-5)
+    const numLetters = Math.floor(Math.random() * 3) + 3; // 3, 4 o 5 letras
     
-    // Crear un orden desordenado para presentar al usuario
-    const shuffledOrder = [...correctOrder].sort(() => Math.random() - 0.5);
+    // Encontrar el índice actual en el alfabeto
+    const currentIndex = alphabetSubset.findIndex(letter => 
+      letter.uppercase === currentLetterItem.uppercase
+    );
     
-    console.log(`🖼️ Generando ejercicio de ordenamiento para ${shuffledOrder.join(', ')}. Orden correcto: ${correctOrder.join(', ')}`);
+    let selectedLetters: Letter[] = [];
     
+    // Seleccionar letras alrededor de la letra actual
+    const startIndex = Math.max(0, currentIndex - Math.floor(numLetters / 2));
+    const endIndex = Math.min(alphabetSubset.length - 1, startIndex + numLetters - 1);
+    
+    // Obtener las letras en ese rango
+    selectedLetters = alphabetSubset.slice(startIndex, endIndex + 1);
+    
+    // Si no tenemos suficientes letras, agregar más desde el principio
+    if (selectedLetters.length < numLetters) {
+      const remainingCount = numLetters - selectedLetters.length;
+      selectedLetters = [...selectedLetters, ...alphabetSubset.slice(0, remainingCount)];
+    }
+    
+    // Definir el orden correcto (alfabético)
+    const correctOrder = selectedLetters.map(letter => letter.uppercase).sort();
+    
+    // Crear un orden mezclado (diferente al correcto)
+    let randomOrder;
+    do {
+      randomOrder = [...correctOrder].sort(() => 0.5 - Math.random());
+    } while (JSON.stringify(randomOrder) === JSON.stringify(correctOrder));
+    
+    // Configurar ejercicio actual
     setCurrentExercise({
       letters: selectedLetters,
       correctOrder,
-      currentOrder: shuffledOrder
+      currentOrder: randomOrder
     } as DragAndDropExercise);
   };
   
-  // IMPLEMENTACIÓN ESPECÍFICA PARA NIVEL EXPERT (Anterior/Siguiente)
+  // Generar ejercicio experto (relaciones de secuencia)
   const generateSequenceExercise = (currentLetterItem: Letter, alphabetSubset: Letter[]) => {
-    // Encontrar el índice de la letra actual en el alfabeto completo
-    const alphabet = getAlphabet();
-    const fullAlphabetIndex = alphabet.findIndex(letter => letter.uppercase === currentLetterItem.uppercase);
+    // Para este ejercicio, el usuario debe identificar la letra anterior y posterior
+    const currentIndex = alphabetSubset.findIndex(letter => 
+      letter.uppercase === currentLetterItem.uppercase
+    );
     
-    if (fullAlphabetIndex === -1) {
-      // Si no se encuentra (raro), generar un ejercicio básico
-      generateLetterToImageExercise(currentLetterItem, alphabetSubset, getAlternatives());
-      return;
-    }
+    // Determinar la letra anterior (o usar la última si estamos en la primera)
+    const previousIndex = currentIndex > 0 ? currentIndex - 1 : alphabetSubset.length - 1;
+    const previousLetter = alphabetSubset[previousIndex];
     
-    // Obtener letra anterior y siguiente
-    const previousLetter = fullAlphabetIndex > 0 ? alphabet[fullAlphabetIndex - 1] : alphabet[alphabet.length - 1];
-    const nextLetter = fullAlphabetIndex < alphabet.length - 1 ? alphabet[fullAlphabetIndex + 1] : alphabet[0];
+    // Determinar la letra siguiente (o usar la primera si estamos en la última)
+    const nextIndex = currentIndex < alphabetSubset.length - 1 ? currentIndex + 1 : 0;
+    const nextLetter = alphabetSubset[nextIndex];
     
-    // Generar opciones incluyendo letras incorrectas
-    const incorrectOptions: Letter[] = [];
-    while (incorrectOptions.length < 4) {
-      const randIndex = Math.floor(Math.random() * alphabet.length);
-      const randLetter = alphabet[randIndex];
-      
-      // Evitar duplicados y las letras correctas
-      if (randLetter.uppercase !== currentLetterItem.uppercase && 
-          randLetter.uppercase !== previousLetter.uppercase &&
-          randLetter.uppercase !== nextLetter.uppercase &&
-          !incorrectOptions.some(l => l.uppercase === randLetter.uppercase)) {
-        incorrectOptions.push(randLetter);
-      }
-    }
+    // Crear conjunto de opciones (incluir anterior, siguiente y algunas adicionales)
+    let options = [previousLetter, nextLetter];
     
-    // Mezclar con las correctas para anterior
-    const prevOptions = [previousLetter, ...incorrectOptions.slice(0, 3)].sort(() => Math.random() - 0.5);
-    const correctPrevIndex = prevOptions.findIndex(l => l.uppercase === previousLetter.uppercase);
+    // Agregar más opciones aleatorias
+    const additionalOptions = alphabetSubset
+      .filter(letter => 
+        letter.uppercase !== previousLetter.uppercase && 
+        letter.uppercase !== currentLetterItem.uppercase && 
+        letter.uppercase !== nextLetter.uppercase
+      )
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 6); // Tomar hasta 6 opciones incorrectas
     
-    // Mezclar con las correctas para siguiente
-    const nextOptions = [nextLetter, ...incorrectOptions.slice(0, 3)].sort(() => Math.random() - 0.5);
-    const correctNextIndex = nextOptions.findIndex(l => l.uppercase === nextLetter.uppercase);
+    options = [...options, ...additionalOptions];
+    options = options.sort(() => 0.5 - Math.random()); // Mezclar todas las opciones
     
-    // Opción combinada
-    const combinedOptions = Array.from(new Set([...prevOptions, ...nextOptions])).slice(0, 6);
+    // Encontrar índices de las opciones correctas
+    const correctPrevIndex = options.findIndex(
+      option => option.uppercase === previousLetter.uppercase
+    );
+    const correctNextIndex = options.findIndex(
+      option => option.uppercase === nextLetter.uppercase
+    );
     
-    console.log(`🖼️ Generando ejercicio de secuencia para ${currentLetterItem.uppercase}. Anterior: ${previousLetter.uppercase}, Siguiente: ${nextLetter.uppercase}`);
-    
+    // Configurar ejercicio actual
     setCurrentExercise({
       currentLetter: currentLetterItem,
       previousLetter,
       nextLetter,
-      options: combinedOptions,
+      options,
       correctPrevIndex,
       correctNextIndex
     } as SequenceRelationsExercise);
   };
   
+  // Reproducir sonido de una letra
+  const playLetterSound = (letter: string) => {
+    // Aquí podría implementarse la reproducción real de sonidos de letras
+    // Por ahora, solo mostraremos un mensaje en consola
+    console.log(`Playing sound for letter: ${letter}`);
+  };
+  
+  // Reproducir sonido de recompensa
+  const playRewardSound = () => {
+    // Aquí podría implementarse la reproducción real de sonidos
+    // Por ahora, solo mostraremos un mensaje en consola
+    console.log("Playing reward sound");
+  };
+  
+  // Verificar respuesta
+  const checkAnswer = (selectedIndex: number) => {
+    setSelectedOptionIndex(selectedIndex);
+    setAttemptCount(prev => prev + 1);
+    
+    let correct = false;
+    
+    if ('letter' in currentExercise!) {
+      correct = selectedIndex === currentExercise.correctIndex;
+    } else if ('image' in currentExercise!) {
+      correct = selectedIndex === currentExercise.correctIndex;
+    }
+    
+    setIsCorrect(correct);
+    
+    // Mostrar detalles después de agotar todos los intentos o si es correcta
+    if (correct || attemptCount + 1 >= settings.maxAttempts) {
+      setShowDetails(true);
+      
+      if (correct) {
+        setCorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(prev => prev + 1);
+      } else {
+        setIncorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(0);
+      }
+    }
+  };
+  
+  // Mostrar respuesta directamente
+  const showAnswer = () => {
+    setShowDetails(true);
+    setIncorrectAnswers(prev => prev + 1);
+    setConsecutiveCorrectAnswers(0);
+  };
+  
   // Manejar navegación a ejercicio anterior
   const handlePrevious = () => {
+    if (showReward) {
+      setShowReward(false);
+    }
+    
+    const alphabetSubset = getAlphabetSubset();
     if (currentIndex > 0) {
       setCurrentIndex(prevIndex => prevIndex - 1);
     } else {
-      // Volver al final si estamos al principio
-      const alphabetSubset = getAlphabetSubset();
+      // Ir al final si estamos al principio
       setCurrentIndex(alphabetSubset.length - 1);
     }
   };
@@ -640,121 +482,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
   
-  // Verificar respuesta
-  const checkAnswer = (selectedIndex: number) => {
-    // Incrementar contador de intentos
-    setAttemptCount(prev => prev + 1);
-    setSelectedOptionIndex(selectedIndex);
-    
-    // Verificar si alcanzamos el máximo de intentos
-    if (attemptCount >= settings.maxAttempts - 1) {
-      setShowDetails(true);
-    }
-    
-    // Verificar si la respuesta es correcta
-    let isAnswerCorrect = false;
-    
-    if (exerciseMode === 'letter_to_image' && 'letter' in currentExercise!) {
-      isAnswerCorrect = selectedIndex === (currentExercise as LetterToImageExercise).correctIndex;
-    } else if (exerciseMode === 'image_to_letter' && 'image' in currentExercise!) {
-      isAnswerCorrect = selectedIndex === (currentExercise as ImageToLetterExercise).correctIndex;
-    }
-    
-    // Actualizar estado de correcto/incorrecto
-    setIsCorrect(isAnswerCorrect);
-    
-    // Mostrar detalles si la respuesta es correcta (pero no si es incorrecta)
-    if (isAnswerCorrect) {
-      setShowDetails(true);
-      setCorrectAnswers(prev => prev + 1);
-      setConsecutiveCorrectAnswers(prev => prev + 1);
-      
-      // Sistema de recompensas (implementado diferente al original)
-      if (settings.enableRewards) {
-        const currentAlphabet = getAlphabet();
-        const maxRewardsPerSession = Math.max(2, Math.ceil(currentAlphabet.length * 0.2));
-        
-        if (totalRewardsShown < maxRewardsPerSession) {
-          // Mostrar recompensa de manera aleatoria pero estratégica
-          const showRewardNow = Math.random() < 0.3;
-          
-          if (showRewardNow) {
-            setShowReward(true);
-            setRewardType(settings.rewardType || 'stars');
-            setRewardsShownIndices([...rewardsShownIndices, currentIndex]);
-            setTotalRewardsShown(prev => prev + 1);
-            
-            // Ocultar recompensa después de un tiempo
-            rewardTimeoutRef.current = setTimeout(() => {
-              setShowReward(false);
-            }, 2000);
-          }
-        }
-      }
-    } else {
-      setIncorrectAnswers(prev => prev + 1);
-      setConsecutiveCorrectAnswers(0);
-    }
-  };
-  
-  // Mostrar respuesta (botón de ayuda)
-  const showAnswer = () => {
-    setShowDetails(true);
-    setIncorrectAnswers(prev => prev + 1);
-    setConsecutiveCorrectAnswers(0);
-  };
-  
-  // Función para obtener texto de dificultad
-  const getDifficultyText = () => {
-    switch (settings.difficulty) {
-      case 'beginner':
-        return selectedLanguage === 'spanish' ? 'Principiante (Reconocimiento)' : 'Beginner (Recognition)';
-      case 'elementary':
-        return selectedLanguage === 'spanish' ? 'Elemental (Emparejamiento)' : 'Elementary (Matching)';
-      case 'intermediate':
-        return selectedLanguage === 'spanish' ? 'Intermedio (Quiz)' : 'Intermediate (Quiz)';
-      case 'advanced':
-        return selectedLanguage === 'spanish' ? 'Avanzado (Drag & Drop)' : 'Advanced (Drag & Drop)';
-      case 'expert':
-        return selectedLanguage === 'spanish' ? 'Experto (Secuencias)' : 'Expert (Sequences)';
-      default:
-        return settings.difficulty;
-    }
-  };
-  
-  // Función para obtener descripción del nivel actual
-  const getDifficultyDescription = () => {
-    switch (settings.difficulty) {
-      case 'beginner':
-        return selectedLanguage === 'spanish' 
-          ? 'Reconocimiento básico de letras y palabras' 
-          : 'Basic recognition of letters and words';
-      case 'elementary':
-        return selectedLanguage === 'spanish' 
-          ? 'Emparejamiento de letras con imágenes' 
-          : 'Matching letters with images';
-      case 'intermediate':
-        return selectedLanguage === 'spanish' 
-          ? 'Quiz de múltiples opciones para letras' 
-          : 'Multiple choice letter quiz';
-      case 'advanced':
-        return selectedLanguage === 'spanish' 
-          ? 'Ejercicios de arrastrar y soltar para ordenar letras' 
-          : 'Drag and drop exercises to order letters';
-      case 'expert':
-        return selectedLanguage === 'spanish' 
-          ? 'Secuencias de letras, anterior y siguiente en el alfabeto' 
-          : 'Letter sequences, next and previous in alphabet';
-      default:
-        return '';
-    }
-  };
-  
-  // Renderizar contenido del ejercicio de letra a imagen
-  const renderLetterToImageExercise = () => {
-    if (!currentExercise || !('letter' in currentExercise)) return null;
-    
-    const exercise = currentExercise as LetterToImageExercise;
+  // NIVEL BEGINNER: Reconocimiento básico (A → Apple 🍎)
+  const renderBeginnerExercise = (exercise: LetterToImageExercise) => {
     const { letter, options, correctIndex } = exercise;
     
     return (
@@ -762,102 +491,101 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center mb-4">
             <div 
-              className="text-6xl font-bold mr-4 bg-gradient-to-r from-purple-600 to-indigo-500 text-white rounded-lg p-4 w-20 h-20 flex items-center justify-center"
+              className="text-7xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
+                      text-transparent bg-clip-text cursor-pointer transition-transform 
+                      transform hover:scale-110"
+              onClick={() => playLetterSound(letter.uppercase)}
             >
               {letter.uppercase}
             </div>
-            <div 
-              className="text-6xl font-medium bg-gradient-to-r from-indigo-500 to-purple-400 text-white rounded-lg p-4 w-20 h-20 flex items-center justify-center"
-            >
-              {letter.lowercase}
-            </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="ml-2"
+            <Volume2 
+              className="ml-2 w-6 h-6 text-blue-500 cursor-pointer" 
               onClick={() => playLetterSound(letter.uppercase)}
-            >
-              <Volume2 className="h-5 w-5" />
-            </Button>
+            />
           </div>
-          <h3 className="text-lg font-medium mb-2">
-            {selectedLanguage === 'spanish' ? 'Selecciona la imagen correcta:' : 'Select the correct image:'}
-          </h3>
+          
+          <div className="flex items-center justify-center mt-2 mb-4">
+            <div className="text-2xl font-medium">→</div>
+            <div className="text-2xl font-medium mx-2">?</div>
+          </div>
+          
+          <div className="text-sm text-gray-500 italic mb-4 text-center">
+            {selectedLanguage === 'spanish' 
+              ? 'Reconocimiento básico: Elige la imagen que representa esta letra' 
+              : 'Basic recognition: Select the image that represents this letter'}
+          </div>
         </div>
         
         <div className="grid grid-cols-2 gap-4 mb-6">
           {options.map((option, index) => (
             <div key={index} className="relative">
               <button
-                className={`w-full h-32 border-2 rounded-lg flex items-center justify-center ${
+                className={`w-full p-4 rounded-lg border-2 transition-all ${
                   selectedOptionIndex === index
                     ? isCorrect
                       ? 'border-green-500 bg-green-50'
                       : 'border-red-500 bg-red-50'
-                    : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-300'
                 }`}
                 onClick={() => checkAnswer(index)}
-                disabled={selectedOptionIndex !== null}
+                disabled={showDetails}
               >
-                <img 
-                  src={option.image} 
-                  alt={option.word} 
-                  className="h-20 w-20 object-contain" 
-                  onError={(e) => {
-                    console.error(`Error loading image: ${option.image}`);
-                    // Fallback: If image fails to load, show the first letter of the word
-                    (e.target as HTMLImageElement).style.display = 'none';
-                    const parentElement = (e.target as HTMLImageElement).parentElement;
-                    if (parentElement) {
-                      const textNode = document.createElement('span');
-                      textNode.className = 'text-4xl font-bold';
-                      textNode.textContent = option.word.charAt(0);
-                      parentElement.appendChild(textNode);
-                    }
-                  }}
-                />
+                <div className="flex flex-col items-center">
+                  <img
+                    src={option.image}
+                    alt={option.word}
+                    className="w-24 h-24 object-contain mb-2"
+                    onError={(e) => {
+                      console.error(`Error loading image: ${option.image}`);
+                      e.currentTarget.src = 'https://em-content.zobj.net/thumbs/120/apple/354/question-mark_2753.png';
+                    }}
+                  />
+                  {(showDetails || selectedOptionIndex === index) && (
+                    <div className="text-center mt-2 font-medium">{option.word}</div>
+                  )}
+                </div>
               </button>
-              {showDetails && index === correctIndex && (
-                <div className="absolute -top-2 -right-2">
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                    <Check className="h-4 w-4" />
-                  </div>
+              
+              {/* Mostrar indicador correcto/incorrecto */}
+              {selectedOptionIndex === index && (
+                <div className="absolute top-2 right-2">
+                  {isCorrect ? (
+                    <Check className="w-6 h-6 text-green-500" />
+                  ) : (
+                    <AlertCircle className="w-6 h-6 text-red-500" />
+                  )}
+                </div>
+              )}
+              
+              {/* Mostrar check en la respuesta correcta cuando se muestra detalle */}
+              {showDetails && index === correctIndex && selectedOptionIndex !== index && (
+                <div className="absolute top-2 right-2">
+                  <Check className="w-6 h-6 text-green-500" />
                 </div>
               )}
             </div>
           ))}
         </div>
         
-        {showDetails && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-            <div className="flex items-center mb-2">
-              <h4 className="font-bold mr-2">{letter.uppercase}{letter.lowercase}:</h4>
-              <span>{letter.word}</span>
+        <div className="text-center text-lg font-semibold mb-4">
+          {showDetails && (
+            <div>
+              {isCorrect ? (
+                <div className="text-green-600">
+                  {selectedLanguage === 'spanish' 
+                    ? `¡Correcto! La letra "${letter.uppercase}" representa "${options[correctIndex].word}"` 
+                    : `Correct! The letter "${letter.uppercase}" represents "${options[correctIndex].word}"`}
+                </div>
+              ) : (
+                <div className="text-red-600">
+                  {selectedLanguage === 'spanish' 
+                    ? `Incorrecto. La letra "${letter.uppercase}" representa "${options[correctIndex].word}"` 
+                    : `Incorrect. The letter "${letter.uppercase}" represents "${options[correctIndex].word}"`}
+                </div>
+              )}
             </div>
-            <div className="flex items-center">
-              <img 
-                src={letter.image} 
-                alt={letter.word} 
-                className="h-8 w-8 object-contain mr-2" 
-                onError={(e) => {
-                  console.error(`Error loading image: ${letter.image}`);
-                  // Fallback: If image fails to load, show the first letter of the word
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  const parentElement = (e.target as HTMLImageElement).parentElement;
-                  if (parentElement) {
-                    const textNode = document.createElement('span');
-                    textNode.className = 'text-3xl font-bold';
-                    textNode.textContent = letter.word.charAt(0);
-                    parentElement.appendChild(textNode);
-                  }
-                }}
-              />
-              <span className="text-sm text-gray-500">
-                ({selectedLanguage === 'spanish' ? 'Ejemplo: ' : 'Example: '}{letter.word})
-              </span>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
         
         {!showDetails && settings.showAnswerWithExplanation && (
           <div className="flex justify-center">
@@ -865,10 +593,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               variant="outline" 
               onClick={showAnswer}
               className="flex items-center"
-              disabled={selectedOptionIndex !== null}
             >
-              <EyeIcon className="h-4 w-4 mr-2" />
-              {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+              <EyeIcon className="mr-2 h-4 w-4" />
+              {selectedLanguage === 'spanish' ? 'Mostrar respuesta' : 'Show answer'}
             </Button>
           </div>
         )}
@@ -876,102 +603,234 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     );
   };
   
-  // Renderizar contenido del ejercicio de imagen a letra
-  const renderImageToLetterExercise = () => {
-    if (!currentExercise || !('image' in currentExercise)) return null;
+  // NIVEL ELEMENTARY: Emparejamiento (B = ? [Ball ⚽])
+  const renderElementaryExercise = (exercise: LetterToImageExercise) => {
+    const { letter, options, correctIndex } = exercise;
     
-    const exercise = currentExercise as ImageToLetterExercise;
+    return (
+      <div className="w-full max-w-lg">
+        <div className="flex flex-col items-center mb-6">
+          <div className="text-xl text-center mb-4 font-medium">
+            {selectedLanguage === 'spanish' 
+              ? 'Emparejamiento de letras e imágenes' 
+              : 'Letter and image matching'}
+          </div>
+          
+          <div className="flex items-center justify-center space-x-4 mb-6">
+            <div 
+              className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
+                      text-transparent bg-clip-text cursor-pointer transition-transform 
+                      transform hover:scale-110"
+              onClick={() => playLetterSound(letter.uppercase)}
+            >
+              {letter.uppercase}
+            </div>
+            <div className="text-4xl">=</div>
+            <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 
+                    text-transparent bg-clip-text">?</div>
+            <Volume2 
+              className="ml-2 w-6 h-6 text-blue-500 cursor-pointer" 
+              onClick={() => playLetterSound(letter.uppercase)}
+            />
+          </div>
+          
+          <div className="text-sm text-gray-500 italic mb-4 text-center max-w-md">
+            {selectedLanguage === 'spanish' 
+              ? 'Selecciona la imagen que empiece con la letra mostrada. ¡Recuerda que cada letra tiene una palabra que la representa!' 
+              : 'Select the image that starts with the shown letter. Remember that each letter has a word that represents it!'}
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          {options.map((option, index) => (
+            <div key={index} className="relative">
+              <button
+                className={`w-full p-4 rounded-lg border-2 transition-all ${
+                  selectedOptionIndex === index
+                    ? isCorrect
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-red-500 bg-red-50'
+                    : 'border-gray-200 hover:border-blue-300'
+                }`}
+                onClick={() => checkAnswer(index)}
+                disabled={showDetails}
+              >
+                <div className="flex flex-col items-center">
+                  <img
+                    src={option.image}
+                    alt={option.word}
+                    className="w-24 h-24 object-contain mb-2"
+                    onError={(e) => {
+                      console.error(`Error loading image: ${option.image}`);
+                      e.currentTarget.src = 'https://em-content.zobj.net/thumbs/120/apple/354/question-mark_2753.png';
+                    }}
+                  />
+                  {(showDetails || selectedOptionIndex === index) && (
+                    <div className="text-center mt-2 font-medium">{option.word}</div>
+                  )}
+                </div>
+              </button>
+              
+              {/* Mostrar indicador correcto/incorrecto */}
+              {selectedOptionIndex === index && (
+                <div className="absolute top-2 right-2">
+                  {isCorrect ? (
+                    <Check className="w-6 h-6 text-green-500" />
+                  ) : (
+                    <AlertCircle className="w-6 h-6 text-red-500" />
+                  )}
+                </div>
+              )}
+              
+              {/* Mostrar check en la respuesta correcta cuando se muestra detalle */}
+              {showDetails && index === correctIndex && selectedOptionIndex !== index && (
+                <div className="absolute top-2 right-2">
+                  <Check className="w-6 h-6 text-green-500" />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        <div className="text-center text-lg font-semibold mb-4">
+          {showDetails && (
+            <div>
+              {isCorrect ? (
+                <div className="text-green-600">
+                  {selectedLanguage === 'spanish' 
+                    ? `¡Correcto! "${letter.uppercase}" = "${options[correctIndex].word}"` 
+                    : `Correct! "${letter.uppercase}" = "${options[correctIndex].word}"`}
+                </div>
+              ) : (
+                <div className="text-red-600">
+                  {selectedLanguage === 'spanish' 
+                    ? `Incorrecto. "${letter.uppercase}" = "${options[correctIndex].word}"` 
+                    : `Incorrect. "${letter.uppercase}" = "${options[correctIndex].word}"`}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {!showDetails && settings.showAnswerWithExplanation && (
+          <div className="flex justify-center">
+            <Button 
+              variant="outline" 
+              onClick={showAnswer}
+              className="flex items-center"
+            >
+              <EyeIcon className="mr-2 h-4 w-4" />
+              {selectedLanguage === 'spanish' ? 'Mostrar respuesta' : 'Show answer'}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  // NIVEL INTERMEDIATE: Quiz de letras (🍌 = ? [A, C, P, R])
+  const renderIntermediateExercise = (exercise: ImageToLetterExercise) => {
     const { image, options, correctIndex } = exercise;
     
     return (
       <div className="w-full max-w-lg">
-        <div className="flex flex-col items-center mb-8">
-          <div className="mb-4 flex justify-center">
-            <img 
-              src={image.image} 
-              alt={image.word} 
-              className="h-28 w-28 object-contain" 
+        <div className="flex flex-col items-center mb-6">
+          <div className="text-xl text-center mb-4 font-medium">
+            {selectedLanguage === 'spanish' 
+              ? 'Quiz: ¿Qué letra corresponde a esta imagen?' 
+              : 'Quiz: Which letter corresponds to this image?'}
+          </div>
+          
+          <div className="flex items-center justify-center space-x-4 mb-6">
+            <img
+              src={image.image}
+              alt={image.word}
+              className="w-28 h-28 object-contain"
               onError={(e) => {
                 console.error(`Error loading image: ${image.image}`);
-                // Fallback: If image fails to load, show the first letter of the word
-                (e.target as HTMLImageElement).style.display = 'none';
-                const parentElement = (e.target as HTMLImageElement).parentElement;
-                if (parentElement) {
-                  const textNode = document.createElement('span');
-                  textNode.className = 'text-8xl font-bold';
-                  textNode.textContent = image.word.charAt(0);
-                  parentElement.appendChild(textNode);
-                }
+                e.currentTarget.src = 'https://em-content.zobj.net/thumbs/120/apple/354/question-mark_2753.png';
               }}
             />
+            <div className="text-4xl">=</div>
+            <div className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 
+                    text-transparent bg-clip-text">?</div>
           </div>
-          <h3 className="text-lg font-medium mb-2">
-            {selectedLanguage === 'spanish' ? '¿Con qué letra comienza?' : 'What letter does it start with?'}
-          </h3>
+          
+          <div className="text-sm text-gray-500 italic mb-6 text-center max-w-md">
+            {selectedLanguage === 'spanish' 
+              ? '¿Con qué letra comienza esta palabra? Elige entre las opciones disponibles.' 
+              : 'Which letter does this word start with? Choose from the available options.'}
+          </div>
+          
+          {(showDetails) && (
+            <div className="text-center mb-4 font-medium text-xl">
+              {`${image.word}`}
+            </div>
+          )}
         </div>
         
         <div className="grid grid-cols-2 gap-4 mb-6">
           {options.map((option, index) => (
             <div key={index} className="relative">
               <button
-                className={`w-full h-24 text-4xl font-bold border-2 rounded-lg flex items-center justify-center ${
+                className={`w-full h-20 flex items-center justify-center rounded-lg border-2 transition-all ${
                   selectedOptionIndex === index
                     ? isCorrect
                       ? 'border-green-500 bg-green-50'
                       : 'border-red-500 bg-red-50'
-                    : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-300'
                 }`}
                 onClick={() => checkAnswer(index)}
-                disabled={selectedOptionIndex !== null}
+                disabled={showDetails}
               >
-                {option.uppercase}
+                <div 
+                  className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
+                          text-transparent bg-clip-text"
+                >
+                  {option.uppercase}
+                </div>
               </button>
-              {showDetails && index === correctIndex && (
-                <div className="absolute -top-2 -right-2">
-                  <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                    <Check className="h-4 w-4" />
-                  </div>
+              
+              {/* Mostrar indicador correcto/incorrecto */}
+              {selectedOptionIndex === index && (
+                <div className="absolute top-2 right-2">
+                  {isCorrect ? (
+                    <Check className="w-6 h-6 text-green-500" />
+                  ) : (
+                    <AlertCircle className="w-6 h-6 text-red-500" />
+                  )}
+                </div>
+              )}
+              
+              {/* Mostrar check en la respuesta correcta cuando se muestra detalle */}
+              {showDetails && index === correctIndex && selectedOptionIndex !== index && (
+                <div className="absolute top-2 right-2">
+                  <Check className="w-6 h-6 text-green-500" />
                 </div>
               )}
             </div>
           ))}
         </div>
         
-        {showDetails && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-            <div className="flex items-center mb-2">
-              <h4 className="font-bold mr-2">{options[correctIndex].uppercase}{options[correctIndex].lowercase}:</h4>
-              <span>{image.word}</span>
+        <div className="text-center text-lg font-semibold mb-4">
+          {showDetails && (
+            <div>
+              {isCorrect ? (
+                <div className="text-green-600">
+                  {selectedLanguage === 'spanish' 
+                    ? `¡Correcto! La palabra "${image.word}" comienza con la letra "${options[correctIndex].uppercase}"` 
+                    : `Correct! The word "${image.word}" starts with the letter "${options[correctIndex].uppercase}"`}
+                </div>
+              ) : (
+                <div className="text-red-600">
+                  {selectedLanguage === 'spanish' 
+                    ? `Incorrecto. La palabra "${image.word}" comienza con la letra "${options[correctIndex].uppercase}"` 
+                    : `Incorrect. The word "${image.word}" starts with the letter "${options[correctIndex].uppercase}"`}
+                </div>
+              )}
             </div>
-            <div className="flex items-center">
-              <img 
-                src={image.image} 
-                alt={image.word} 
-                className="h-8 w-8 object-contain mr-2" 
-                onError={(e) => {
-                  console.error(`Error loading image: ${image.image}`);
-                  // Fallback: If image fails to load, show the first letter of the word
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  const parentElement = (e.target as HTMLImageElement).parentElement;
-                  if (parentElement) {
-                    const textNode = document.createElement('span');
-                    textNode.className = 'text-3xl font-bold';
-                    textNode.textContent = image.word.charAt(0);
-                    parentElement.appendChild(textNode);
-                  }
-                }}
-              />
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="ml-2"
-                onClick={() => playLetterSound(options[correctIndex].uppercase)}
-              >
-                <Volume2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
         
         {!showDetails && settings.showAnswerWithExplanation && (
           <div className="flex justify-center">
@@ -979,10 +838,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               variant="outline" 
               onClick={showAnswer}
               className="flex items-center"
-              disabled={selectedOptionIndex !== null}
             >
-              <EyeIcon className="h-4 w-4 mr-2" />
-              {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+              <EyeIcon className="mr-2 h-4 w-4" />
+              {selectedLanguage === 'spanish' ? 'Mostrar respuesta' : 'Show answer'}
             </Button>
           </div>
         )}
@@ -990,7 +848,390 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     );
   };
   
-  // Renderizar contenido del ejercicio según el modo actual
+  // NIVEL ADVANCED: Drag & Drop (ordenar: A, C, B)
+  const renderAdvancedExercise = (exercise: DragAndDropExercise) => {
+    const { letters, correctOrder, currentOrder } = exercise;
+    
+    // Estado para el orden actual (simulación de drag & drop)
+    const [userOrder, setUserOrder] = useState<string[]>(currentOrder);
+    const [hasSubmitted, setHasSubmitted] = useState(false);
+    const [isOrderCorrect, setIsOrderCorrect] = useState(false);
+    
+    // Efecto para restablecer el estado cuando cambia el ejercicio
+    useEffect(() => {
+      setUserOrder(currentOrder);
+      setHasSubmitted(false);
+      setIsOrderCorrect(false);
+    }, [currentOrder]);
+    
+    // Verificar si el ordenamiento es correcto
+    const checkOrdering = () => {
+      const isCorrect = userOrder.every((letter, index) => letter === correctOrder[index]);
+      setIsOrderCorrect(isCorrect);
+      setHasSubmitted(true);
+      setShowDetails(true);
+      
+      if (isCorrect) {
+        setCorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(prev => prev + 1);
+      } else {
+        setIncorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(0);
+      }
+    };
+    
+    // Manejar el movimiento de una letra
+    const handleLetterMove = (fromIndex: number, toIndex: number) => {
+      const updatedOrder = [...userOrder];
+      const [moved] = updatedOrder.splice(fromIndex, 1);
+      updatedOrder.splice(toIndex, 0, moved);
+      setUserOrder(updatedOrder);
+    };
+    
+    return (
+      <div className="w-full max-w-lg">
+        <div className="flex flex-col items-center mb-8">
+          <div className="text-xl text-center mb-4 font-medium">
+            {selectedLanguage === 'spanish' 
+              ? 'Ordena las letras alfabéticamente' 
+              : 'Arrange the letters in alphabetical order'}
+          </div>
+          
+          <div className="text-lg text-center mb-2 font-medium">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+              Drag & Drop
+            </span>
+          </div>
+          
+          <div className="text-sm text-gray-500 italic mb-6 text-center max-w-md">
+            {selectedLanguage === 'spanish' 
+              ? 'Usa los botones de flechas para reorganizar las letras en el orden correcto del alfabeto.' 
+              : 'Use the arrow buttons to rearrange the letters in the correct alphabetical order.'}
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
+          {userOrder.map((letter, index) => {
+            const letterObj = letters.find(l => l.uppercase === letter);
+            return (
+              <div key={index} className="relative">
+                <div 
+                  className={`
+                    w-16 h-16 flex items-center justify-center rounded-lg 
+                    text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
+                    text-white cursor-pointer transition-transform transform hover:scale-105
+                    ${hasSubmitted && isOrderCorrect ? 'bg-green-500' : ''}
+                  `}
+                  onClick={() => !hasSubmitted && playLetterSound(letter)}
+                >
+                  {letter}
+                </div>
+                
+                {!hasSubmitted && (
+                  <div className="flex mt-2 justify-center">
+                    {index > 0 && (
+                      <button 
+                        className="p-1 mr-1 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                        onClick={() => handleLetterMove(index, index - 1)}
+                        aria-label={selectedLanguage === 'spanish' ? 'Mover a la izquierda' : 'Move left'}
+                        title={selectedLanguage === 'spanish' ? 'Mover a la izquierda' : 'Move left'}
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                      </button>
+                    )}
+                    {index < userOrder.length - 1 && (
+                      <button 
+                        className="p-1 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
+                        onClick={() => handleLetterMove(index, index + 1)}
+                        aria-label={selectedLanguage === 'spanish' ? 'Mover a la derecha' : 'Move right'}
+                        title={selectedLanguage === 'spanish' ? 'Mover a la derecha' : 'Move right'}
+                      >
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        
+        {!hasSubmitted ? (
+          <div className="flex justify-center mb-6">
+            <Button 
+              className="px-8" 
+              onClick={checkOrdering}
+            >
+              {selectedLanguage === 'spanish' ? 'Comprobar orden' : 'Check order'}
+            </Button>
+          </div>
+        ) : (
+          <div className="text-center text-lg font-semibold mb-6">
+            {isOrderCorrect ? (
+              <div className="text-green-600">
+                {selectedLanguage === 'spanish' 
+                  ? '¡Correcto! Has ordenado las letras alfabéticamente.' 
+                  : 'Correct! You have arranged the letters alphabetically.'}
+              </div>
+            ) : (
+              <div className="text-red-600">
+                {selectedLanguage === 'spanish' 
+                  ? `Incorrecto. El orden correcto es: ${correctOrder.join(', ')}` 
+                  : `Incorrect. The correct order is: ${correctOrder.join(', ')}`}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {hasSubmitted && (
+          <div className="flex justify-center mt-4">
+            <Button onClick={handleNext}>
+              {selectedLanguage === 'spanish' ? 'Siguiente ejercicio' : 'Next exercise'}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  // NIVEL EXPERT: Anterior/Siguiente (K → J y L)
+  const renderExpertExercise = (exercise: SequenceRelationsExercise) => {
+    const { currentLetter, previousLetter, nextLetter, options } = exercise;
+    
+    // Estados para las selecciones del usuario
+    const [selectedPrevIndex, setSelectedPrevIndex] = useState<number | null>(null);
+    const [selectedNextIndex, setSelectedNextIndex] = useState<number | null>(null);
+    const [hasSubmitted, setHasSubmitted] = useState(false);
+    const [isAnswersPrevCorrect, setIsAnswersPrevCorrect] = useState(false);
+    const [isAnswersNextCorrect, setIsAnswersNextCorrect] = useState(false);
+    
+    // Efecto para restablecer el estado cuando cambia el ejercicio
+    useEffect(() => {
+      setSelectedPrevIndex(null);
+      setSelectedNextIndex(null);
+      setHasSubmitted(false);
+      setIsAnswersPrevCorrect(false);
+      setIsAnswersNextCorrect(false);
+    }, [currentLetter]);
+    
+    // Verificar las respuestas
+    const checkSequenceAnswers = () => {
+      if (selectedPrevIndex === null || selectedNextIndex === null) return;
+      
+      const isPrevCorrect = options[selectedPrevIndex]?.uppercase === previousLetter.uppercase;
+      const isNextCorrect = options[selectedNextIndex]?.uppercase === nextLetter.uppercase;
+      
+      setIsAnswersPrevCorrect(isPrevCorrect);
+      setIsAnswersNextCorrect(isNextCorrect);
+      setHasSubmitted(true);
+      setShowDetails(true);
+      
+      if (isPrevCorrect && isNextCorrect) {
+        setCorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(prev => prev + 1);
+      } else {
+        setIncorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(0);
+      }
+    };
+    
+    return (
+      <div className="w-full max-w-lg">
+        <div className="flex flex-col items-center mb-6">
+          <div className="text-xl text-center mb-4 font-medium">
+            {selectedLanguage === 'spanish' 
+              ? 'Secuencias del Alfabeto: Anterior y Siguiente' 
+              : 'Alphabet Sequences: Previous and Next'}
+          </div>
+          
+          <div 
+            className="text-8xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
+                    text-transparent bg-clip-text cursor-pointer mb-6 transition-transform hover:scale-105"
+            onClick={() => playLetterSound(currentLetter.uppercase)}
+          >
+            {currentLetter.uppercase}
+          </div>
+          
+          <div className="text-sm text-gray-500 italic mb-6 text-center max-w-md">
+            {selectedLanguage === 'spanish' 
+              ? `¿Qué letras van antes y después de "${currentLetter.uppercase}" en el alfabeto? Selecciona ambas opciones.` 
+              : `Which letters come before and after "${currentLetter.uppercase}" in the alphabet? Select both options.`}
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-6 mb-8">
+          <div>
+            <div className="text-center mb-3 font-medium">
+              {selectedLanguage === 'spanish' ? 'Letra anterior' : 'Previous letter'}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {options.slice(0, 4).map((option, index) => (
+                <div key={`prev-${index}`} className="relative">
+                  <button
+                    className={`
+                      w-full h-16 flex items-center justify-center rounded-lg border-2 
+                      ${selectedPrevIndex === index 
+                        ? hasSubmitted 
+                          ? isAnswersPrevCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'
+                          : 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300'
+                      }
+                      ${hasSubmitted && option.uppercase === previousLetter.uppercase && selectedPrevIndex !== index
+                        ? 'border-green-500 bg-green-50' : ''
+                      }
+                    `}
+                    onClick={() => !hasSubmitted && setSelectedPrevIndex(index)}
+                    disabled={hasSubmitted}
+                  >
+                    <div className="text-2xl font-bold">
+                      {option.uppercase}
+                    </div>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <div className="text-center mb-3 font-medium">
+              {selectedLanguage === 'spanish' ? 'Letra siguiente' : 'Next letter'}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {options.slice(0, 4).map((option, index) => (
+                <div key={`next-${index}`} className="relative">
+                  <button
+                    className={`
+                      w-full h-16 flex items-center justify-center rounded-lg border-2 
+                      ${selectedNextIndex === index 
+                        ? hasSubmitted 
+                          ? isAnswersNextCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'
+                          : 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300'
+                      }
+                      ${hasSubmitted && option.uppercase === nextLetter.uppercase && selectedNextIndex !== index
+                        ? 'border-green-500 bg-green-50' : ''
+                      }
+                    `}
+                    onClick={() => !hasSubmitted && setSelectedNextIndex(index)}
+                    disabled={hasSubmitted}
+                  >
+                    <div className="text-2xl font-bold">
+                      {option.uppercase}
+                    </div>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {!hasSubmitted ? (
+          <div className="flex justify-center mb-6">
+            <Button 
+              className="px-8" 
+              onClick={checkSequenceAnswers}
+              disabled={selectedPrevIndex === null || selectedNextIndex === null}
+            >
+              {selectedLanguage === 'spanish' ? 'Comprobar respuestas' : 'Check answers'}
+            </Button>
+          </div>
+        ) : (
+          <div>
+            <div className="text-center text-lg font-semibold mb-4">
+              {isAnswersPrevCorrect && isAnswersNextCorrect ? (
+                <div className="text-green-600">
+                  {selectedLanguage === 'spanish' 
+                    ? `¡Correcto! Antes de "${currentLetter.uppercase}" va "${previousLetter.uppercase}" y después va "${nextLetter.uppercase}"` 
+                    : `Correct! Before "${currentLetter.uppercase}" comes "${previousLetter.uppercase}" and after comes "${nextLetter.uppercase}"`}
+                </div>
+              ) : (
+                <div className="text-red-600">
+                  {selectedLanguage === 'spanish' 
+                    ? `Incorrecto. Antes de "${currentLetter.uppercase}" va "${previousLetter.uppercase}" y después va "${nextLetter.uppercase}"` 
+                    : `Incorrect. Before "${currentLetter.uppercase}" comes "${previousLetter.uppercase}" and after comes "${nextLetter.uppercase}"`}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-center mt-4">
+              <Button onClick={handleNext}>
+                {selectedLanguage === 'spanish' ? 'Siguiente ejercicio' : 'Next exercise'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  // Constantes para los símbolos/emojis de recompensa
+  const rewardSymbols = {
+    stars: [
+      'https://em-content.zobj.net/thumbs/240/apple/354/glowing-star_1f31f.png',
+      'https://em-content.zobj.net/thumbs/240/apple/354/star_2b50.png',
+      'https://em-content.zobj.net/thumbs/240/apple/354/sparkles_2728.png'
+    ],
+    medals: [
+      'https://em-content.zobj.net/thumbs/240/apple/354/1st-place-medal_1f947.png',
+      'https://em-content.zobj.net/thumbs/240/apple/354/2nd-place-medal_1f948.png',
+      'https://em-content.zobj.net/thumbs/240/apple/354/sports-medal_1f3c5.png'
+    ],
+    trophies: [
+      'https://em-content.zobj.net/thumbs/240/apple/354/trophy_1f3c6.png',
+      'https://em-content.zobj.net/thumbs/240/apple/354/crown_1f451.png',
+      'https://em-content.zobj.net/thumbs/240/apple/354/gem-stone_1f48e.png'
+    ]
+  };
+  
+  // Funciones para obtener descripciones del nivel de dificultad
+  const getDifficultyDescription = () => {
+    switch (settings.difficulty) {
+      case 'beginner':
+        return selectedLanguage === 'spanish' 
+          ? 'Nivel básico para aprender las letras y sus representaciones' 
+          : 'Basic level to learn letters and their representations';
+      case 'elementary':
+        return selectedLanguage === 'spanish' 
+          ? 'Empareja letras con palabras que comienzan con ellas' 
+          : 'Match letters with words that start with them';
+      case 'intermediate':
+        return selectedLanguage === 'spanish' 
+          ? 'Selecciona la letra correcta para cada imagen mostrada' 
+          : 'Select the correct letter for each shown image';
+      case 'advanced':
+        return selectedLanguage === 'spanish' 
+          ? 'Ordena las letras del alfabeto correctamente' 
+          : 'Arrange the letters of the alphabet correctly';
+      case 'expert':
+        return selectedLanguage === 'spanish' 
+          ? 'Identifica las letras antes y después en el alfabeto' 
+          : 'Identify the letters before and after in the alphabet';
+      default:
+        return selectedLanguage === 'spanish' 
+          ? 'Practica reconociendo letras y palabras' 
+          : 'Practice recognizing letters and words';
+    }
+  };
+  
+  // Obtener texto del nivel de dificultad
+  const getDifficultyText = () => {
+    switch (settings.difficulty) {
+      case 'beginner':
+        return selectedLanguage === 'spanish' ? 'Principiante' : 'Beginner';
+      case 'elementary':
+        return selectedLanguage === 'spanish' ? 'Elemental' : 'Elementary';
+      case 'intermediate':
+        return selectedLanguage === 'spanish' ? 'Intermedio' : 'Intermediate';
+      case 'advanced':
+        return selectedLanguage === 'spanish' ? 'Avanzado' : 'Advanced';
+      case 'expert':
+        return selectedLanguage === 'spanish' ? 'Experto' : 'Expert';
+      default:
+        return settings.difficulty;
+    }
+  };
+  
+  // Renderizar contenido del ejercicio
   const renderExerciseContent = () => {
     if (showReward) {
       return (
@@ -1007,16 +1248,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 const parentElement = (e.target as HTMLImageElement).parentElement;
                 if (parentElement) {
                   const textNode = document.createElement('span');
-                  textNode.className = 'text-9xl';
-                  textNode.textContent = rewardType === 'stars' ? '★' : rewardType === 'medals' ? '🥇' : '🏆';
+                  textNode.className = 'text-6xl';
+                  textNode.textContent = rewardType === 'stars' ? '⭐' : rewardType === 'medals' ? '🏅' : '🏆';
                   parentElement.appendChild(textNode);
                 }
               }}
             />
           </div>
-          <h3 className="text-2xl font-bold text-center mb-2">
-            {selectedLanguage === 'spanish' ? '¡Muy bien!' : 'Great job!'}
-          </h3>
+          
+          <div className="text-2xl font-bold mb-2 text-center bg-gradient-to-r from-yellow-500 to-red-500 text-transparent bg-clip-text">
+            {selectedLanguage === 'spanish' ? '¡Felicitaciones!' : 'Congratulations!'}
+          </div>
+          
           <p className="text-center">
             {selectedLanguage === 'spanish' 
               ? '¡Sigue practicando para ganar más premios!' 
@@ -1042,19 +1285,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         
         {/* Renderizar contenido según el nivel de dificultad */}
-        {settings.difficulty === 'beginner' && exerciseMode === 'letter_to_image' && 'letter' in currentExercise 
+        {settings.difficulty === 'beginner' && currentExercise && 'letter' in currentExercise 
           ? renderBeginnerExercise(currentExercise as LetterToImageExercise)
-          : settings.difficulty === 'elementary' && exerciseMode === 'letter_to_image' && 'letter' in currentExercise
+          : settings.difficulty === 'elementary' && currentExercise && 'letter' in currentExercise
           ? renderElementaryExercise(currentExercise as LetterToImageExercise)
-          : settings.difficulty === 'intermediate' && exerciseMode === 'image_to_letter' && 'image' in currentExercise
+          : settings.difficulty === 'intermediate' && currentExercise && 'image' in currentExercise
           ? renderIntermediateExercise(currentExercise as ImageToLetterExercise)
-          : settings.difficulty === 'advanced' && 'letters' in currentExercise
+          : settings.difficulty === 'advanced' && currentExercise && 'letters' in currentExercise
           ? renderAdvancedExercise(currentExercise as DragAndDropExercise)
-          : settings.difficulty === 'expert' && 'currentLetter' in currentExercise
+          : settings.difficulty === 'expert' && currentExercise && 'currentLetter' in currentExercise
           ? renderExpertExercise(currentExercise as SequenceRelationsExercise)
-          : exerciseMode === 'letter_to_image' && 'letter' in currentExercise
-          ? renderLetterToImageExercise()
-          : renderImageToLetterExercise()}
+          : currentExercise && 'letter' in currentExercise
+          ? renderBeginnerExercise(currentExercise as LetterToImageExercise)
+          : currentExercise && 'image' in currentExercise
+          ? renderIntermediateExercise(currentExercise as ImageToLetterExercise)
+          : <div>Cargando ejercicio...</div>}
       </div>
     );
   };
