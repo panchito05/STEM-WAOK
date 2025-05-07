@@ -74,9 +74,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Referencias para audio, recompensas y seguimiento de dificultad
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const rewardTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const prevDifficultyRef = useRef<string>(settings.difficulty);
   
   // Estados de la aplicación
+  const [prevDifficulty, setPrevDifficulty] = useState<string>(settings.difficulty);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [exerciseMode, setExerciseMode] = useState<'letter_to_image' | 'image_to_letter' | 'drag_and_drop' | 'sequence_relations'>('letter_to_image');
   const [currentExercise, setCurrentExercise] = useState<LetterToImageExercise | ImageToLetterExercise | DragAndDropExercise | SequenceRelationsExercise | null>(null);
@@ -154,14 +154,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return selectedLanguage === 'english' ? alphabetEnglish : alphabetSpanish;
   };
   
-  // Efecto para actualizar correctamente el ejercicio al cambiar settings y al inicializar
-  useEffect(() => {
-    if (settings.difficulty !== prevDifficultyRef.current) {
-      console.log(`Difficulty changed from ${prevDifficultyRef.current} to ${settings.difficulty}`);
-      prevDifficultyRef.current = settings.difficulty;
-      generateExercise();
-    }
-  }, [settings.difficulty]);
+  // No necesitamos este efecto ya que ahora usamos el estado prevDifficulty
   
   // Iniciar el ejercicio cuando el componente se monta, configurar temporizadores
   useEffect(() => {
@@ -180,10 +173,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     };
   }, []);
   
-  // Generar nuevo ejercicio si cambia el índice actual
+  // Generar nuevo ejercicio si cambia el índice actual o la dificultad
   useEffect(() => {
+    console.log("Difficulty changed from " + prevDifficulty + " to " + settings.difficulty);
+    setPrevDifficulty(settings.difficulty);
     generateExercise();
-  }, [currentIndex]);
+  }, [currentIndex, settings.difficulty]);
   
   // Mostrar recompensa después de cierto número de respuestas correctas consecutivas
   useEffect(() => {
@@ -211,6 +206,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setIsCorrect(null);
     setAttemptCount(0);
     
+    // Reset estados para ejercicios avanzados y expertos
+    setAdvancedUserOrder([]);
+    setAdvancedHasSubmitted(false);
+    setAdvancedIsOrderCorrect(false);
+    setExpertSelectedPrevIndex(null);
+    setExpertSelectedNextIndex(null);
+    setExpertHasSubmitted(false);
+    setExpertIsAnswersPrevCorrect(false);
+    setExpertIsAnswersNextCorrect(false);
+    
     const alphabetSubset = getAlphabetSubset();
     const currentLetter = alphabetSubset[currentIndex];
     
@@ -233,7 +238,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       case 'advanced':
         setExerciseMode('drag_and_drop');
-        generateAdvancedExercise(currentLetter, alphabetSubset);
+        const exerciseAdvanced = generateAdvancedExercise(currentLetter, alphabetSubset);
+        if (exerciseAdvanced && 'currentOrder' in exerciseAdvanced) {
+          setAdvancedUserOrder(exerciseAdvanced.currentOrder);
+        }
         break;
       
       case 'expert':
@@ -997,15 +1005,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // NIVEL EXPERT: Anterior/Siguiente (K → J y L)
   const renderExpertExercise = (exercise: SequenceRelationsExercise) => {
     const { currentLetter, previousLetter, nextLetter, options } = exercise;
-    
-    // Efecto para restablecer el estado cuando cambia el ejercicio
-    useEffect(() => {
-      setExpertSelectedPrevIndex(null);
-      setExpertSelectedNextIndex(null);
-      setExpertHasSubmitted(false);
-      setExpertIsAnswersPrevCorrect(false);
-      setExpertIsAnswersNextCorrect(false);
-    }, [currentLetter]);
     
     // Verificar las respuestas
     const checkSequenceAnswers = () => {
