@@ -114,6 +114,8 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Quiz mode variables
   const [quizOptions, setQuizOptions] = useState<Letter[]>([]);
   const [selectedOption, setSelectedOption] = useState<Letter | null>(null);
+  // NUEVA SOLUCIÓN: Agregar un estado separado para la letra correcta en el modo quiz
+  const [quizCorrectLetter, setQuizCorrectLetter] = useState<Letter | null>(null);
   
   // Matching mode variables
   const [matchingImage, setMatchingImage] = useState<string>('');
@@ -173,6 +175,12 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setMatchingSelection(null);
     setAdjacentInputs({ before: '', after: '' });
     setAdjacentResults({ before: false, after: false });
+    
+    // SOLUCIÓN FINAL: Limpiamos el estado de letra correcta cuando cambiamos de ejercicio
+    // Esto es importante para evitar confusiones si cambiamos de ejercicio durante el modo quiz
+    if (exerciseType !== 'quiz') {
+      setQuizCorrectLetter(null);
+    }
   };
   
   // Prepare exercise content based on type
@@ -195,17 +203,19 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Generate quiz options: one correct, three random
   const prepareQuizOptions = () => {
-    // SOLUCIÓN AL PROBLEMA DE DESFASE:
-    // Almacenamos una copia exacta de la letra actual que se muestra en UI
-    // y la usamos para la validación de respuestas correctas
+    // SOLUCIÓN COMPLETA AL PROBLEMA DE DESFASE:
+    // 1. Creamos una copia de la letra actual
     const letterToUse = {...alphabet[currentIndex]};
     
-    console.log("Letra actual para quiz:", letterToUse.uppercase, letterToUse.word, letterToUse.image);
+    // 2. Guardamos esta letra en nuestro estado independiente
+    setQuizCorrectLetter(letterToUse);
     
-    // Start with the correct answer
-    let options = [letterToUse];
+    console.log("🎯 NUEVA SOLUCIÓN - Letra correcta para quiz:", letterToUse.uppercase, letterToUse.word, letterToUse.image);
     
-    // Add three random letters that are different from current
+    // 3. Generamos opciones de respuesta incluyendo la correcta
+    let options = [letterToUse]; 
+    
+    // 4. Añadimos tres letras aleatorias que son diferentes
     while (options.length < 4) {
       const randomIndex = Math.floor(Math.random() * alphabet.length);
       const randomLetter = alphabet[randomIndex];
@@ -216,7 +226,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     }
     
-    // Shuffle the options
+    // 5. Barajamos las opciones para que la correcta no siempre esté en la misma posición
     setQuizOptions(shuffleArray(options));
   };
   
@@ -303,9 +313,14 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         playSound(`${currentLetter.uppercase}. ${currentLetter.word}`);
         break;
       case 'quiz':
-        setSelectedOption(currentLetter);
-        setShowDetails(true);
-        playSound(`${currentLetter.uppercase} is for ${currentLetter.word}`);
+        // SOLUCIÓN FINAL: Usamos la letra correcta del estado independiente
+        if (quizCorrectLetter) {
+          setSelectedOption(quizCorrectLetter);
+          setShowDetails(true);
+          playSound(`${quizCorrectLetter.uppercase} is for ${quizCorrectLetter.word}`);
+        } else {
+          console.error("No hay letra correcta definida para mostrar la respuesta");
+        }
         break;
       case 'matching':
         setMatchingSelection(currentLetter);
@@ -347,18 +362,20 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleQuizOptionSelect = (letter: Letter) => {
     setSelectedOption(letter);
     
-    // SOLUCIÓN PARA DESFASE:
-    // En lugar de comparar con currentLetter (que puede cambiar),
-    // verificamos si la opción seleccionada está en quizOptions[0],
-    // que es donde guardamos la letra correcta al generar las opciones
-    const correctLetter = quizOptions[0]; // La primera opción siempre es la correcta (antes de mezclar)
+    // SOLUCIÓN FINAL PARA DESFASE:
+    // Usamos la letra correcta almacenada en un estado independiente
+    // que no cambia cuando cambia currentIndex
+    if (!quizCorrectLetter) {
+      console.error("Error: No hay letra correcta definida para el quiz");
+      return;
+    }
     
     // Comprobación por ID, que es único para cada letra
-    const isAnswerCorrect = letter.id === correctLetter.id;
+    const isAnswerCorrect = letter.id === quizCorrectLetter.id;
     
     // Debugging para verificar el problema
     console.log("▶️ Quiz: Usuario seleccionó:", letter.uppercase, letter.word);
-    console.log("✓ Quiz: Letra correcta:", correctLetter.uppercase, correctLetter.word);
+    console.log("✓ Quiz: Letra correcta:", quizCorrectLetter.uppercase, quizCorrectLetter.word);
     console.log("Quiz: ¿Es correcta?:", isAnswerCorrect);
     
     setIsCorrect(isAnswerCorrect);
@@ -369,7 +386,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (isAnswerCorrect) {
       playSound("Correct! Good job!");
     } else {
-      playSound(`Incorrect. The letter is ${correctLetter.uppercase} for ${correctLetter.word}`);
+      playSound(`Incorrect. The letter is ${quizCorrectLetter.uppercase} for ${quizCorrectLetter.word}`);
     }
   };
   
@@ -652,28 +669,25 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   );
   
   const renderQuizMode = () => {
-    // Si no hay opciones disponibles o estamos cambiando entre letras, evitamos renderizar
-    if (quizOptions.length === 0) {
+    // Si no hay opciones disponibles o letra correcta, mostramos un estado de carga
+    if (quizOptions.length === 0 || !quizCorrectLetter) {
       return <div className="flex flex-col items-center">
         <div className="text-xl">Loading quiz options...</div>
       </div>;
     }
-    
-    // La primera opción (antes de mezclar) SIEMPRE es la letra correcta
-    const correctLetter = quizOptions[0];
     
     return (
       <div className="flex flex-col items-center">
         <div className="text-2xl font-medium mb-4">
           {t('whichLetterMakesThisSound')}
         </div>
-        {/* Usamos la imagen de la letra correcta guardada en quizOptions */}
-        <div className="text-6xl mb-6">{correctLetter.image}</div>
+        {/* SOLUCIÓN FINAL: Usamos la imagen de la letra almacenada en el estado independiente */}
+        <div className="text-6xl mb-6">{quizCorrectLetter.image}</div>
         
         <div className="grid grid-cols-2 gap-4">
           {quizOptions.map((option) => {
-            // Comparamos con la letra correcta desde quizOptions
-            const isThisCorrect = option.id === correctLetter.id;
+            // Comparamos con la letra correcta desde el estado independiente
+            const isThisCorrect = option.id === quizCorrectLetter.id;
             const isSelected = selectedOption?.id === option.id;
             
             return (
@@ -712,9 +726,9 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {showDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
-              {`${correctLetter.uppercase} ${t('isFor')} ${correctLetter.word}`}
+              {`${quizCorrectLetter.uppercase} ${t('isFor')} ${quizCorrectLetter.word}`}
             </div>
-            <div className="text-6xl mt-2">{correctLetter.image}</div>
+            <div className="text-6xl mt-2">{quizCorrectLetter.image}</div>
           </div>
         )}
       </div>
