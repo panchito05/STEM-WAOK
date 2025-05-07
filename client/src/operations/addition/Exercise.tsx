@@ -39,6 +39,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [rewardType, setRewardType] = useState<"medals" | "trophies" | "stars">("stars"); // Tipo de recompensa a mostrar
   const [rewardsShownIndices, setRewardsShownIndices] = useState<number[]>([]); // Índices donde se han mostrado recompensas
   const [totalRewardsShown, setTotalRewardsShown] = useState(0); // Contador total de recompensas mostradas
+  const [waitingForContinue, setWaitingForContinue] = useState(false); // Estado para saber si estamos esperando que el usuario presione "Continuar"
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
@@ -417,12 +418,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setProblems(updatedProblems);
     }
     
-    // Avanzar al siguiente problema después de un breve retraso
-    setTimeout(() => {
-      setFeedbackMessage(null);
-      setFeedbackColor(null);
-      moveToNextProblem();
-    }, 2000);
+    // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
+    // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
+    setShowHelpButton(false); // Ocultamos el botón de ayuda
+    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
+    setFeedbackColor("red");
+    
+    // Activamos el estado de espera para el botón "Continuar"
+    setWaitingForContinue(true);
+    
+    // Limpiamos cualquier temporizador activo
+    if (problemTimerRef.current) {
+      clearInterval(problemTimerRef.current);
+      problemTimerRef.current = null;
+    }
+  };
+  
+  // Función para continuar al siguiente problema cuando el usuario presiona "Continuar"
+  const handleContinue = () => {
+    // Reseteamos el estado de espera
+    setWaitingForContinue(false);
+    
+    // Limpiamos el mensaje de feedback
+    setFeedbackMessage(null);
+    setFeedbackColor(null);
+    
+    // Avanzamos al siguiente problema
+    moveToNextProblem();
+    
+    // Resetear el contador de intentos para el nuevo problema
+    setCurrentAttempts(0);
   };
 
   const startExercise = () => {
