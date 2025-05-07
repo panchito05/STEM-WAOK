@@ -293,8 +293,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
     
     setCurrentAttempts(0); // Reiniciamos el contador de intentos actuales
-    setConsecutiveCorrectAnswers(0); // Reiniciamos el contador de respuestas correctas consecutivas
-    setConsecutiveIncorrectAnswers(0); // Reiniciamos el contador de respuestas incorrectas consecutivas
+    
+    // SOLO reiniciamos los contadores consecutivos si NO es dificultad adaptativa
+    // De esta forma podemos mantener el progreso de respuestas consecutivas entre ejercicios
+    if (!settings.enableAdaptiveDifficulty) {
+      setConsecutiveCorrectAnswers(0);
+      setConsecutiveIncorrectAnswers(0);
+      console.log(`[ADAPTIVE DIFFICULTY] Reiniciando contadores porque no está habilitada la dificultad adaptativa`);
+    } else {
+      console.log(`[ADAPTIVE DIFFICULTY] Manteniendo contadores para conservar progreso: Correctas=${consecutiveCorrectAnswers}, Incorrectas=${consecutiveIncorrectAnswers}`);
+    }
     setRewardsShownIndices([]); // Reiniciamos el registro de índices donde se mostraron recompensas
     setTotalRewardsShown(0); // Reiniciamos el contador total de recompensas mostradas
     setWaitingForContinue(false); // Aseguramos que no estamos esperando que el usuario presione "Continuar"
@@ -692,8 +700,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             moveToNextProblem();
           }, 2500); // Aumentamos el tiempo para que sea más visible
           
-          // Reiniciar contador de respuestas correctas consecutivas para variar la frecuencia
-          setConsecutiveCorrectAnswers(0);
+          // Ya no reiniciamos el contador de respuestas correctas consecutivas
+          // para permitir alcanzar el umbral de 10 respuestas correctas y subir de nivel
+          console.log(`[ADAPTIVE DIFFICULTY] Mostrando recompensa pero manteniendo contador de respuestas correctas: ${consecutiveCorrectAnswers}`);
+          // NO: setConsecutiveCorrectAnswers(0);
         } else {
           // Si no hay recompensa, simplemente avanzamos al siguiente problema
           setTimeout(() => {
