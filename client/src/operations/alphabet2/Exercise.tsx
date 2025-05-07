@@ -87,8 +87,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     trophies: ['🏆', '🏅', '🎖️']
   };
   
-  // Definimos el alfabeto como en el módulo original pero con arquitectura diferente
-  const alphabet = [
+  // Definimos alfabetos en ambos idiomas
+  const alphabetSpanish = [
     { uppercase: 'A', lowercase: 'a', word: 'Avión', image: '✈️' },
     { uppercase: 'B', lowercase: 'b', word: 'Barco', image: '🚢' },
     { uppercase: 'C', lowercase: 'c', word: 'Casa', image: '🏠' },
@@ -118,8 +118,38 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     { uppercase: 'Z', lowercase: 'z', word: 'Zapato', image: '👞' }
   ];
   
-  // Palabras alternativas para cada letra (implementación diferente)
-  const alternatives: Record<string, AlternativeWord[]> = {
+  // Alfabeto en inglés (palabras adaptadas al idioma)
+  const alphabetEnglish = [
+    { uppercase: 'A', lowercase: 'a', word: 'Airplane', image: '✈️' },
+    { uppercase: 'B', lowercase: 'b', word: 'Boat', image: '🚢' },
+    { uppercase: 'C', lowercase: 'c', word: 'Cat', image: '🐱' }, // Cat en inglés empieza con C
+    { uppercase: 'D', lowercase: 'd', word: 'Dice', image: '🎲' },
+    { uppercase: 'E', lowercase: 'e', word: 'Elephant', image: '🐘' },
+    { uppercase: 'F', lowercase: 'f', word: 'Fish', image: '🐠' }, // Fish en inglés para pez
+    { uppercase: 'G', lowercase: 'g', word: 'Giraffe', image: '🦒' }, // Jirafa en inglés es Giraffe que empieza con G
+    { uppercase: 'H', lowercase: 'h', word: 'House', image: '🏠' }, // House para casa en inglés
+    { uppercase: 'I', lowercase: 'i', word: 'Iguana', image: '🦎' },
+    { uppercase: 'J', lowercase: 'j', word: 'Juice', image: '🧃' }, // Juice para jugo
+    { uppercase: 'K', lowercase: 'k', word: 'Kiwi', image: '🥝' },
+    { uppercase: 'L', lowercase: 'l', word: 'Lion', image: '🦁' },
+    { uppercase: 'M', lowercase: 'm', word: 'Moon', image: '🌙' }, // Moon en lugar de manzana
+    { uppercase: 'N', lowercase: 'n', word: 'Nest', image: '🪺' }, // Nest para nido
+    { uppercase: 'O', lowercase: 'o', word: 'Orange', image: '🍊' }, // Orange para naranja
+    { uppercase: 'P', lowercase: 'p', word: 'Pizza', image: '🍕' },
+    { uppercase: 'Q', lowercase: 'q', word: 'Queen', image: '👸' }, // Queen para reina
+    { uppercase: 'R', lowercase: 'r', word: 'Rainbow', image: '🌈' }, // Rainbow para arcoíris
+    { uppercase: 'S', lowercase: 's', word: 'Sun', image: '☀️' },
+    { uppercase: 'T', lowercase: 't', word: 'Turtle', image: '🐢' },
+    { uppercase: 'U', lowercase: 'u', word: 'Umbrella', image: '☂️' }, // Umbrella para paraguas
+    { uppercase: 'V', lowercase: 'v', word: 'Volcano', image: '🌋' }, // Volcano para volcán
+    { uppercase: 'W', lowercase: 'w', word: 'Watermelon', image: '🍉' }, // Watermelon para sandía
+    { uppercase: 'X', lowercase: 'x', word: 'Xylophone', image: '🎵' },
+    { uppercase: 'Y', lowercase: 'y', word: 'Yo-yo', image: '🪀' },
+    { uppercase: 'Z', lowercase: 'z', word: 'Zebra', image: '🦓' } // Zebra para cebra
+  ];
+  
+  // Alternativas en español
+  const alternativesSpanish: Record<string, AlternativeWord[]> = {
     'A': [
       { word: 'Abeja', image: '🐝' },
       { word: 'Arcoiris', image: '🌈' },
@@ -132,8 +162,48 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       { word: 'Bicicleta', image: '🚲' },
       { word: 'Ballena', image: '🐋' }
     ],
-    // El resto del alfabeto sigue el mismo patrón que el módulo original
-    // pero implementado de manera diferente a nivel de código
+    'C': [
+      { word: 'Caballo', image: '🐴' },
+      { word: 'Corazón', image: '❤️' },
+      { word: 'Coche', image: '🚗' },
+      { word: 'Cámara', image: '📷' }
+    ],
+    'G': [
+      { word: 'Galleta', image: '🍪' },
+      { word: 'Guitarra', image: '🎸' },
+      { word: 'Globo', image: '🎈' },
+      { word: 'Gorra', image: '🧢' }
+    ]
+    // El resto del alfabeto seguiría con el mismo patrón
+  };
+  
+  // Alternativas en inglés
+  const alternativesEnglish: Record<string, AlternativeWord[]> = {
+    'A': [
+      { word: 'Apple', image: '🍎' },
+      { word: 'Ant', image: '🐜' },
+      { word: 'Arrow', image: '➡️' },
+      { word: 'Astronaut', image: '👨‍🚀' }
+    ],
+    'B': [
+      { word: 'Ball', image: '⚽' },
+      { word: 'Banana', image: '🍌' },
+      { word: 'Bicycle', image: '🚲' },
+      { word: 'Bear', image: '🐻' }
+    ],
+    'C': [
+      { word: 'Car', image: '🚗' },
+      { word: 'Cookie', image: '🍪' },
+      { word: 'Cow', image: '🐄' },
+      { word: 'Crown', image: '👑' }
+    ],
+    'G': [
+      { word: 'Guitar', image: '🎸' },
+      { word: 'Gift', image: '🎁' },
+      { word: 'Game', image: '🎮' },
+      { word: 'Globe', image: '🌍' }
+    ]
+    // El resto del alfabeto seguiría con el mismo patrón
   };
   
   // Efecto para inicializar el ejercicio
@@ -170,15 +240,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     window.speechSynthesis.speak(utterance);
   };
   
+  // Función para obtener el alfabeto según el idioma seleccionado
+  const getAlphabet = () => {
+    return selectedLanguage === 'spanish' ? alphabetSpanish : alphabetEnglish;
+  };
+  
+  // Función para obtener las alternativas según el idioma seleccionado
+  const getAlternatives = () => {
+    return selectedLanguage === 'spanish' ? alternativesSpanish : alternativesEnglish;
+  };
+  
   // Función para obtener un subconjunto del alfabeto según la dificultad
   const getAlphabetSubset = () => {
+    const alphabet = getAlphabet();
+    
     switch (settings.difficulty) {
       case 'beginner':
         return alphabet.slice(0, 5); // A-E
       case 'elementary':
         return alphabet.slice(0, 10); // A-J
       case 'intermediate':
-        return alphabet.slice(0, 15); // A-Ñ
+        return alphabet.slice(0, 15); // A-Ñ (o A-O en inglés)
       case 'advanced':
         return alphabet.slice(0, 21); // A-U
       case 'expert':
@@ -197,6 +279,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Genera un nuevo ejercicio
   const generateExercise = () => {
     const alphabetSubset = getAlphabetSubset();
+    const alternatives = getAlternatives();
     
     // Asegurarse de que no nos pasamos del límite del array
     const safeIndex = currentIndex % alphabetSubset.length;
@@ -332,7 +415,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Sistema de recompensas (implementado diferente al original)
       if (settings.enableRewards) {
-        const maxRewardsPerSession = Math.max(2, Math.ceil(alphabet.length * 0.2));
+        const currentAlphabet = getAlphabet();
+        const maxRewardsPerSession = Math.max(2, Math.ceil(currentAlphabet.length * 0.2));
         
         if (totalRewardsShown < maxRewardsPerSession) {
           // Mostrar recompensa de manera aleatoria pero estratégica
