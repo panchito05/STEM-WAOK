@@ -673,111 +673,114 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       setAnswers(prev => [...prev, answer]);
       
-      // Ajustar dificultad adaptativamente si está habilitada esa opción
-      if (settings.enableAdaptiveDifficulty) {
-        // Incrementar el contador de respuestas correctas consecutivas
-        const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
-        console.log(`[ADAPTIVE DIFFICULTY] ✓ Respuesta correcta. Consecutivas: ${newConsecutiveCorrectAnswers}/${10} necesarias para subir de nivel`);
-        console.log(`[ADAPTIVE DIFFICULTY] Dificultad actual: ${adaptiveDifficulty}, Habilitada: ${settings.enableAdaptiveDifficulty}`);
+      // NUEVA LÓGICA: SIEMPRE incrementamos el contador de respuestas correctas
+      // independientemente de si la dificultad adaptativa está habilitada o no
+      const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
+      
+      // Incrementar contador de respuestas correctas
+      setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
+      
+      // Resetear el contador de respuestas incorrectas consecutivas
+      setConsecutiveIncorrectAnswers(0);
+      
+      // SIEMPRE verificamos si se alcanzaron 10 respuestas correctas y subimos de nivel
+      // independientemente de si la dificultad adaptativa está habilitada o no
+      if (newConsecutiveCorrectAnswers >= 10) {
+        console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se alcanzaron ${newConsecutiveCorrectAnswers} respuestas correctas! Aplicando subida de nivel...`);
         
-        setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
+        // Determinar qué nivel de dificultad se está usando actualmente
+        // Si la dificultad adaptativa está habilitada, usamos el nivel adaptativo
+        // Si no, usamos el nivel configurado en settings
+        const currentDifficultyLevel = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
         
-        // Resetear el contador de respuestas incorrectas consecutivas
-        setConsecutiveIncorrectAnswers(0);
+        // Lista de dificultades disponibles
+        const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
+        const currentIndex = difficulties.indexOf(currentDifficultyLevel);
         
-        // Si lleva 10 respuestas correctas seguidas, aumentar dificultad
-        if (newConsecutiveCorrectAnswers >= 10) {
-          console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se alcanzaron ${newConsecutiveCorrectAnswers} respuestas correctas! Intentando subir nivel...`);
+        console.log(`[ADAPTIVE DIFFICULTY] Nivel actual: ${currentDifficultyLevel} (índice ${currentIndex})`);
+        
+        // Verificar si podemos subir de nivel (no estamos en el máximo)
+        if (currentIndex < difficulties.length - 1) {
+          const newDifficulty = difficulties[currentIndex + 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
+          console.log(`[ADAPTIVE DIFFICULTY] ¡SUBIENDO DE NIVEL! De ${currentDifficultyLevel} a ${newDifficulty}`);
           
-          // Aumentar dificultad (si no está ya en el nivel máximo)
-          const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
-          const currentIndex = difficulties.indexOf(adaptiveDifficulty);
-          console.log(`[ADAPTIVE DIFFICULTY] Nivel actual index: ${currentIndex}, de total: ${difficulties.length - 1}`);
+          // 1. Actualizar la dificultad adaptativa en memoria
+          setAdaptiveDifficulty(newDifficulty);
           
-          if (currentIndex < difficulties.length - 1) {
-            const newDifficulty = difficulties[currentIndex + 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
-            console.log(`[ADAPTIVE DIFFICULTY] ¡SUBIENDO DE NIVEL! De ${adaptiveDifficulty} a ${newDifficulty}`);
-            
-            // Actualizar la dificultad adaptativa localmente
-            setAdaptiveDifficulty(newDifficulty);
-            
-            // Guardar en la configuración del módulo para que persista entre sesiones
-            // Esto es crítico para mantener el progreso del usuario
-            try {
-              console.log(`[ADAPTIVE DIFFICULTY] Guardando nueva dificultad en configuración: ${newDifficulty}`);
-              // IMPORTANTE: Solo actualizamos el campo difficulty, no toda la configuración
+          // 2. Activar la dificultad adaptativa si no estaba activada
+          // y guardar la nueva configuración completa
+          try {
+            if (!settings.enableAdaptiveDifficulty) {
+              console.log(`[ADAPTIVE DIFFICULTY] Activando automáticamente la dificultad adaptativa`);
+              
+              // Actualizar las settings locales (esto actualiza la UI inmediatamente)
+              updateModuleSettings("addition", { 
+                difficulty: newDifficulty, 
+                enableAdaptiveDifficulty: true 
+              });
+            } else {
+              // Si ya estaba activada, solo actualizamos la dificultad
               updateModuleSettings("addition", { difficulty: newDifficulty });
-              
-              // Almacenar también en localStorage como respaldo en caso de problemas de autenticación
-              try {
-                const currentModuleSettings = localStorage.getItem('moduleSettings');
-                if (currentModuleSettings) {
-                  const settings = JSON.parse(currentModuleSettings);
-                  if (settings.addition) {
-                    settings.addition.difficulty = newDifficulty;
-                  } else {
-                    settings.addition = { ...settings.addition || {}, difficulty: newDifficulty };
-                  }
-                  localStorage.setItem('moduleSettings', JSON.stringify(settings));
-                  console.log(`[ADAPTIVE DIFFICULTY] Respaldo: Guardada nueva dificultad en localStorage: ${newDifficulty}`);
-                }
-              } catch (localStorageError) {
-                console.error("[ADAPTIVE DIFFICULTY] Error al guardar respaldo en localStorage:", localStorageError);
-              }
-            } catch (error) {
-              console.error("[ADAPTIVE DIFFICULTY] Error al guardar nueva dificultad:", error);
-              
-              // Intentar guardar al menos en localStorage si falló la API
-              try {
-                const currentModuleSettings = localStorage.getItem('moduleSettings');
-                if (currentModuleSettings) {
-                  const settings = JSON.parse(currentModuleSettings);
-                  if (settings.addition) {
-                    settings.addition.difficulty = newDifficulty;
-                  } else {
-                    settings.addition = { ...settings.addition || {}, difficulty: newDifficulty };
-                  }
-                  localStorage.setItem('moduleSettings', JSON.stringify(settings));
-                  console.log(`[ADAPTIVE DIFFICULTY] Respaldo: Guardada nueva dificultad en localStorage: ${newDifficulty}`);
-                }
-              } catch (localStorageError) {
-                console.error("[ADAPTIVE DIFFICULTY] Error al guardar respaldo en localStorage:", localStorageError);
-              }
             }
-            
-            // Mostrar mensaje de felicitación y activar recompensa especial
-            setFeedbackMessage(`¡Felicidades! Has demostrado excelentes capacidades matemáticas. Has subido al nivel ${newDifficulty} para un mayor desafío intelectual.`);
-            setFeedbackColor("green");
-            setShowLevelUpReward(true);
-            
-            // Reiniciar contador de respuestas correctas consecutivas
-            setConsecutiveCorrectAnswers(0);
-          } else {
-            console.log(`[ADAPTIVE DIFFICULTY] Ya estás en el nivel máximo: ${adaptiveDifficulty}`);
+          } catch (error) {
+            console.error("[ADAPTIVE DIFFICULTY] Error al guardar configuración:", error);
           }
+          
+          // 3. Guardar en localStorage (respaldo si hay problemas con la API)
+          try {
+            // Guardar la nueva dificultad
+            localStorage.setItem('addition_currentDifficulty', newDifficulty);
+            localStorage.setItem('addition_enableAdaptiveDifficulty', 'true');
+            
+            // También actualizar el objeto completo
+            const currentModuleSettings = localStorage.getItem('moduleSettings');
+            if (currentModuleSettings) {
+              const settingsObj = JSON.parse(currentModuleSettings);
+              if (!settingsObj.addition) {
+                settingsObj.addition = {};
+              }
+              
+              // Actualizar a la nueva dificultad y activar adaptativa
+              settingsObj.addition.difficulty = newDifficulty;
+              settingsObj.addition.enableAdaptiveDifficulty = true;
+              
+              localStorage.setItem('moduleSettings', JSON.stringify(settingsObj));
+              console.log(`[ADAPTIVE DIFFICULTY] Guardada nueva configuración en localStorage`);
+            }
+          } catch (error) {
+            console.error("[ADAPTIVE DIFFICULTY] Error al guardar en localStorage:", error);
+          }
+          
+          // 4. Mostrar recompensa y mensaje de felicitación
+          setFeedbackMessage(`¡Felicidades! Has demostrado un dominio excepcional. Has subido al nivel ${newDifficulty}.`);
+          setFeedbackColor("green");
+          setShowLevelUpReward(true);
+          
+          // 5. Reiniciar contador de respuestas correctas
+          setConsecutiveCorrectAnswers(0);
+          localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+        } else {
+          // Ya estamos en el nivel máximo
+          console.log(`[ADAPTIVE DIFFICULTY] Ya estás en el nivel máximo (${currentDifficultyLevel}). ¡Felicidades!`);
+          setFeedbackMessage("¡Excelente! Sigues manteniendo un alto nivel de precisión en el nivel máximo.");
+          setFeedbackColor("green");
         }
       } else {
-        // Si no está habilitada la dificultad adaptativa, incrementamos el contador igualmente
-        const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
-        console.log(`[CONTADOR] Respuestas correctas consecutivas: ${newConsecutiveCorrectAnswers} (dificultad adaptativa deshabilitada)`);
-        setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
-        
-        // Verificar si llegamos a 10 respuestas correctas consecutivas aunque esté deshabilitada la dificultad adaptativa
-        if (newConsecutiveCorrectAnswers >= 10) {
-          console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se alcanzaron ${newConsecutiveCorrectAnswers} respuestas correctas! (con dificultad adaptativa deshabilitada)`);
-          console.log(`[ADAPTIVE DIFFICULTY] Para activar la subida de nivel, activa la dificultad adaptativa en Configuración`);
-          
-          // Mostrar mensaje de sugerencia para activar la dificultad adaptativa
-          setFeedbackMessage("¡Excelente! Has logrado 10 respuestas correctas consecutivas. Activa la dificultad adaptativa en Configuración para subir de nivel automáticamente.");
-          setFeedbackColor("blue");
-          
-          // No reiniciamos el contador para permitir que se active al activar la dificultad adaptativa
+        // Si aún no llegamos a 10 respuestas correctas, simplemente mostramos feedback
+        // según si la dificultad adaptativa está habilitada o no
+        if (settings.enableAdaptiveDifficulty) {
+          console.log(`[ADAPTIVE DIFFICULTY] ✓ Respuesta correcta. Consecutivas: ${newConsecutiveCorrectAnswers}/${10} necesarias para subir de nivel`);
+          console.log(`[ADAPTIVE DIFFICULTY] Dificultad actual: ${adaptiveDifficulty}`);
+        } else {
+          console.log(`[CONTADOR] Respuestas correctas consecutivas: ${newConsecutiveCorrectAnswers} (dificultad adaptativa deshabilitada)`);
         }
+        
+        // Mensaje estándar de respuesta correcta
+        setFeedbackMessage(t('exercises.correct'));
+        setFeedbackColor("green");
       }
       
-      // Mostrar feedback de respuesta correcta
-      setFeedbackMessage(t('exercises.correct'));
-      setFeedbackColor("green");
+      // Solo en este punto si no entró en ninguna condición anterior
       
       // Decidir si mostrar recompensa basado en diferentes criterios
       if (settings.enableRewards) {
