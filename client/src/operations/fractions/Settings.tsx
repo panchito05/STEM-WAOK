@@ -176,41 +176,61 @@ export default function Settings({ settings, onBack }: SettingsProps) {
         <div>
           <h3 className="text-lg font-medium text-gray-900">Límite de Tiempo</h3>
           <div className="mt-2">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <Slider
-                  value={[localSettings.timeValue]}
-                  min={0}
-                  max={300}
-                  step={5}
-                  onValueChange={(value) => handleUpdateSetting("timeValue", value[0])}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>0</span>
-                  <span>150</span>
-                  <span>300</span>
+            <div className="mb-4 grid grid-cols-1 gap-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="time-limit-type" className="text-sm text-gray-700">
+                  Tipo de límite de tiempo
+                </Label>
+                <RadioGroup
+                  value={localSettings.timeLimit}
+                  onValueChange={(value) => handleUpdateSetting("timeLimit", value as "per-problem")}
+                  className="flex space-x-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="per-problem" id="per-problem" />
+                    <Label htmlFor="per-problem">Por problema</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex-1">
+                  <Slider
+                    value={[localSettings.timeValue]}
+                    min={0}
+                    max={300}
+                    step={5}
+                    onValueChange={(value) => handleUpdateSetting("timeValue", value[0])}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>0</span>
+                    <span>150</span>
+                    <span>300</span>
+                  </div>
+                </div>
+                <div className="w-20">
+                  <Input
+                    type="number"
+                    value={localSettings.timeValue}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value);
+                      if (!isNaN(value) && value >= 0 && value <= 300) {
+                        handleUpdateSetting("timeValue", value);
+                      }
+                    }}
+                    min={0}
+                    max={300}
+                    className="w-full"
+                  />
                 </div>
               </div>
-              <div className="w-20">
-                <Input
-                  type="number"
-                  value={localSettings.timeValue}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (!isNaN(value) && value >= 0 && value <= 300) {
-                      handleUpdateSetting("timeValue", value);
-                    }
-                  }}
-                  min={0}
-                  max={300}
-                  className="w-full"
-                />
-              </div>
+              <p className="text-sm text-gray-600">
+                Tiempo en segundos (0 para sin límite). {localSettings.timeLimit === "per-problem" 
+                  ? "Cada problema tiene este límite de tiempo específico."
+                  : "Es el tiempo total para completar todos los problemas."}
+              </p>
             </div>
-            <p className="mt-2 text-sm text-gray-600">
-              Tiempo en segundos (0 para sin límite)
-            </p>
           </div>
         </div>
 

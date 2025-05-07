@@ -7,7 +7,9 @@ import { Input } from "@/components/ui/input";
 import { generateFractionProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -21,12 +23,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [userDenominator, setUserDenominator] = useState("");
   const [answers, setAnswers] = useState<UserAnswer[]>([]);
   const [timer, setTimer] = useState(0);
+  const [problemTimer, setProblemTimer] = useState(0); // Temporizador para el problema actual
   const [exerciseStarted, setExerciseStarted] = useState(false);
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | null>(null);
+  const [currentAttempts, setCurrentAttempts] = useState(0); // Contador para intentos en el problema actual
+  const [showingExplanation, setShowingExplanation] = useState(false);
+  const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0); // Contador para respuestas incorrectas
+  const [revealedAnswersCount, setRevealedAnswersCount] = useState(0); // Contador para respuestas reveladas
+  
   const numeratorRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
+  const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
   const { saveExerciseResult } = useProgress();
 
   // Generate problems when settings change or initially
@@ -34,7 +43,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     generateProblems();
   }, [settings]);
 
-  // Timer logic
+  // Timer logic for overall exercise
   useEffect(() => {
     if (exerciseStarted && !exerciseCompleted) {
       timerRef.current = window.setInterval(() => {
@@ -48,6 +57,86 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     };
   }, [exerciseStarted, exerciseCompleted]);
+  
+  // Timer logic for per-problem time limit
+  useEffect(() => {
+    if (exerciseStarted && !exerciseCompleted && settings.timeValue > 0) {
+      // Reiniciar el temporizador de problema cuando cambia el problema actual
+      setProblemTimer(settings.timeValue);
+      
+      // Iniciar un nuevo temporizador para el problema actual
+      problemTimerRef.current = window.setInterval(() => {
+        setProblemTimer(prev => {
+          if (prev <= 0) {
+            // Si el temporizador llega a cero, verificar los intentos
+            setCurrentAttempts(newAttempts => {
+              // Si hemos alcanzado el máximo de intentos o no hay límite, registrar como incorrecto y avanzar
+              if (newAttempts >= settings.maxAttempts - 1 || settings.maxAttempts === 0) {
+                // Limpiar el temporizador
+                if (problemTimerRef.current) {
+                  clearInterval(problemTimerRef.current);
+                }
+                
+                setFeedbackMessage("¡Tiempo agotado!");
+                setFeedbackColor("red");
+                
+                // Guardar la respuesta como incorrecta
+                const answer: UserAnswer = {
+                  problem: currentProblem,
+                  userNumerator: parseInt(userNumerator) || 0,
+                  userDenominator: parseInt(userDenominator) || 1,
+                  isCorrect: false
+                };
+                
+                setAnswers(prev => [...prev, answer]);
+                
+                // Si está habilitada la compensación, incrementar contador
+                if (settings.enableCompensation) {
+                  setIncorrectAnswersCount(prev => prev + 1);
+                }
+                
+                // Avanzar al siguiente problema después de un breve retraso
+                setTimeout(() => {
+                  setFeedbackMessage(null);
+                  setFeedbackColor(null);
+                  moveToNextProblem();
+                }, 2000);
+              } else {
+                // Si aún no hemos agotado todos los intentos, reiniciamos el temporizador
+                setTimeout(() => {
+                  setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
+                  setFeedbackColor("red");
+                  
+                  // Iniciamos un nuevo temporizador
+                  setProblemTimer(settings.timeValue);
+                  problemTimerRef.current = window.setInterval(() => {
+                    setProblemTimer(p => p > 0 ? p - 1 : 0);
+                  }, 1000);
+                  
+                  // Limpiar el mensaje después de un momento
+                  setTimeout(() => {
+                    setFeedbackMessage(null);
+                    setFeedbackColor(null);
+                  }, 1500);
+                }, 500);
+              }
+              
+              return newAttempts + 1;
+            });
+            
+            return 0;
+          }
+          return prev - 1; // Decrementar el temporizador
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+      }
+    };
+  }, [exerciseStarted, exerciseCompleted, currentProblemIndex, settings.timeValue, settings.maxAttempts]);
 
   // Focus input when current problem changes
   useEffect(() => {
@@ -69,10 +158,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setUserDenominator("");
     setAnswers([]);
     setTimer(0);
+    setProblemTimer(settings.timeValue); // Inicializar el temporizador del problema con el valor configurado
     setExerciseStarted(false);
     setExerciseCompleted(false);
     setFeedbackMessage(null);
     setFeedbackColor(null);
+    setShowingExplanation(false);
+    setCurrentAttempts(0); // Reiniciamos el contador de intentos actuales
+    setIncorrectAnswersCount(0); // Reiniciamos el contador de respuestas incorrectas
+    setRevealedAnswersCount(0); // Reiniciamos el contador de respuestas reveladas
   };
 
   const startExercise = () => {
