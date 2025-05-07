@@ -11,6 +11,9 @@
   import InteractiveStory from './activities/InteractiveStory.svelte';
   import LetterArcade from './activities/LetterArcade.svelte';
   
+  // Componente para actividades con dificultad estandarizada
+  import DynamicActivityLoader from './DynamicActivityLoader.svelte';
+  
   export let onReturn;
   
   // Estado local
@@ -90,6 +93,13 @@
           En "Arcade de Letras" jugarás minijuegos divertidos con la letra ${$currentIsland.letter}.
           Demuestra tu velocidad y precisión para ganar puntos y recompensas.
           ¡Supera los niveles y compite por el mejor puntaje!
+        `;
+        break;
+      case 'difficulty-levels':
+        activityDescription = `
+          En "Niveles de Dificultad" encontrarás ejercicios adaptados a tu nivel de aprendizaje.
+          Desde el reconocimiento básico hasta las complejas secuencias del alfabeto.
+          ¡Elige el nivel que mejor se adapte a tus habilidades y avanza progresivamente!
         `;
         break;
     }
@@ -264,6 +274,8 @@
                   📚
                 {:else if activity.id === 'letter-arcade'}
                   🎮
+                {:else if activity.id === 'difficulty-levels'}
+                  🎯
                 {/if}
               </div>
               <div class="activity-details">
@@ -439,6 +451,13 @@
       {:else if selectedActivity.id === 'letter-arcade'}
         <LetterArcade 
           letter={$currentIsland?.letter} 
+          onComplete={handleActivityComplete}
+          onBack={backToActivities}
+        />
+      {:else if selectedActivity.id === 'difficulty-levels'}
+        <DynamicActivityLoader 
+          letter={$currentIsland?.letter} 
+          language="spanish"
           onComplete={handleActivityComplete}
           onBack={backToActivities}
         />

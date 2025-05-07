@@ -171,6 +171,7 @@
       activities: [
         { id: 'sound-mirror', name: 'Espejo de Sonidos', unlocked: true },
         { id: 'word-builder', name: 'Constructor de Palabras', unlocked: letter === 'A' },
+        { id: 'difficulty-levels', name: 'Niveles de Dificultad', unlocked: true },
         { id: 'motion-recognition', name: 'Letra en Movimiento', unlocked: false },
         { id: 'interactive-story', name: 'Historia Interactiva', unlocked: false },
         { id: 'letter-arcade', name: 'Arcade de Letras', unlocked: false }
