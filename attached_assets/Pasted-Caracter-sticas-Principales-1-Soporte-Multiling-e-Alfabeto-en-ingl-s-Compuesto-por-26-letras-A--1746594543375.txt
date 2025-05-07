@@ -1,0 +1,68 @@
+Características Principales
+1. Soporte Multilingüe
+Alfabeto en inglés: Compuesto por 26 letras (A-Z) con palabras e imágenes representativas para cada letra.
+Alfabeto en español: Incluye todas las letras del alfabeto español, incluyendo la "Ñ", con palabras culturalmente relevantes para cada letra.
+Traducciones completas: Toda la interfaz, instrucciones y retroalimentación se presentan en el idioma seleccionado.
+2. Modos de Ejercicio por Niveles de Dificultad
+Nivel Principiante (Beginner)
+Ejercicio de Asociación Imagen-Letra: Este es el nivel más básico donde se muestra una letra y el usuario debe seleccionar la imagen correcta que empieza con esa letra entre cuatro opciones.
+Características: Interfaz sencilla, letras grandes, opciones claramente diferenciadas y retroalimentación inmediata.
+Ejemplo: Se muestra la letra "A" y el usuario debe elegir entre imágenes como una manzana (Apple), un avión, un hormiguero o un cocodrilo.
+Nivel Elemental (Elementary)
+Ejercicio de Asociación Letra-Imagen: Es el modo inverso donde se muestra una imagen y el usuario debe seleccionar la letra correspondiente entre cuatro opciones.
+Características: Mayor dificultad cognitiva al requerir reconocer la palabra representada por la imagen y convertirla a su letra inicial.
+Ejemplo: Se muestra la imagen de una pelota (Ball) y el usuario debe elegir la letra "B" entre varias opciones.
+Nivel Intermedio (Intermediate)
+Quiz de Reconocimiento: Presenta una letra como objetivo y cuatro opciones de letras, donde el usuario debe identificar la correcta.
+Características: Mayor enfoque en la discriminación visual entre diferentes letras, especialmente aquellas que pueden confundirse (como 'b', 'd', 'p', 'q').
+Reto adicional: Las opciones se presentan en un orden aleatorio cada vez.
+Nivel Avanzado (Advanced)
+Ejercicio de Ordenamiento: Se muestran varias letras desordenadas y el usuario debe arrastrarlas a la posición correcta para formar una secuencia alfabética.
+Características: Utiliza drag-and-drop (arrastrar y soltar) para desarrollar la motricidad fina junto con el conocimiento del orden alfabético.
+Dificultad adaptativa: El número de letras para ordenar varía entre 4-6 según el progreso del usuario.
+Nivel Experto (Expert)
+Ejercicio de Letras Adyacentes: Presenta una letra y el usuario debe indicar qué letras vienen antes y después en el alfabeto.
+Características: Requiere conocimiento completo del alfabeto y la capacidad de navegar mentalmente por él.
+Modo mixto: Después de 10 respuestas correctas, el sistema alterna aleatoriamente entre todos los tipos de ejercicios para un desafío completo.
+3. Sistema de Aprendizaje Adaptativo
+Ajuste automático de dificultad: En función del rendimiento del usuario, el sistema puede sugerir cambiar el nivel de dificultad.
+Seguimiento de respuestas correctas consecutivas: El sistema registra las rachas de aciertos para determinar cuándo aumentar la complejidad.
+Repetición estratégica: Las letras que resultan más difíciles para el usuario aparecen con mayor frecuencia.
+4. Retroalimentación Multisensorial
+Feedback visual: Colores distintivos (verde para correcto, rojo para incorrecto) que refuerzan visualmente el resultado.
+Feedback auditivo: Pronunciación opcional de las letras y palabras asociadas mediante síntesis de voz.
+Animaciones: Efectos visuales sutiles que celebran los aciertos y mantienen la atención.
+5. Sistema de Recompensas
+Recompensas estratégicas: Aparecen en momentos clave para mantener la motivación sin saturar al usuario.
+Variedad de premios: Medallas, trofeos y estrellas que se otorgan en función de diferentes logros.
+Distribución inteligente: Las recompensas se muestran estratégicamente durante el aprendizaje (al principio, a mitad del alfabeto, y hacia el final) para mantener el interés.
+6. Opciones de Personalización
+Control de posiciones fijas: Opción para mantener las letras en posiciones consistentes para usuarios con necesidades especiales.
+Ajustes de sonido: Activación/desactivación de efectos sonoros y pronunciación.
+Feedback inmediato configurable: Opción para mostrar u ocultar retroalimentación inmediata tras cada respuesta.
+Botón "Mostrar Respuesta": Permite al usuario ver la respuesta correcta cuando lo necesite, fomentando el aprendizaje autodirigido.
+7. Navegación y Progresión
+Navegación intuitiva: Botones grandes para avanzar y retroceder entre letras.
+Visualización clara del progreso: Indicadores de cuántas letras se han completado correctamente.
+Persistencia del progreso: El avance del usuario se guarda automáticamente entre sesiones.
+8. Interfaz Visualmente Atractiva
+Diseño responsivo: Adaptado para distintos tamaños de pantalla.
+Tipografía clara: Fuentes grandes y legibles especialmente diseñadas para lectores principiantes.
+Gradientes y efectos visuales: Letras con gradientes atractivos que destacan los elementos principales.
+Espaciado generoso: Distribución espaciosa que evita la sobrecarga visual y facilita la concentración.
+9. Accesibilidad
+Alto contraste: Opciones para mejorar la visibilidad para usuarios con discapacidades visuales.
+Compatibilidad con lectores de pantalla: Elementos correctamente etiquetados para tecnologías asistivas.
+Tiempo extendido: Opción para desactivar los límites de tiempo para usuarios que necesitan más tiempo para procesar.
+10. Reportes de Progreso
+Estadísticas detalladas: Seguimiento del rendimiento en cada letra y tipo de ejercicio.
+Identificación de áreas de mejora: El sistema detecta patrones de errores para sugerir práctica adicional.
+Visualización del progreso: Gráficos que muestran la evolución del aprendizaje a lo largo del tiempo.
+Consideraciones Pedagógicas
+El módulo ha sido diseñado siguiendo principios educativos sólidos:
+
+Aprendizaje progresivo: De lo simple a lo complejo, construyendo conocimiento de forma gradual.
+Refuerzo positivo: Énfasis en los aciertos más que en los errores.
+Múltiples canales sensoriales: Integración de estímulos visuales y auditivos para facilitar la memorización.
+Repetición espaciada: Las letras aparecen en intervalos estratégicos para optimizar la retención.
+Autonomía del aprendizaje: El usuario puede elegir su ritmo y recibir ayuda cuando la necesita.
