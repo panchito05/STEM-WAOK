@@ -151,7 +151,71 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const selectedLanguage = settings.language || 'english';
   const alphabet = selectedLanguage === 'spanish' ? spanishAlphabet : englishAlphabet;
   const currentLetter = alphabet[currentIndex];
+  
+  // Función de utilidad para mezclar un array
+  const shuffleArray = <T extends unknown>(array: T[]): T[] => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+  
+  // Genera un conjunto fijo de letras para el quiz (nivel intermediate)
+  const generateInitialLetterSet = (): Letter[] => {
+    // Usar todas las letras del alfabeto, distribuidas uniformemente
+    const letterSet: Letter[] = [...alphabet];
+    
+    // Ordenamos alfabéticamente para tener una base consistente
+    letterSet.sort((a, b) => a.uppercase.localeCompare(b.uppercase));
+    
+    // Mezclamos para tener variedad pero mantener las mismas posiciones en cada sesión
+    const shuffledSet = shuffleArray(letterSet);
+    
+    // Tomamos solo 4 letras (esto es para el quiz - intermediate level)
+    const selectedFourLetters = shuffledSet.slice(0, 4);
+    
+    console.log("🌟 Conjunto inicial de letras generado para quiz");
+    return selectedFourLetters;
+  };
+  
+  // Genera un conjunto fijo de letras para el matching (nivel elementary)
+  const generateInitialMatchingSet = (): Letter[] => {
+    // Usar todas las letras del alfabeto, distribuidas uniformemente
+    const letterSet: Letter[] = [...alphabet];
+    
+    // Ordenamos alfabéticamente para tener una base consistente
+    letterSet.sort((a, b) => a.uppercase.localeCompare(b.uppercase));
+    
+    // Mezclamos para tener variedad pero mantener las mismas posiciones
+    const shuffledSet = shuffleArray(letterSet);
+    
+    // Tomamos solo 8 letras (esto es para matching - elementary level)
+    const selectedEightLetters = shuffledSet.slice(0, 8);
+    
+    console.log("🌟 Conjunto inicial de letras generado para matching");
+    return selectedEightLetters;
+  };
 
+  // Efecto que se ejecuta solo una vez al inicio
+  useEffect(() => {
+    // Generar opciones de quiz solo al inicio
+    if (quizOptions.length === 0 && settings.difficulty === 'intermediate') {
+      // Generar un conjunto fijo de letras para todas las preguntas
+      const initialLetters = generateInitialLetterSet();
+      setQuizOptions(initialLetters);
+    }
+    
+    // Generar opciones de matching solo al inicio
+    if (matchingOptions.length === 0 && settings.difficulty === 'elementary') {
+      // Generar un conjunto fijo de letras para todas las preguntas
+      const initialMatchingLetters = generateInitialMatchingSet();
+      setMatchingOptions(initialMatchingLetters);
+    }
+  }, [settings.difficulty]);
+
+  // Efecto principal para cambios de letra y configuración
   useEffect(() => {
     // Resetear estados
     setShowDetails(false);
@@ -194,17 +258,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     setExerciseType(newExerciseType);
     
-    // Preparar ejercicios según el tipo
-    if (newExerciseType === 'quiz') {
-      generateQuizOptions();
-    } else if (newExerciseType === 'matching') {
-      generateMatchingOptions();
-    } else if (newExerciseType === 'ordering') {
+    // Preparar ejercicios según el tipo, solo para ordenamiento
+    // Quiz y matching ya están pre-generados
+    if (newExerciseType === 'ordering') {
       generateLettersToOrder();
     }
     
   }, [currentIndex, settings.difficulty, correctAnswers]);
-
+  
+  // Este método ahora solo se usa para regenerar opciones si fuera necesario
   const generateQuizOptions = () => {
     // Always include the correct letter
     const correctLetter = alphabet[currentIndex];
@@ -290,15 +352,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       setMatchingOptions(shuffledOptions);
     }
-  };
-
-  const shuffleArray = <T extends unknown>(array: T[]): T[] => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
   };
 
   const playSound = (text: string) => {
@@ -937,90 +990,128 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         </div>
         
-        <div className="flex gap-3 mt-4 mb-4">
-          {!waitingForContinue ? (
-            <>
-              <Button 
-                onClick={checkAnswer}
-                className="min-w-[150px] bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Check className="mr-2 h-4 w-4" />
-                {selectedLanguage === 'spanish' ? 'Verificar Respuesta' : 'Check Answer'}
-              </Button>
+        <div className="flex gap-3">
+          <Button
+            onClick={() => {
+              const userPrevLetter = adjacentLetterInputs.before.toUpperCase();
+              const userNextLetter = adjacentLetterInputs.after.toUpperCase();
               
-              <Button 
-                variant="outline"
-                onClick={showAdjacentAnswers}
-                disabled={adjacentCorrect.before && adjacentCorrect.after}
-              >
-                <EyeIcon className="mr-2 h-4 w-4" />
-                {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
-              </Button>
-            </>
-          ) : (
-            <Button 
-              className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white 
-                        flex justify-between items-center relative" 
-              onClick={handleContinue}
-            >
-              <div className="flex justify-between items-center w-full">
-                <span className="ml-5">
-                  {selectedLanguage === 'spanish' ? 'Continuar' : 'Continue'}
-                </span>
-                
-                <div className="flex items-center">
-                  <div className="flex items-center bg-black/40 rounded px-2 py-1 h-[28px] mr-1">
-                    <Checkbox 
-                      id="adjacent-auto-continue" 
-                      checked={autoContinue}
-                      className="border-white" 
-                      onCheckedChange={(checked) => {
-                        setAutoContinue(checked === true);
-                      }}
-                      onClick={(e) => e.stopPropagation()} 
-                    />
-                    <label
-                      htmlFor="adjacent-auto-continue"
-                      className="text-xs font-medium leading-none text-white ml-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setAutoContinue(!autoContinue);
-                      }}
-                    >
-                      Auto
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </Button>
-          )}
+              const isPrevCorrect = userPrevLetter === prevLetter;
+              const isNextCorrect = userNextLetter === nextLetter;
+              
+              setAdjacentCorrect({
+                before: isPrevCorrect,
+                after: isNextCorrect
+              });
+              
+              setIsCorrect(isPrevCorrect && isNextCorrect);
+              setShowDetails(true);
+              
+              if (isPrevCorrect && isNextCorrect) {
+                setCorrectAnswers(prev => prev + 1);
+                if (settings.enableSoundEffects) {
+                  playSound("Correct! You know the alphabet well!");
+                }
+              } else {
+                if (settings.enableSoundEffects) {
+                  let message = "Not quite right. ";
+                  if (!isPrevCorrect) message += `The letter before ${currentLetter.uppercase} is ${prevLetter}. `;
+                  if (!isNextCorrect) message += `The letter after ${currentLetter.uppercase} is ${nextLetter}. `;
+                  playSound(message);
+                }
+              }
+            }}
+            disabled={showDetails && isCorrect === true}
+          >
+            <Check className="mr-2 h-4 w-4" />
+            {selectedLanguage === 'spanish' ? 'Verificar' : 'Check'}
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={showAdjacentAnswers}
+            disabled={showDetails && isCorrect === true}
+          >
+            <EyeIcon className="mr-2 h-4 w-4" />
+            {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+          </Button>
         </div>
         
-        {adjacentCorrect.before && adjacentCorrect.after && !waitingForContinue && (
-          <div className="mt-4 flex flex-col items-center animate-fade-in">
-            <div className="text-2xl font-medium mb-2">
-              {selectedLanguage === 'spanish' ? '¡Excelente trabajo!' : 'Excellent work!'}
-            </div>
-            <div className="text-lg mb-2">
-              {selectedLanguage === 'spanish' 
-                ? `Antes de ${currentLetter.uppercase} viene ${prevLetter} y después viene ${nextLetter}` 
-                : `Before ${currentLetter.uppercase} comes ${prevLetter} and after comes ${nextLetter}`}
-            </div>
-            {settings.enableRewards && (
-              <div className="text-5xl animate-bounce">
-                {rewardType === 'stars' && '⭐'}
-                {rewardType === 'medals' && '🥇'}
-                {rewardType === 'trophies' && '🏆'}
+        {showDetails && (
+          <div className="mt-6 flex flex-col items-center animate-fade-in">
+            {isCorrect ? (
+              <div className="text-green-500 font-bold">
+                {selectedLanguage === 'spanish' ? '¡Correcto!' : 'Correct!'}
+              </div>
+            ) : (
+              <div className="text-red-500 font-bold">
+                {selectedLanguage === 'spanish' ? 'Incorrecto' : 'Incorrect'}
               </div>
             )}
+            
+            <div className="mt-2 text-lg">
+              {selectedLanguage === 'spanish' ? 'El orden correcto es:' : 'The correct order is:'}
+            </div>
+            
+            <div className="flex items-center justify-center mt-2 text-3xl font-bold">
+              <span className={adjacentCorrect.before ? "text-green-500" : "text-red-500"}>
+                {prevLetter}
+              </span>
+              <span className="mx-4">→</span>
+              <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
+                {currentLetter.uppercase}
+              </span>
+              <span className="mx-4">→</span>
+              <span className={adjacentCorrect.after ? "text-green-500" : "text-red-500"}>
+                {nextLetter}
+              </span>
+            </div>
           </div>
         )}
       </div>
     );
   };
-  
-  // Función para renderizar el ejercicio actual basado en el tipo
-  const renderCurrentExercise = () => {
+
+  const renderExerciseContent = () => {
+    if (showReward) {
+      // Mostrar la recompensa
+      let rewardContent;
+      
+      if (rewardType === 'stars') {
+        rewardContent = (
+          <div className="text-9xl animate-bounce">
+            ⭐
+          </div>
+        );
+      } else if (rewardType === 'medals') {
+        rewardContent = (
+          <div className="text-9xl animate-bounce">
+            🥇
+          </div>
+        );
+      } else if (rewardType === 'trophies') {
+        rewardContent = (
+          <div className="text-9xl animate-bounce">
+            🏆
+          </div>
+        );
+      }
+      
+      return (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="text-2xl font-bold mb-6">
+            {selectedLanguage === 'spanish' ? '¡Excelente trabajo!' : 'Great job!'}
+          </div>
+          {rewardContent}
+          <div className="text-xl font-medium mt-6">
+            {selectedLanguage === 'spanish'
+              ? '¡Has ganado una recompensa!'
+              : 'You earned a reward!'}
+          </div>
+        </div>
+      );
+    }
+
     switch (exerciseType) {
       case 'basic':
         return renderLetterDisplay();
@@ -1032,243 +1123,66 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         return renderOrdering();
       case 'adjacentLetters':
         return renderAdjacentLetters();
-      case 'mixed':
-        // En el modo mezclado, ya hemos asignado uno de los tipos anteriores
-        return renderCurrentExercise();
       default:
-        return renderLetterDisplay();
+        return <div>Unsupported exercise type</div>;
     }
   };
 
-  // Ya usamos el idioma seleccionado desde arriba (selectedLanguage)
-  
-  // Función para iniciar el ejercicio y temporizador
-  const startExercise = () => {
-    setExerciseStarted(true);
-    setProblemStartTime(timer);
-    setCurrentAttempts(0);
-  };
-  
-  // Efectos para el temporizador
-  useEffect(() => {
-    if (exerciseStarted && !exerciseCompleted) {
-      const interval = setInterval(() => {
-        setTimer(prev => prev + 1);
-        if (settings.timeValue > 0) {
-          setProblemTimer(prev => prev + 1);
-        }
-      }, 1000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [exerciseStarted, exerciseCompleted, settings.timeValue]);
-  
-  // Verificar respuesta del ejercicio actual
-  const checkAnswer = () => {
-    if (!exerciseStarted) {
-      startExercise();
-    }
-    
-    setCurrentAttempts(prev => prev + 1);
-    
-    // Verificar según el tipo de ejercicio
-    let isAnswerCorrect = false;
-    
-    if (exerciseType === 'adjacentLetters') {
-      // Verificar letras adyacentes
-      const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
-      const prevLetter = index > 0 ? alphabet[index - 1].uppercase : 'Z';
-      const nextLetter = index < alphabet.length - 1 ? alphabet[index + 1].uppercase : 'A';
-      
-      const beforeCorrect = adjacentLetterInputs.before.toUpperCase() === prevLetter;
-      const afterCorrect = adjacentLetterInputs.after.toUpperCase() === nextLetter;
-      
-      setAdjacentCorrect({
-        before: beforeCorrect,
-        after: afterCorrect
-      });
-      
-      isAnswerCorrect = beforeCorrect && afterCorrect;
-    } 
-    else if (exerciseType === 'ordering') {
-      // Verificar orden de letras
-      const sortedLetters = [...lettersToOrder].sort((a, b) => {
-        return a.letter.localeCompare(b.letter);
-      });
-      
-      isAnswerCorrect = lettersToOrder.every((letter, index) => {
-        return letter.letter === sortedLetters[index].letter;
-      });
-    }
-    
-    setIsCorrect(isAnswerCorrect);
-    setShowDetails(true);
-    setWaitingForContinue(true);
-    
-    // Mensaje de feedback
-    if (isAnswerCorrect) {
-      setFeedbackMessage(selectedLanguage === 'spanish' ? '¡Correcto!' : 'Correct!');
-      setFeedbackColor("green");
-      setCorrectAnswers(prev => prev + 1);
-      
-      // Determinar si mostrar recompensa (3% al azar, 100% en múltiplos de 5)
-      const shouldShowReward = 
-        settings.enableRewards && 
-        (Math.random() < 0.03 || correctAnswers % 5 === 4);
-      
-      if (shouldShowReward) {
-        setShowReward(true);
-        setTimeout(() => setShowReward(false), 2000);
-      }
-    } else {
-      setFeedbackMessage(selectedLanguage === 'spanish' ? 'Incorrecto. Intenta de nuevo.' : 'Incorrect. Try again.');
-      setFeedbackColor("red");
-      
-      // Verificar si se agotaron los intentos
-      if (settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts - 1) {
-        // Mostrar respuesta correcta
-        if (exerciseType === 'adjacentLetters') {
-          const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
-          const prevLetter = index > 0 ? alphabet[index - 1].uppercase : 'Z';
-          const nextLetter = index < alphabet.length - 1 ? alphabet[index + 1].uppercase : 'A';
-          
-          setAdjacentLetterInputs({
-            before: prevLetter,
-            after: nextLetter
-          });
-          
-          setAdjacentCorrect({
-            before: true,
-            after: true
-          });
-        } 
-        else if (exerciseType === 'ordering') {
-          // Ordenar las letras alfabéticamente
-          const sortedLetters = [...lettersToOrder].sort((a, b) => {
-            return a.letter.localeCompare(b.letter);
-          });
-          
-          setLettersToOrder(sortedLetters);
-        }
-        
-        setFeedbackMessage(
-          selectedLanguage === 'spanish' 
-            ? 'Se agotaron los intentos. Aquí está la respuesta correcta.' 
-            : 'Out of attempts. Here\'s the correct answer.'
-        );
-      }
-    }
-    
-    if (settings.enableSoundEffects) {
-      if (isAnswerCorrect) {
-        playSound(selectedLanguage === 'spanish' ? "¡Correcto! ¡Buen trabajo!" : "Correct! Good job!");
-      } else {
-        playSound(selectedLanguage === 'spanish' ? "Incorrecto. Intenta de nuevo." : "Incorrect. Try again.");
-      }
+  const getDifficultyText = () => {
+    switch(settings.difficulty) {
+      case 'beginner':
+        return selectedLanguage === 'spanish' ? 'principiante' : 'beginner';
+      case 'elementary':
+        return selectedLanguage === 'spanish' ? 'elemental' : 'elementary';
+      case 'intermediate':
+        return selectedLanguage === 'spanish' ? 'intermedio' : 'intermediate';
+      case 'advanced':
+        return selectedLanguage === 'spanish' ? 'avanzado' : 'advanced';
+      case 'expert':
+        return selectedLanguage === 'spanish' ? 'experto' : 'expert';
+      default:
+        return settings.difficulty;
     }
   };
-  
-  // Continuar al siguiente problema
-  const handleContinue = () => {
-    setWaitingForContinue(false);
-    setShowDetails(false);
-    setIsCorrect(null);
-    setFeedbackMessage("");
-    setCurrentAttempts(0);
-    
-    // Avanzar al siguiente problema/letra
-    handleNext();
-  };
-  
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">
+    <div className="flex flex-col h-full">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">
           {selectedLanguage === 'spanish' ? 'Aprendizaje del Alfabeto' : 'Alphabet Learning'}
-        </h1>
-        <div className="flex items-center">
-          {exerciseStarted && !exerciseCompleted && (
-            <span className="mr-4 text-sm text-gray-500">
-              <span className="inline-flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                {formatTime(timer)}
-              </span>
-            </span>
-          )}
-          
-          <div className="text-sm text-gray-500 mr-2">
+        </h2>
+        <div className="flex items-center space-x-2">
+          <div className="text-sm text-gray-500">
             {selectedLanguage === 'spanish' ? 'Nivel: ' : 'Level: '}
-            {settings.difficulty}
+            {getDifficultyText()}
           </div>
-          
-          <Button variant="ghost" size="icon" onClick={onOpenSettings}>
-            <Cog className="h-5 w-5" />
-            <span className="sr-only">
-              {selectedLanguage === 'spanish' ? 'Configuración' : 'Settings'}
-            </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onOpenSettings}
+            className="flex items-center"
+          >
+            <Cog className="h-4 w-4" />
           </Button>
         </div>
       </div>
       
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          {renderCurrentExercise()}
-          
-          {feedbackMessage && (
-            <div className={`mt-4 text-center text-lg font-medium text-${feedbackColor === "green" ? "green" : "red"}-500`}>
-              {feedbackMessage}
-            </div>
-          )}
-          
-          {/* Eliminamos la sección duplicada del botón Check Answer */}
+      <Card className="flex-1 mb-4">
+        <CardContent className="flex flex-col items-center justify-center h-full pt-6">
+          {renderExerciseContent()}
         </CardContent>
       </Card>
       
       <div className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={handlePrevious}
-        >
+        <Button variant="outline" onClick={handlePrevious} className="flex items-center">
           <ArrowLeft className="mr-2 h-4 w-4" />
           {selectedLanguage === 'spanish' ? 'Anterior' : 'Previous'}
         </Button>
-        
-        <Button
-          variant="default"
-          onClick={handleNext}
-        >
+        <Button onClick={handleNext} className="flex items-center">
           {selectedLanguage === 'spanish' ? 'Siguiente' : 'Next'}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
-      
-      {showReward && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg flex flex-col items-center animate-bounce">
-            <div className="text-7xl mb-4">
-              {rewardType === 'stars' && '⭐'}
-              {rewardType === 'medals' && '🥇'}
-              {rewardType === 'trophies' && '🏆'}
-            </div>
-            <div className="text-2xl font-bold text-center">
-              {selectedLanguage === 'spanish' ? '¡Buen trabajo!' : 'Good job!'}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
