@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, EyeIcon, AlertCircle, Loader } from 'lucide-react';
+import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, EyeIcon, AlertCircle } from 'lucide-react';
 import { ModuleSettings } from '@/context/SettingsContext';
 import { useProgress } from '@/context/ProgressContext';
 import { Input } from '@/components/ui/input';
@@ -93,31 +93,29 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Variables de estado básicas
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   
   // Variables para ejercicio
   const [timer, setTimer] = useState(0);
   const [exerciseStarted, setExerciseStarted] = useState(false);
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
-  const [problemTimer, setProblemTimer] = useState(0);
-  const [problemStartTime, setProblemStartTime] = useState(0);
-  const [waitingForContinue, setWaitingForContinue] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState("");
-  const [feedbackColor, setFeedbackColor] = useState("gray");
-  const [currentAttempts, setCurrentAttempts] = useState(0);
-  const [autoContinue, setAutoContinue] = useState(false);
-  const [showingExplanation, setShowingExplanation] = useState(false);
   
   // Tipos de ejercicios
   const [exerciseType, setExerciseType] = useState<
     'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed'
   >('basic');
   
-  // Variables para el quiz
+  // Variables para el quiz (nuevo sistema)
   const [quizOptions, setQuizOptions] = useState<Letter[]>([]);
-  // Variables para el matching
-  const [letterOptions, setLetterOptions] = useState<Letter[]>([]);
+  const [quizSelectedOption, setQuizSelectedOption] = useState<Letter | null>(null);
+  const [quizIsCorrect, setQuizIsCorrect] = useState<boolean | null>(null);
+  const [quizShowDetails, setQuizShowDetails] = useState(false);
+  
+  // Variables para el matching (nuevo sistema)
+  const [matchingOptions, setMatchingOptions] = useState<Letter[]>([]);
+  const [matchingSelectedOption, setMatchingSelectedOption] = useState<Letter | null>(null);
+  const [matchingIsCorrect, setMatchingIsCorrect] = useState<boolean | null>(null);
+  const [matchingShowDetails, setMatchingShowDetails] = useState(false);
   
   // Variables para ordenamiento de letras
   const [lettersToOrder, setLettersToOrder] = useState<{letter: string, id: string}[]>([]);
@@ -156,12 +154,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Resetear estados
     setShowDetails(false);
     setIsCorrect(null);
-    setSelectedOption(null);
+    setQuizSelectedOption(null);
+    setQuizIsCorrect(null);
+    setQuizShowDetails(false);
+    setMatchingSelectedOption(null);
+    setMatchingIsCorrect(null);
+    setMatchingShowDetails(false);
     setAdjacentLetterInputs({ before: '', after: '' });
     setAdjacentCorrect({ before: false, after: false });
-    
-    // Limpiar las opciones para que se regeneren
-    setLetterOptions([]); // Importante: reiniciar opciones para modo matching
     
     // Determinar el tipo de ejercicio según el nivel de dificultad
     let newExerciseType: 'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed' = 'basic';
@@ -197,95 +197,90 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     setExerciseType(newExerciseType);
     
-    // Preparar ejercicios según el tipo
-    if (newExerciseType === 'quiz') {
-      generateQuizOptions();
-    } else if (newExerciseType === 'matching') {
-      generateMatchingOptions();
-    } else if (newExerciseType === 'ordering') {
-      generateLettersToOrder();
-    }
-    
-  }, [currentIndex, settings.difficulty, correctAnswers]);
+  }, [currentIndex, settings.difficulty, correctAnswers, settings.language]);
 
-  const generateQuizOptions = () => {
-    // Always include the correct letter
-    const correctLetter = alphabet[currentIndex];
-    console.log('Generando opciones para quiz - Letra correcta:', correctLetter.uppercase);
-    
-    // Get 3 random different letters
-    let options: Letter[] = [];
-    
-    // Primero agregamos la letra correcta
-    options.push(correctLetter);
-    
-    // Luego agregamos 3 letras aleatorias diferentes
-    let counter = 0;
-    const maxAttempts = 20; // Para evitar loops infinitos
-    
-    while (options.length < 4 && counter < maxAttempts) {
-      counter++;
-      const randomIndex = Math.floor(Math.random() * alphabet.length);
-      const randomLetter = alphabet[randomIndex];
+  // Efecto para generar opciones de quiz cuando cambia la letra o el tipo de ejercicio
+  useEffect(() => {
+    if (exerciseType === 'quiz') {
+      // Siempre incluir la letra correcta
+      const correctLetter = currentLetter;
       
-      // No agregar duplicados ni la letra actual
-      if (!options.some(option => option.uppercase === randomLetter.uppercase)) {
-        options.push(randomLetter);
+      // Crear el conjunto de opciones (3 aleatorias + la correcta)
+      let optionsSet: Letter[] = [correctLetter];
+      
+      // Necesitamos 3 letras aleatorias diferentes
+      while (optionsSet.length < 4) {
+        const randomIndex = Math.floor(Math.random() * alphabet.length);
+        const randomLetter = alphabet[randomIndex];
+        
+        // No agregar duplicados
+        if (!optionsSet.some(opt => opt.uppercase === randomLetter.uppercase)) {
+          optionsSet.push(randomLetter);
+        }
       }
+      
+      // Mezclar las opciones
+      const shuffledOptions = [...optionsSet].sort(() => Math.random() - 0.5);
+      
+      // Actualizar el estado
+      setQuizOptions(shuffledOptions);
+      
+      console.log('NUEVO SISTEMA QUIZ: Opciones generadas:', 
+        shuffledOptions.map(l => l.uppercase).join(', '));
+      console.log('NUEVO SISTEMA QUIZ: Letra correcta:', correctLetter.uppercase);
     }
-    
-    // Shuffle options usando un nuevo método más seguro
-    const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
-    
-    // Guardar índice de la respuesta correcta para referencia
-    const correctIndex = shuffledOptions.findIndex(
-      option => option.uppercase === correctLetter.uppercase
-    );
-    
-    console.log('Opciones de quiz generadas:', shuffledOptions.map(l => l.uppercase).join(', '));
-    console.log('Índice correcto:', correctIndex);
-    
-    setQuizOptions(shuffledOptions);
-  };
+  }, [currentLetter, alphabet, exerciseType]);
   
-  // Generar opciones para el modo matching
-  const generateMatchingOptions = () => {
-    console.log('Generando opciones de matching para la letra:', currentLetter.uppercase);
-    
-    // Crear un conjunto de opciones con letras dispersas (no solo del inicio)
-    const letterIndices: number[] = [];
-    
-    // Elegir índices aleatorios para 7 letras diferentes (excluyendo la letra actual)
-    while (letterIndices.length < 7) {
-      const randomIndex = Math.floor(Math.random() * alphabet.length);
-      // No incluir la letra actual ni duplicados
-      if (randomIndex !== currentIndex && !letterIndices.includes(randomIndex)) {
-        letterIndices.push(randomIndex);
+  // Efecto para generar opciones de matching cuando cambia la letra o el tipo de ejercicio
+  useEffect(() => {
+    if (exerciseType === 'matching') {
+      // Generar conjunto de opciones aleatorias para el matching
+      const letterIndices: number[] = [];
+      
+      // Elegir índices aleatorios para 7 letras diferentes (excluyendo la actual)
+      while (letterIndices.length < 7) {
+        const randomIndex = Math.floor(Math.random() * alphabet.length);
+        if (randomIndex !== currentIndex && !letterIndices.includes(randomIndex)) {
+          letterIndices.push(randomIndex);
+        }
       }
+      
+      // Convertir índices en letras
+      const randomLetters = letterIndices.map(index => alphabet[index]);
+      
+      // Agregar la letra actual y mezclar
+      const allOptions = [...randomLetters, currentLetter];
+      const shuffledOptions = [...allOptions].sort(() => Math.random() - 0.5);
+      
+      // Actualizar estado
+      setMatchingOptions(shuffledOptions);
+      
+      console.log('NUEVO SISTEMA MATCHING: Opciones generadas:', 
+        shuffledOptions.map(l => l.uppercase).join(', '));
+      console.log('NUEVO SISTEMA MATCHING: Letra correcta:', currentLetter.uppercase);
     }
-    
-    // Extraer las letras basadas en los índices aleatorios
-    const randomLetters = letterIndices.map(index => alphabet[index]);
-    
-    // Agregar la letra actual a las opciones
-    const options = [...randomLetters, currentLetter];
-    
-    // Mezclar las opciones para que la letra actual no esté siempre al final
-    const shuffledOptions = shuffleArray(options);
-    
-    // Guardar en el estado
-    console.log('Opciones generadas:', shuffledOptions.map(l => l.uppercase).join(', '));
-    setLetterOptions(shuffledOptions);
-  };
-
-  const shuffleArray = <T extends unknown>(array: T[]): T[] => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }, [currentLetter, alphabet, currentIndex, exerciseType]);
+  
+  // Efecto para generar letras para ordenar cuando cambia el tipo de ejercicio
+  useEffect(() => {
+    if (exerciseType === 'ordering') {
+      // Obtener un conjunto aleatorio de 4-6 letras consecutivas
+      const startIndex = Math.floor(Math.random() * 20); // No empezar muy al final del alfabeto
+      const numLetters = Math.floor(Math.random() * 3) + 4; // Entre 4 y 6 letras
+      
+      const selectedLetters = alphabet.slice(startIndex, startIndex + numLetters);
+      
+      // Crear un array con la letra y un ID único para el DnD
+      const lettersWithIds = selectedLetters.map((letter, index) => ({
+        letter: letter.uppercase,
+        id: `letter-${index}`
+      }));
+      
+      // Desordenar las letras
+      setLettersToOrder(shuffleArray([...lettersWithIds]));
+      setOrderedLetters([]);
     }
-    return newArray;
-  };
+  }, [exerciseType, alphabet]);
 
   const playSound = (text: string) => {
     if (settings.enableSoundEffects && 'speechSynthesis' in window) {
@@ -305,23 +300,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     );
   };
 
-  // Generador de letras para ordenar
-  const generateLettersToOrder = () => {
-    // Obtener un conjunto aleatorio de 4-6 letras consecutivas
-    const startIndex = Math.floor(Math.random() * 20); // No empezar muy al final del alfabeto
-    const numLetters = Math.floor(Math.random() * 3) + 4; // Entre 4 y 6 letras
-    
-    const selectedLetters = alphabet.slice(startIndex, startIndex + numLetters);
-    
-    // Crear un array con la letra y un ID único para el DnD
-    const lettersWithIds = selectedLetters.map((letter, index) => ({
-      letter: letter.uppercase,
-      id: `letter-${index}`
-    }));
-    
-    // Desordenar las letras
-    setLettersToOrder(shuffleArray([...lettersWithIds]));
-    setOrderedLetters([]);
+  const shuffleArray = <T extends unknown>(array: T[]): T[] => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
   };
 
   const handleLetterClick = () => {
@@ -333,161 +318,276 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
 
-  // Actualiza el manejo de opciones para el quiz
-  const handleQuizOptionSelect = (index: number) => {
-    console.log('-----------------------------------');
-    console.log('Exercise Type:', exerciseType);
-    console.log('Selected Index:', index);
-    console.log('Current Letter:', currentLetter.uppercase);
+  // Manejar la selección de una opción en el quiz
+  const handleQuizOptionSelect = (selectedLetter: Letter) => {
+    setQuizSelectedOption(selectedLetter);
     
-    // Registrar el índice seleccionado
-    setSelectedOption(index);
+    // Comprobar si es correcta comparando directamente las letras
+    const isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
+    setQuizIsCorrect(isAnswerCorrect);
+    setQuizShowDetails(true);
     
-    let selectedLetter: Letter;
-    let isAnswerCorrect: boolean;
+    console.log('NUEVO SISTEMA QUIZ: Seleccionada:', selectedLetter.uppercase);
+    console.log('NUEVO SISTEMA QUIZ: Correcta:', currentLetter.uppercase);
+    console.log('NUEVO SISTEMA QUIZ: ¿Coinciden?', isAnswerCorrect);
     
-    // Si estamos en el modo quiz, usamos las opciones del quiz
-    if (exerciseType === 'quiz') {
-      selectedLetter = quizOptions[index];
-      console.log('Quiz Option at index', index, '=', selectedLetter.uppercase);
-      isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
-    } 
-    // Si estamos en modo matching, usamos las opciones mostradas
-    else if (exerciseType === 'matching') {
-      // Importante: Usamos las mismas letras que se muestran en el renderMatching
-      console.log('LetterOptions length:', letterOptions.length);
-      if (letterOptions.length > index) {
-        selectedLetter = letterOptions[index];
-        console.log('Matching Option at index', index, '=', selectedLetter.uppercase);
-      } else {
-        console.error('ERROR! Index out of bounds for letterOptions');
-        selectedLetter = currentLetter; // Fallback
-      }
-      isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
-    } 
-    // Por defecto
-    else {
-      selectedLetter = alphabet[index % alphabet.length];
-      console.log('Default Option at index', index, '=', selectedLetter.uppercase);
-      isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
-    }
-    console.log('Is Correct?', isAnswerCorrect);
-    
-    setIsCorrect(isAnswerCorrect);
-    
-    // Si la respuesta es correcta, incrementar los contadores
+    // Actualizar contadores
     if (isAnswerCorrect) {
       setCorrectAnswers(prev => prev + 1);
-      // También aumentar el contador de respuestas correctas consecutivas
-      const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
-      setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
+      setConsecutiveCorrectAnswers(prev => prev + 1);
       
-      // Sistema de recompensas más estratégico y aleatorio
-      if (settings.enableRewards) {
-        let shouldShowReward = false;
-        
-        // Máximo de recompensas permitidas (aproximadamente 20-25% del alfabeto)
-        const maxRewardsPerSession = Math.max(2, Math.ceil(alphabet.length * 0.2));
-        
-        // Limitar la cantidad total de recompensas
-        if (totalRewardsShown >= maxRewardsPerSession) {
-          // Sólo mostrar recompensa en la última letra si no se ha mostrado ahí
-          shouldShowReward = currentIndex === alphabet.length - 1 && 
-                          !rewardsShownIndices.includes(alphabet.length - 1);
-        } 
-        else {
-          // Evitar recompensas en letras consecutivas
-          const lastRewardIndex = rewardsShownIndices.length > 0 ? 
-                                rewardsShownIndices[rewardsShownIndices.length - 1] : -1;
-                                
-          // Mínimo de letras entre recompensas
-          const minLettersBetweenRewards = Math.max(3, Math.floor(alphabet.length / 8));
-          const lettersSinceLastReward = lastRewardIndex === -1 ? 
-                                      currentIndex + 1 : 
-                                      Math.abs(currentIndex - lastRewardIndex);
-          
-          // Solo considerar mostrar recompensa si ha pasado suficiente tiempo
-          if (lastRewardIndex === -1 || lettersSinceLastReward > minLettersBetweenRewards) {
-            
-            // Momentos estratégicos para mostrar recompensas:
-            
-            // Si estamos en las primeras letras (8% de probabilidad)
-            const isEarlyLetter = currentIndex < Math.ceil(alphabet.length * 0.2);
-            
-            // En la mitad del alfabeto (25% de probabilidad)
-            const isMidPointLetter = Math.abs(currentIndex - Math.floor(alphabet.length / 2)) <= 1;
-            
-            // En las últimas letras (35% de probabilidad)
-            const isLateLetter = currentIndex >= Math.floor(alphabet.length * 0.85);
-            
-            // Racha significativa de respuestas correctas (5+)
-            const isSignificantStreak = newConsecutiveCorrectAnswers >= 5;
-            
-            // Asignar probabilidades basado en los criterios
-            if (isSignificantStreak) {
-              shouldShowReward = Math.random() < 0.6; // Alta probabilidad por racha
-            }
-            else if (isLateLetter) {
-              shouldShowReward = Math.random() < 0.35; // Probabilidad moderada al final
-            }
-            else if (isMidPointLetter) {
-              shouldShowReward = Math.random() < 0.25; // Probabilidad media a mitad
-            }
-            else if (isEarlyLetter) {
-              shouldShowReward = Math.random() < 0.08; // Baja probabilidad al inicio
-            }
-            else {
-              // Factor sorpresa (3%)
-              shouldShowReward = Math.random() < 0.03;
-            }
-          }
-        }
-        
-        // Si se determinó que debemos mostrar una recompensa
-        if (shouldShowReward) {
-          // Seleccionar aleatoriamente el tipo de recompensa
-          const rewardTypes: ("medals" | "trophies" | "stars")[] = ["medals", "trophies", "stars"];
-          const randomRewardType = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
-          setRewardType(randomRewardType);
-          
-          // Registrar la recompensa
-          setRewardsShownIndices(prev => [...prev, currentIndex]);
-          setTotalRewardsShown(prev => prev + 1);
-          
-          // Mostrar la recompensa con animación
-          setShowReward(true);
-          setTimeout(() => setShowReward(false), 2500);
-          
-          // Reiniciar el contador para variar la frecuencia
-          setConsecutiveCorrectAnswers(0);
-        }
+      // Activar sistema de recompensas si corresponde
+      const shouldShowReward = settings.enableRewards && 
+        (Math.random() < 0.05 || consecutiveCorrectAnswers % 5 === 4);
+      
+      if (shouldShowReward) {
+        setShowReward(true);
+        setTimeout(() => setShowReward(false), 2500);
+      }
+      
+      // Reproducir sonido de acierto
+      if (settings.enableSoundEffects) {
+        playSound("Correct! Good job!");
       }
     } else {
-      // Si es incorrecta, reiniciar contador de consecutivas
+      // Reiniciar contador de aciertos consecutivos
       setConsecutiveCorrectAnswers(0);
-    }
-    
-    if (settings.enableSoundEffects) {
-      if (isAnswerCorrect) {
-        playSound("Correct! Good job!");
-      } else {
-        playSound(`Incorrect. This is the letter ${selectedLetter.uppercase}, ${selectedLetter.word}`);
+      
+      // Reproducir sonido de error
+      if (settings.enableSoundEffects) {
+        playSound(`Incorrect. The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
       }
     }
+  };
+  
+  // Función para mostrar la respuesta directamente en el quiz
+  const showQuizAnswer = () => {
+    setQuizSelectedOption(currentLetter);
+    setQuizIsCorrect(true);
+    setQuizShowDetails(true);
     
-    // Show the answer regardless of correctness
+    // Reproducir sonido con la respuesta
+    if (settings.enableSoundEffects) {
+      playSound(`The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+    }
+  };
+
+  // Manejar la selección de una opción en el matching
+  const handleMatchingOptionSelect = (selectedLetter: Letter) => {
+    setMatchingSelectedOption(selectedLetter);
+    
+    // Comprobar si es correcta comparando directamente las letras
+    const isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
+    setMatchingIsCorrect(isAnswerCorrect);
+    setMatchingShowDetails(true);
+    
+    console.log('NUEVO SISTEMA MATCHING: Seleccionada:', selectedLetter.uppercase);
+    console.log('NUEVO SISTEMA MATCHING: Correcta:', currentLetter.uppercase);
+    console.log('NUEVO SISTEMA MATCHING: ¿Coinciden?', isAnswerCorrect);
+    
+    // Actualizar contadores
+    if (isAnswerCorrect) {
+      setCorrectAnswers(prev => prev + 1);
+      setConsecutiveCorrectAnswers(prev => prev + 1);
+      
+      // Activar sistema de recompensas si corresponde
+      const shouldShowReward = settings.enableRewards && 
+        (Math.random() < 0.05 || consecutiveCorrectAnswers % 5 === 4);
+      
+      if (shouldShowReward) {
+        setShowReward(true);
+        setTimeout(() => setShowReward(false), 2500);
+      }
+      
+      // Reproducir sonido de acierto
+      if (settings.enableSoundEffects) {
+        playSound("Correct! Good job!");
+      }
+    } else {
+      // Reiniciar contador de aciertos consecutivos
+      setConsecutiveCorrectAnswers(0);
+      
+      // Reproducir sonido de error
+      if (settings.enableSoundEffects) {
+        playSound(`Incorrect. The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+      }
+    }
+  };
+  
+  // Función para mostrar la respuesta directamente en el matching
+  const showMatchingAnswer = () => {
+    setMatchingSelectedOption(currentLetter);
+    setMatchingIsCorrect(true);
+    setMatchingShowDetails(true);
+    
+    // Reproducir sonido con la respuesta
+    if (settings.enableSoundEffects) {
+      playSound(`The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+    }
+  };
+
+  // Función para mostrar la respuesta básica
+  const showBasicAnswer = () => {
+    setShowDetails(true);
+    if (settings.enableSoundEffects) {
+      playSound(`${currentLetter.uppercase}. ${currentLetter.word}`);
+    }
+  };
+
+  // Función para revisar el orden de las letras
+  const checkLetterOrder = () => {
+    // Compara el orden actual con el orden alfabético correcto
+    const sortedLetters = [...lettersToOrder].sort((a, b) => {
+      return a.letter.localeCompare(b.letter);
+    });
+    
+    // Verifica si están en el mismo orden
+    const isCorrect = lettersToOrder.every((letter, index) => {
+      return letter.letter === sortedLetters[index].letter;
+    });
+
+    setIsCorrect(isCorrect);
+    setShowDetails(true);
+    
+    if (isCorrect) {
+      setCorrectAnswers(prev => prev + 1);
+      
+      // Determinar si mostrar recompensa (3% al azar, 100% en múltiplos de 5)
+      const shouldShowReward = 
+        settings.enableRewards && 
+        (Math.random() < 0.03 || correctAnswers % 5 === 4);
+      
+      if (shouldShowReward) {
+        setShowReward(true);
+        setTimeout(() => setShowReward(false), 2000);
+      }
+
+      if (settings.enableSoundEffects) {
+        playSound("Correct! The letters are in the right order!");
+      }
+    } else {
+      if (settings.enableSoundEffects) {
+        playSound("Try again. The letters are not in the correct order.");
+      }
+    }
+  };
+
+  // Función para mostrar las letras en orden
+  const showOrderAnswer = () => {
+    // Ordena las letras alfabéticamente
+    const sortedLetters = [...lettersToOrder].sort((a, b) => {
+      return a.letter.localeCompare(b.letter);
+    });
+    
+    setLettersToOrder(sortedLetters);
     setShowDetails(true);
   };
 
-  const renderLetterDisplay = () => {
-    // Función para mostrar la respuesta directamente
-    const showBasicAnswer = () => {
-      setShowDetails(true);
-      if (settings.enableSoundEffects) {
-        playSound(`${currentLetter.uppercase}. ${currentLetter.word}`);
-      }
-    };
+  // Comprueba las letras adyacentes
+  const checkAdjacentLetters = () => {
+    // Obtener índice actual
+    const currentIdx = alphabet.findIndex(
+      letter => letter.uppercase === currentLetter.uppercase
+    );
     
+    // Obtener letras adyacentes correctas
+    let beforeCorrect = false;
+    let afterCorrect = false;
+    
+    // Verificar letra anterior
+    if (currentIdx > 0) {
+      const correctBeforeLetter = alphabet[currentIdx - 1].uppercase;
+      beforeCorrect = adjacentLetterInputs.before.toUpperCase() === correctBeforeLetter;
+    } else {
+      // Si es la primera letra, no hay "anterior"
+      beforeCorrect = adjacentLetterInputs.before === "";
+    }
+    
+    // Verificar letra siguiente
+    if (currentIdx < alphabet.length - 1) {
+      const correctAfterLetter = alphabet[currentIdx + 1].uppercase;
+      afterCorrect = adjacentLetterInputs.after.toUpperCase() === correctAfterLetter;
+    } else {
+      // Si es la última letra, no hay "siguiente"
+      afterCorrect = adjacentLetterInputs.after === "";
+    }
+    
+    // Actualizar estado
+    setAdjacentCorrect({
+      before: beforeCorrect,
+      after: afterCorrect
+    });
+    
+    const allCorrect = beforeCorrect && afterCorrect;
+    
+    // Mostrar feedback y actualizar contadores
+    if (allCorrect) {
+      setCorrectAnswers(prev => prev + 1);
+      
+      // Sistema de recompensas
+      const shouldShowReward = 
+        settings.enableRewards && 
+        (Math.random() < 0.05 || correctAnswers % 5 === 4);
+      
+      if (shouldShowReward) {
+        setShowReward(true);
+        setTimeout(() => setShowReward(false), 2000);
+      }
+      
+      if (settings.enableSoundEffects) {
+        playSound("Perfect! You got both adjacent letters right!");
+      }
+    } else if (beforeCorrect || afterCorrect) {
+      if (settings.enableSoundEffects) {
+        playSound("Partially correct! One of your answers is right.");
+      }
+    } else {
+      if (settings.enableSoundEffects) {
+        playSound("Try again. Neither of your answers is correct.");
+      }
+    }
+    
+    setShowDetails(true);
+  };
+
+  // Mostrar respuesta para letras adyacentes
+  const showAdjacentAnswer = () => {
+    // Obtener índice actual
+    const currentIdx = alphabet.findIndex(
+      letter => letter.uppercase === currentLetter.uppercase
+    );
+    
+    // Obtener y mostrar letras adyacentes correctas
+    let beforeLetter = "";
+    let afterLetter = "";
+    
+    if (currentIdx > 0) {
+      beforeLetter = alphabet[currentIdx - 1].uppercase;
+    }
+    
+    if (currentIdx < alphabet.length - 1) {
+      afterLetter = alphabet[currentIdx + 1].uppercase;
+    }
+    
+    setAdjacentLetterInputs({
+      before: beforeLetter,
+      after: afterLetter
+    });
+    
+    setAdjacentCorrect({
+      before: true,
+      after: true
+    });
+    
+    setShowDetails(true);
+    
+    if (settings.enableSoundEffects) {
+      const message = `The letter before ${currentLetter.uppercase} is ${beforeLetter || "none"} and the letter after is ${afterLetter || "none"}.`;
+      playSound(message);
+    }
+  };
+
+  const renderLetterDisplay = () => {
     return (
       <div className="flex flex-col items-center justify-center">
         <div 
@@ -531,103 +631,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const renderQuiz = () => {
-    // NUEVA IMPLEMENTACIÓN: Generamos las opciones al principio y las mantenemos sincronizadas
-    const [localQuizOptions, setLocalQuizOptions] = useState<Letter[]>([]);
-    const [localSelectedOption, setLocalSelectedOption] = useState<Letter | null>(null);
-    const [localIsCorrect, setLocalIsCorrect] = useState<boolean | null>(null);
-    const [localShowDetails, setLocalShowDetails] = useState(false);
-    
-    // Generar opciones al montar el componente o cuando cambie la letra actual
-    useEffect(() => {
-      // Siempre incluir la letra correcta
-      const correctLetter = currentLetter;
-      
-      // Crear el conjunto de opciones (3 aleatorias + la correcta)
-      let optionsSet: Letter[] = [correctLetter];
-      
-      // Necesitamos 3 letras aleatorias diferentes
-      while (optionsSet.length < 4) {
-        const randomIndex = Math.floor(Math.random() * alphabet.length);
-        const randomLetter = alphabet[randomIndex];
-        
-        // No agregar duplicados
-        if (!optionsSet.some(opt => opt.uppercase === randomLetter.uppercase)) {
-          optionsSet.push(randomLetter);
-        }
-      }
-      
-      // Mezclar las opciones
-      const shuffledOptions = [...optionsSet].sort(() => Math.random() - 0.5);
-      
-      // Actualizar el estado local
-      setLocalQuizOptions(shuffledOptions);
-      setLocalSelectedOption(null);
-      setLocalIsCorrect(null);
-      setLocalShowDetails(false);
-      
-      console.log('NUEVO SISTEMA: Opciones generadas:', 
-        shuffledOptions.map(l => l.uppercase).join(', '));
-      console.log('NUEVO SISTEMA: Letra correcta:', correctLetter.uppercase);
-    }, [currentLetter, alphabet]);
-    
     // Si no hay opciones, mostrar loading
-    if (localQuizOptions.length === 0) {
+    if (quizOptions.length === 0) {
       return <div className="flex justify-center"><RefreshCw className="animate-spin" /></div>;
     }
-    
-    // Manejar la selección de una opción
-    const handleLocalOptionSelect = (selectedLetter: Letter) => {
-      setLocalSelectedOption(selectedLetter);
-      
-      // Comprobar si es correcta comparando directamente las letras
-      const isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
-      setLocalIsCorrect(isAnswerCorrect);
-      setLocalShowDetails(true);
-      
-      console.log('NUEVO SISTEMA: Seleccionada:', selectedLetter.uppercase);
-      console.log('NUEVO SISTEMA: Correcta:', currentLetter.uppercase);
-      console.log('NUEVO SISTEMA: ¿Coinciden?', isAnswerCorrect);
-      
-      // Actualizar contadores
-      if (isAnswerCorrect) {
-        setCorrectAnswers(prev => prev + 1);
-        setConsecutiveCorrectAnswers(prev => prev + 1);
-        
-        // Activar sistema de recompensas si corresponde
-        const shouldShowReward = settings.enableRewards && 
-          (Math.random() < 0.05 || consecutiveCorrectAnswers % 5 === 4);
-        
-        if (shouldShowReward) {
-          setShowReward(true);
-          setTimeout(() => setShowReward(false), 2500);
-        }
-        
-        // Reproducir sonido de acierto
-        if (settings.enableSoundEffects) {
-          playSound("Correct! Good job!");
-        }
-      } else {
-        // Reiniciar contador de aciertos consecutivos
-        setConsecutiveCorrectAnswers(0);
-        
-        // Reproducir sonido de error
-        if (settings.enableSoundEffects) {
-          playSound(`Incorrect. The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
-        }
-      }
-    };
-    
-    // Función para mostrar la respuesta directamente
-    const showAnswer = () => {
-      setLocalSelectedOption(currentLetter);
-      setLocalIsCorrect(true);
-      setLocalShowDetails(true);
-      
-      // Reproducir sonido con la respuesta
-      if (settings.enableSoundEffects) {
-        playSound(`The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
-      }
-    };
     
     return (
       <div className="flex flex-col items-center">
@@ -639,10 +646,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
         <div className="grid grid-cols-2 gap-4">
-          {localQuizOptions.map((option) => {
+          {quizOptions.map((option) => {
             // Determinar si esta opción es la correcta
             const isThisCorrect = option.uppercase === currentLetter.uppercase;
-            const isSelected = localSelectedOption?.uppercase === option.uppercase;
+            const isSelected = quizSelectedOption?.uppercase === option.uppercase;
             
             return (
               <Button
@@ -653,12 +660,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   : "outline"
                 }
                 className={`text-4xl h-20 w-20 ${
-                  localSelectedOption && isThisCorrect
+                  quizSelectedOption && isThisCorrect
                     ? "ring-2 ring-green-500" 
                     : ""
                 }`}
-                onClick={() => handleLocalOptionSelect(option)}
-                disabled={localSelectedOption !== null}
+                onClick={() => handleQuizOptionSelect(option)}
+                disabled={quizSelectedOption !== null}
               >
                 {option.uppercase}
               </Button>
@@ -666,10 +673,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           })}
         </div>
         
-        {localSelectedOption === null && (
+        {quizSelectedOption === null && (
           <Button 
             variant="outline"
-            onClick={showAnswer}
+            onClick={showQuizAnswer}
             className="mt-4"
           >
             <EyeIcon className="mr-2 h-4 w-4" />
@@ -677,7 +684,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </Button>
         )}
         
-        {localShowDetails && (
+        {quizShowDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
               {selectedLanguage === 'spanish'
@@ -691,103 +698,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     );
   };
 
-  // Renderiza el ejercicio de emparejamiento (Elementary)
   const renderMatching = () => {
-    // NUEVA IMPLEMENTACIÓN similar a renderQuiz pero para matching
-    const [localMatchingOptions, setLocalMatchingOptions] = useState<Letter[]>([]);
-    const [localSelectedOption, setLocalSelectedOption] = useState<Letter | null>(null);
-    const [localIsCorrect, setLocalIsCorrect] = useState<boolean | null>(null);
-    const [localShowDetails, setLocalShowDetails] = useState(false);
-    
-    // Generar opciones al montar el componente o cuando cambie la letra actual
-    useEffect(() => {
-      // Generar conjunto de opciones aleatorias para el matching
-      const letterIndices: number[] = [];
-      
-      // Elegir índices aleatorios para 7 letras diferentes (excluyendo la actual)
-      while (letterIndices.length < 7) {
-        const randomIndex = Math.floor(Math.random() * alphabet.length);
-        if (randomIndex !== currentIndex && !letterIndices.includes(randomIndex)) {
-          letterIndices.push(randomIndex);
-        }
-      }
-      
-      // Convertir índices en letras
-      const randomLetters = letterIndices.map(index => alphabet[index]);
-      
-      // Agregar la letra actual y mezclar
-      const allOptions = [...randomLetters, currentLetter];
-      const shuffledOptions = [...allOptions].sort(() => Math.random() - 0.5);
-      
-      // Actualizar estado local
-      setLocalMatchingOptions(shuffledOptions);
-      setLocalSelectedOption(null);
-      setLocalIsCorrect(null);
-      setLocalShowDetails(false);
-      
-      console.log('NUEVO SISTEMA MATCHING: Opciones generadas:', 
-        shuffledOptions.map(l => l.uppercase).join(', '));
-      console.log('NUEVO SISTEMA MATCHING: Letra correcta:', currentLetter.uppercase);
-    }, [currentLetter, alphabet, currentIndex]);
-    
     // Si no hay opciones, mostrar loading
-    if (localMatchingOptions.length === 0) {
+    if (matchingOptions.length === 0) {
       return <div className="flex justify-center"><RefreshCw className="animate-spin" /></div>;
     }
-    
-    // Manejar la selección de una opción
-    const handleLocalOptionSelect = (selectedLetter: Letter) => {
-      setLocalSelectedOption(selectedLetter);
-      
-      // Comprobar si es correcta comparando directamente las letras
-      const isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
-      setLocalIsCorrect(isAnswerCorrect);
-      setLocalShowDetails(true);
-      
-      console.log('NUEVO SISTEMA MATCHING: Seleccionada:', selectedLetter.uppercase);
-      console.log('NUEVO SISTEMA MATCHING: Correcta:', currentLetter.uppercase);
-      console.log('NUEVO SISTEMA MATCHING: ¿Coinciden?', isAnswerCorrect);
-      
-      // Actualizar contadores
-      if (isAnswerCorrect) {
-        setCorrectAnswers(prev => prev + 1);
-        setConsecutiveCorrectAnswers(prev => prev + 1);
-        
-        // Activar sistema de recompensas si corresponde
-        const shouldShowReward = settings.enableRewards && 
-          (Math.random() < 0.05 || consecutiveCorrectAnswers % 5 === 4);
-        
-        if (shouldShowReward) {
-          setShowReward(true);
-          setTimeout(() => setShowReward(false), 2500);
-        }
-        
-        // Reproducir sonido de acierto
-        if (settings.enableSoundEffects) {
-          playSound("Correct! Good job!");
-        }
-      } else {
-        // Reiniciar contador de aciertos consecutivos
-        setConsecutiveCorrectAnswers(0);
-        
-        // Reproducir sonido de error
-        if (settings.enableSoundEffects) {
-          playSound(`Incorrect. The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
-        }
-      }
-    };
-    
-    // Función para mostrar la respuesta directamente
-    const showAnswer = () => {
-      setLocalSelectedOption(currentLetter);
-      setLocalIsCorrect(true);
-      setLocalShowDetails(true);
-      
-      // Reproducir sonido con la respuesta
-      if (settings.enableSoundEffects) {
-        playSound(`The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
-      }
-    };
     
     return (
       <div className="flex flex-col items-center">
@@ -799,10 +714,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          {localMatchingOptions.map((letter) => {
+          {matchingOptions.map((letter) => {
             // Determinar si esta opción es la correcta
             const isThisCorrect = letter.uppercase === currentLetter.uppercase;
-            const isSelected = localSelectedOption?.uppercase === letter.uppercase;
+            const isSelected = matchingSelectedOption?.uppercase === letter.uppercase;
             
             return (
               <Button
@@ -812,12 +727,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   ? (isThisCorrect ? "default" : "destructive") 
                   : "outline"}
                 className={`text-3xl h-16 w-16 ${
-                  localSelectedOption && isThisCorrect
+                  matchingSelectedOption && isThisCorrect
                     ? "ring-2 ring-green-500" 
                     : ""
                 }`}
-                onClick={() => handleLocalOptionSelect(letter)}
-                disabled={localSelectedOption !== null}
+                onClick={() => handleMatchingOptionSelect(letter)}
+                disabled={matchingSelectedOption !== null}
               >
                 {letter.uppercase}
               </Button>
@@ -825,10 +740,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           })}
         </div>
         
-        {localSelectedOption === null && (
+        {matchingSelectedOption === null && (
           <Button 
             variant="outline"
-            onClick={showAnswer}
+            onClick={showMatchingAnswer}
             className="mt-4"
           >
             <EyeIcon className="mr-2 h-4 w-4" />
@@ -836,7 +751,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </Button>
         )}
         
-        {localShowDetails && (
+        {matchingShowDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
               {selectedLanguage === 'spanish'
@@ -849,8 +764,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       </div>
     );
   };
-  
-  // Renderiza el ejercicio de ordenar letras (Advanced)
+
   // Componente de letra arrastrable
   const DraggableLetter = ({ id, letter, index, moveCard }: { 
     id: string, 
@@ -948,56 +862,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     });
   };
 
-  const checkLetterOrder = () => {
-    // Compara el orden actual con el orden alfabético correcto
-    const sortedLetters = [...lettersToOrder].sort((a, b) => {
-      return a.letter.localeCompare(b.letter);
-    });
-    
-    // Verifica si están en el mismo orden
-    const isCorrect = lettersToOrder.every((letter, index) => {
-      return letter.letter === sortedLetters[index].letter;
-    });
-
-    setIsCorrect(isCorrect);
-    setShowDetails(true);
-    
-    if (isCorrect) {
-      setCorrectAnswers(prev => prev + 1);
-      
-      // Determinar si mostrar recompensa (3% al azar, 100% en múltiplos de 5)
-      const shouldShowReward = 
-        settings.enableRewards && 
-        (Math.random() < 0.03 || correctAnswers % 5 === 4);
-      
-      if (shouldShowReward) {
-        setShowReward(true);
-        setTimeout(() => setShowReward(false), 2000);
-      }
-
-      if (settings.enableSoundEffects) {
-        playSound("Correct! The letters are in the right order!");
-      }
-    } else {
-      if (settings.enableSoundEffects) {
-        playSound("Try again. The letters are not in the correct order.");
-      }
-    }
-  };
-
-  const showOrderAnswer = () => {
-    // Ordena las letras alfabéticamente
-    const sortedLetters = [...lettersToOrder].sort((a, b) => {
-      return a.letter.localeCompare(b.letter);
-    });
-    
-    setLettersToOrder(sortedLetters);
-    setShowDetails(true);
-  };
-
   const renderOrdering = () => {
-    // Usamos selectedLanguage que ya fue definido arriba
-    
     return (
       <DndProvider backend={HTML5Backend}>
         <div className="flex flex-col items-center">
@@ -1023,186 +888,128 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               disabled={showDetails && isCorrect === true}
             >
               <Check className="mr-2 h-4 w-4" />
-              {selectedLanguage === 'spanish' ? 'Verificar' : 'Check'}
+              {selectedLanguage === 'spanish' ? 'Comprobar Orden' : 'Check Order'}
             </Button>
             
-            <Button 
-              variant="outline"
-              onClick={showOrderAnswer}
-              disabled={showDetails && isCorrect === true}
-            >
-              <EyeIcon className="mr-2 h-4 w-4" />
-              {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
-            </Button>
+            {!showDetails && (
+              <Button
+                variant="outline"
+                onClick={showOrderAnswer}
+              >
+                <EyeIcon className="mr-2 h-4 w-4" />
+                {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+              </Button>
+            )}
           </div>
           
-          {showDetails && isCorrect && (
-            <div className="mt-4 flex flex-col items-center animate-fade-in">
-              <p className="text-green-500 font-bold text-lg">
-                {selectedLanguage === 'spanish' ? '¡Correcto!' : 'Correct!'}
-              </p>
-              <p className="text-gray-500">
-                {selectedLanguage === 'spanish' ? 'Has ordenado las letras correctamente' : 'You ordered the letters correctly'}
-              </p>
+          {showDetails && (
+            <div className="mt-6 animate-fade-in">
+              {isCorrect ? (
+                <div className="text-center text-green-600 font-medium">
+                  {selectedLanguage === 'spanish' 
+                    ? '¡Correcto! Las letras están en el orden alfabético correcto.' 
+                    : 'Correct! The letters are in the correct alphabetical order.'}
+                </div>
+              ) : (
+                <div className="text-center text-red-600 font-medium">
+                  {selectedLanguage === 'spanish' 
+                    ? 'Incorrecto. Intenta ordenar las letras alfabéticamente.' 
+                    : 'Incorrect. Try to arrange the letters alphabetically.'}
+                </div>
+              )}
             </div>
           )}
-          
-          <div className="mt-4 flex flex-col items-center">
-            <Button
-              variant="outline"
-              onClick={generateLettersToOrder}
-              className="mt-2"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {selectedLanguage === 'spanish' ? 'Nuevo conjunto' : 'New set'}
-            </Button>
-          </div>
         </div>
       </DndProvider>
     );
   };
-  
-  // Renderiza el ejercicio de letras adyacentes (Expert)
+
   const renderAdjacentLetters = () => {
-    // Usamos selectedLanguage que ya fue definido arriba
-    
-    // Obtenemos las letras adyacentes para usarlas en el botón de mostrar respuestas
-    const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
-    const prevLetter = index > 0 ? alphabet[index - 1].uppercase : 'Z';
-    const nextLetter = index < alphabet.length - 1 ? alphabet[index + 1].uppercase : 'A';
-    
-    const showAdjacentAnswers = () => {
-      setAdjacentLetterInputs({
-        before: prevLetter,
-        after: nextLetter
-      });
-      setAdjacentCorrect({
-        before: true,
-        after: true
-      });
-      setShowDetails(true);
-    };
-    
     return (
       <div className="flex flex-col items-center">
         <h2 className="text-2xl font-medium mb-4">
           {selectedLanguage === 'spanish' 
             ? '¿Qué letras van antes y después?' 
-            : 'What letters come before and after?'}
+            : 'Which letters come before and after?'}
         </h2>
         
-        <div className="text-8xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
+        <div className="text-9xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
           {currentLetter.uppercase}
         </div>
         
-        <div className="grid grid-cols-2 gap-6 w-full max-w-md mb-6">
+        <div className="grid grid-cols-2 gap-4 mt-2 mb-6">
           <div>
-            <Label htmlFor="before-letter" className="mb-2 block">
-              {selectedLanguage === 'spanish' ? 'Antes' : 'Before'}
+            <Label htmlFor="before-letter" className="block mb-2">
+              {selectedLanguage === 'spanish' ? 'Letra anterior:' : 'Letter before:'}
             </Label>
             <Input
               id="before-letter"
+              maxLength={1}
+              className={`text-center text-2xl h-12 w-16 ${
+                showDetails 
+                  ? adjacentCorrect.before ? "border-green-500" : "border-red-500" 
+                  : ""
+              }`}
               value={adjacentLetterInputs.before}
               onChange={(e) => 
                 setAdjacentLetterInputs(prev => ({...prev, before: e.target.value.toUpperCase()}))
               }
-              className={`text-center text-xl ${adjacentCorrect.before ? "border-green-500" : ""}`}
-              maxLength={1}
-              placeholder="?"
             />
           </div>
           
           <div>
-            <Label htmlFor="after-letter" className="mb-2 block">
-              {selectedLanguage === 'spanish' ? 'Después' : 'After'}
+            <Label htmlFor="after-letter" className="block mb-2">
+              {selectedLanguage === 'spanish' ? 'Letra siguiente:' : 'Letter after:'}
             </Label>
             <Input
               id="after-letter"
+              maxLength={1}
+              className={`text-center text-2xl h-12 w-16 ${
+                showDetails 
+                  ? adjacentCorrect.after ? "border-green-500" : "border-red-500" 
+                  : ""
+              }`}
               value={adjacentLetterInputs.after}
               onChange={(e) => 
                 setAdjacentLetterInputs(prev => ({...prev, after: e.target.value.toUpperCase()}))
               }
-              className={`text-center text-xl ${adjacentCorrect.after ? "border-green-500" : ""}`}
-              maxLength={1}
-              placeholder="?"
             />
           </div>
         </div>
         
-        <div className="flex gap-3 mt-4 mb-4">
-          {!waitingForContinue ? (
-            <>
-              <Button 
-                onClick={checkAnswer}
-                className="min-w-[150px] bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Check className="mr-2 h-4 w-4" />
-                {selectedLanguage === 'spanish' ? 'Verificar Respuesta' : 'Check Answer'}
-              </Button>
-              
-              <Button 
-                variant="outline"
-                onClick={showAdjacentAnswers}
-                disabled={adjacentCorrect.before && adjacentCorrect.after}
-              >
-                <EyeIcon className="mr-2 h-4 w-4" />
-                {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
-              </Button>
-            </>
-          ) : (
-            <Button 
-              className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white 
-                        flex justify-between items-center relative" 
-              onClick={handleContinue}
-            >
-              <div className="flex justify-between items-center w-full">
-                <span className="ml-5">
-                  {selectedLanguage === 'spanish' ? 'Continuar' : 'Continue'}
-                </span>
-                
-                <div className="flex items-center">
-                  <div className="flex items-center bg-black/40 rounded px-2 py-1 h-[28px] mr-1">
-                    <Checkbox 
-                      id="adjacent-auto-continue" 
-                      checked={autoContinue}
-                      className="border-white" 
-                      onCheckedChange={(checked) => {
-                        setAutoContinue(checked === true);
-                      }}
-                      onClick={(e) => e.stopPropagation()} 
-                    />
-                    <label
-                      htmlFor="adjacent-auto-continue"
-                      className="text-xs font-medium leading-none text-white ml-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setAutoContinue(!autoContinue);
-                      }}
-                    >
-                      Auto
-                    </label>
-                  </div>
-                </div>
-              </div>
+        <div className="flex gap-3 mt-2">
+          <Button onClick={checkAdjacentLetters} disabled={showDetails}>
+            <Check className="mr-2 h-4 w-4" />
+            {selectedLanguage === 'spanish' ? 'Comprobar' : 'Check'}
+          </Button>
+          
+          {!showDetails && (
+            <Button variant="outline" onClick={showAdjacentAnswer}>
+              <EyeIcon className="mr-2 h-4 w-4" />
+              {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
             </Button>
           )}
         </div>
         
-        {adjacentCorrect.before && adjacentCorrect.after && !waitingForContinue && (
-          <div className="mt-4 flex flex-col items-center animate-fade-in">
-            <div className="text-2xl font-medium mb-2">
-              {selectedLanguage === 'spanish' ? '¡Excelente trabajo!' : 'Excellent work!'}
-            </div>
-            <div className="text-lg mb-2">
-              {selectedLanguage === 'spanish' 
-                ? `Antes de ${currentLetter.uppercase} viene ${prevLetter} y después viene ${nextLetter}` 
-                : `Before ${currentLetter.uppercase} comes ${prevLetter} and after comes ${nextLetter}`}
-            </div>
-            {settings.enableRewards && (
-              <div className="text-5xl animate-bounce">
-                {rewardType === 'stars' && '⭐'}
-                {rewardType === 'medals' && '🥇'}
-                {rewardType === 'trophies' && '🏆'}
+        {showDetails && (
+          <div className="mt-6 text-center animate-fade-in">
+            {adjacentCorrect.before && adjacentCorrect.after ? (
+              <div className="text-green-600 font-medium">
+                {selectedLanguage === 'spanish' 
+                  ? '¡Correcto! Has identificado ambas letras adyacentes.' 
+                  : 'Correct! You have identified both adjacent letters.'}
+              </div>
+            ) : adjacentCorrect.before || adjacentCorrect.after ? (
+              <div className="text-yellow-600 font-medium">
+                {selectedLanguage === 'spanish' 
+                  ? 'Parcialmente correcto. Una de tus respuestas es correcta.' 
+                  : 'Partially correct. One of your answers is correct.'}
+              </div>
+            ) : (
+              <div className="text-red-600 font-medium">
+                {selectedLanguage === 'spanish' 
+                  ? 'Incorrecto. Intenta identificar las letras que vienen antes y después.' 
+                  : 'Incorrect. Try to identify the letters that come before and after.'}
               </div>
             )}
           </div>
@@ -1210,9 +1017,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       </div>
     );
   };
-  
-  // Función para renderizar el ejercicio actual basado en el tipo
-  const renderCurrentExercise = () => {
+
+  const renderExercise = () => {
     switch (exerciseType) {
       case 'basic':
         return renderLetterDisplay();
@@ -1224,243 +1030,111 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         return renderOrdering();
       case 'adjacentLetters':
         return renderAdjacentLetters();
-      case 'mixed':
-        // En el modo mezclado, ya hemos asignado uno de los tipos anteriores
-        return renderCurrentExercise();
       default:
         return renderLetterDisplay();
     }
   };
 
-  // Ya usamos el idioma seleccionado desde arriba (selectedLanguage)
-  
-  // Función para iniciar el ejercicio y temporizador
-  const startExercise = () => {
-    setExerciseStarted(true);
-    setProblemStartTime(timer);
-    setCurrentAttempts(0);
-  };
-  
-  // Efectos para el temporizador
-  useEffect(() => {
-    if (exerciseStarted && !exerciseCompleted) {
-      const interval = setInterval(() => {
-        setTimer(prev => prev + 1);
-        if (settings.timeValue > 0) {
-          setProblemTimer(prev => prev + 1);
-        }
-      }, 1000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [exerciseStarted, exerciseCompleted, settings.timeValue]);
-  
-  // Verificar respuesta del ejercicio actual
-  const checkAnswer = () => {
-    if (!exerciseStarted) {
-      startExercise();
-    }
+  // Elementos de recompensa
+  const renderReward = () => {
+    if (!showReward) return null;
     
-    setCurrentAttempts(prev => prev + 1);
+    let rewardElements: JSX.Element[] = [];
     
-    // Verificar según el tipo de ejercicio
-    let isAnswerCorrect = false;
-    
-    if (exerciseType === 'adjacentLetters') {
-      // Verificar letras adyacentes
-      const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
-      const prevLetter = index > 0 ? alphabet[index - 1].uppercase : 'Z';
-      const nextLetter = index < alphabet.length - 1 ? alphabet[index + 1].uppercase : 'A';
-      
-      const beforeCorrect = adjacentLetterInputs.before.toUpperCase() === prevLetter;
-      const afterCorrect = adjacentLetterInputs.after.toUpperCase() === nextLetter;
-      
-      setAdjacentCorrect({
-        before: beforeCorrect,
-        after: afterCorrect
-      });
-      
-      isAnswerCorrect = beforeCorrect && afterCorrect;
-    } 
-    else if (exerciseType === 'ordering') {
-      // Verificar orden de letras
-      const sortedLetters = [...lettersToOrder].sort((a, b) => {
-        return a.letter.localeCompare(b.letter);
-      });
-      
-      isAnswerCorrect = lettersToOrder.every((letter, index) => {
-        return letter.letter === sortedLetters[index].letter;
-      });
-    }
-    
-    setIsCorrect(isAnswerCorrect);
-    setShowDetails(true);
-    setWaitingForContinue(true);
-    
-    // Mensaje de feedback
-    if (isAnswerCorrect) {
-      setFeedbackMessage(selectedLanguage === 'spanish' ? '¡Correcto!' : 'Correct!');
-      setFeedbackColor("green");
-      setCorrectAnswers(prev => prev + 1);
-      
-      // Determinar si mostrar recompensa (3% al azar, 100% en múltiplos de 5)
-      const shouldShowReward = 
-        settings.enableRewards && 
-        (Math.random() < 0.03 || correctAnswers % 5 === 4);
-      
-      if (shouldShowReward) {
-        setShowReward(true);
-        setTimeout(() => setShowReward(false), 2000);
-      }
-    } else {
-      setFeedbackMessage(selectedLanguage === 'spanish' ? 'Incorrecto. Intenta de nuevo.' : 'Incorrect. Try again.');
-      setFeedbackColor("red");
-      
-      // Verificar si se agotaron los intentos
-      if (settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts - 1) {
-        // Mostrar respuesta correcta
-        if (exerciseType === 'adjacentLetters') {
-          const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
-          const prevLetter = index > 0 ? alphabet[index - 1].uppercase : 'Z';
-          const nextLetter = index < alphabet.length - 1 ? alphabet[index + 1].uppercase : 'A';
-          
-          setAdjacentLetterInputs({
-            before: prevLetter,
-            after: nextLetter
-          });
-          
-          setAdjacentCorrect({
-            before: true,
-            after: true
-          });
-        } 
-        else if (exerciseType === 'ordering') {
-          // Ordenar las letras alfabéticamente
-          const sortedLetters = [...lettersToOrder].sort((a, b) => {
-            return a.letter.localeCompare(b.letter);
-          });
-          
-          setLettersToOrder(sortedLetters);
-        }
-        
-        setFeedbackMessage(
-          selectedLanguage === 'spanish' 
-            ? 'Se agotaron los intentos. Aquí está la respuesta correcta.' 
-            : 'Out of attempts. Here\'s the correct answer.'
-        );
-      }
-    }
-    
-    if (settings.enableSoundEffects) {
-      if (isAnswerCorrect) {
-        playSound(selectedLanguage === 'spanish' ? "¡Correcto! ¡Buen trabajo!" : "Correct! Good job!");
-      } else {
-        playSound(selectedLanguage === 'spanish' ? "Incorrecto. Intenta de nuevo." : "Incorrect. Try again.");
-      }
-    }
-  };
-  
-  // Continuar al siguiente problema
-  const handleContinue = () => {
-    setWaitingForContinue(false);
-    setShowDetails(false);
-    setIsCorrect(null);
-    setFeedbackMessage("");
-    setCurrentAttempts(0);
-    
-    // Avanzar al siguiente problema/letra
-    handleNext();
-  };
-  
-  return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">
-          {selectedLanguage === 'spanish' ? 'Aprendizaje del Alfabeto' : 'Alphabet Learning'}
-        </h1>
-        <div className="flex items-center">
-          {exerciseStarted && !exerciseCompleted && (
-            <span className="mr-4 text-sm text-gray-500">
-              <span className="inline-flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                {formatTime(timer)}
-              </span>
-            </span>
-          )}
-          
-          <div className="text-sm text-gray-500 mr-2">
-            {selectedLanguage === 'spanish' ? 'Nivel: ' : 'Level: '}
-            {settings.difficulty}
+    // Determinar el tipo de recompensa
+    switch (rewardType) {
+      case 'stars':
+        rewardElements = Array(5).fill(0).map((_, i) => (
+          <div 
+            key={`star-${i}`} 
+            className="text-4xl animate-bounce" 
+            style={{ 
+              animation: `bounce 1s infinite ${i * 0.2}s`,
+              color: `hsl(${45 + i * 10}, 100%, 50%)`
+            }}
+          >
+            ⭐
           </div>
+        ));
+        break;
+      case 'medals':
+        rewardElements = Array(3).fill(0).map((_, i) => (
+          <div 
+            key={`medal-${i}`} 
+            className="text-5xl animate-bounce" 
+            style={{ 
+              animation: `bounce 1s infinite ${i * 0.3}s`,
+            }}
+          >
+            {i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}
+          </div>
+        ));
+        break;
+      case 'trophies':
+        rewardElements = Array(3).fill(0).map((_, i) => (
+          <div 
+            key={`trophy-${i}`} 
+            className="text-5xl animate-bounce" 
+            style={{ 
+              animation: `bounce 1s infinite ${i * 0.3}s`,
+              transform: `rotate(${(i - 1) * 15}deg)`
+            }}
+          >
+            🏆
+          </div>
+        ));
+        break;
+    }
+    
+    return (
+      <div className="absolute top-0 left-0 w-full h-full flex justify-center items-center pointer-events-none">
+        <div className="flex gap-4 items-center">
+          {rewardElements}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Card className="relative overflow-hidden">
+      <CardContent className="pt-6 pb-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">
+            {selectedLanguage === 'spanish' ? 'Aprendizaje del Alfabeto' : 'Alphabet Learning'}
+          </h2>
+          <div className="flex items-center">
+            <div className="mr-2 text-sm opacity-70">
+              {settings.difficulty === 'beginner' ? 'Beginner' :
+               settings.difficulty === 'elementary' ? 'Elementary' :
+               settings.difficulty === 'intermediate' ? 'Intermediate' :
+               settings.difficulty === 'advanced' ? 'Advanced' :
+               'Expert'}
+            </div>
+            <Button variant="ghost" size="icon" onClick={onOpenSettings}>
+              <Cog className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+        
+        <div className="mb-8">
+          {renderExercise()}
+        </div>
+        
+        <div className="flex justify-between mt-4">
+          <Button variant="outline" onClick={handlePrevious}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {selectedLanguage === 'spanish' ? 'Anterior' : 'Previous'}
+          </Button>
           
-          <Button variant="ghost" size="icon" onClick={onOpenSettings}>
-            <Cog className="h-5 w-5" />
-            <span className="sr-only">
-              {selectedLanguage === 'spanish' ? 'Configuración' : 'Settings'}
-            </span>
+          <Button variant="outline" onClick={handleNext}>
+            {selectedLanguage === 'spanish' ? 'Siguiente' : 'Next'}
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
-      </div>
-      
-      <Card className="mb-6">
-        <CardContent className="p-6">
-          {renderCurrentExercise()}
-          
-          {feedbackMessage && (
-            <div className={`mt-4 text-center text-lg font-medium text-${feedbackColor === "green" ? "green" : "red"}-500`}>
-              {feedbackMessage}
-            </div>
-          )}
-          
-          {/* Eliminamos la sección duplicada del botón Check Answer */}
-        </CardContent>
-      </Card>
-      
-      <div className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={handlePrevious}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {selectedLanguage === 'spanish' ? 'Anterior' : 'Previous'}
-        </Button>
         
-        <Button
-          variant="default"
-          onClick={handleNext}
-        >
-          {selectedLanguage === 'spanish' ? 'Siguiente' : 'Next'}
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
-      
-      {showReward && (
-        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg flex flex-col items-center animate-bounce">
-            <div className="text-7xl mb-4">
-              {rewardType === 'stars' && '⭐'}
-              {rewardType === 'medals' && '🥇'}
-              {rewardType === 'trophies' && '🏆'}
-            </div>
-            <div className="text-2xl font-bold text-center">
-              {selectedLanguage === 'spanish' ? '¡Buen trabajo!' : 'Good job!'}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        {/* Sistema de recompensas */}
+        {renderReward()}
+      </CardContent>
+    </Card>
   );
 }
