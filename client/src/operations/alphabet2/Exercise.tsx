@@ -410,75 +410,208 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const newExerciseMode = getExerciseType();
     setExerciseMode(newExerciseMode);
     
-    console.log(`🖼️ Generando ejercicio de ${newExerciseMode === 'letter_to_image' ? 'letra a imágenes' : 'imagen a letras'} para ${currentLetterItem.uppercase}. Opción correcta en posición ${Math.floor(Math.random() * 4)}`);
-    
     // Resetear estados
     setSelectedOptionIndex(null);
     setShowDetails(false);
     setIsCorrect(null);
     setAttemptCount(0);
     
-    if (newExerciseMode === 'letter_to_image') {
-      // Generar ejercicio de letra a imagen (similar al original pero implementado diferente)
-      const letterAlternatives = alternatives[currentLetterItem.uppercase] || [];
-      const correctOption = { word: currentLetterItem.word, image: currentLetterItem.image };
-      
-      // Generar opciones incorrectas
-      const incorrectOptions: AlternativeWord[] = [];
-      while (incorrectOptions.length < 3) {
-        const randIndex = Math.floor(Math.random() * alphabetSubset.length);
-        const randLetter = alphabetSubset[randIndex];
+    // Generar el tipo de ejercicio adecuado según el nivel de dificultad
+    switch (settings.difficulty) {
+      case 'beginner':
+        // NIVEL BEGINNER: Reconocimiento básico (A → Apple 🍎)
+        console.log(`🖼️ Generando ejercicio de reconocimiento básico para ${currentLetterItem.uppercase}`);
         
-        // Evitar duplicados y la letra correcta
-        if (randLetter.uppercase !== currentLetterItem.uppercase && 
-            !incorrectOptions.some(opt => opt.image === randLetter.image)) {
-          incorrectOptions.push({
-            word: randLetter.word,
-            image: randLetter.image
-          });
-        }
-      }
-      
-      // Mezclar opciones
-      const allOptions = [correctOption, ...incorrectOptions].sort(() => Math.random() - 0.5);
-      const correctIndex = allOptions.findIndex(opt => opt.word === correctOption.word);
-      
-      setCurrentExercise({
-        letter: currentLetterItem,
-        options: allOptions,
-        correctIndex
-      } as LetterToImageExercise);
-      
-    } else {
-      // Modo imagen a letra (similar al original pero implementado diferente)
-      const correctOption = { 
-        word: currentLetterItem.word, 
-        image: currentLetterItem.image 
-      };
-      
-      // Obtener 3 letras incorrectas
-      const incorrectLetters: Letter[] = [];
-      while (incorrectLetters.length < 3) {
-        const randIndex = Math.floor(Math.random() * alphabetSubset.length);
-        const randLetter = alphabetSubset[randIndex];
+        // Generar ejercicio de letra a imagen
+        generateLetterToImageExercise(currentLetterItem, alphabetSubset, alternatives);
+        break;
         
-        // Evitar duplicados
-        if (randLetter.uppercase !== currentLetterItem.uppercase && 
-            !incorrectLetters.some(l => l.uppercase === randLetter.uppercase)) {
-          incorrectLetters.push(randLetter);
-        }
-      }
-      
-      // Mezclar opciones
-      const allOptions = [currentLetterItem, ...incorrectLetters].sort(() => Math.random() - 0.5);
-      const correctIndex = allOptions.findIndex(l => l.uppercase === currentLetterItem.uppercase);
-      
-      setCurrentExercise({
-        image: correctOption,
-        options: allOptions,
-        correctIndex
-      } as ImageToLetterExercise);
+      case 'elementary':
+        // NIVEL ELEMENTARY: Emparejamiento (B = ? [Ball ⚽])
+        console.log(`🖼️ Generando ejercicio de emparejamiento para ${currentLetterItem.uppercase}`);
+        
+        // Similar a beginner pero con contexto diferente y presentación adaptada
+        generateLetterToImageExercise(currentLetterItem, alphabetSubset, alternatives);
+        break;
+        
+      case 'intermediate':
+        // NIVEL INTERMEDIATE: Quiz de letras (🍌 = ? [A, C, P, R])
+        console.log(`🖼️ Generando quiz de letras para ${currentLetterItem.uppercase}`);
+        
+        // Ejercicio de imagen a letra
+        generateImageToLetterExercise(currentLetterItem, alphabetSubset);
+        break;
+        
+      case 'advanced':
+        // NIVEL ADVANCED: Drag & Drop (ordenar: A, C, B)
+        console.log(`🖼️ Generando ejercicio de drag & drop para ordenar letras`);
+        
+        // Crear un ejercicio de ordenamiento (simulado sin drag & drop real por ahora)
+        generateAdvancedExercise(alphabetSubset);
+        break;
+        
+      case 'expert':
+        // NIVEL EXPERT: Anterior/Siguiente (K → J y L)
+        console.log(`🖼️ Generando ejercicio de secuencias (anterior/siguiente) para ${currentLetterItem.uppercase}`);
+        
+        // Ejercicio de relaciones de secuencia
+        generateSequenceExercise(currentLetterItem, alphabetSubset);
+        break;
+        
+      default:
+        // Por defecto, ejercicio básico
+        generateLetterToImageExercise(currentLetterItem, alphabetSubset, alternatives);
     }
+  };
+  
+  // IMPLEMENTACIÓN ESPECÍFICA PARA NIVEL BEGINNER y ELEMENTARY
+  const generateLetterToImageExercise = (
+    currentLetterItem: Letter, 
+    alphabetSubset: Letter[], 
+    alternatives: Record<string, AlternativeWord[]>
+  ) => {
+    const letterAlternatives = alternatives[currentLetterItem.uppercase] || [];
+    const correctOption = { word: currentLetterItem.word, image: currentLetterItem.image };
+    
+    // Generar opciones incorrectas
+    const incorrectOptions: AlternativeWord[] = [];
+    while (incorrectOptions.length < 3) {
+      const randIndex = Math.floor(Math.random() * alphabetSubset.length);
+      const randLetter = alphabetSubset[randIndex];
+      
+      // Evitar duplicados y la letra correcta
+      if (randLetter.uppercase !== currentLetterItem.uppercase && 
+          !incorrectOptions.some(opt => opt.image === randLetter.image)) {
+        incorrectOptions.push({
+          word: randLetter.word,
+          image: randLetter.image
+        });
+      }
+    }
+    
+    // Mezclar opciones
+    const allOptions = [correctOption, ...incorrectOptions].sort(() => Math.random() - 0.5);
+    const correctIndex = allOptions.findIndex(opt => opt.word === correctOption.word);
+    
+    console.log(`🖼️ Generando ejercicio de letra a imágenes para ${currentLetterItem.uppercase}. Opción correcta en posición ${correctIndex}`);
+    
+    setCurrentExercise({
+      letter: currentLetterItem,
+      options: allOptions,
+      correctIndex
+    } as LetterToImageExercise);
+  };
+  
+  // IMPLEMENTACIÓN ESPECÍFICA PARA NIVEL INTERMEDIATE
+  const generateImageToLetterExercise = (
+    currentLetterItem: Letter, 
+    alphabetSubset: Letter[]
+  ) => {
+    const correctOption = { 
+      word: currentLetterItem.word, 
+      image: currentLetterItem.image 
+    };
+    
+    // Obtener 3 letras incorrectas
+    const incorrectLetters: Letter[] = [];
+    while (incorrectLetters.length < 3) {
+      const randIndex = Math.floor(Math.random() * alphabetSubset.length);
+      const randLetter = alphabetSubset[randIndex];
+      
+      // Evitar duplicados
+      if (randLetter.uppercase !== currentLetterItem.uppercase && 
+          !incorrectLetters.some(l => l.uppercase === randLetter.uppercase)) {
+        incorrectLetters.push(randLetter);
+      }
+    }
+    
+    // Mezclar opciones
+    const allOptions = [currentLetterItem, ...incorrectLetters].sort(() => Math.random() - 0.5);
+    const correctIndex = allOptions.findIndex(l => l.uppercase === currentLetterItem.uppercase);
+    
+    console.log(`🖼️ Generando ejercicio de imagen a letras para ${currentLetterItem.uppercase}. Opción correcta en posición ${correctIndex}`);
+    
+    setCurrentExercise({
+      image: correctOption,
+      options: allOptions,
+      correctIndex
+    } as ImageToLetterExercise);
+  };
+  
+  // IMPLEMENTACIÓN ESPECÍFICA PARA NIVEL ADVANCED (Drag & Drop)
+  const generateAdvancedExercise = (alphabetSubset: Letter[]) => {
+    // Tomar 3-5 letras aleatorias para ordenar
+    const selectedLetters = alphabetSubset.slice(0, Math.min(5, alphabetSubset.length));
+    
+    // Crear un orden correcto (alfabético)
+    const correctOrder = [...selectedLetters]
+      .sort((a, b) => a.uppercase.localeCompare(b.uppercase))
+      .map(letter => letter.uppercase);
+    
+    // Crear un orden desordenado para presentar al usuario
+    const shuffledOrder = [...correctOrder].sort(() => Math.random() - 0.5);
+    
+    console.log(`🖼️ Generando ejercicio de ordenamiento para ${shuffledOrder.join(', ')}. Orden correcto: ${correctOrder.join(', ')}`);
+    
+    setCurrentExercise({
+      letters: selectedLetters,
+      correctOrder,
+      currentOrder: shuffledOrder
+    } as DragAndDropExercise);
+  };
+  
+  // IMPLEMENTACIÓN ESPECÍFICA PARA NIVEL EXPERT (Anterior/Siguiente)
+  const generateSequenceExercise = (currentLetterItem: Letter, alphabetSubset: Letter[]) => {
+    // Encontrar el índice de la letra actual en el alfabeto completo
+    const alphabet = getAlphabet();
+    const fullAlphabetIndex = alphabet.findIndex(letter => letter.uppercase === currentLetterItem.uppercase);
+    
+    if (fullAlphabetIndex === -1) {
+      // Si no se encuentra (raro), generar un ejercicio básico
+      generateLetterToImageExercise(currentLetterItem, alphabetSubset, getAlternatives());
+      return;
+    }
+    
+    // Obtener letra anterior y siguiente
+    const previousLetter = fullAlphabetIndex > 0 ? alphabet[fullAlphabetIndex - 1] : alphabet[alphabet.length - 1];
+    const nextLetter = fullAlphabetIndex < alphabet.length - 1 ? alphabet[fullAlphabetIndex + 1] : alphabet[0];
+    
+    // Generar opciones incluyendo letras incorrectas
+    const incorrectOptions: Letter[] = [];
+    while (incorrectOptions.length < 4) {
+      const randIndex = Math.floor(Math.random() * alphabet.length);
+      const randLetter = alphabet[randIndex];
+      
+      // Evitar duplicados y las letras correctas
+      if (randLetter.uppercase !== currentLetterItem.uppercase && 
+          randLetter.uppercase !== previousLetter.uppercase &&
+          randLetter.uppercase !== nextLetter.uppercase &&
+          !incorrectOptions.some(l => l.uppercase === randLetter.uppercase)) {
+        incorrectOptions.push(randLetter);
+      }
+    }
+    
+    // Mezclar con las correctas para anterior
+    const prevOptions = [previousLetter, ...incorrectOptions.slice(0, 3)].sort(() => Math.random() - 0.5);
+    const correctPrevIndex = prevOptions.findIndex(l => l.uppercase === previousLetter.uppercase);
+    
+    // Mezclar con las correctas para siguiente
+    const nextOptions = [nextLetter, ...incorrectOptions.slice(0, 3)].sort(() => Math.random() - 0.5);
+    const correctNextIndex = nextOptions.findIndex(l => l.uppercase === nextLetter.uppercase);
+    
+    // Opción combinada
+    const combinedOptions = Array.from(new Set([...prevOptions, ...nextOptions])).slice(0, 6);
+    
+    console.log(`🖼️ Generando ejercicio de secuencia para ${currentLetterItem.uppercase}. Anterior: ${previousLetter.uppercase}, Siguiente: ${nextLetter.uppercase}`);
+    
+    setCurrentExercise({
+      currentLetter: currentLetterItem,
+      previousLetter,
+      nextLetter,
+      options: combinedOptions,
+      correctPrevIndex,
+      correctNextIndex
+    } as SequenceRelationsExercise);
   };
   
   // Manejar navegación a ejercicio anterior
@@ -908,7 +1041,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         </div>
         
-        {exerciseMode === 'letter_to_image' ? renderLetterToImageExercise() : renderImageToLetterExercise()}
+        {/* Renderizar contenido según el nivel de dificultad */}
+        {settings.difficulty === 'beginner' && exerciseMode === 'letter_to_image' && 'letter' in currentExercise 
+          ? renderBeginnerExercise(currentExercise as LetterToImageExercise)
+          : settings.difficulty === 'elementary' && exerciseMode === 'letter_to_image' && 'letter' in currentExercise
+          ? renderElementaryExercise(currentExercise as LetterToImageExercise)
+          : settings.difficulty === 'intermediate' && exerciseMode === 'image_to_letter' && 'image' in currentExercise
+          ? renderIntermediateExercise(currentExercise as ImageToLetterExercise)
+          : settings.difficulty === 'advanced' && 'letters' in currentExercise
+          ? renderAdvancedExercise(currentExercise as DragAndDropExercise)
+          : settings.difficulty === 'expert' && 'currentLetter' in currentExercise
+          ? renderExpertExercise(currentExercise as SequenceRelationsExercise)
+          : exerciseMode === 'letter_to_image' && 'letter' in currentExercise
+          ? renderLetterToImageExercise()
+          : renderImageToLetterExercise()}
       </div>
     );
   };
