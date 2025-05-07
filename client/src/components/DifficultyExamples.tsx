@@ -68,6 +68,13 @@ export default function DifficultyExamples({
       intermediate: ["72 ÷ 9 = ?", "125 ÷ 5 = ?"],
       advanced: ["196 ÷ 14 = ?", "374 ÷ 11 = ?"],
       expert: ["2856 ÷ 24 = ?", "9317 ÷ 37 = ?"]
+    },
+    fractions: {
+      beginner: ["1/4 + 2/4 = ?", "3/5 - 1/5 = ?"],
+      elementary: ["2/3 + 1/6 = ?", "3/4 - 1/8 = ?"],
+      intermediate: ["2/5 + 3/8 = ?", "4/7 compared to 5/9"],
+      advanced: ["2 3/4 + 1 5/6 = ?", "3 1/3 - 1 2/5 = ?"],
+      expert: ["5 2/3 ÷ 2 1/2 = ?", "3 3/4 × 2 2/5 = ?"]
     }
   };
 

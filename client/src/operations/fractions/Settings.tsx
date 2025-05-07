@@ -76,30 +76,11 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           <h3 className="text-lg font-medium text-gray-900">Difficulty Level</h3>
           <div className="mt-2">
             <DifficultyExamples 
-              currentDifficulty={localSettings.difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert"} 
-              onDifficultyChange={(difficulty) => handleUpdateSetting("difficulty", difficulty)}
-              examples={{
-                beginner: [
-                  "1/4 + 2/4 = ?",
-                  "3/5 - 1/5 = ?"
-                ],
-                elementary: [
-                  "2/3 + 1/6 = ?",
-                  "3/4 - 1/8 = ?"
-                ],
-                intermediate: [
-                  "2/5 + 3/8 = ?",
-                  "4/7 compared to 5/9"
-                ],
-                advanced: [
-                  "2 3/4 + 1 5/6 = ?",
-                  "3 1/3 - 1 2/5 = ?"
-                ],
-                expert: [
-                  "5 2/3 ÷ 2 1/2 = ?",
-                  "3 3/4 × 2 2/5 = ?"
-                ]
-              }}
+              operation="fractions"
+              activeDifficulty={localSettings.difficulty}
+              onSelectDifficulty={(difficulty) => 
+                handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
+              }
             />
           </div>
           
