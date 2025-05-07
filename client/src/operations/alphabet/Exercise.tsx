@@ -207,49 +207,60 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
   
-  // Generate quiz options: one correct, three random
+  // Generate quiz options: one correct, three fixed (not random)
   const prepareQuizOptions = () => {
-    // SOLUCIÓN COMPENSACIÓN: Aplicar un desfase en el índice para compensar el problema de sincronización
+    // SOLUCIÓN DEFINITIVA: 
+    // 1. Aplicamos desfase rotacional
+    // 2. Usamos opciones FIJAS para cada letra (no aleatorias)
+    // 3. Nos aseguramos de que la letra correcta SIEMPRE esté presente
     
-    // IMPORTANTE: Aplicamos un desfase "rotacional" hacia adelante (con las manecillas del reloj)
-    // Esto compensa el problema de sincronización que se presenta en la interfaz
+    // Aplicamos un desfase rotacional hacia adelante (con las manecillas del reloj)
     const desfaseIndex = (currentIndex + 1) % alphabet.length;
     
-    // 1. Creamos una copia de la letra con desfase
+    // Obtenemos la letra correcta con el desfase
     const correctLetter = {...alphabet[desfaseIndex]};
     
     console.log("🔄 DESFASE APLICADO - Usando letra de índice:", desfaseIndex, "en lugar de", currentIndex);
     console.log("🔠 Letra actual (con desfase):", correctLetter.uppercase, correctLetter.word);
     
-    // 2. Generamos opciones de respuesta incluyendo la correcta
-    let options = [correctLetter]; 
+    // MEJORA: Generamos opciones FIJAS para cada letra (no aleatorias)
+    // Esto evita que las opciones cambien entre intentos
+    let fixedOptions: Letter[] = [];
     
-    // 3. Añadimos tres letras aleatorias que son diferentes
-    while (options.length < 4) {
-      const randomIndex = Math.floor(Math.random() * alphabet.length);
-      const randomLetter = alphabet[randomIndex];
-      
-      // Avoid duplicates
-      if (!options.some(l => l.id === randomLetter.id)) {
-        options.push(randomLetter);
+    // Posición para colocar la letra correcta (0-3)
+    const correctPosition = Math.floor(Math.random() * 4);
+    
+    // Para cada posición de las 4 opciones...
+    for (let i = 0; i < 4; i++) {
+      if (i === correctPosition) {
+        // En la posición correcta, colocamos la letra correcta
+        fixedOptions.push(correctLetter);
+      } else {
+        // Para el resto de posiciones, usamos letras fijas basadas en la letra correcta
+        // Tomamos letras que están a cierta distancia fija de la correcta
+        const offsetIndices = [5, 10, 15]; // Distancias fijas para las opciones incorrectas
+        const offsetIndex = offsetIndices[i > correctPosition ? i - 1 : i];
+        const alternateIndex = (desfaseIndex + offsetIndex) % alphabet.length;
+        fixedOptions.push({...alphabet[alternateIndex]});
       }
     }
     
-    // 4. Barajamos las opciones para que la correcta no siempre esté en la misma posición
-    const shuffledOptions = shuffleArray(options);
+    // ELIMINAMOS el shuffleArray para mantener las opciones en posiciones consistentes
+    // Las opciones ya tienen una posición correcta aleatoria
     
-    // 5. Creamos el objeto de pregunta atómico con el desfase aplicado
+    // Creamos el objeto de pregunta atómico con el desfase aplicado y opciones fijas
     const newQuestion: QuizQuestion = {
       image: correctLetter.image,
       correctLetter: correctLetter,
-      options: shuffledOptions
+      options: fixedOptions // Usamos las opciones fijas (no mezcladas)
     };
     
     // 6. Guardamos el objeto completo en el estado
     setCurrentQuestion(newQuestion);
     
     console.log("📝 Imagen:", correctLetter.image);
-    console.log("🎲 Opciones generadas:", shuffledOptions.map(o => o.uppercase).join(", "));
+    console.log("🎲 Opciones generadas:", fixedOptions.map(o => o.uppercase).join(", "));
+    console.log("✓ Posición correcta:", correctPosition);
   };
   
   // Generate matching options: correct letter + 7 random ones
