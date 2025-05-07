@@ -531,35 +531,102 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const renderQuiz = () => {
-    // Asegurarse de que tengamos opciones generadas
-    if (quizOptions.length === 0) {
-      generateQuizOptions();
+    // NUEVA IMPLEMENTACIÓN: Generamos las opciones al principio y las mantenemos sincronizadas
+    const [localQuizOptions, setLocalQuizOptions] = useState<Letter[]>([]);
+    const [localSelectedOption, setLocalSelectedOption] = useState<Letter | null>(null);
+    const [localIsCorrect, setLocalIsCorrect] = useState<boolean | null>(null);
+    const [localShowDetails, setLocalShowDetails] = useState(false);
+    
+    // Generar opciones al montar el componente o cuando cambie la letra actual
+    useEffect(() => {
+      // Siempre incluir la letra correcta
+      const correctLetter = currentLetter;
+      
+      // Crear el conjunto de opciones (3 aleatorias + la correcta)
+      let optionsSet: Letter[] = [correctLetter];
+      
+      // Necesitamos 3 letras aleatorias diferentes
+      while (optionsSet.length < 4) {
+        const randomIndex = Math.floor(Math.random() * alphabet.length);
+        const randomLetter = alphabet[randomIndex];
+        
+        // No agregar duplicados
+        if (!optionsSet.some(opt => opt.uppercase === randomLetter.uppercase)) {
+          optionsSet.push(randomLetter);
+        }
+      }
+      
+      // Mezclar las opciones
+      const shuffledOptions = [...optionsSet].sort(() => Math.random() - 0.5);
+      
+      // Actualizar el estado local
+      setLocalQuizOptions(shuffledOptions);
+      setLocalSelectedOption(null);
+      setLocalIsCorrect(null);
+      setLocalShowDetails(false);
+      
+      console.log('NUEVO SISTEMA: Opciones generadas:', 
+        shuffledOptions.map(l => l.uppercase).join(', '));
+      console.log('NUEVO SISTEMA: Letra correcta:', correctLetter.uppercase);
+    }, [currentLetter, alphabet]);
+    
+    // Si no hay opciones, mostrar loading
+    if (localQuizOptions.length === 0) {
       return <div className="flex justify-center"><RefreshCw className="animate-spin" /></div>;
     }
     
-    console.log('Renderizando quiz con opciones:', quizOptions.map(o => o.uppercase).join(', '));
-    console.log('Letra actual correcta:', currentLetter.uppercase);
-    
-    // Encontrar el índice de la letra correcta en las opciones
-    const correctOptionIndex = quizOptions.findIndex(opt => 
-      opt.uppercase === currentLetter.uppercase
-    );
-    
-    console.log('Índice correcto en opciones:', correctOptionIndex);
-    
-    // Función para mostrar la respuesta sin esperar selección
-    const showQuizAnswer = () => {
-      // Seleccionar la opción correcta
-      if (correctOptionIndex >= 0) {
-        setSelectedOption(correctOptionIndex);
-        setIsCorrect(true);
+    // Manejar la selección de una opción
+    const handleLocalOptionSelect = (selectedLetter: Letter) => {
+      setLocalSelectedOption(selectedLetter);
+      
+      // Comprobar si es correcta comparando directamente las letras
+      const isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
+      setLocalIsCorrect(isAnswerCorrect);
+      setLocalShowDetails(true);
+      
+      console.log('NUEVO SISTEMA: Seleccionada:', selectedLetter.uppercase);
+      console.log('NUEVO SISTEMA: Correcta:', currentLetter.uppercase);
+      console.log('NUEVO SISTEMA: ¿Coinciden?', isAnswerCorrect);
+      
+      // Actualizar contadores
+      if (isAnswerCorrect) {
+        setCorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(prev => prev + 1);
+        
+        // Activar sistema de recompensas si corresponde
+        const shouldShowReward = settings.enableRewards && 
+          (Math.random() < 0.05 || consecutiveCorrectAnswers % 5 === 4);
+        
+        if (shouldShowReward) {
+          setShowReward(true);
+          setTimeout(() => setShowReward(false), 2500);
+        }
+        
+        // Reproducir sonido de acierto
+        if (settings.enableSoundEffects) {
+          playSound("Correct! Good job!");
+        }
       } else {
-        console.error('ERROR! Letra correcta no encontrada en opciones');
-        // Fallback
-        setSelectedOption(0);
-        setIsCorrect(false);
+        // Reiniciar contador de aciertos consecutivos
+        setConsecutiveCorrectAnswers(0);
+        
+        // Reproducir sonido de error
+        if (settings.enableSoundEffects) {
+          playSound(`Incorrect. The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+        }
       }
-      setShowDetails(true);
+    };
+    
+    // Función para mostrar la respuesta directamente
+    const showAnswer = () => {
+      setLocalSelectedOption(currentLetter);
+      setLocalIsCorrect(true);
+      setLocalShowDetails(true);
+      
+      // Reproducir sonido con la respuesta
+      if (settings.enableSoundEffects) {
+        playSound(`The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+      }
     };
     
     return (
@@ -572,25 +639,26 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
         <div className="grid grid-cols-2 gap-4">
-          {quizOptions.map((option, index) => {
+          {localQuizOptions.map((option) => {
             // Determinar si esta opción es la correcta
             const isThisCorrect = option.uppercase === currentLetter.uppercase;
+            const isSelected = localSelectedOption?.uppercase === option.uppercase;
             
             return (
               <Button
-                key={`quiz-option-${index}-${option.uppercase}`}
+                key={`quiz-option-${option.uppercase}`}
                 size="lg"
-                variant={selectedOption === index 
+                variant={isSelected 
                   ? (isThisCorrect ? "default" : "destructive")
                   : "outline"
                 }
                 className={`text-4xl h-20 w-20 ${
-                  selectedOption !== null && isThisCorrect
+                  localSelectedOption && isThisCorrect
                     ? "ring-2 ring-green-500" 
                     : ""
                 }`}
-                onClick={() => handleQuizOptionSelect(index)}
-                disabled={selectedOption !== null}
+                onClick={() => handleLocalOptionSelect(option)}
+                disabled={localSelectedOption !== null}
               >
                 {option.uppercase}
               </Button>
@@ -598,10 +666,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           })}
         </div>
         
-        {selectedOption === null && (
+        {localSelectedOption === null && (
           <Button 
             variant="outline"
-            onClick={showQuizAnswer}
+            onClick={showAnswer}
             className="mt-4"
           >
             <EyeIcon className="mr-2 h-4 w-4" />
@@ -609,7 +677,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </Button>
         )}
         
-        {showDetails && (
+        {localShowDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
               {selectedLanguage === 'spanish'
@@ -625,22 +693,100 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Renderiza el ejercicio de emparejamiento (Elementary)
   const renderMatching = () => {
-    // Usamos selectedLanguage que ya fue definido arriba
+    // NUEVA IMPLEMENTACIÓN similar a renderQuiz pero para matching
+    const [localMatchingOptions, setLocalMatchingOptions] = useState<Letter[]>([]);
+    const [localSelectedOption, setLocalSelectedOption] = useState<Letter | null>(null);
+    const [localIsCorrect, setLocalIsCorrect] = useState<boolean | null>(null);
+    const [localShowDetails, setLocalShowDetails] = useState(false);
     
-    // Si no hay opciones generadas o si cambiamos de letra, regeneramos
-    if (letterOptions.length === 0) {
-      generateMatchingOptions();
+    // Generar opciones al montar el componente o cuando cambie la letra actual
+    useEffect(() => {
+      // Generar conjunto de opciones aleatorias para el matching
+      const letterIndices: number[] = [];
+      
+      // Elegir índices aleatorios para 7 letras diferentes (excluyendo la actual)
+      while (letterIndices.length < 7) {
+        const randomIndex = Math.floor(Math.random() * alphabet.length);
+        if (randomIndex !== currentIndex && !letterIndices.includes(randomIndex)) {
+          letterIndices.push(randomIndex);
+        }
+      }
+      
+      // Convertir índices en letras
+      const randomLetters = letterIndices.map(index => alphabet[index]);
+      
+      // Agregar la letra actual y mezclar
+      const allOptions = [...randomLetters, currentLetter];
+      const shuffledOptions = [...allOptions].sort(() => Math.random() - 0.5);
+      
+      // Actualizar estado local
+      setLocalMatchingOptions(shuffledOptions);
+      setLocalSelectedOption(null);
+      setLocalIsCorrect(null);
+      setLocalShowDetails(false);
+      
+      console.log('NUEVO SISTEMA MATCHING: Opciones generadas:', 
+        shuffledOptions.map(l => l.uppercase).join(', '));
+      console.log('NUEVO SISTEMA MATCHING: Letra correcta:', currentLetter.uppercase);
+    }, [currentLetter, alphabet, currentIndex]);
+    
+    // Si no hay opciones, mostrar loading
+    if (localMatchingOptions.length === 0) {
+      return <div className="flex justify-center"><RefreshCw className="animate-spin" /></div>;
     }
     
-    // Función para mostrar la respuesta directamente
-    const showMatchingAnswer = () => {
-      // Encontrar el índice de la letra correcta
-      const correctIndex = letterOptions.findIndex(letter => 
-        letter.uppercase === currentLetter.uppercase);
+    // Manejar la selección de una opción
+    const handleLocalOptionSelect = (selectedLetter: Letter) => {
+      setLocalSelectedOption(selectedLetter);
       
-      setSelectedOption(correctIndex);
-      setIsCorrect(true);
-      setShowDetails(true);
+      // Comprobar si es correcta comparando directamente las letras
+      const isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
+      setLocalIsCorrect(isAnswerCorrect);
+      setLocalShowDetails(true);
+      
+      console.log('NUEVO SISTEMA MATCHING: Seleccionada:', selectedLetter.uppercase);
+      console.log('NUEVO SISTEMA MATCHING: Correcta:', currentLetter.uppercase);
+      console.log('NUEVO SISTEMA MATCHING: ¿Coinciden?', isAnswerCorrect);
+      
+      // Actualizar contadores
+      if (isAnswerCorrect) {
+        setCorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(prev => prev + 1);
+        
+        // Activar sistema de recompensas si corresponde
+        const shouldShowReward = settings.enableRewards && 
+          (Math.random() < 0.05 || consecutiveCorrectAnswers % 5 === 4);
+        
+        if (shouldShowReward) {
+          setShowReward(true);
+          setTimeout(() => setShowReward(false), 2500);
+        }
+        
+        // Reproducir sonido de acierto
+        if (settings.enableSoundEffects) {
+          playSound("Correct! Good job!");
+        }
+      } else {
+        // Reiniciar contador de aciertos consecutivos
+        setConsecutiveCorrectAnswers(0);
+        
+        // Reproducir sonido de error
+        if (settings.enableSoundEffects) {
+          playSound(`Incorrect. The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+        }
+      }
+    };
+    
+    // Función para mostrar la respuesta directamente
+    const showAnswer = () => {
+      setLocalSelectedOption(currentLetter);
+      setLocalIsCorrect(true);
+      setLocalShowDetails(true);
+      
+      // Reproducir sonido con la respuesta
+      if (settings.enableSoundEffects) {
+        playSound(`The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+      }
     };
     
     return (
@@ -653,30 +799,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          {letterOptions.map((letter, index) => (
-            <Button
-              key={index}
-              size="lg"
-              variant={selectedOption === index 
-                ? letter.uppercase === currentLetter.uppercase ? "default" : "destructive" 
-                : "outline"}
-              className={`text-3xl h-16 w-16 ${
-                selectedOption !== null && letter.uppercase === currentLetter.uppercase 
-                  ? "ring-2 ring-green-500" 
-                  : ""
-              }`}
-              onClick={() => handleQuizOptionSelect(index)}
-              disabled={selectedOption !== null}
-            >
-              {letter.uppercase}
-            </Button>
-          ))}
+          {localMatchingOptions.map((letter) => {
+            // Determinar si esta opción es la correcta
+            const isThisCorrect = letter.uppercase === currentLetter.uppercase;
+            const isSelected = localSelectedOption?.uppercase === letter.uppercase;
+            
+            return (
+              <Button
+                key={`matching-option-${letter.uppercase}`}
+                size="lg"
+                variant={isSelected 
+                  ? (isThisCorrect ? "default" : "destructive") 
+                  : "outline"}
+                className={`text-3xl h-16 w-16 ${
+                  localSelectedOption && isThisCorrect
+                    ? "ring-2 ring-green-500" 
+                    : ""
+                }`}
+                onClick={() => handleLocalOptionSelect(letter)}
+                disabled={localSelectedOption !== null}
+              >
+                {letter.uppercase}
+              </Button>
+            );
+          })}
         </div>
         
-        {selectedOption === null && (
+        {localSelectedOption === null && (
           <Button 
             variant="outline"
-            onClick={showMatchingAnswer}
+            onClick={showAnswer}
             className="mt-4"
           >
             <EyeIcon className="mr-2 h-4 w-4" />
@@ -684,7 +836,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </Button>
         )}
         
-        {showDetails && (
+        {localShowDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
               {selectedLanguage === 'spanish'
