@@ -689,10 +689,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Resetear el contador de respuestas incorrectas consecutivas
       setConsecutiveIncorrectAnswers(0);
       
-      // IMPORTANTE: Esta es la nueva lógica para subir de nivel
-      // Solo subimos de nivel cuando conseguimos EXACTAMENTE 10 respuestas correctas
-      if (newConsecutiveCorrectAnswers === 10) {
-        console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se alcanzaron EXACTAMENTE ${newConsecutiveCorrectAnswers} respuestas correctas! Subiendo de nivel...`);
+      // SOLUCIÓN SIMPLIFICADA: Verificamos si alcanzamos 10 respuestas correctas consecutivas
+      if (newConsecutiveCorrectAnswers >= 10) {
+        console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se alcanzaron ${newConsecutiveCorrectAnswers} respuestas correctas! Subiendo de nivel...`);
         
         // Determinar qué nivel de dificultad se está usando actualmente
         const currentDifficultyLevel = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
@@ -711,77 +710,60 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           // 1. Actualizar la dificultad adaptativa en memoria
           setAdaptiveDifficulty(newDifficulty);
           
-          // 2. Activar la dificultad adaptativa si no estaba activada
-          // y guardar la nueva configuración completa
+          // 2. Guardar la configuración actualizada
           try {
             if (!settings.enableAdaptiveDifficulty) {
               console.log(`[ADAPTIVE DIFFICULTY] Activando la dificultad adaptativa automáticamente`);
-              
-              // Actualizar las settings locales (esto actualiza la UI inmediatamente)
               updateModuleSettings("addition", { 
                 difficulty: newDifficulty, 
                 enableAdaptiveDifficulty: true 
               });
             } else {
-              // Si ya estaba activada, solo actualizamos la dificultad
               updateModuleSettings("addition", { difficulty: newDifficulty });
             }
           } catch (error) {
             console.error("[ADAPTIVE DIFFICULTY] Error al guardar configuración:", error);
           }
           
-          // 3. Guardar en localStorage (respaldo si hay problemas con la API)
+          // 3. Guardar en localStorage como respaldo
           try {
-            // Guardar la nueva dificultad
             localStorage.setItem('addition_currentDifficulty', newDifficulty);
             localStorage.setItem('addition_enableAdaptiveDifficulty', 'true');
             
-            // También actualizar el objeto completo
             const currentModuleSettings = localStorage.getItem('moduleSettings');
             if (currentModuleSettings) {
               const settingsObj = JSON.parse(currentModuleSettings);
               if (!settingsObj.addition) {
                 settingsObj.addition = {};
               }
-              
-              // Actualizar a la nueva dificultad y activar adaptativa
               settingsObj.addition.difficulty = newDifficulty;
               settingsObj.addition.enableAdaptiveDifficulty = true;
-              
               localStorage.setItem('moduleSettings', JSON.stringify(settingsObj));
-              console.log(`[ADAPTIVE DIFFICULTY] Guardada nueva configuración en localStorage`);
             }
           } catch (error) {
             console.error("[ADAPTIVE DIFFICULTY] Error al guardar en localStorage:", error);
           }
           
-          // 4. CRÍTICO: Detener el avance automático al siguiente problema
-          // y mostrar el mensaje de nivel superado
-          console.log(`[ADAPTIVE DIFFICULTY] Mostrando mensaje de NIVEL SUPERADO con bloqueo de progresión`);
-          setWaitingForContinue(true); // Esto evita que se avance automáticamente
-          setShowLevelUpReward(true);  // Mostrar el mensaje de nivel superado
+          // 4. SOLUCIÓN MÁS SIMPLE: SIEMPRE mostrar el mensaje de nivel superado 
+          // después de subir de nivel (independientemente de cualquier otra condición)
+          console.log(`[ADAPTIVE DIFFICULTY] Mostrando mensaje de NIVEL SUPERADO (GARANTIZADO)`);
+          setShowLevelUpReward(true);
           
           // 5. Reiniciar contador de respuestas correctas
           setConsecutiveCorrectAnswers(0);
           localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
           
-          // No avanzamos al siguiente problema automáticamente.
-          // El botón "¡Continuar el Desafío!" se encargará de eso.
-          return;
+          // Mensaje estándar para la respuesta correcta que activó el cambio de nivel
+          setFeedbackMessage(t('exercises.correct'));
+          setFeedbackColor("green");
+          
+          // 6. No interrumpimos el flujo normal, pero el mensaje aparecerá igualmente
         } else {
           // Ya estamos en el nivel máximo
           console.log(`[ADAPTIVE DIFFICULTY] Ya estás en el nivel máximo (${currentDifficultyLevel}). ¡Felicidades!`);
           setFeedbackMessage("¡Excelente! Sigues manteniendo un alto nivel de precisión en el nivel máximo.");
           setFeedbackColor("green");
         }
-      } else if (newConsecutiveCorrectAnswers > 10) {
-        // Si por alguna razón tenemos más de 10 respuestas correctas, evitamos duplicar el mensaje
-        console.log(`[ADAPTIVE DIFFICULTY] Se detectaron ${newConsecutiveCorrectAnswers} respuestas correctas (más de 10). Evitando duplicar mensajes.`);
-        
-        // Mensaje estándar para evitar duplicados
-        setFeedbackMessage(t('exercises.correct'));
-        setFeedbackColor("green");
-        
       } else {
         // Aún no hemos llegado a 10 respuestas correctas
         if (settings.enableAdaptiveDifficulty) {
@@ -1088,12 +1070,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const moveToNextProblem = () => {
-    // IMPORTANTE: Si se está mostrando el mensaje de nivel superado, no permitimos avanzar
-    // hasta que el usuario haga clic en el botón de "Continuar el Desafío" de ese mensaje
-    if (showLevelUpReward) {
-      console.log('[NIVEL SUPERADO] No avanzando al siguiente problema hasta que el usuario cierre el mensaje de nivel superado');
-      return;
-    }
+    // NOTA: Eliminada la restricción que evitaba avanzar si se mostraba el mensaje de nivel superado
+    // Ahora el botón de "Continuar el Desafío" es quien controla el avance correctamente
     
     if (currentProblemIndex < problems.length - 1) {
       // Limpiar el temporizador del problema actual si existe
@@ -1406,36 +1384,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
           
-          {/* Mostrar recompensa especial por subir de nivel */}
+          {/* Mostrar recompensa especial por subir de nivel - DISEÑO EXACTO al proporcionado */}
           {showLevelUpReward && (
             <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-              <div className="bg-blue-50 rounded-xl p-8 shadow-2xl text-center transform transition-transform max-w-md w-full">
-                <h3 className="text-4xl font-bold text-indigo-600 mb-6">¡NIVEL SUPERADO!</h3>
+              <div className="bg-blue-100 rounded-3xl p-8 shadow-2xl text-center transform transition-transform max-w-md w-full border-4 border-indigo-300">
+                <h3 className="text-5xl font-bold text-indigo-600 mb-6">¡NIVEL SUPERADO!</h3>
                 
                 <div className="flex justify-center mb-6">
                   <Trophy 
-                    className="h-28 w-28 text-indigo-500 drop-shadow-xl" 
+                    className="h-32 w-32 text-indigo-500 drop-shadow-xl" 
                     fill="#818cf8"
                     strokeWidth={1}
                   />
                 </div>
-                
-                <p className="text-xl font-medium mt-2 text-indigo-800 mb-2">
+           
+                <p className="text-2xl font-medium text-indigo-800 mb-2">
                   ¡Has demostrado excelentes habilidades matemáticas!
                 </p>
-                <p className="text-lg font-medium mb-6 text-indigo-700">
+                <p className="text-xl font-medium mb-8 text-indigo-700">
                   Has avanzado al siguiente nivel de dificultad
                 </p>
                 
                 <Button
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-xl text-xl"
                   onClick={() => {
                     // 1. Ocultar el mensaje de nivel superado
                     setShowLevelUpReward(false);
                     
-                    // 2. Después de ocultar el mensaje, avanzar al siguiente problema
+                    // 2. CRÍTICO: Desbloquear la progresión automática que estaba bloqueada
+                    setWaitingForContinue(false); 
+                    
+                    // 3. Después de ocultar el mensaje, avanzar al siguiente problema
                     // con un pequeño retraso para mejor experiencia de usuario
                     setTimeout(() => {
+                      console.log('[NIVEL SUPERADO] Usuario hizo clic en Continuar el Desafío');
                       moveToNextProblem();
                     }, 300);
                   }}
