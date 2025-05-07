@@ -590,6 +590,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Función para continuar al siguiente problema cuando el usuario presiona "Continuar"
   const handleContinue = () => {
+    // Si estamos mostrando el mensaje de nivel superado, no hacemos nada
+    // ya que ese modal tiene su propio botón para continuar
+    if (showLevelUpReward) {
+      return;
+    }
+    
     // Reseteamos el estado de espera
     setWaitingForContinue(false);
     
