@@ -412,6 +412,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Actualiza el manejo de opciones para el quiz
   const handleQuizOptionSelect = (index: number) => {
+    // Habilitar logs detallados para depurar
+    console.log("🎯 handleQuizOptionSelect iniciando con índice:", index);
+    
     setSelectedOption(index);
     
     let selectedLetter: Letter;
@@ -431,6 +434,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     else if (exerciseType === 'matching') {
       selectedLetter = matchingOptions[index];
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
+      console.log("🔤 Matching - Usuario seleccionó:", selectedLetter.uppercase);
     } 
     // Por defecto
     else {
@@ -438,9 +442,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
     }
     
+    // Actualizar el estado de correcto/incorrecto
+    console.log("🔄 Actualizando isCorrect:", isAnswerCorrect);
     setIsCorrect(isAnswerCorrect);
     
     // IMPORTANTE: Siempre mostrar detalles después de seleccionar cualquier opción
+    console.log("🔍 Mostrando detalles:", true);
     setShowDetails(true);
     
     // Si la respuesta es correcta, incrementar los contadores
@@ -696,24 +703,38 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          {matchingOptions.map((letter, index) => (
-            <Button
-              key={index}
-              size="lg"
-              variant={selectedOption === index 
-                ? letter.uppercase === currentLetter.uppercase ? "default" : "destructive" 
-                : "outline"}
-              className={`text-3xl h-16 w-16 ${
-                selectedOption !== null && letter.uppercase === currentLetter.uppercase 
-                  ? "ring-2 ring-green-500" 
-                  : ""
-              }`}
-              onClick={() => handleQuizOptionSelect(index)}
-              disabled={selectedOption !== null}
-            >
-              {letter.uppercase}
-            </Button>
-          ))}
+          {matchingOptions.map((letter, index) => {
+            // Verificar si esta es la opción correcta
+            const isCorrectOption = letter.uppercase === currentLetter.uppercase;
+            
+            // Determinar el estilo visual para la opción actual
+            let buttonVariant: "default" | "link" | "destructive" | "outline" | "secondary" | "ghost" = "outline";
+            
+            if (selectedOption === index) {
+              // Si esta opción está seleccionada
+              buttonVariant = isCorrectOption ? "default" : "destructive";
+            }
+            
+            return (
+              <Button
+                key={index}
+                size="lg"
+                variant={buttonVariant}
+                className={`text-3xl h-16 w-16 ${
+                  selectedOption !== null && isCorrectOption 
+                    ? "ring-2 ring-green-500" 
+                    : ""
+                }`}
+                onClick={() => {
+                  console.log("🖱️ Clic en botón de matching:", index, letter.uppercase);
+                  handleQuizOptionSelect(index);
+                }}
+                disabled={selectedOption !== null}
+              >
+                {letter.uppercase}
+              </Button>
+            );
+          })}
         </div>
         
         {selectedOption === null && (
