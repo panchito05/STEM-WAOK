@@ -1045,58 +1045,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
           
-          {/* Sección para mostrar botón Check Answer o Continue */}
-          {(exerciseType === 'adjacentLetters' || exerciseType === 'ordering') && (
-            <div className="mt-6 flex justify-center">
-              {waitingForContinue ? (
-                // Botón Continue
-                <Button 
-                  className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white 
-                            flex justify-between items-center relative" 
-                  onClick={handleContinue}
-                >
-                  <div className="flex justify-between items-center w-full">
-                    <span className="ml-5">
-                      {language === 'spanish' ? 'Continuar' : 'Continue'}
-                    </span>
-                    
-                    <div className="flex items-center">
-                      <div className="flex items-center bg-black/40 rounded px-2 py-1 h-[28px] mr-1">
-                        <Checkbox 
-                          id="auto-continue" 
-                          checked={autoContinue}
-                          className="border-white" 
-                          onCheckedChange={(checked) => {
-                            setAutoContinue(checked === true);
-                          }}
-                          onClick={(e) => e.stopPropagation()} 
-                        />
-                        <label
-                          htmlFor="auto-continue"
-                          className="text-xs font-medium leading-none text-white ml-1"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setAutoContinue(!autoContinue);
-                          }}
-                        >
-                          Auto
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </Button>
-              ) : (
-                // Botón Check Answer
-                <Button 
-                  onClick={checkAnswer}
-                  className="min-w-[150px] bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  {language === 'spanish' ? 'Verificar Respuesta' : 'Check Answer'}
-                </Button>
-              )}
-            </div>
-          )}
+          {/* Eliminamos la sección duplicada del botón Check Answer */}
         </CardContent>
       </Card>
       
@@ -1116,37 +1065,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {language === 'spanish' ? 'Siguiente' : 'Next'}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
-      </div>
-      
-      {/* Configuración de recompensas en un panel lateral */}
-      <div className="fixed top-20 right-4 flex flex-col gap-2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg">
-        <div className="text-sm font-medium mb-2">
-          {language === 'spanish' ? 'Tipo de Recompensa' : 'Reward Type'}
-        </div>
-        
-        <div 
-          className={`cursor-pointer p-2 rounded-md flex items-center gap-2 ${rewardType === 'stars' ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
-          onClick={() => setRewardType('stars')}
-        >
-          <div className="text-xl">⭐</div>
-          <div className="text-sm">{language === 'spanish' ? 'Estrellas' : 'Stars'}</div>
-        </div>
-        
-        <div 
-          className={`cursor-pointer p-2 rounded-md flex items-center gap-2 ${rewardType === 'medals' ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
-          onClick={() => setRewardType('medals')}
-        >
-          <div className="text-xl">🥇</div>
-          <div className="text-sm">{language === 'spanish' ? 'Medallas' : 'Medals'}</div>
-        </div>
-        
-        <div 
-          className={`cursor-pointer p-2 rounded-md flex items-center gap-2 ${rewardType === 'trophies' ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
-          onClick={() => setRewardType('trophies')}
-        >
-          <div className="text-xl">🏆</div>
-          <div className="text-sm">{language === 'spanish' ? 'Trofeos' : 'Trophies'}</div>
-        </div>
       </div>
       
       {showReward && (
