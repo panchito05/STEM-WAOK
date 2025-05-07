@@ -695,10 +695,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           }
         }
       } else {
-        // Si no está habilitada la dificultad adaptativa, simplemente incrementamos el contador
+        // Si no está habilitada la dificultad adaptativa, incrementamos el contador igualmente
         const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
         console.log(`[CONTADOR] Respuestas correctas consecutivas: ${newConsecutiveCorrectAnswers} (dificultad adaptativa deshabilitada)`);
         setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
+        
+        // Verificar si llegamos a 10 respuestas correctas consecutivas aunque esté deshabilitada la dificultad adaptativa
+        if (newConsecutiveCorrectAnswers >= 10) {
+          console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se alcanzaron ${newConsecutiveCorrectAnswers} respuestas correctas! (con dificultad adaptativa deshabilitada)`);
+          console.log(`[ADAPTIVE DIFFICULTY] Para activar la subida de nivel, activa la dificultad adaptativa en Configuración`);
+          
+          // Mostrar mensaje de sugerencia para activar la dificultad adaptativa
+          setFeedbackMessage("¡Excelente! Has logrado 10 respuestas correctas consecutivas. Activa la dificultad adaptativa en Configuración para subir de nivel automáticamente.");
+          setFeedbackColor("blue");
+          
+          // No reiniciamos el contador para permitir que se active al activar la dificultad adaptativa
+        }
       }
       
       // Mostrar feedback de respuesta correcta
