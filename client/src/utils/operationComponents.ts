@@ -3,8 +3,8 @@ import * as Subtraction from "../operations/subtraction";
 import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
 import * as Fractions from "../operations/fractions";
-import * as Counting from "../operations/counting";
 import * as Alphabet from "../operations/alphabet";
+import * as Counting from "../operations/counting";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -90,7 +90,7 @@ export const operationModules: Module[] = [
     displayName: "Alphabet Learning",
     description: "Learn the alphabet with interactive exercises",
     difficulty: "beginner",
-    color: "#9c5cff", // Lila
+    color: "#9c5cff", // Lila como en la imagen
     icon: "BookOpen",
   },
   {

@@ -489,14 +489,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             className="mt-4"
           >
             <EyeIcon className="mr-2 h-4 w-4" />
-            {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+            {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
           </Button>
         )}
         
         {showDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
-              {selectedLanguage === 'spanish'
+              {language === 'spanish'
                 ? `${currentLetter.uppercase} es para ${currentLetter.word}`
                 : `${currentLetter.uppercase} is for ${currentLetter.word}`}
             </div>
@@ -509,7 +509,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Renderiza el ejercicio de emparejamiento (Elementary)
   const renderMatching = () => {
-    // Usamos selectedLanguage que ya fue definido arriba
+    const language = settings.language || 'english';
     
     // Lista de 8 letras aleatorias para seleccionar
     const letterOptions = shuffleArray(alphabet.slice(0, 8));
@@ -536,7 +536,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return (
       <div className="flex flex-col items-center">
         <h2 className="text-2xl font-medium mb-6">
-          {selectedLanguage === 'spanish' 
+          {language === 'spanish' 
             ? '¿Qué letra va con esta imagen?' 
             : 'Which letter goes with this image?'}
         </h2>
@@ -570,14 +570,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             className="mt-4"
           >
             <EyeIcon className="mr-2 h-4 w-4" />
-            {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+            {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
           </Button>
         )}
         
         {showDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
-              {selectedLanguage === 'spanish'
+              {language === 'spanish'
                 ? `${currentLetter.uppercase} es para ${currentLetter.word}`
                 : `${currentLetter.uppercase} is for ${currentLetter.word}`}
             </div>
@@ -734,13 +734,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const renderOrdering = () => {
-    // Usamos selectedLanguage que ya fue definido arriba
+    const language = settings.language || 'english';
     
     return (
       <DndProvider backend={HTML5Backend}>
         <div className="flex flex-col items-center">
           <h2 className="text-2xl font-medium mb-6">
-            {selectedLanguage === 'spanish' ? 'Ordena las letras del alfabeto' : 'Order the alphabet letters'}
+            {language === 'spanish' ? 'Ordena las letras del alfabeto' : 'Order the alphabet letters'}
           </h2>
           
           <div className="flex flex-wrap gap-3 justify-center mb-6">
@@ -761,7 +761,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               disabled={showDetails && isCorrect === true}
             >
               <Check className="mr-2 h-4 w-4" />
-              {selectedLanguage === 'spanish' ? 'Verificar' : 'Check'}
+              {language === 'spanish' ? 'Verificar' : 'Check'}
             </Button>
             
             <Button 
@@ -770,17 +770,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               disabled={showDetails && isCorrect === true}
             >
               <EyeIcon className="mr-2 h-4 w-4" />
-              {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+              {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
             </Button>
           </div>
           
           {showDetails && isCorrect && (
             <div className="mt-4 flex flex-col items-center animate-fade-in">
               <p className="text-green-500 font-bold text-lg">
-                {selectedLanguage === 'spanish' ? '¡Correcto!' : 'Correct!'}
+                {language === 'spanish' ? '¡Correcto!' : 'Correct!'}
               </p>
               <p className="text-gray-500">
-                {selectedLanguage === 'spanish' ? 'Has ordenado las letras correctamente' : 'You ordered the letters correctly'}
+                {language === 'spanish' ? 'Has ordenado las letras correctamente' : 'You ordered the letters correctly'}
               </p>
             </div>
           )}
@@ -792,7 +792,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               className="mt-2"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              {selectedLanguage === 'spanish' ? 'Nuevo conjunto' : 'New set'}
+              {language === 'spanish' ? 'Nuevo conjunto' : 'New set'}
             </Button>
           </div>
         </div>
@@ -802,7 +802,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Renderiza el ejercicio de letras adyacentes (Expert)
   const renderAdjacentLetters = () => {
-    // Usamos selectedLanguage que ya fue definido arriba
+    const language = settings.language || 'english';
     
     // Obtenemos las letras adyacentes para usarlas en el botón de mostrar respuestas
     const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
@@ -824,7 +824,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return (
       <div className="flex flex-col items-center">
         <h2 className="text-2xl font-medium mb-4">
-          {selectedLanguage === 'spanish' 
+          {language === 'spanish' 
             ? '¿Qué letras van antes y después?' 
             : 'What letters come before and after?'}
         </h2>
@@ -836,7 +836,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="grid grid-cols-2 gap-6 w-full max-w-md mb-6">
           <div>
             <Label htmlFor="before-letter" className="mb-2 block">
-              {selectedLanguage === 'spanish' ? 'Antes' : 'Before'}
+              {language === 'spanish' ? 'Antes' : 'Before'}
             </Label>
             <Input
               id="before-letter"
@@ -852,7 +852,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           
           <div>
             <Label htmlFor="after-letter" className="mb-2 block">
-              {selectedLanguage === 'spanish' ? 'Después' : 'After'}
+              {language === 'spanish' ? 'Después' : 'After'}
             </Label>
             <Input
               id="after-letter"
@@ -875,7 +875,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 className="min-w-[150px] bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Check className="mr-2 h-4 w-4" />
-                {selectedLanguage === 'spanish' ? 'Verificar Respuesta' : 'Check Answer'}
+                {language === 'spanish' ? 'Verificar Respuesta' : 'Check Answer'}
               </Button>
               
               <Button 
@@ -884,7 +884,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 disabled={adjacentCorrect.before && adjacentCorrect.after}
               >
                 <EyeIcon className="mr-2 h-4 w-4" />
-                {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+                {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
               </Button>
             </>
           ) : (
@@ -895,7 +895,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             >
               <div className="flex justify-between items-center w-full">
                 <span className="ml-5">
-                  {selectedLanguage === 'spanish' ? 'Continuar' : 'Continue'}
+                  {language === 'spanish' ? 'Continuar' : 'Continue'}
                 </span>
                 
                 <div className="flex items-center">
@@ -929,10 +929,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {adjacentCorrect.before && adjacentCorrect.after && !waitingForContinue && (
           <div className="mt-4 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium mb-2">
-              {selectedLanguage === 'spanish' ? '¡Excelente trabajo!' : 'Excellent work!'}
+              {language === 'spanish' ? '¡Excelente trabajo!' : 'Excellent work!'}
             </div>
             <div className="text-lg mb-2">
-              {selectedLanguage === 'spanish' 
+              {language === 'spanish' 
                 ? `Antes de ${currentLetter.uppercase} viene ${prevLetter} y después viene ${nextLetter}` 
                 : `Before ${currentLetter.uppercase} comes ${prevLetter} and after comes ${nextLetter}`}
             </div>
@@ -1037,7 +1037,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Mensaje de feedback
     if (isAnswerCorrect) {
-      setFeedbackMessage(selectedLanguage === 'spanish' ? '¡Correcto!' : 'Correct!');
+      setFeedbackMessage(language === 'spanish' ? '¡Correcto!' : 'Correct!');
       setFeedbackColor("green");
       setCorrectAnswers(prev => prev + 1);
       
@@ -1051,7 +1051,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setTimeout(() => setShowReward(false), 2000);
       }
     } else {
-      setFeedbackMessage(selectedLanguage === 'spanish' ? 'Incorrecto. Intenta de nuevo.' : 'Incorrect. Try again.');
+      setFeedbackMessage(language === 'spanish' ? 'Incorrecto. Intenta de nuevo.' : 'Incorrect. Try again.');
       setFeedbackColor("red");
       
       // Verificar si se agotaron los intentos
@@ -1082,7 +1082,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }
         
         setFeedbackMessage(
-          selectedLanguage === 'spanish' 
+          language === 'spanish' 
             ? 'Se agotaron los intentos. Aquí está la respuesta correcta.' 
             : 'Out of attempts. Here\'s the correct answer.'
         );
@@ -1091,9 +1091,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     if (settings.enableSoundEffects) {
       if (isAnswerCorrect) {
-        playSound(selectedLanguage === 'spanish' ? "¡Correcto! ¡Buen trabajo!" : "Correct! Good job!");
+        playSound(language === 'spanish' ? "¡Correcto! ¡Buen trabajo!" : "Correct! Good job!");
       } else {
-        playSound(selectedLanguage === 'spanish' ? "Incorrecto. Intenta de nuevo." : "Incorrect. Try again.");
+        playSound(language === 'spanish' ? "Incorrecto. Intenta de nuevo." : "Incorrect. Try again.");
       }
     }
   };
@@ -1114,7 +1114,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">
-          {selectedLanguage === 'spanish' ? 'Aprendizaje del Alfabeto' : 'Alphabet Learning'}
+          {language === 'spanish' ? 'Aprendizaje del Alfabeto' : 'Alphabet Learning'}
         </h1>
         <div className="flex items-center">
           {exerciseStarted && !exerciseCompleted && (
@@ -1140,14 +1140,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
           
           <div className="text-sm text-gray-500 mr-2">
-            {selectedLanguage === 'spanish' ? 'Nivel: ' : 'Level: '}
+            {language === 'spanish' ? 'Nivel: ' : 'Level: '}
             {settings.difficulty}
           </div>
           
           <Button variant="ghost" size="icon" onClick={onOpenSettings}>
             <Cog className="h-5 w-5" />
             <span className="sr-only">
-              {selectedLanguage === 'spanish' ? 'Configuración' : 'Settings'}
+              {language === 'spanish' ? 'Configuración' : 'Settings'}
             </span>
           </Button>
         </div>
@@ -1173,14 +1173,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           onClick={handlePrevious}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {selectedLanguage === 'spanish' ? 'Anterior' : 'Previous'}
+          {language === 'spanish' ? 'Anterior' : 'Previous'}
         </Button>
         
         <Button
           variant="default"
           onClick={handleNext}
         >
-          {selectedLanguage === 'spanish' ? 'Siguiente' : 'Next'}
+          {language === 'spanish' ? 'Siguiente' : 'Next'}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
@@ -1194,7 +1194,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               {rewardType === 'trophies' && '🏆'}
             </div>
             <div className="text-2xl font-bold text-center">
-              {selectedLanguage === 'spanish' ? '¡Buen trabajo!' : 'Good job!'}
+              {language === 'spanish' ? '¡Buen trabajo!' : 'Good job!'}
             </div>
           </div>
         </div>
