@@ -1,0 +1,85 @@
+1. Nivel Beginner (Principiante)
+Características:
+
+Tipo de ejercicio: Reconocimiento básico de letras y palabras
+Formato: Presentación directa de una letra con su correspondiente palabra e imagen
+Interacción: Mínima, principalmente observación y reconocimiento
+Ejemplo: Muestra "A → Apple 🍎" donde se presenta claramente la relación entre la letra y la palabra/imagen
+Objetivo pedagógico: Establecer asociaciones básicas entre letras y objetos cotidianos
+Habilidades desarrolladas: Memoria visual, reconocimiento de letras, vocabulario básico
+Retroalimentación: Inmediata y positiva, sin penalización por errores
+Progresión: Secuencial a través de las letras del alfabeto
+Demanda cognitiva: Baja, ideal para primeros acercamientos al alfabeto
+Diseño visual: Limpio y simple, con letras grandes y colores llamativos
+2. Nivel Elementary (Elemental)
+Características:
+
+Tipo de ejercicio: Emparejamiento de letras con imágenes correspondientes
+Formato: Presenta una letra y el usuario debe seleccionar la imagen correcta entre varias opciones
+Interacción: Selección activa entre opciones múltiples
+Ejemplo: "B = ? [Ball ⚽]" donde debe seleccionarse la imagen de la pelota entre varias opciones
+Objetivo pedagógico: Reforzar el reconocimiento de las relaciones letra-palabra-imagen
+Habilidades desarrolladas: Discriminación visual, toma de decisiones, comprensión de correspondencias
+Retroalimentación: Correctivo con oportunidad de intentar nuevamente
+Progresión: Incluye más opciones a medida que avanza
+Demanda cognitiva: Media-baja, requiere comparación y selección
+Diseño visual: Estructurado con opciones claramente separadas y diferenciadas
+3. Nivel Intermediate (Intermedio)
+Características:
+
+Tipo de ejercicio: Quiz de letras con múltiples opciones
+Formato: Presenta una imagen y el usuario debe seleccionar la letra inicial correcta entre varias opciones
+Interacción: Selección de la letra correcta entre 4 opciones presentadas
+Ejemplo: "🍌 = ? [A, C, P, R]" donde debe seleccionarse la "B" de "Banana"
+Objetivo pedagógico: Desarrollar la capacidad de asociar imágenes con sus letras iniciales
+Habilidades desarrolladas: Análisis fonético, reconocimiento de letras, pensamiento abstracto
+Retroalimentación: Más detallada, explicando por qué una respuesta es correcta
+Progresión: Incorpora letras menos comunes y palabras más complejas
+Demanda cognitiva: Media, requiere análisis y eliminación de opciones incorrectas
+Diseño visual: Equilibrado entre texto e imagen, con opciones claramente presentadas
+4. Nivel Advanced (Avanzado)
+Características:
+
+Tipo de ejercicio: Actividades de arrastrar y soltar (Drag & Drop)
+Formato: Presenta letras desordenadas que deben ser colocadas en el orden correcto
+Interacción: Manipulación directa mediante arrastre de elementos
+Ejemplo: "Ordenar: A, C, B" donde deben ordenarse las letras correctamente (A, B, C)
+Objetivo pedagógico: Reforzar el conocimiento del orden alfabético y secuenciación
+Habilidades desarrolladas: Motricidad fina, conocimiento secuencial, planificación
+Retroalimentación: Progresiva, indicando si el orden va siendo correcto a medida que se colocan las letras
+Particularidad técnica: Selecciona aleatoriamente entre 3-5 letras diferentes para cada ejercicio
+Comportamiento: Genera un nuevo ejercicio automáticamente después de cada respuesta correcta
+Demanda cognitiva: Alta, requiere conocimiento del alfabeto y capacidad de ordenamiento
+Diseño visual: Interactivo con elementos visuales que indican la posibilidad de arrastre
+5. Nivel Expert (Experto)
+Características:
+
+Tipo de ejercicio: Secuencias de letras, reconocimiento de anterior y siguiente
+Formato: Presenta una letra y el usuario debe identificar qué letras van antes y después
+Interacción: Selección o ingreso de las letras adyacentes en la secuencia alfabética
+Ejemplo: "K → J y L" donde se debe reconocer que J va antes de K y L va después
+Objetivo pedagógico: Dominar la secuencia completa del alfabeto y las relaciones entre letras
+Habilidades desarrolladas: Memoria secuencial, conocimiento alfabético completo, pensamiento bidireccional
+Retroalimentación: Compleja, explicando las relaciones secuenciales
+Progresión: Incluye casos especiales (como letras al inicio o final del alfabeto)
+Demanda cognitiva: Muy alta, requiere conocimiento profundo y automatizado del alfabeto
+Diseño visual: Minimalista con enfoque en la relación conceptual entre las letras
+Características Generales del Módulo
+Opciones de configuración:
+
+Selección automática de dificultad (guarda automáticamente al seleccionar un nivel)
+Idioma seleccionable entre español e inglés
+Retroalimentación inmediata (activable/desactivable)
+Efectos de sonido (activables/desactivables)
+Sistema de recompensas por logros (activable/desactivable)
+Opción para mostrar respuestas con explicación
+Sistema de progresión:
+
+Avance gradual desde reconocimiento simple hasta manipulación compleja
+Incremento sistemático en la demanda cognitiva
+Variedad de interacciones para mantener el interés y desarrollar diferentes habilidades
+Diseño pedagógico:
+
+Basado en principios de aprendizaje incremental
+Enfoque multimodal (visual, auditivo, kinestésico)
+Retroalimentación adaptada al nivel de competencia
