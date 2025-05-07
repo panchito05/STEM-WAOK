@@ -211,9 +211,9 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const prepareQuizOptions = () => {
     // SOLUCIÓN COMPENSACIÓN: Aplicar un desfase en el índice para compensar el problema de sincronización
     
-    // IMPORTANTE: Aplicamos un desfase "rotacional" hacia atrás (contra las manecillas del reloj)
+    // IMPORTANTE: Aplicamos un desfase "rotacional" hacia adelante (con las manecillas del reloj)
     // Esto compensa el problema de sincronización que se presenta en la interfaz
-    const desfaseIndex = (currentIndex - 1 + alphabet.length) % alphabet.length;
+    const desfaseIndex = (currentIndex + 1) % alphabet.length;
     
     // 1. Creamos una copia de la letra con desfase
     const correctLetter = {...alphabet[desfaseIndex]};
