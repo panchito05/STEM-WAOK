@@ -440,6 +440,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     setIsCorrect(isAnswerCorrect);
     
+    // IMPORTANTE: Siempre mostrar detalles después de seleccionar cualquier opción
+    setShowDetails(true);
+    
     // Si la respuesta es correcta, incrementar los contadores
     if (isAnswerCorrect) {
       setCorrectAnswers(prev => prev + 1);
@@ -588,6 +591,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setSelectedOption(correctIndex);
       setIsCorrect(true);
       setShowDetails(true);
+      
+      // Registrar para debugging
+      console.log("💡 Mostrando respuesta correcta:", correctIndex, currentLetter.uppercase);
     };
     
     return (
@@ -600,24 +606,38 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
         <div className="grid grid-cols-2 gap-4">
-          {quizOptions.map((option, index) => (
-            <Button
-              key={index}
-              size="lg"
-              variant={selectedOption === index 
-                ? isCorrect ? "default" : "destructive" 
-                : "outline"}
-              className={`text-4xl h-20 w-20 ${
-                selectedOption !== null && option.uppercase === currentLetter.uppercase 
-                  ? "ring-2 ring-green-500" 
-                  : ""
-              }`}
-              onClick={() => handleQuizOptionSelect(index)}
-              disabled={selectedOption !== null}
-            >
-              {option.uppercase}
-            </Button>
-          ))}
+          {quizOptions.map((option, index) => {
+            // Verificar si esta es la opción correcta
+            const isCorrectOption = option.uppercase === currentLetter.uppercase;
+            
+            // Determinar el estilo visual para la opción actual
+            let buttonVariant: "default" | "link" | "destructive" | "outline" | "secondary" | "ghost" = "outline"; // Por defecto, todos los botones son outline
+            
+            if (selectedOption === index) {
+              // Si esta opción está seleccionada
+              buttonVariant = isCorrectOption ? "default" : "destructive";
+            }
+            
+            return (
+              <Button
+                key={index}
+                size="lg"
+                variant={buttonVariant}
+                className={`text-4xl h-20 w-20 ${
+                  selectedOption !== null && isCorrectOption 
+                    ? "ring-2 ring-green-500" 
+                    : ""
+                }`}
+                onClick={() => {
+                  console.log("🖱️ Clic en botón:", index, option.uppercase);
+                  handleQuizOptionSelect(index);
+                }}
+                disabled={selectedOption !== null}
+              >
+                {option.uppercase}
+              </Button>
+            );
+          })}
         </div>
         
         {selectedOption === null && (
