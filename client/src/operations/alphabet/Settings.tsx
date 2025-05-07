@@ -25,6 +25,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     enableRewards: settings.enableRewards === undefined ? true : settings.enableRewards,
     rewardType: settings.rewardType || "stars",
     enableAdaptiveDifficulty: settings.enableAdaptiveDifficulty || false,
+    language: settings.language || "english",
   });
   
   const handleSettingChange = <K extends keyof typeof localSettings>(
@@ -64,34 +65,83 @@ export default function Settings({ settings, onBack }: SettingsProps) {
       
       <Card>
         <CardHeader>
-          <CardTitle>Alphabet Learning Settings</CardTitle>
+          <CardTitle>
+            {localSettings.language === "spanish" ? "Configuración de Aprendizaje de Alfabeto" : "Alphabet Learning Settings"}
+          </CardTitle>
           <CardDescription>
-            Customize your learning experience
+            {localSettings.language === "spanish" ? "Personaliza tu experiencia de aprendizaje" : "Customize your learning experience"}
           </CardDescription>
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="difficulty">Difficulty Level</Label>
-            <Select
-              value={localSettings.difficulty}
-              onValueChange={(value) => handleSettingChange('difficulty', value as any)}
-            >
-              <SelectTrigger id="difficulty">
-                <SelectValue placeholder="Select difficulty" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="beginner">Beginner - Basic Letter Recognition</SelectItem>
-                  <SelectItem value="elementary">Elementary - Letter & Word Matching</SelectItem>
-                  <SelectItem value="intermediate">Intermediate - Letter Quiz</SelectItem>
-                  <SelectItem value="advanced">Advanced - Alphabet Ordering</SelectItem>
-                  <SelectItem value="expert">Expert - Previous/Next Letter & Mixed</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+          <div className="space-y-4">
+            <Label className="text-md font-medium">
+              {localSettings.language === "spanish" ? "Nivel de Dificultad" : "Difficulty Level"}
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="beginner"
+                  name="difficulty"
+                  value="beginner"
+                  checked={localSettings.difficulty === "beginner"}
+                  onChange={(e) => handleSettingChange('difficulty', e.target.value as "beginner")}
+                  className="h-4 w-4"
+                />
+                <label htmlFor="beginner" className="text-sm">Beginner</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="elementary"
+                  name="difficulty"
+                  value="elementary"
+                  checked={localSettings.difficulty === "elementary"}
+                  onChange={(e) => handleSettingChange('difficulty', e.target.value as "elementary")}
+                  className="h-4 w-4"
+                />
+                <label htmlFor="elementary" className="text-sm">Elementary</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="intermediate"
+                  name="difficulty"
+                  value="intermediate"
+                  checked={localSettings.difficulty === "intermediate"}
+                  onChange={(e) => handleSettingChange('difficulty', e.target.value as "intermediate")}
+                  className="h-4 w-4"
+                />
+                <label htmlFor="intermediate" className="text-sm">Intermediate</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="advanced"
+                  name="difficulty"
+                  value="advanced"
+                  checked={localSettings.difficulty === "advanced"}
+                  onChange={(e) => handleSettingChange('difficulty', e.target.value as "advanced")}
+                  className="h-4 w-4"
+                />
+                <label htmlFor="advanced" className="text-sm">Advanced</label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id="expert"
+                  name="difficulty"
+                  value="expert"
+                  checked={localSettings.difficulty === "expert"}
+                  onChange={(e) => handleSettingChange('difficulty', e.target.value as "expert")}
+                  className="h-4 w-4"
+                />
+                <label htmlFor="expert" className="text-sm">Expert</label>
+              </div>
+            </div>
             <p className="text-sm text-gray-500 mt-1">
-              Cada nivel añade nuevos ejercicios y desafíos para el aprendizaje del alfabeto.
+              Each level adds new exercises and challenges for alphabet learning.
             </p>
             
             <div className="mt-4">
@@ -177,14 +227,43 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             />
           </div>
           
+          <div className="flex items-center justify-between my-6">
+            <div className="space-y-0.5">
+              <Label htmlFor="language">Language / Idioma</Label>
+              <p className="text-sm text-gray-500">
+                Choose interface language / Elegir idioma de la interfaz
+              </p>
+            </div>
+            <Select
+              value={localSettings.language}
+              onValueChange={(value) => handleSettingChange('language', value as "english" | "spanish")}
+            >
+              <SelectTrigger id="language" className="w-40">
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="english">English 🇺🇸</SelectItem>
+                  <SelectItem value="spanish">Español 🇪🇸</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-4 mt-4">
-            <h3 className="text-lg font-medium">Reward System</h3>
+            <h3 className="text-lg font-medium">
+              {localSettings.language === "spanish" ? "Sistema de Recompensas" : "Reward System"}
+            </h3>
             
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="enable-rewards">Enable Rewards</Label>
+                <Label htmlFor="enable-rewards">
+                  {localSettings.language === "spanish" ? "Activar Recompensas" : "Enable Rewards"}
+                </Label>
                 <p className="text-sm text-gray-500">
-                  Show rewards for correct answers
+                  {localSettings.language === "spanish" 
+                    ? "Mostrar recompensas por respuestas correctas" 
+                    : "Show rewards for correct answers"}
                 </p>
               </div>
               <Switch
@@ -196,24 +275,28 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             
             {localSettings.enableRewards && (
               <div>
-                <Label className="mb-2 block">Reward Type</Label>
+                <Label className="mb-2 block">
+                  {localSettings.language === "spanish" ? "Tipo de Recompensa" : "Reward Type"}
+                </Label>
                 <Select
                   value={localSettings.rewardType}
                   onValueChange={(value) => handleSettingChange('rewardType', value as "stars" | "medals" | "trophies")}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select reward type" />
+                    <SelectValue placeholder={localSettings.language === "spanish" ? "Seleccionar tipo" : "Select reward type"} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="stars">Stars ⭐</SelectItem>
-                      <SelectItem value="medals">Medals 🥇</SelectItem>
-                      <SelectItem value="trophies">Trophies 🏆</SelectItem>
+                      <SelectItem value="stars">{localSettings.language === "spanish" ? "Estrellas ⭐" : "Stars ⭐"}</SelectItem>
+                      <SelectItem value="medals">{localSettings.language === "spanish" ? "Medallas 🥇" : "Medals 🥇"}</SelectItem>
+                      <SelectItem value="trophies">{localSettings.language === "spanish" ? "Trofeos 🏆" : "Trophies 🏆"}</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-gray-500 mt-2">
-                  Las recompensas aparecerán en momentos clave para motivar al estudiante.
+                  {localSettings.language === "spanish"
+                    ? "Las recompensas aparecerán en momentos clave para motivar al estudiante."
+                    : "Rewards will appear at key moments to motivate the student."}
                 </p>
               </div>
             )}

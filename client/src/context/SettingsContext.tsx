@@ -15,6 +15,7 @@ export interface ModuleSettings {
   enableCompensation: boolean; // Añade problemas adicionales por respuestas incorrectas/reveladas
   enableRewards: boolean; // Activar sistema de recompensas/premios
   rewardType: "medals" | "trophies" | "stars"; // Tipo de premio a mostrar
+  language?: "english" | "spanish"; // Idioma para el módulo
   
   // Campos adicionales para tipos específicos de módulos
   fractionType?: "addition" | "subtraction" | "comparison" | "mixed";
@@ -66,6 +67,7 @@ const defaultModuleSettings: ModuleSettings = {
   enableCompensation: false, // Desactivado por defecto
   enableRewards: true, // Sistema de recompensas activado por defecto
   rewardType: "stars", // Por defecto, usar estrellas como recompensa
+  language: "english", // Idioma por defecto: inglés
 };
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
