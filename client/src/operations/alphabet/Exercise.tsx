@@ -734,7 +734,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const renderOrdering = () => {
-    const language = settings.language || 'english';
+    // Usamos selectedLanguage que ya fue definido arriba
     
     return (
       <DndProvider backend={HTML5Backend}>
@@ -802,7 +802,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Renderiza el ejercicio de letras adyacentes (Expert)
   const renderAdjacentLetters = () => {
-    const language = settings.language || 'english';
+    // Usamos selectedLanguage que ya fue definido arriba
     
     // Obtenemos las letras adyacentes para usarlas en el botón de mostrar respuestas
     const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
