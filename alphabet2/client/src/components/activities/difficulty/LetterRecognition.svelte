@@ -39,11 +39,12 @@
   let correctImageIndex = 0;
   let selectedOptionIndex = -1; // Índice de la opción seleccionada por el usuario
   
+  // Lista de letras del alfabeto para ejercicios
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  let letterIndex = 0;
+  
   // Al montar el componente
   onMount(() => {
-    // Inicializar datos de la letra
-    updateLetterData();
-    
     // Inicializar sonidos
     try {
       letterSound = new Audio(); // Se asignará dinámicamente
@@ -57,11 +58,18 @@
     // Crear una secuencia de letras para mostrar
     if (letter) {
       // Si se proporcionó una letra específica, empezamos por ella
+      // y determinamos su índice en el alfabeto
       currentLetter = letter;
+      letterIndex = alphabet.indexOf(letter);
+      if (letterIndex === -1) letterIndex = 0;
     } else {
       // Si no, empezamos por la A
       currentLetter = 'A';
+      letterIndex = 0;
     }
+    
+    // Inicializar datos de la letra
+    updateLetterData();
     
     // Iniciar secuencia de animación
     startLearningSequence();
@@ -290,16 +298,12 @@
     } else {
       // Después de un breve delay, avanzar a la siguiente letra y comenzar nuevo ciclo
       setTimeout(() => {
-        // Avanzamos a la siguiente letra del alfabeto
-        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const currentIndex = alphabet.indexOf(currentLetter);
+        // Avanzar al siguiente índice en el alfabeto
+        letterIndex = (letterIndex + 1) % alphabet.length;
         
-        // Si es la última letra, volvemos a la A, de lo contrario avanzamos
-        if (currentIndex === alphabet.length - 1 || currentIndex === -1) {
-          currentLetter = 'A';
-        } else {
-          currentLetter = alphabet[currentIndex + 1];
-        }
+        // Actualizar la letra actual
+        currentLetter = alphabet[letterIndex];
+        console.log(`Avanzando a la siguiente letra: ${currentLetter} (índice ${letterIndex})`);
         
         // Actualizar datos de la nueva letra
         updateLetterData();
