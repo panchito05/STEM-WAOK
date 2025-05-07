@@ -588,8 +588,42 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               console.log(`[ADAPTIVE DIFFICULTY] Guardando nueva dificultad en configuración: ${newDifficulty}`);
               // IMPORTANTE: Solo actualizamos el campo difficulty, no toda la configuración
               updateModuleSettings("addition", { difficulty: newDifficulty });
+              
+              // Almacenar también en localStorage como respaldo en caso de problemas de autenticación
+              try {
+                const currentModuleSettings = localStorage.getItem('moduleSettings');
+                if (currentModuleSettings) {
+                  const settings = JSON.parse(currentModuleSettings);
+                  if (settings.addition) {
+                    settings.addition.difficulty = newDifficulty;
+                  } else {
+                    settings.addition = { ...settings.addition || {}, difficulty: newDifficulty };
+                  }
+                  localStorage.setItem('moduleSettings', JSON.stringify(settings));
+                  console.log(`[ADAPTIVE DIFFICULTY] Respaldo: Guardada nueva dificultad en localStorage: ${newDifficulty}`);
+                }
+              } catch (localStorageError) {
+                console.error("[ADAPTIVE DIFFICULTY] Error al guardar respaldo en localStorage:", localStorageError);
+              }
             } catch (error) {
               console.error("[ADAPTIVE DIFFICULTY] Error al guardar nueva dificultad:", error);
+              
+              // Intentar guardar al menos en localStorage si falló la API
+              try {
+                const currentModuleSettings = localStorage.getItem('moduleSettings');
+                if (currentModuleSettings) {
+                  const settings = JSON.parse(currentModuleSettings);
+                  if (settings.addition) {
+                    settings.addition.difficulty = newDifficulty;
+                  } else {
+                    settings.addition = { ...settings.addition || {}, difficulty: newDifficulty };
+                  }
+                  localStorage.setItem('moduleSettings', JSON.stringify(settings));
+                  console.log(`[ADAPTIVE DIFFICULTY] Respaldo: Guardada nueva dificultad en localStorage: ${newDifficulty}`);
+                }
+              } catch (localStorageError) {
+                console.error("[ADAPTIVE DIFFICULTY] Error al guardar respaldo en localStorage:", localStorageError);
+              }
             }
             
             // Mostrar mensaje de felicitación y activar recompensa especial
@@ -810,8 +844,42 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 console.log(`[ADAPTIVE DIFFICULTY] Guardando nueva dificultad (reducida) en configuración: ${newDifficulty}`);
                 // IMPORTANTE: Solo actualizamos el campo difficulty, no toda la configuración
                 updateModuleSettings("addition", { difficulty: newDifficulty });
+                
+                // Almacenar también en localStorage como respaldo en caso de problemas de autenticación
+                try {
+                  const currentModuleSettings = localStorage.getItem('moduleSettings');
+                  if (currentModuleSettings) {
+                    const settings = JSON.parse(currentModuleSettings);
+                    if (settings.addition) {
+                      settings.addition.difficulty = newDifficulty;
+                    } else {
+                      settings.addition = { ...settings.addition || {}, difficulty: newDifficulty };
+                    }
+                    localStorage.setItem('moduleSettings', JSON.stringify(settings));
+                    console.log(`[ADAPTIVE DIFFICULTY] Respaldo: Guardada nueva dificultad (reducida) en localStorage: ${newDifficulty}`);
+                  }
+                } catch (localStorageError) {
+                  console.error("[ADAPTIVE DIFFICULTY] Error al guardar respaldo en localStorage:", localStorageError);
+                }
               } catch (error) {
                 console.error("[ADAPTIVE DIFFICULTY] Error al guardar nueva dificultad (reducida):", error);
+                
+                // Intentar guardar al menos en localStorage si falló la API
+                try {
+                  const currentModuleSettings = localStorage.getItem('moduleSettings');
+                  if (currentModuleSettings) {
+                    const settings = JSON.parse(currentModuleSettings);
+                    if (settings.addition) {
+                      settings.addition.difficulty = newDifficulty;
+                    } else {
+                      settings.addition = { ...settings.addition || {}, difficulty: newDifficulty };
+                    }
+                    localStorage.setItem('moduleSettings', JSON.stringify(settings));
+                    console.log(`[ADAPTIVE DIFFICULTY] Respaldo: Guardada nueva dificultad (reducida) en localStorage: ${newDifficulty}`);
+                  }
+                } catch (localStorageError) {
+                  console.error("[ADAPTIVE DIFFICULTY] Error al guardar respaldo en localStorage:", localStorageError);
+                }
               }
               
               // Mostrar mensaje informativo sobre la reducción de nivel
