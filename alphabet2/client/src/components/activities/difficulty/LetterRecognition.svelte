@@ -16,7 +16,7 @@
   let letterData = null;
   let showAudio = false;
   let score = 0;
-  let scoreTotal = 3; // Número total de interacciones para completar
+  let scoreTotal = 10; // Número total de interacciones para completar
   let scoreProgress = 0;
   let feedback = '';
   let feedbackClass = '';
@@ -33,6 +33,11 @@
   let wordSound = null;
   let successSound = null;
   let errorSound = null;
+  
+  // Opciones para la actividad
+  let imageOptions = [];
+  let correctImageIndex = 0;
+  let selectedOptionIndex = -1; // Índice de la opción seleccionada por el usuario
   
   // Al montar el componente
   onMount(() => {
@@ -91,6 +96,37 @@
         word: letterExamples[language][letterToUse].word,
         imageUrl: letterExamples[language][letterToUse].imageUrl
       };
+      
+      // Generar opciones de imágenes (correcta e incorrecta)
+      // Primero obtenemos todas las letras disponibles
+      const allLetters = Object.keys(letterExamples[language]);
+      // Filtramos para excluir la letra actual
+      const otherLetters = allLetters.filter(l => l !== letterToUse);
+      // Seleccionamos una letra aleatoria para la opción incorrecta
+      const randomLetter = otherLetters[Math.floor(Math.random() * otherLetters.length)];
+      
+      // Generamos las dos opciones (correcta e incorrecta)
+      imageOptions = [
+        {
+          letter: letterToUse,
+          word: letterExamples[language][letterToUse].word,
+          imageUrl: letterExamples[language][letterToUse].imageUrl,
+          correct: true
+        },
+        {
+          letter: randomLetter,
+          word: letterExamples[language][randomLetter].word,
+          imageUrl: letterExamples[language][randomLetter].imageUrl,
+          correct: false
+        }
+      ];
+      
+      // Barajamos las opciones para que no siempre esté la correcta en el mismo lugar
+      imageOptions = imageOptions.sort(() => Math.random() - 0.5);
+      
+      // Guardamos el índice de la opción correcta
+      correctImageIndex = imageOptions.findIndex(opt => opt.correct);
+      
     } else {
       // Fallback por si no existe el dato
       letterData = {
@@ -99,6 +135,24 @@
         word: language === 'english' ? 'Example' : 'Ejemplo',
         imageUrl: 'https://em-content.zobj.net/thumbs/240/apple/354/question-mark_2753.png'
       };
+      
+      // Opciones fallback
+      imageOptions = [
+        {
+          letter: letterToUse,
+          word: language === 'english' ? 'Example' : 'Ejemplo',
+          imageUrl: 'https://em-content.zobj.net/thumbs/240/apple/354/question-mark_2753.png',
+          correct: true
+        },
+        {
+          letter: 'Z',
+          word: language === 'english' ? 'Unknown' : 'Desconocido',
+          imageUrl: 'https://em-content.zobj.net/thumbs/240/apple/354/question-mark_2753.png',
+          correct: false
+        }
+      ];
+      
+      correctImageIndex = 0;
     }
   }
   
@@ -109,6 +163,8 @@
     wordShown = false;
     imageShown = false;
     answerState = 'waiting';
+    selectedOptionIndex = -1;
+    feedback = '';
     
     // Iniciar la secuencia con delays
     setTimeout(() => {
@@ -124,6 +180,52 @@
       imageShown = true;
       showAudio = true;
     }, imageAppearDelay);
+  }
+  
+  // Manejar la selección de una opción de imagen
+  function handleOptionSelect(index) {
+    if (answerState !== 'waiting') return; // No permitir cambios después de responder
+    
+    selectedOptionIndex = index;
+    
+    // Verificar si la respuesta es correcta
+    const isCorrect = index === correctImageIndex;
+    
+    if (isCorrect) {
+      // Respuesta correcta
+      scoreProgress++;
+      score++;
+      feedback = language === 'english' ? 'Great job!' : '¡Excelente!';
+      feedbackClass = 'positive';
+      answerState = 'correct';
+      
+      // Reproducir sonido de éxito
+      if (successSound) {
+        successSound.play();
+      }
+    } else {
+      // Respuesta incorrecta
+      feedback = language === 'english' ? 'Try again!' : '¡Inténtalo de nuevo!';
+      feedbackClass = 'negative';
+      answerState = 'incorrect';
+      
+      // Reproducir sonido de error
+      if (errorSound) {
+        errorSound.play();
+      }
+    }
+    
+    // Esperar un momento y continuar al siguiente
+    setTimeout(() => {
+      if (isCorrect) {
+        checkCompletion();
+      } else {
+        // Si es incorrecto, volvemos a intentar con la misma letra
+        answerState = 'waiting';
+        selectedOptionIndex = -1;
+        feedback = '';
+      }
+    }, 2000);
   }
   
   // Reproducir el sonido de la letra
@@ -257,34 +359,33 @@
         {/if}
       </div>
       
-      <div class="image-display {imageShown ? 'appear' : ''}">
-        <img 
-          src={letterData?.imageUrl} 
-          alt={letterData?.word}
-          class="letter-image"
-        />
+      <div class="instruction-display {imageShown ? 'appear' : ''}">
+        <p class="instruction-text">
+          {language === 'english' ? 'Choose the image that represents this letter:' : 'Elige la imagen que representa esta letra:'}
+        </p>
       </div>
       
-      {#if imageShown}
-        <div class="interaction-container">
-          <button 
-            class="recognition-button"
-            class:disabled={answerState !== 'waiting'}
-            on:click={handleRecognition}
+      <div class="options-display {imageShown ? 'appear' : ''}">
+        {#each imageOptions as option, index}
+          <div 
+            class="option-card"
+            class:selected={answerState !== 'waiting' && index === correctImageIndex}
+            class:incorrect={answerState !== 'waiting' && option.correct === false && index === selectedOptionIndex}
+            on:click={() => handleOptionSelect(index)}
           >
-            {#if answerState === 'waiting'}
-              {language === 'english' ? 'I recognize this letter!' : '¡Reconozco esta letra!'}
-            {:else if answerState === 'correct'}
-              <span class="success-icon">✓</span>
-              {language === 'english' ? 'Correct!' : '¡Correcto!'}
-            {/if}
-          </button>
-          
-          {#if feedback}
-            <div class="feedback {feedbackClass}">
-              {feedback}
-            </div>
-          {/if}
+            <img 
+              src={option.imageUrl} 
+              alt={option.word}
+              class="option-image"
+            />
+            <div class="option-label">{option.word}</div>
+          </div>
+        {/each}
+      </div>
+      
+      {#if imageShown && feedback}
+        <div class="feedback {feedbackClass}">
+          {feedback}
         </div>
       {/if}
     </div>
@@ -403,7 +504,9 @@
   
   .letter-display,
   .word-display,
-  .image-display {
+  .image-display,
+  .instruction-display,
+  .options-display {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -414,9 +517,94 @@
   
   .letter-display.appear,
   .word-display.appear,
-  .image-display.appear {
+  .image-display.appear,
+  .instruction-display.appear,
+  .options-display.appear {
     opacity: 1;
     transform: translateY(0);
+  }
+  
+  .instruction-display {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .instruction-text {
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
+  .options-display {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    width: 100%;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  
+  .option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 150px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  @media (max-width: 640px) {
+    .options-display {
+      gap: 1rem;
+    }
+    
+    .option-card {
+      width: 120px;
+      padding: 0.75rem;
+    }
+    
+    .option-image {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .option-label {
+      font-size: 0.9rem;
+    }
+  }
+  
+  .option-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    border-color: #4361ee;
+  }
+  
+  .option-card.selected {
+    border-color: #4cc9f0;
+    background-color: rgba(76, 201, 240, 0.1);
+    transform: scale(1.05);
+  }
+  
+  .option-card.incorrect {
+    border-color: #ef476f;
+    background-color: rgba(239, 71, 111, 0.1);
+  }
+  
+  .option-image {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+  }
+  
+  .option-label {
+    font-weight: bold;
+    color: #333;
+    text-align: center;
   }
   
   .letter-pair {
