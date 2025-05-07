@@ -833,6 +833,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         problemTimerRef.current = null;
       }
       
+      // Logging para los contadores adaptativos (no se reinician al pasar de un problema a otro)
+      if (settings.enableAdaptiveDifficulty) {
+        console.log(`[ADAPTIVE DIFFICULTY] Pasando al siguiente problema. Manteniendo contadores:`);
+        console.log(`[ADAPTIVE DIFFICULTY] - Respuestas correctas consecutivas: ${consecutiveCorrectAnswers}`);
+        console.log(`[ADAPTIVE DIFFICULTY] - Respuestas incorrectas consecutivas: ${consecutiveIncorrectAnswers}`);
+      }
+      
       setCurrentProblemIndex(prev => prev + 1);
       setUserAnswer("");
       setShowingExplanation(false);
@@ -841,6 +848,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setCurrentAttempts(0); // Reiniciamos el contador de intentos para el nuevo problema
       setProblemTimer(settings.timeValue); // Reiniciamos el temporizador para el nuevo problema
       setWaitingForContinue(false); // Aseguramos que no estamos esperando que el usuario presione "Continuar"
+      
+      // NO reiniciamos consecutiveCorrectAnswers ni consecutiveIncorrectAnswers
+      // para que la dificultad adaptativa funcione correctamente entre problemas
     } else {
       completeExercise();
     }
