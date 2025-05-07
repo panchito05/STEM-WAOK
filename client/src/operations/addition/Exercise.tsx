@@ -29,8 +29,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | null>(null);
   const [showHelpButton, setShowHelpButton] = useState(false); // Control si mostramos el botón de ayuda
   const [showingExplanation, setShowingExplanation] = useState(false);
-  const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0); // Contador para respuestas incorrectas
-  const [revealedAnswersCount, setRevealedAnswersCount] = useState(0); // Contador para respuestas reveladas
+  // Ya no necesitamos estos contadores porque agregamos problemas inmediatamente
+  // const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0); // Contador para respuestas incorrectas
+  // const [revealedAnswersCount, setRevealedAnswersCount] = useState(0); // Contador para respuestas reveladas
   const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.difficulty); // Dificultad adaptiva
   const [currentAttempts, setCurrentAttempts] = useState(0); // Contador para intentos en el problema actual
   const [showReward, setShowReward] = useState(false); // Estado para mostrar la recompensa
@@ -203,9 +204,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
     setFeedbackColor("green");
 
-    // Incrementar contador de respuestas reveladas si está habilitada la compensación
+    // Si está habilitada la compensación, añadimos un problema adicional inmediatamente
     if (settings.enableCompensation) {
-      setRevealedAnswersCount(prev => prev + 1);
+      // Añadir un problema adicional de compensación
+      const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+      const compensationProblem = generateAdditionProblem(difficultyToUse);
+      
+      // Añadimos el problema a la lista actual
+      const updatedProblems = [...problems];
+      // Insertar el problema después del problema actual
+      updatedProblems.splice(currentProblemIndex + 1, 0, compensationProblem);
+      
+      console.log("[COMPENSATION] Añadiendo problema de compensación después del índice:", currentProblemIndex);
+      console.log("[COMPENSATION] Total de problemas ahora:", updatedProblems.length);
+      
+      // Actualizamos la lista de problemas
+      setProblems(updatedProblems);
     }
     
     // Si hay un temporizador activo, lo detenemos
@@ -443,11 +457,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           isCorrect: false
         };
         
+        // Añadimos la respuesta al historial
         setAnswers(prev => [...prev, answer]);
         
-        // Incrementar contador de respuestas incorrectas si está habilitada la compensación
+        // Si está habilitada la compensación, añadimos un problema adicional inmediatamente
         if (settings.enableCompensation) {
-          setIncorrectAnswersCount(prev => prev + 1);
+          // Añadir un problema adicional de compensación
+          const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+          const compensationProblem = generateAdditionProblem(difficultyToUse);
+          
+          // Añadimos el problema a la lista actual
+          const updatedProblems = [...problems];
+          // Insertar el problema después del problema actual
+          updatedProblems.splice(currentProblemIndex + 1, 0, compensationProblem);
+          
+          console.log("[COMPENSATION] Añadiendo problema de compensación después del índice:", currentProblemIndex);
+          console.log("[COMPENSATION] Total de problemas ahora:", updatedProblems.length);
+          
+          // Actualizamos la lista de problemas
+          setProblems(updatedProblems);
         }
         
         // Ajustar dificultad adaptativamente si está habilitada esa opción
@@ -523,58 +551,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const completeExercise = () => {
-    // Verificar si necesitamos añadir problemas de compensación
-    if (settings.enableCompensation && (incorrectAnswersCount > 0 || revealedAnswersCount > 0)) {
-      const compensationProblemsNeeded = incorrectAnswersCount + revealedAnswersCount;
-      
-      console.log("[COMPENSATION] Se necesitan problemas de compensación:", compensationProblemsNeeded);
-      console.log("[COMPENSATION] Respuestas incorrectas:", incorrectAnswersCount);
-      console.log("[COMPENSATION] Respuestas reveladas:", revealedAnswersCount);
-      
-      if (compensationProblemsNeeded > 0) {
-        // Crear nuevos problemas de compensación
-        const newProblems: Problem[] = [];
-        
-        for (let i = 0; i < compensationProblemsNeeded; i++) {
-          // Usamos la dificultad adaptativa si está habilitada, o la configurada si no
-          const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
-          newProblems.push(generateAdditionProblem(difficultyToUse));
-        }
-        
-        console.log("[COMPENSATION] Nuevos problemas generados:", newProblems.length);
-        
-        // En lugar de combinar los arreglos, primero actualizamos el arreglo existente y guardamos una referencia
-        const updatedProblems = [...problems, ...newProblems];
-        console.log("[COMPENSATION] Total de problemas ahora:", updatedProblems.length);
-        
-        // Actualizamos el estado con los problemas completos
-        setProblems(updatedProblems);
-        
-        // Mostrar mensaje informativo sobre problemas adicionales
-        setFeedbackMessage(`Añadidos ${compensationProblemsNeeded} problemas de compensación`);
-        setFeedbackColor("green");
-        
-        // Reiniciar los contadores
-        setIncorrectAnswersCount(0);
-        setRevealedAnswersCount(0);
-        
-        // Continuar con el ejercicio en lugar de completarlo
-        setTimeout(() => {
-          setFeedbackMessage(null);
-          setFeedbackColor(null);
-          
-          // Avanzamos al siguiente problema 
-          // Ya que sabemos el índice exacto del próximo problema (actual + 1), lo asignamos directamente
-          setCurrentProblemIndex(currentProblemIndex + 1);
-          setUserAnswer("");
-          setShowingExplanation(false);
-          
-          console.log("[COMPENSATION] Continuando con el problema:", currentProblemIndex + 1);
-        }, 2000);
-        
-        return; // No completamos el ejercicio todavía
-      }
-    }
+    // Al final ya no necesitamos esta lógica de compensación, porque ahora agregamos los problemas inmediatamente
+  // después de cada respuesta incorrecta o revelada
     
     // Si no hay compensación o ya hemos añadido los problemas, completar el ejercicio
     setExerciseCompleted(true);
