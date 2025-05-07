@@ -127,12 +127,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   setProblems(updatedProblems);
                 }
                 
-                // Avanzar al siguiente problema después de un breve retraso
-                setTimeout(() => {
-                  setFeedbackMessage(null);
-                  setFeedbackColor(null);
-                  moveToNextProblem();
-                }, 2000);
+                // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
+                // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
+                setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
+                setFeedbackColor("red");
+                
+                // Activamos el estado de espera para el botón "Continuar"
+                setWaitingForContinue(true);
+                
+                // Limpiamos cualquier temporizador activo
+                if (problemTimerRef.current) {
+                  clearInterval(problemTimerRef.current);
+                  problemTimerRef.current = null;
+                }
               } else {
                 // Si aún no hemos agotado todos los intentos, reiniciamos el temporizador
                 setTimeout(() => {
@@ -317,18 +324,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       problemTimerRef.current = null;
     }
     
-    // Esperar 2 segundos y luego pasar al siguiente problema
-    setTimeout(() => {
-      // Guardar la respuesta como incorrecta
-      const answer: UserAnswer = {
-        problem: currentProblem,
-        userAnswer: -1, // Usamos -1 para indicar que se reveló la respuesta
-        isCorrect: false
-      };
-      
-      setAnswers(prev => [...prev, answer]);
-      moveToNextProblem();
-    }, 2000);
+    // Guardar la respuesta como incorrecta
+    const answer: UserAnswer = {
+      problem: currentProblem,
+      userAnswer: -1, // Usamos -1 para indicar que se reveló la respuesta
+      isCorrect: false
+    };
+    
+    setAnswers(prev => [...prev, answer]);
+    
+    // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
+    // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
+    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
+    setFeedbackColor("green");
+    
+    // Activamos el estado de espera para el botón "Continuar"
+    setWaitingForContinue(true);
   };
 
   // Función auxiliar para configurar un nuevo temporizador
