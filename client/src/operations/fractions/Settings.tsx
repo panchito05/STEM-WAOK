@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ModuleSettings } from "@/context/SettingsContext";
 import { useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { defaultModuleSettings } from "@/utils/operationComponents";
+import DifficultyExamples from "@/components/DifficultyExamples";
+import { debounce } from "@/lib/utils";
 
 interface SettingsProps {
   settings: ModuleSettings;
@@ -19,15 +21,32 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   const { updateModuleSettings, resetModuleSettings } = useSettings();
   const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-
+  
+  // Referencia a la función debounced para guardar la configuración
+  const debouncedSave = useMemo(
+    () =>
+      debounce((settings: ModuleSettings) => {
+        updateModuleSettings("fractions", settings);
+        console.log(`[FRACTIONS] Guardando configuración (debounced):`, settings);
+      }, 1000), // 1 segundo de espera antes de guardar
+    [updateModuleSettings]
+  );
+  
+  // Guardar automáticamente cada vez que cambia un ajuste (con debounce)
   const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
-    setLocalSettings((prev) => ({ ...prev, [key]: value }));
+    const updatedSettings = { ...localSettings, [key]: value };
+    setLocalSettings(updatedSettings);
+    // Usar debounce para evitar múltiples llamadas de guardado
+    debouncedSave(updatedSettings);
   };
-
-  const handleSaveSettings = async () => {
-    await updateModuleSettings("fractions", localSettings);
-    onBack();
-  };
+  
+  // Para poder navegar entre la configuración y el ejercicio sin perder cambios
+  useEffect(() => {
+    // Guardar la configuración cuando se cierra/vuelve atrás
+    return () => {
+      updateModuleSettings("fractions", localSettings);
+    };
+  }, [localSettings, updateModuleSettings]);
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {
@@ -56,74 +75,50 @@ export default function Settings({ settings, onBack }: SettingsProps) {
         <div>
           <h3 className="text-lg font-medium text-gray-900">Difficulty Level</h3>
           <div className="mt-2">
-            <RadioGroup
-              value={localSettings.difficulty}
-              onValueChange={(value) => handleUpdateSetting("difficulty", value as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="beginner" id="beginner" />
-                  <Label htmlFor="beginner">Beginner</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="elementary" id="elementary" />
-                  <Label htmlFor="elementary">Elementary</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="intermediate" id="intermediate" />
-                  <Label htmlFor="intermediate">Intermediate</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="advanced" id="advanced" />
-                  <Label htmlFor="advanced">Advanced</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="expert" id="expert" />
-                  <Label htmlFor="expert">Expert</Label>
-                </div>
-              </div>
-            </RadioGroup>
-            
-            {/* Ejemplos de dificultad visuales */}
-            <div className="mt-4">
-              <h4 className="text-md font-medium mb-2">Difficulty Examples</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-                {/* Beginner */}
-                <div className={`p-3 rounded-md ${localSettings.difficulty === "beginner" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
-                  <p className="font-semibold mb-1">Beginner</p>
-                  <p className="text-sm">1/4 + 2/4 = ?</p>
-                  <p className="text-sm">3/5 - 1/5 = ?</p>
-                </div>
-                
-                {/* Elementary */}
-                <div className={`p-3 rounded-md ${localSettings.difficulty === "elementary" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
-                  <p className="font-semibold mb-1">Elementary</p>
-                  <p className="text-sm">2/3 + 1/6 = ?</p>
-                  <p className="text-sm">3/4 - 1/8 = ?</p>
-                </div>
-                
-                {/* Intermediate */}
-                <div className={`p-3 rounded-md ${localSettings.difficulty === "intermediate" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
-                  <p className="font-semibold mb-1">Intermediate</p>
-                  <p className="text-sm">2/5 + 3/8 = ?</p>
-                  <p className="text-sm">4/7 compared to 5/9</p>
-                </div>
-                
-                {/* Advanced */}
-                <div className={`p-3 rounded-md ${localSettings.difficulty === "advanced" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
-                  <p className="font-semibold mb-1">Advanced</p>
-                  <p className="text-sm">2 3/4 + 1 5/6 = ?</p>
-                  <p className="text-sm">3 1/3 - 1 2/5 = ?</p>
-                </div>
-                
-                {/* Expert */}
-                <div className={`p-3 rounded-md ${localSettings.difficulty === "expert" ? "bg-blue-900 text-white border-blue-700" : "bg-gray-800 text-gray-300 border-gray-700"} border`}>
-                  <p className="font-semibold mb-1">Expert</p>
-                  <p className="text-sm">5 2/3 ÷ 2 1/2 = ?</p>
-                  <p className="text-sm">3 3/4 × 2 2/5 = ?</p>
-                </div>
-              </div>
-            </div>
+            <DifficultyExamples 
+              currentDifficulty={localSettings.difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert"} 
+              onDifficultyChange={(difficulty) => handleUpdateSetting("difficulty", difficulty)}
+              examples={{
+                beginner: [
+                  "1/4 + 2/4 = ?",
+                  "3/5 - 1/5 = ?"
+                ],
+                elementary: [
+                  "2/3 + 1/6 = ?",
+                  "3/4 - 1/8 = ?"
+                ],
+                intermediate: [
+                  "2/5 + 3/8 = ?",
+                  "4/7 compared to 5/9"
+                ],
+                advanced: [
+                  "2 3/4 + 1 5/6 = ?",
+                  "3 1/3 - 1 2/5 = ?"
+                ],
+                expert: [
+                  "5 2/3 ÷ 2 1/2 = ?",
+                  "3 3/4 × 2 2/5 = ?"
+                ]
+              }}
+            />
+          </div>
+          
+          <div className="mt-2 mb-4">
+            <p className="text-sm text-gray-500">
+              <span className="font-medium">Beginner:</span> Fracciones con mismo denominador
+            </p>
+            <p className="text-sm text-gray-500">
+              <span className="font-medium">Elementary:</span> Fracciones con denominadores relacionados
+            </p>
+            <p className="text-sm text-gray-500">
+              <span className="font-medium">Intermediate:</span> Fracciones con denominadores no relacionados
+            </p>
+            <p className="text-sm text-gray-500">
+              <span className="font-medium">Advanced:</span> Operaciones con números mixtos
+            </p>
+            <p className="text-sm text-gray-500">
+              <span className="font-medium">Expert:</span> Operaciones avanzadas (multiplicación y división)
+            </p>
           </div>
         </div>
 
@@ -412,9 +407,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 </>
               )}
             </Button>
-            <Button type="button" onClick={handleSaveSettings}>
-              Save Settings
-            </Button>
+            {/* Botón de guardar eliminado - los cambios se guardan automáticamente */}
           </div>
         </div>
       </div>
