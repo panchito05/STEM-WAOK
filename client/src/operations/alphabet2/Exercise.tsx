@@ -94,6 +94,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timeout | null>(null);
   const [attemptCount, setAttemptCount] = useState(0);
   
+  // Estados para los ejercicios avanzados y expertos (movidos al nivel superior)
+  const [advancedUserOrder, setAdvancedUserOrder] = useState<string[]>([]);
+  const [advancedHasSubmitted, setAdvancedHasSubmitted] = useState(false);
+  const [advancedIsOrderCorrect, setAdvancedIsOrderCorrect] = useState(false);
+  
+  // Estados para ejercicios expertos
+  const [expertSelectedPrevIndex, setExpertSelectedPrevIndex] = useState<number | null>(null);
+  const [expertSelectedNextIndex, setExpertSelectedNextIndex] = useState<number | null>(null);
+  const [expertHasSubmitted, setExpertHasSubmitted] = useState(false);
+  const [expertIsAnswersPrevCorrect, setExpertIsAnswersPrevCorrect] = useState(false);
+  const [expertIsAnswersNextCorrect, setExpertIsAnswersNextCorrect] = useState(false);
+  
   // Contextos
   const { user } = useAuth();
   const { globalSettings } = useSettings();
@@ -852,23 +864,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const renderAdvancedExercise = (exercise: DragAndDropExercise) => {
     const { letters, correctOrder, currentOrder } = exercise;
     
-    // Estado para el orden actual (simulación de drag & drop)
-    const [userOrder, setUserOrder] = useState<string[]>(currentOrder);
-    const [hasSubmitted, setHasSubmitted] = useState(false);
-    const [isOrderCorrect, setIsOrderCorrect] = useState(false);
-    
-    // Efecto para restablecer el estado cuando cambia el ejercicio
-    useEffect(() => {
-      setUserOrder(currentOrder);
-      setHasSubmitted(false);
-      setIsOrderCorrect(false);
-    }, [currentOrder]);
-    
     // Verificar si el ordenamiento es correcto
     const checkOrdering = () => {
-      const isCorrect = userOrder.every((letter, index) => letter === correctOrder[index]);
-      setIsOrderCorrect(isCorrect);
-      setHasSubmitted(true);
+      const isCorrect = advancedUserOrder.every((letter, index) => letter === correctOrder[index]);
+      setAdvancedIsOrderCorrect(isCorrect);
+      setAdvancedHasSubmitted(true);
       setShowDetails(true);
       
       if (isCorrect) {
@@ -882,10 +882,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Manejar el movimiento de una letra
     const handleLetterMove = (fromIndex: number, toIndex: number) => {
-      const updatedOrder = [...userOrder];
+      const updatedOrder = [...advancedUserOrder];
       const [moved] = updatedOrder.splice(fromIndex, 1);
       updatedOrder.splice(toIndex, 0, moved);
-      setUserOrder(updatedOrder);
+      setAdvancedUserOrder(updatedOrder);
     };
     
     return (
@@ -911,7 +911,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         
         <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {userOrder.map((letter, index) => {
+          {advancedUserOrder.map((letter: string, index: number) => {
             const letterObj = letters.find(l => l.uppercase === letter);
             return (
               <div key={index} className="relative">
@@ -920,14 +920,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     w-16 h-16 flex items-center justify-center rounded-lg 
                     text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 
                     text-white cursor-pointer transition-transform transform hover:scale-105
-                    ${hasSubmitted && isOrderCorrect ? 'bg-green-500' : ''}
+                    ${advancedHasSubmitted && advancedIsOrderCorrect ? 'bg-green-500' : ''}
                   `}
-                  onClick={() => !hasSubmitted && playLetterSound(letter)}
+                  onClick={() => !advancedHasSubmitted && playLetterSound(letter)}
                 >
                   {letter}
                 </div>
                 
-                {!hasSubmitted && (
+                {!advancedHasSubmitted && (
                   <div className="flex mt-2 justify-center">
                     {index > 0 && (
                       <button 
@@ -939,7 +939,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                         <ArrowLeft className="w-4 h-4" />
                       </button>
                     )}
-                    {index < userOrder.length - 1 && (
+                    {index < advancedUserOrder.length - 1 && (
                       <button 
                         className="p-1 rounded bg-gray-100 hover:bg-gray-200 transition-colors"
                         onClick={() => handleLetterMove(index, index + 1)}
@@ -956,7 +956,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           })}
         </div>
         
-        {!hasSubmitted ? (
+        {!advancedHasSubmitted ? (
           <div className="flex justify-center mb-6">
             <Button 
               className="px-8" 
@@ -967,7 +967,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         ) : (
           <div className="text-center text-lg font-semibold mb-6">
-            {isOrderCorrect ? (
+            {advancedIsOrderCorrect ? (
               <div className="text-green-600">
                 {selectedLanguage === 'spanish' 
                   ? '¡Correcto! Has ordenado las letras alfabéticamente.' 
@@ -983,7 +983,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         )}
         
-        {hasSubmitted && (
+        {advancedHasSubmitted && (
           <div className="flex justify-center mt-4">
             <Button onClick={handleNext}>
               {selectedLanguage === 'spanish' ? 'Siguiente ejercicio' : 'Next exercise'}
@@ -998,32 +998,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const renderExpertExercise = (exercise: SequenceRelationsExercise) => {
     const { currentLetter, previousLetter, nextLetter, options } = exercise;
     
-    // Estados para las selecciones del usuario
-    const [selectedPrevIndex, setSelectedPrevIndex] = useState<number | null>(null);
-    const [selectedNextIndex, setSelectedNextIndex] = useState<number | null>(null);
-    const [hasSubmitted, setHasSubmitted] = useState(false);
-    const [isAnswersPrevCorrect, setIsAnswersPrevCorrect] = useState(false);
-    const [isAnswersNextCorrect, setIsAnswersNextCorrect] = useState(false);
-    
     // Efecto para restablecer el estado cuando cambia el ejercicio
     useEffect(() => {
-      setSelectedPrevIndex(null);
-      setSelectedNextIndex(null);
-      setHasSubmitted(false);
-      setIsAnswersPrevCorrect(false);
-      setIsAnswersNextCorrect(false);
+      setExpertSelectedPrevIndex(null);
+      setExpertSelectedNextIndex(null);
+      setExpertHasSubmitted(false);
+      setExpertIsAnswersPrevCorrect(false);
+      setExpertIsAnswersNextCorrect(false);
     }, [currentLetter]);
     
     // Verificar las respuestas
     const checkSequenceAnswers = () => {
-      if (selectedPrevIndex === null || selectedNextIndex === null) return;
+      if (expertSelectedPrevIndex === null || expertSelectedNextIndex === null) return;
       
-      const isPrevCorrect = options[selectedPrevIndex]?.uppercase === previousLetter.uppercase;
-      const isNextCorrect = options[selectedNextIndex]?.uppercase === nextLetter.uppercase;
+      const isPrevCorrect = options[expertSelectedPrevIndex]?.uppercase === previousLetter.uppercase;
+      const isNextCorrect = options[expertSelectedNextIndex]?.uppercase === nextLetter.uppercase;
       
-      setIsAnswersPrevCorrect(isPrevCorrect);
-      setIsAnswersNextCorrect(isNextCorrect);
-      setHasSubmitted(true);
+      setExpertIsAnswersPrevCorrect(isPrevCorrect);
+      setExpertIsAnswersNextCorrect(isNextCorrect);
+      setExpertHasSubmitted(true);
       setShowDetails(true);
       
       if (isPrevCorrect && isNextCorrect) {
@@ -1070,18 +1063,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   <button
                     className={`
                       w-full h-16 flex items-center justify-center rounded-lg border-2 
-                      ${selectedPrevIndex === index 
-                        ? hasSubmitted 
-                          ? isAnswersPrevCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'
+                      ${expertSelectedPrevIndex === index 
+                        ? expertHasSubmitted 
+                          ? expertIsAnswersPrevCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'
                           : 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-300'
                       }
-                      ${hasSubmitted && option.uppercase === previousLetter.uppercase && selectedPrevIndex !== index
+                      ${expertHasSubmitted && option.uppercase === previousLetter.uppercase && expertSelectedPrevIndex !== index
                         ? 'border-green-500 bg-green-50' : ''
                       }
                     `}
-                    onClick={() => !hasSubmitted && setSelectedPrevIndex(index)}
-                    disabled={hasSubmitted}
+                    onClick={() => !expertHasSubmitted && setExpertSelectedPrevIndex(index)}
+                    disabled={expertHasSubmitted}
                   >
                     <div className="text-2xl font-bold">
                       {option.uppercase}
@@ -1102,18 +1095,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   <button
                     className={`
                       w-full h-16 flex items-center justify-center rounded-lg border-2 
-                      ${selectedNextIndex === index 
-                        ? hasSubmitted 
-                          ? isAnswersNextCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'
+                      ${expertSelectedNextIndex === index 
+                        ? expertHasSubmitted 
+                          ? expertIsAnswersNextCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'
                           : 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-300'
                       }
-                      ${hasSubmitted && option.uppercase === nextLetter.uppercase && selectedNextIndex !== index
+                      ${expertHasSubmitted && option.uppercase === nextLetter.uppercase && expertSelectedNextIndex !== index
                         ? 'border-green-500 bg-green-50' : ''
                       }
                     `}
-                    onClick={() => !hasSubmitted && setSelectedNextIndex(index)}
-                    disabled={hasSubmitted}
+                    onClick={() => !expertHasSubmitted && setExpertSelectedNextIndex(index)}
+                    disabled={expertHasSubmitted}
                   >
                     <div className="text-2xl font-bold">
                       {option.uppercase}
@@ -1125,12 +1118,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         </div>
         
-        {!hasSubmitted ? (
+        {!expertHasSubmitted ? (
           <div className="flex justify-center mb-6">
             <Button 
               className="px-8" 
               onClick={checkSequenceAnswers}
-              disabled={selectedPrevIndex === null || selectedNextIndex === null}
+              disabled={expertSelectedPrevIndex === null || expertSelectedNextIndex === null}
             >
               {selectedLanguage === 'spanish' ? 'Comprobar respuestas' : 'Check answers'}
             </Button>
@@ -1138,7 +1131,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         ) : (
           <div>
             <div className="text-center text-lg font-semibold mb-4">
-              {isAnswersPrevCorrect && isAnswersNextCorrect ? (
+              {expertIsAnswersPrevCorrect && expertIsAnswersNextCorrect ? (
                 <div className="text-green-600">
                   {selectedLanguage === 'spanish' 
                     ? `¡Correcto! Antes de "${currentLetter.uppercase}" va "${previousLetter.uppercase}" y después va "${nextLetter.uppercase}"` 
