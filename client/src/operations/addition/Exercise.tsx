@@ -469,10 +469,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserAnswer(e.target.value);
+    // Si estamos en modo de visualización o esperando "Continuar", no permitir cambios
+    if (waitingForContinue || showingExplanation) {
+      return;
+    }
+    
+    // Solo permitir dígitos para que coincida con el patrón establecido
+    const value = e.target.value.replace(/\D/g, '');
+    setUserAnswer(value);
   };
 
   const handleKeyboardInput = (value: string) => {
+    // Si estamos en modo de visualización o esperando que el usuario presione "Continuar"
+    // no permitimos modificar la respuesta
+    if (waitingForContinue || showingExplanation) {
+      return;
+    }
+    
     if (value === "backspace") {
       setUserAnswer(prev => prev.slice(0, -1));
     } else {
@@ -752,13 +765,52 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const moveToPreviousProblem = () => {
     if (currentProblemIndex > 0) {
+      // Limpiar el temporizador del problema actual si existe
+      if (problemTimerRef.current) {
+        clearInterval(problemTimerRef.current);
+        problemTimerRef.current = null;
+      }
+      
       setCurrentProblemIndex(prev => prev - 1);
-      // Set the input to the previously entered answer if available
+      
+      // Obtener la respuesta anterior del usuario
       const previousAnswer = answers[currentProblemIndex - 1];
-      setUserAnswer(previousAnswer ? previousAnswer.userAnswer.toString() : "");
-      setShowingExplanation(false);
-      setFeedbackMessage(null);
-      setFeedbackColor(null);
+      
+      if (previousAnswer) {
+        // Mostrar la respuesta anterior del usuario en formato de solo lectura
+        setUserAnswer(previousAnswer.userAnswer.toString());
+        
+        // Mostrar un mensaje indicando la respuesta anterior
+        const isCorrect = previousAnswer.isCorrect;
+        const correctAnswer = previousAnswer.problem.num1 + previousAnswer.problem.num2;
+        
+        if (isCorrect) {
+          // Para respuestas correctas
+          setFeedbackMessage(`Respuesta correcta: ${previousAnswer.userAnswer}`);
+          setFeedbackColor("green");
+        } else {
+          // Para respuestas incorrectas
+          if (previousAnswer.userAnswer === -1) {
+            // Si la respuesta fue revelada
+            setFeedbackMessage(`Respuesta revelada: ${correctAnswer}`);
+          } else {
+            // Si fue una respuesta incorrecta del usuario
+            setFeedbackMessage(`Respuesta incorrecta. La respuesta correcta es: ${correctAnswer}`);
+          }
+          setFeedbackColor("red");
+        }
+      } else {
+        setUserAnswer("");
+        setFeedbackMessage(null);
+        setFeedbackColor(null);
+      }
+      
+      // Desactiva la posibilidad de editar en problemas anteriores
+      setShowingExplanation(true);
+      
+      // Aseguramos que el usuario no pueda seguir intentando responder
+      // al problema anterior
+      setWaitingForContinue(true);
     }
   };
 
@@ -990,16 +1042,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 <Input
                   type="text"
                   ref={inputRef}
-                  className="w-full text-center bg-transparent focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2"
+                  className={`w-full text-center ${waitingForContinue || showingExplanation ? "bg-gray-100" : "bg-transparent"} focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2`}
                   value={userAnswer}
                   onChange={handleInputChange}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
                       checkCurrentAnswer();
                     }
                   }}
                   pattern="[0-9]*"
                   inputMode="numeric"
+                  disabled={waitingForContinue || showingExplanation}
+                  readOnly={waitingForContinue || showingExplanation}
+                  aria-readonly={waitingForContinue || showingExplanation}
                 />
               </div>
             </div>
@@ -1019,15 +1074,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((num) => (
             <button
               key={num}
-              className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
-              onClick={() => handleKeyboardInput(num)}
+              className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
+              onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput(num)}
+              disabled={waitingForContinue || showingExplanation}
+              aria-disabled={waitingForContinue || showingExplanation}
             >
               {num}
             </button>
           ))}
           <button
-            className="w-12 h-12 bg-white rounded-lg shadow-sm border border-gray-300 text-xl font-medium hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary"
-            onClick={() => handleKeyboardInput("backspace")}
+            className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
+            onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput("backspace")}
+            disabled={waitingForContinue || showingExplanation}
+            aria-disabled={waitingForContinue || showingExplanation}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
