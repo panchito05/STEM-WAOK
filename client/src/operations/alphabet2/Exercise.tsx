@@ -16,7 +16,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { user } = useAuth();
   
   // URL de la aplicación Svelte
-  const alphabetAppUrl = '/alphabet2/client/public/index.html';
+  const alphabetAppUrl = '/alphabet2';
   
   useEffect(() => {
     // Verificar si el servidor Flask está disponible

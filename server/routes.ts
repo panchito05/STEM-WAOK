@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import * as storage from "./storage";
 import { exerciseProgressSchema, moduleSettingsSchema } from "@shared/schema";
 import { z } from "zod";
+import alphabet2Routes from "./routes-alphabet2";
 
 // Verificar si el usuario está autenticado
 const isAuthenticated = (req: any, res: Response, next: NextFunction) => {
@@ -221,6 +222,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ error: "Internal server error" });
     }
   });
+
+  // Rutas para el módulo Alphabet Journey (alphabet2)
+  app.use('/alphabet2', alphabet2Routes);
 
   const httpServer = createServer(app);
   return httpServer;
