@@ -1,7 +1,4 @@
 import * as Addition from "../operations/addition";
-import * as Subtraction from "../operations/subtraction";
-import * as Multiplication from "../operations/multiplication";
-import * as Division from "../operations/division";
 import * as Fractions from "../operations/fractions";
 import * as Counting from "../operations/counting";
 import { ModuleSettings } from "@/context/SettingsContext";
@@ -51,30 +48,6 @@ export const operationModules: Module[] = [
     difficulty: "beginner",
     color: "#4287f5", // Azul vivo como en la imagen
     icon: "Plus",
-  },
-  {
-    id: "subtraction",
-    displayName: "Subtraction",
-    description: "Master subtraction with interactive exercises",
-    difficulty: "beginner",
-    color: "#6a5acd", // Violeta
-    icon: "Minus",
-  },
-  {
-    id: "multiplication",
-    displayName: "Multiplication",
-    description: "Learn multiplication tables and solve problems",
-    difficulty: "intermediate",
-    color: "#9c27b0", // Morado
-    icon: "X",
-  },
-  {
-    id: "division",
-    displayName: "Division",
-    description: "Practice division with step-by-step guidance",
-    difficulty: "intermediate",
-    color: "#ff7900", // Naranja como en la imagen
-    icon: "DivideIcon",
   },
   {
     id: "fractions",
@@ -163,9 +136,6 @@ export const operationModules: Module[] = [
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition,
-  subtraction: Subtraction,
-  multiplication: Multiplication,
-  division: Division,
   fractions: Fractions,
   counting: Counting,
 };
