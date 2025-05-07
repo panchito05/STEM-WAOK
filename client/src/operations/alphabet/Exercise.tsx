@@ -410,56 +410,50 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
 
-  // Actualiza el manejo de opciones para el quiz
+  // COMPLETAMENTE REESCRITO: Manejo de opciones para el quiz
   const handleQuizOptionSelect = (index: number) => {
-    // Habilitar logs detallados para depurar
-    console.log("🎯 handleQuizOptionSelect iniciando con índice:", index);
+    console.log("🎯 NUEVO handleQuizOptionSelect con índice:", index);
     
+    // 1. Registrar qué opción seleccionó el usuario
     setSelectedOption(index);
     
+    // 2. Obtener la letra seleccionada según el tipo de ejercicio
     let selectedLetter: Letter;
     let isAnswerCorrect: boolean;
     
-    // Si estamos en el modo quiz, usamos las opciones del quiz
     if (exerciseType === 'quiz') {
       selectedLetter = quizOptions[index];
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
-      
-      // Registramos para debugging
-      console.log("👆 Usuario seleccionó:", selectedLetter.uppercase, selectedLetter.word);
-      console.log("✓ Respuesta correcta:", currentLetter.uppercase, currentLetter.word);
-      console.log("✅ ¿Es correcta?:", isAnswerCorrect);
+      console.log(`👆 Quiz - Usuario seleccionó: ${selectedLetter.uppercase}/${currentLetter.uppercase} - ¿Correcto? ${isAnswerCorrect}`);
     } 
-    // Si estamos en modo matching, usamos las opciones de matching
     else if (exerciseType === 'matching') {
       selectedLetter = matchingOptions[index];
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
-      console.log("🔤 Matching - Usuario seleccionó:", selectedLetter.uppercase);
+      console.log(`🔤 Matching - Usuario seleccionó: ${selectedLetter.uppercase}/${currentLetter.uppercase} - ¿Correcto? ${isAnswerCorrect}`);
     } 
-    // Por defecto
     else {
       selectedLetter = alphabet[index % alphabet.length];
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
     }
     
-    // Actualizar el estado de correcto/incorrecto
-    console.log("🔄 Actualizando isCorrect:", isAnswerCorrect);
+    // 3. Actualizar el estado de correcto/incorrecto
     setIsCorrect(isAnswerCorrect);
     
-    // IMPORTANTE: Solo mostrar detalles si la respuesta es correcta
-    // Si es incorrecta, NO mostrar la respuesta, dejar que el usuario use el botón "Show Answer"
+    // 4. Controlar explícitamente cuándo mostrar detalles
     if (isAnswerCorrect) {
-      console.log("🔍 Mostrando detalles (respuesta correcta):", true);
+      // SOLO mostrar detalles si la respuesta es correcta
+      console.log("✅ Respuesta CORRECTA: mostrando detalles");
       setShowDetails(true);
-    } else {
-      console.log("❌ Respuesta incorrecta, no mostrar detalles");
+    } 
+    else {
+      // NUNCA mostrar detalles para respuestas incorrectas (el usuario debe usar "Show Answer")
+      console.log("❌ Respuesta INCORRECTA: NO mostrar detalles");
       setShowDetails(false);
     }
     
-    // Si la respuesta es correcta, incrementar los contadores
+    // 5. Si la respuesta es correcta, actualizar contadores de progreso
     if (isAnswerCorrect) {
       setCorrectAnswers(prev => prev + 1);
-      // También aumentar el contador de respuestas correctas consecutivas
       const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
       setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
       
@@ -595,18 +589,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const renderQuiz = () => {
     // Usamos selectedLanguage que ya fue definido
     
-    // Función para mostrar la respuesta sin esperar selección
+    // Función para mostrar la respuesta directamente al pulsar el botón "Show Answer"
     const showQuizAnswer = () => {
-      // Marcar la opción correcta
+      // 1. Encontrar el índice de la opción correcta
       const correctIndex = quizOptions.findIndex(option => 
         option.uppercase === currentLetter.uppercase);
       
+      // 2. Actualizar estados para mostrar la respuesta correcta
       setSelectedOption(correctIndex);
       setIsCorrect(true);
-      setShowDetails(true);
+      setShowDetails(true); // IMPORTANTE: Mostrar detalles explícitamente
       
-      // Registrar para debugging
-      console.log("💡 Mostrando respuesta correcta:", correctIndex, currentLetter.uppercase);
+      // 3. Registrar para debugging
+      console.log("💡 BOTÓN: Mostrando respuesta correcta:", correctIndex, currentLetter.uppercase);
     };
     
     return (
@@ -653,7 +648,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           })}
         </div>
         
-        {selectedOption === null && (
+        {/* Mostrar el botón "Show Answer" cuando no hay selección o cuando
+            la selección fue incorrecta (isCorrect === false) */}
+        {(selectedOption === null || (selectedOption !== null && !isCorrect)) && (
           <Button 
             variant="outline"
             onClick={showQuizAnswer}
@@ -682,15 +679,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const renderMatching = () => {
     // Usamos selectedLanguage que ya fue definido arriba
     
-    // Función para mostrar la respuesta directamente
+    // Función para mostrar la respuesta directamente al pulsar el botón "Show Answer"
     const showMatchingAnswer = () => {
-      // Encontrar el índice de la letra correcta
+      // 1. Encontrar el índice de la letra correcta
       const correctIndex = matchingOptions.findIndex(letter => 
         letter.uppercase === currentLetter.uppercase);
       
+      // 2. Actualizar estados para mostrar la respuesta correcta
       setSelectedOption(correctIndex);
       setIsCorrect(true);
-      setShowDetails(true);
+      setShowDetails(true); // IMPORTANTE: Mostrar detalles explícitamente
+      
+      // 3. Registrar para debugging
+      console.log("💡 BOTÓN MATCHING: Mostrando respuesta correcta:", correctIndex, currentLetter.uppercase);
     };
     
     // Si no hay opciones generadas, las generamos aquí
@@ -743,7 +744,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           })}
         </div>
         
-        {selectedOption === null && (
+        {/* Mostrar el botón "Show Answer" cuando no hay selección o cuando
+            la selección fue incorrecta (isCorrect === false) */}
+        {(selectedOption === null || (selectedOption !== null && !isCorrect)) && (
           <Button 
             variant="outline"
             onClick={showMatchingAnswer}
