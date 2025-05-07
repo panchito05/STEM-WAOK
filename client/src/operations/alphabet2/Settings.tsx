@@ -53,7 +53,18 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     try {
       console.log('[ALPHABET2] Guardando configuración:', data);
       
-      // Guardar configuración primero
+      // Guardar en localStorage para asegurar persistencia inmediata
+      const currentSettings = JSON.parse(localStorage.getItem('moduleSettings') || '{}');
+      const updatedSettings = {
+        ...currentSettings,
+        alphabet2: {
+          ...currentSettings.alphabet2,
+          ...data
+        }
+      };
+      localStorage.setItem('moduleSettings', JSON.stringify(updatedSettings));
+      
+      // Guardar configuración en el estado global
       await updateModuleSettings('alphabet2', data);
       
       // Breve retraso para asegurar que la configuración se guarde completamente
@@ -69,7 +80,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
       console.log(`[ALPHABET2] Configuración guardada exitosamente. Dificultad: ${data.difficulty}`);
       
       // Volver a la pantalla anterior (ejercicio)
-      onBack();
+      setTimeout(() => {
+        onBack();
+      }, 100); // Pequeño retraso para asegurar que el estado se actualice completamente
     } catch (error) {
       console.error('[ALPHABET2] Error al guardar la configuración:', error);
       

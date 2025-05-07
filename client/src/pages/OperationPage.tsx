@@ -10,6 +10,7 @@ export default function OperationPage() {
   const [, setLocation] = useLocation();
   const { getModuleSettings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
+  const [settingsUpdated, setSettingsUpdated] = useState(0); // Contador para forzar recarga
 
   const operationId = params.operation;
   const operation = operationComponents[operationId];
@@ -21,6 +22,12 @@ export default function OperationPage() {
       setLocation("/");
     }
   }, [operation, setLocation]);
+
+  // Manejar regreso de configuración
+  const handleBackFromSettings = () => {
+    setShowSettings(false);
+    setSettingsUpdated(prev => prev + 1); // Incrementar para forzar recarga de configuración
+  };
 
   if (!operation || !moduleInfo) {
     return null;
@@ -42,10 +49,11 @@ export default function OperationPage() {
             {showSettings ? (
               <Settings 
                 settings={moduleSettings} 
-                onBack={() => setShowSettings(false)} 
+                onBack={handleBackFromSettings} 
               />
             ) : (
               <Exercise 
+                key={`exercise-${operationId}-${settingsUpdated}`}
                 settings={moduleSettings} 
                 onOpenSettings={() => setShowSettings(true)} 
               />
