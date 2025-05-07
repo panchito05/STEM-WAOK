@@ -28,6 +28,19 @@ type TranslationKeys = {
   tooltips: {
     activateShowAnswer: string;
   };
+  levelUp: {
+    previousLevel: string;
+    newLevel: string;
+    adaptiveDifficultyEnabled: string;
+    continue: string;
+  };
+  difficulty: {
+    beginner: string;
+    elementary: string;
+    intermediate: string;
+    advanced: string;
+    expert: string;
+  };
   settings: {
     general: string;
     appearance: string;
@@ -74,6 +87,19 @@ export const enTranslations: TranslationKeys = {
   tooltips: {
     activateShowAnswer: "To activate this option, go to Settings",
   },
+  levelUp: {
+    previousLevel: "Previous Level",
+    newLevel: "New Level",
+    adaptiveDifficultyEnabled: "Adaptive difficulty is enabled. Your level will change based on your performance.",
+    continue: "Continue"
+  },
+  difficulty: {
+    beginner: "Beginner",
+    elementary: "Elementary",
+    intermediate: "Intermediate",
+    advanced: "Advanced",
+    expert: "Expert"
+  },
   settings: {
     general: "General Settings",
     appearance: "Appearance Settings",
@@ -119,6 +145,19 @@ export const esTranslations: TranslationKeys = {
   },
   tooltips: {
     activateShowAnswer: "Para activar esta opción, ve a Configuración",
+  },
+  levelUp: {
+    previousLevel: "Nivel Anterior",
+    newLevel: "Nuevo Nivel",
+    adaptiveDifficultyEnabled: "La dificultad adaptativa está activada. Tu nivel cambiará según tu desempeño.",
+    continue: "Continuar"
+  },
+  difficulty: {
+    beginner: "Principiante",
+    elementary: "Elemental",
+    intermediate: "Intermedio",
+    advanced: "Avanzado",
+    expert: "Experto"
   },
   settings: {
     general: "Configuración General",
