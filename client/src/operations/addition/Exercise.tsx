@@ -277,6 +277,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setConsecutiveCorrectAnswers(0); // Reiniciamos el contador de respuestas correctas consecutivas
     setRewardsShownIndices([]); // Reiniciamos el registro de índices donde se mostraron recompensas
     setTotalRewardsShown(0); // Reiniciamos el contador total de recompensas mostradas
+    setWaitingForContinue(false); // Aseguramos que no estamos esperando que el usuario presione "Continuar"
   };
   
   const showAnswerWithExplanation = () => {
@@ -702,17 +703,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // Esperar un momento para mostrar el mensaje de respuesta incorrecta
         setTimeout(() => {
-          // Luego mostrar la respuesta correcta
+          // Luego mostrar la respuesta correcta y el mensaje para continuar
           const correctAnswer = currentProblem.num1 + currentProblem.num2;
-          setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+          setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
           setFeedbackColor("green");
           
-          // Y finalmente avanzar al siguiente problema
-          setTimeout(() => {
-            setFeedbackMessage(null);
-            setFeedbackColor(null);
-            moveToNextProblem();
-          }, 2000); // Mayor tiempo para leer la respuesta correcta
+          // Activamos el estado de espera para el botón "Continuar"
+          setWaitingForContinue(true);
+          
+          // Limpiamos cualquier temporizador activo
+          if (problemTimerRef.current) {
+            clearInterval(problemTimerRef.current);
+            problemTimerRef.current = null;
+          }
         }, 1000);
       } 
       // Si aún no hemos agotado los intentos, permitir intentar de nuevo
@@ -741,6 +744,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setFeedbackColor(null);
       setCurrentAttempts(0); // Reiniciamos el contador de intentos para el nuevo problema
       setProblemTimer(settings.timeValue); // Reiniciamos el temporizador para el nuevo problema
+      setWaitingForContinue(false); // Aseguramos que no estamos esperando que el usuario presione "Continuar"
     } else {
       completeExercise();
     }
@@ -1052,35 +1056,49 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <ChevronLeft className="mr-2 h-4 w-4" />
           {t('common.prev')}
         </Button>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                disabled={!settings.showAnswerWithExplanation}
-                onClick={showAnswerWithExplanation}
-              >
-                <Info className="mr-2 h-4 w-4" />
-                {t('exercises.showAnswer')}
-              </Button>
-            </TooltipTrigger>
-            {!settings.showAnswerWithExplanation ? (
-              <TooltipContent>
-                <p>{t('tooltips.activateShowAnswer')}</p>
-              </TooltipContent>
-            ) : null}
-          </Tooltip>
-        </TooltipProvider>
-        <Button onClick={checkCurrentAnswer}>
-          {exerciseStarted ? (
-            <>
-              {t('exercises.check')}
-              <Check className="ml-2 h-4 w-4" />
-            </>
-          ) : (
-            t('exercises.start')
-          )}
-        </Button>
+        
+        {/* Si estamos esperando que el usuario presione "Continuar", mostrar ese botón */}
+        {waitingForContinue ? (
+          <Button 
+            onClick={handleContinue}
+            className="px-8 animate-pulse" // Hacemos el botón un poco más ancho y pulsante para llamar la atención
+          >
+            Continuar
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        ) : (
+          <>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    disabled={!settings.showAnswerWithExplanation}
+                    onClick={showAnswerWithExplanation}
+                  >
+                    <Info className="mr-2 h-4 w-4" />
+                    {t('exercises.showAnswer')}
+                  </Button>
+                </TooltipTrigger>
+                {!settings.showAnswerWithExplanation ? (
+                  <TooltipContent>
+                    <p>{t('tooltips.activateShowAnswer')}</p>
+                  </TooltipContent>
+                ) : null}
+              </Tooltip>
+            </TooltipProvider>
+            <Button onClick={checkCurrentAnswer}>
+              {exerciseStarted ? (
+                <>
+                  {t('exercises.check')}
+                  <Check className="ml-2 h-4 w-4" />
+                </>
+              ) : (
+                t('exercises.start')
+              )}
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
