@@ -2,6 +2,9 @@ import { useSettings } from "@/context/SettingsContext";
 import { translations, SupportedLanguage } from "@/utils/translations";
 import { useCallback } from "react";
 
+// Proporcionar traducciones fallback para tests y desarrollo
+const FALLBACK_LANGUAGE: SupportedLanguage = "en";
+
 // Hook para obtener traducciones basadas en el idioma seleccionado
 export function useTranslations() {
   const { globalSettings } = useSettings();
@@ -10,7 +13,7 @@ export function useTranslations() {
   // Si no, por defecto usar inglés
   const language = (globalSettings.language as SupportedLanguage) in translations 
     ? (globalSettings.language as SupportedLanguage) 
-    : "en";
+    : FALLBACK_LANGUAGE;
   
   // Función para obtener una traducción usando una clave compuesta (por ejemplo "exercises.start")
   const t = useCallback((key: string) => {

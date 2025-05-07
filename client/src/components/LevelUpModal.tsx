@@ -2,7 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import confetti from 'canvas-confetti';
-import { useTranslations } from '@/hooks/use-translations';
+// Importar traducciones directamente para evitar problemas de contexto
+import { translations } from '@/utils/translations';
 
 interface LevelUpModalProps {
   isOpen: boolean;
@@ -21,16 +22,39 @@ const LevelUpModal: React.FC<LevelUpModalProps> = ({
   newLevel,
   onClose
 }) => {
-  const { t } = useTranslations();
   const hasPlayedAnimation = useRef(false);
+  
+  // Usar español directamente - podríamos mejorarlo después
+  const lang = 'es';
+  
+  // Función para obtener traducción simple
+  const t = (key: string): string => {
+    const parts = key.split('.');
+    let result: any = translations[lang];
+    
+    for (const part of parts) {
+      if (result && result[part]) {
+        result = result[part];
+      } else {
+        // Intentar en inglés como fallback
+        let fallback: any = translations['en'];
+        for (const p of parts) {
+          if (fallback && fallback[p]) {
+            fallback = fallback[p];
+          } else {
+            return key;
+          }
+        }
+        return typeof fallback === 'string' ? fallback : key;
+      }
+    }
+    
+    return typeof result === 'string' ? result : key;
+  };
   
   // Función para disparar la animación de confeti
   const triggerConfetti = () => {
     if (typeof window === 'undefined' || !confetti) return;
-    
-    // Crear efecto de explosión de confeti desde el centro
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
     
     // Explosión principal (centro)
     confetti({

@@ -17,6 +17,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext"; 
 import { SettingsProvider } from "@/context/SettingsContext";
 import { ProgressProvider } from "@/context/ProgressContext";
+import LevelUpHandler from "@/components/LevelUpHandler";
 
 // Wrap pages that need settings
 const SettingsWrappedOperation = (props: any) => (
@@ -72,10 +73,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Layout>
-          <Router />
-        </Layout>
-        <Toaster />
+        <SettingsProvider>
+          <Layout>
+            <Router />
+          </Layout>
+          <Toaster />
+          <LevelUpHandler />
+        </SettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
