@@ -114,13 +114,15 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const alphabet = language === 'spanish' ? spanishAlphabet : englishAlphabet;
   const currentLetter = alphabet[currentIndex];
   
-  // Quiz mode variables
-  const [quizOptions, setQuizOptions] = useState<Letter[]>([]);
+  // NUEVA SOLUCIÓN: Objeto atómico para las preguntas del quiz
+  interface QuizQuestion {
+    image: string;
+    correctLetter: Letter;
+    options: Letter[];
+  }
+  
+  const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
   const [selectedOption, setSelectedOption] = useState<Letter | null>(null);
-  // SOLUCIÓN OPCIÓN 5: Usar identificadores únicos para cada pregunta
-  const [quizCorrectLetter, setQuizCorrectLetter] = useState<Letter | null>(null);
-  const [currentQuestionId, setCurrentQuestionId] = useState<string>("");
-  const [correctAnswersMap, setCorrectAnswersMap] = useState<Record<string, Letter>>({});
   
   // Matching mode variables
   const [matchingImage, setMatchingImage] = useState<string>('');
@@ -181,13 +183,9 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setAdjacentInputs({ before: '', after: '' });
     setAdjacentResults({ before: false, after: false });
     
-    // SOLUCIÓN OPCIÓN 5: Limpiar registros anteriores cuando cambiamos de ejercicio
+    // Nueva solución: Limpiar el objeto de pregunta actual al cambiar de ejercicio
     if (exerciseType !== 'quiz') {
-      // Al salir del modo quiz, limpiamos el mapa de respuestas para evitar
-      // que crezca demasiado con respuestas antiguas
-      setQuizCorrectLetter(null);
-      setCurrentQuestionId("");
-      setCorrectAnswersMap({});
+      setCurrentQuestion(null);
     }
   };
   
@@ -211,30 +209,15 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Generate quiz options: one correct, three random
   const prepareQuizOptions = () => {
-    // SOLUCIÓN OPCIÓN 5: Usar ID único para cada pregunta
-    // 1. Generamos un ID único para esta pregunta específica
-    const questionId = `quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setCurrentQuestionId(questionId);
+    // NUEVA SOLUCIÓN: Crear un objeto de pregunta atómico
     
-    // 2. Creamos una copia de la letra actual
-    const letterToUse = {...alphabet[currentIndex]};
+    // 1. Creamos una copia de la letra actual
+    const correctLetter = {...alphabet[currentIndex]};
     
-    // 3. Guardamos esta letra en nuestro estado independiente y en el mapa de respuestas
-    setQuizCorrectLetter(letterToUse);
+    // 2. Generamos opciones de respuesta incluyendo la correcta
+    let options = [correctLetter]; 
     
-    // 4. Agregamos esta respuesta al mapa de respuestas correctas con el ID como clave
-    setCorrectAnswersMap(prev => ({
-      ...prev,
-      [questionId]: letterToUse
-    }));
-    
-    console.log("🔑 SOLUCIÓN OPCIÓN 5 - ID de pregunta:", questionId);
-    console.log("🎯 Letra correcta guardada:", letterToUse.uppercase, letterToUse.word, letterToUse.image);
-    
-    // 5. Generamos opciones de respuesta incluyendo la correcta
-    let options = [letterToUse]; 
-    
-    // 6. Añadimos tres letras aleatorias que son diferentes
+    // 3. Añadimos tres letras aleatorias que son diferentes
     while (options.length < 4) {
       const randomIndex = Math.floor(Math.random() * alphabet.length);
       const randomLetter = alphabet[randomIndex];
@@ -245,8 +228,22 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     }
     
-    // 7. Barajamos las opciones para que la correcta no siempre esté en la misma posición
-    setQuizOptions(shuffleArray(options));
+    // 4. Barajamos las opciones para que la correcta no siempre esté en la misma posición
+    const shuffledOptions = shuffleArray(options);
+    
+    // 5. Creamos el objeto de pregunta atómico
+    const newQuestion: QuizQuestion = {
+      image: correctLetter.image,
+      correctLetter: correctLetter,
+      options: shuffledOptions
+    };
+    
+    // 6. Guardamos el objeto completo en el estado
+    setCurrentQuestion(newQuestion);
+    
+    console.log("✅ NUEVA SOLUCIÓN - Pregunta creada:", correctLetter.uppercase, correctLetter.word);
+    console.log("📝 Imagen:", correctLetter.image);
+    console.log("🎲 Opciones generadas:", shuffledOptions.map(o => o.uppercase).join(", "));
   };
   
   // Generate matching options: correct letter + 7 random ones
@@ -332,18 +329,15 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         playSound(`${currentLetter.uppercase}. ${currentLetter.word}`);
         break;
       case 'quiz':
-        // SOLUCIÓN OPCIÓN 5: Usar el mapa de respuestas correctas con ID
-        const correctLetter = correctAnswersMap[currentQuestionId];
-        
-        if (correctLetter) {
-          setSelectedOption(correctLetter);
+        // NUEVA SOLUCIÓN: Usar el objeto atómico de pregunta
+        if (currentQuestion) {
+          setSelectedOption(currentQuestion.correctLetter);
           setShowDetails(true);
-          playSound(`${correctLetter.uppercase} is for ${correctLetter.word}`);
+          playSound(`${currentQuestion.correctLetter.uppercase} is for ${currentQuestion.correctLetter.word}`);
           
-          console.log("🔑 Mostrando respuesta para ID:", currentQuestionId);
-          console.log("📝 Respuesta correcta:", correctLetter.uppercase, correctLetter.word);
+          console.log("📝 Mostrando respuesta:", currentQuestion.correctLetter.uppercase, currentQuestion.correctLetter.word);
         } else {
-          console.error("No hay respuesta correcta definida para esta pregunta (ID:", currentQuestionId, ")");
+          console.error("No hay pregunta actual definida para mostrar la respuesta");
         }
         break;
       case 'matching':
@@ -386,22 +380,18 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleQuizOptionSelect = (letter: Letter) => {
     setSelectedOption(letter);
     
-    // SOLUCIÓN OPCIÓN 5: Usar mapa de respuestas correctas con ID único
-    // Obtenemos la respuesta correcta del mapa usando el ID de la pregunta actual
-    const correctLetter = correctAnswersMap[currentQuestionId];
-    
-    if (!correctLetter) {
-      console.error("Error: No hay respuesta correcta definida para esta pregunta (ID:", currentQuestionId, ")");
+    // NUEVA SOLUCIÓN: Usar el objeto atómico de pregunta
+    if (!currentQuestion) {
+      console.error("Error: No hay pregunta actual definida");
       return;
     }
     
     // Comparación por ID de letra, que es único para cada letra del alfabeto
-    const isAnswerCorrect = letter.id === correctLetter.id;
+    const isAnswerCorrect = letter.id === currentQuestion.correctLetter.id;
     
     // Logging detallado para depuración
-    console.log("🔑 ID de pregunta actual:", currentQuestionId);
     console.log("👆 Usuario seleccionó:", letter.uppercase, letter.word);
-    console.log("✓ Respuesta correcta del mapa:", correctLetter.uppercase, correctLetter.word);
+    console.log("✓ Respuesta correcta:", currentQuestion.correctLetter.uppercase, currentQuestion.correctLetter.word);
     console.log("✅ ¿Es correcta?:", isAnswerCorrect);
     
     setIsCorrect(isAnswerCorrect);
@@ -412,7 +402,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (isAnswerCorrect) {
       playSound("Correct! Good job!");
     } else {
-      playSound(`Incorrect. The letter is ${correctLetter.uppercase} for ${correctLetter.word}`);
+      playSound(`Incorrect. The letter is ${currentQuestion.correctLetter.uppercase} for ${currentQuestion.correctLetter.word}`);
     }
   };
   
