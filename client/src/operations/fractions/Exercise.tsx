@@ -782,7 +782,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <p className="mb-1">
                 {currentProblem.fraction1.numerator}/{currentProblem.fraction1.denominator} + {currentProblem.fraction2.numerator}/{currentProblem.fraction2.denominator}
               </p>
-              <p>La respuesta simplificada es {currentProblem.answer.numerator}/{currentProblem.answer.denominator}</p>
+              <p>La respuesta simplificada es {currentProblem.correctAnswer.numerator}/{currentProblem.correctAnswer.denominator}</p>
             </div>
           )}
           {currentProblem.type === "subtraction" && (
@@ -791,7 +791,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <p className="mb-1">
                 {currentProblem.fraction1.numerator}/{currentProblem.fraction1.denominator} - {currentProblem.fraction2.numerator}/{currentProblem.fraction2.denominator}
               </p>
-              <p>La respuesta simplificada es {currentProblem.answer.numerator}/{currentProblem.answer.denominator}</p>
+              <p>La respuesta simplificada es {currentProblem.correctAnswer.numerator}/{currentProblem.correctAnswer.denominator}</p>
             </div>
           )}
         </div>

@@ -48,33 +48,19 @@ export default function DifficultyExamples({
       advanced: ["1247 + 3568 = ?", "5934 + 8742 = ?"],
       expert: ["70960 + 11650 = ?", "28730 + 59436 = ?"]
     },
-    subtraction: {
-      beginner: ["9 - 4 = ?", "7 - 3 = ?"],
-      elementary: ["15 - 8 = ?", "24 - 17 = ?"],
-      intermediate: ["156 - 89 = ?", "342 - 164 = ?"],
-      advanced: ["5467 - 3982 = ?", "7000 - 3456 = ?"],
-      expert: ["80540 - 25763 = ?", "100000 - 45678 = ?"]
-    },
-    multiplication: {
-      beginner: ["2 × 3 = ?", "5 × 4 = ?"],
-      elementary: ["6 × 7 = ?", "9 × 8 = ?"],
-      intermediate: ["12 × 15 = ?", "23 × 18 = ?"],
-      advanced: ["34 × 57 = ?", "125 × 43 = ?"],
-      expert: ["347 × 256 = ?", "589 × 742 = ?"]
-    },
-    division: {
-      beginner: ["6 ÷ 2 = ?", "8 ÷ 4 = ?"],
-      elementary: ["15 ÷ 3 = ?", "24 ÷ 6 = ?"],
-      intermediate: ["72 ÷ 9 = ?", "125 ÷ 5 = ?"],
-      advanced: ["196 ÷ 14 = ?", "374 ÷ 11 = ?"],
-      expert: ["2856 ÷ 24 = ?", "9317 ÷ 37 = ?"]
-    },
     fractions: {
       beginner: ["1/4 + 2/4 = ?", "3/5 - 1/5 = ?"],
       elementary: ["2/3 + 1/6 = ?", "3/4 - 1/8 = ?"],
       intermediate: ["2/5 + 3/8 = ?", "4/7 compared to 5/9"],
       advanced: ["2 3/4 + 1 5/6 = ?", "3 1/3 - 1 2/5 = ?"],
       expert: ["5 2/3 ÷ 2 1/2 = ?", "3 3/4 × 2 2/5 = ?"]
+    },
+    counting: {
+      beginner: ["Count to 5", "Count by 1s to 10"],
+      elementary: ["Count by 2s to 20", "Count by 5s to 50"],
+      intermediate: ["Count by 10s to 100", "Count from 15 to 30"],
+      advanced: ["Count backwards from 30", "Count by 3s to 30"],
+      expert: ["Count by 25s to 200", "Count backwards by 10s from 100"]
     }
   };
 
