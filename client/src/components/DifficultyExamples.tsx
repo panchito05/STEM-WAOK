@@ -39,7 +39,7 @@ export default function DifficultyExamples({
   activeDifficulty?: string;
   onSelectDifficulty?: (difficulty: string) => void;
 }) {
-  // Ejemplos específicos para diferentes operaciones
+  // Ejemplos específicos para diferentes operaciones (coinciden exactamente con utils.ts)
   const examples = {
     addition: {
       beginner: ["1 + 8 = ?", "7 + 5 = ?"],

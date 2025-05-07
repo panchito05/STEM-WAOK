@@ -88,19 +88,19 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           
           <div className="mt-2 mb-4">
             <p className="text-sm text-gray-500">
-              <span className="font-medium">Beginner:</span> Single-digit addition (1+1 to 9+9)
+              <span className="font-medium">Beginner:</span> Sumas con dígitos simples (1+8, 7+5)
             </p>
             <p className="text-sm text-gray-500">
-              <span className="font-medium">Elementary:</span> Two-digit + single-digit, no carrying (21+3, 45+4)
+              <span className="font-medium">Elementary:</span> Sumas de números de dos dígitos (12+15, 24+13)
             </p>
             <p className="text-sm text-gray-500">
-              <span className="font-medium">Intermediate:</span> Two-digit + two-digit, no carrying (21+34, 45+54)
+              <span className="font-medium">Intermediate:</span> Sumas con números grandes (65+309, 392+132)
             </p>
             <p className="text-sm text-gray-500">
-              <span className="font-medium">Advanced:</span> Two-digit + two-digit with carrying (27+85, 38+67)
+              <span className="font-medium">Advanced:</span> Sumas de números de 4 dígitos (1247+3568, 5934+8742)
             </p>
             <p className="text-sm text-gray-500">
-              <span className="font-medium">Expert:</span> Three-digit addition with carrying (238+347, 581+629)
+              <span className="font-medium">Expert:</span> Sumas con números muy grandes (70960+11650, 28730+59436)
             </p>
           </div>
         </div>
