@@ -719,80 +719,95 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <Label htmlFor="before-letter" className="mb-2 block">
               {language === 'spanish' ? 'Antes' : 'Before'}
             </Label>
-            <div className="flex gap-2">
-              <Input
-                id="before-letter"
-                value={adjacentLetterInputs.before}
-                onChange={(e) => 
-                  setAdjacentLetterInputs(prev => ({...prev, before: e.target.value.toUpperCase()}))
-                }
-                className="text-center text-xl"
-                maxLength={1}
-                placeholder="?"
-              />
-              <Button
-                variant={adjacentCorrect.before ? "default" : "outline"}
-                size="icon"
-                onClick={() => {
-                  const isCorrect = adjacentLetterInputs.before === prevLetter;
-                  setAdjacentCorrect(prev => ({...prev, before: isCorrect}));
-                  
-                  if (isCorrect && settings.enableSoundEffects) {
-                    playSound("Correct!");
-                  }
-                }}
-                disabled={!adjacentLetterInputs.before || adjacentCorrect.before}
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-            </div>
+            <Input
+              id="before-letter"
+              value={adjacentLetterInputs.before}
+              onChange={(e) => 
+                setAdjacentLetterInputs(prev => ({...prev, before: e.target.value.toUpperCase()}))
+              }
+              className={`text-center text-xl ${adjacentCorrect.before ? "border-green-500" : ""}`}
+              maxLength={1}
+              placeholder="?"
+            />
           </div>
           
           <div>
             <Label htmlFor="after-letter" className="mb-2 block">
               {language === 'spanish' ? 'Después' : 'After'}
             </Label>
-            <div className="flex gap-2">
-              <Input
-                id="after-letter"
-                value={adjacentLetterInputs.after}
-                onChange={(e) => 
-                  setAdjacentLetterInputs(prev => ({...prev, after: e.target.value.toUpperCase()}))
-                }
-                className="text-center text-xl"
-                maxLength={1}
-                placeholder="?"
-              />
-              <Button
-                variant={adjacentCorrect.after ? "default" : "outline"}
-                size="icon"
-                onClick={() => {
-                  const isCorrect = adjacentLetterInputs.after === nextLetter;
-                  setAdjacentCorrect(prev => ({...prev, after: isCorrect}));
-                  
-                  if (isCorrect && settings.enableSoundEffects) {
-                    playSound("Correct!");
-                  }
-                }}
-                disabled={!adjacentLetterInputs.after || adjacentCorrect.after}
-              >
-                <Check className="h-4 w-4" />
-              </Button>
-            </div>
+            <Input
+              id="after-letter"
+              value={adjacentLetterInputs.after}
+              onChange={(e) => 
+                setAdjacentLetterInputs(prev => ({...prev, after: e.target.value.toUpperCase()}))
+              }
+              className={`text-center text-xl ${adjacentCorrect.after ? "border-green-500" : ""}`}
+              maxLength={1}
+              placeholder="?"
+            />
           </div>
         </div>
         
-        <Button 
-          variant="outline"
-          onClick={showAdjacentAnswers}
-          className="mb-4"
-          disabled={adjacentCorrect.before && adjacentCorrect.after}
-        >
-          <EyeIcon className="mr-2 h-4 w-4" />
-          {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
-        </Button>
+        <div className="flex gap-3 mt-4 mb-4">
+          {!waitingForContinue ? (
+            <>
+              <Button 
+                onClick={checkAnswer}
+                className="min-w-[150px] bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Check className="mr-2 h-4 w-4" />
+                {language === 'spanish' ? 'Verificar Respuesta' : 'Check Answer'}
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={showAdjacentAnswers}
+                disabled={adjacentCorrect.before && adjacentCorrect.after}
+              >
+                <EyeIcon className="mr-2 h-4 w-4" />
+                {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+              </Button>
+            </>
+          ) : (
+            <Button 
+              className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white 
+                        flex justify-between items-center relative" 
+              onClick={handleContinue}
+            >
+              <div className="flex justify-between items-center w-full">
+                <span className="ml-5">
+                  {language === 'spanish' ? 'Continuar' : 'Continue'}
+                </span>
+                
+                <div className="flex items-center">
+                  <div className="flex items-center bg-black/40 rounded px-2 py-1 h-[28px] mr-1">
+                    <Checkbox 
+                      id="adjacent-auto-continue" 
+                      checked={autoContinue}
+                      className="border-white" 
+                      onCheckedChange={(checked) => {
+                        setAutoContinue(checked === true);
+                      }}
+                      onClick={(e) => e.stopPropagation()} 
+                    />
+                    <label
+                      htmlFor="adjacent-auto-continue"
+                      className="text-xs font-medium leading-none text-white ml-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAutoContinue(!autoContinue);
+                      }}
+                    >
+                      Auto
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </Button>
+          )}
+        </div>
         
-        {adjacentCorrect.before && adjacentCorrect.after && (
+        {adjacentCorrect.before && adjacentCorrect.after && !waitingForContinue && (
           <div className="mt-4 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium mb-2">
               {language === 'spanish' ? '¡Excelente trabajo!' : 'Excellent work!'}
