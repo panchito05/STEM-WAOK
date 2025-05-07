@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ModuleSettings } from "@/context/SettingsContext";
 import { useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
@@ -21,14 +21,22 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
+  // Guardar automáticamente cada vez que cambia un ajuste
   const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
-    setLocalSettings((prev) => ({ ...prev, [key]: value }));
+    const updatedSettings = { ...localSettings, [key]: value };
+    setLocalSettings(updatedSettings);
+    // Guardar automáticamente cuando cambia cualquier configuración
+    updateModuleSettings("addition", updatedSettings);
+    console.log(`[ADDITION] Guardando configuración:`, updatedSettings);
   };
-
-  const handleSaveSettings = async () => {
-    await updateModuleSettings("addition", localSettings);
-    onBack();
-  };
+  
+  // Para poder navegar entre la configuración y el ejercicio sin perder cambios
+  useEffect(() => {
+    // Guardar la configuración cuando se cierra/vuelve atrás
+    return () => {
+      updateModuleSettings("addition", localSettings);
+    };
+  }, [localSettings, updateModuleSettings]);
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {
@@ -339,9 +347,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 </>
               )}
             </Button>
-            <Button type="button" onClick={handleSaveSettings}>
-              Save Settings
-            </Button>
+            {/* Botón de guardar eliminado - los cambios se guardan automáticamente */}
           </div>
         </div>
       </div>
