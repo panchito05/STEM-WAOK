@@ -28,7 +28,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
       debounce((settings: ModuleSettings) => {
         updateModuleSettings("addition", settings);
         console.log(`[ADDITION] Guardando configuración (debounced):`, settings);
-      }, 1000), // 1 segundo de espera antes de guardar
+      }, 2000), // 2 segundos de espera antes de guardar para reducir peticiones
     [updateModuleSettings]
   );
   
@@ -41,12 +41,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   };
   
   // Para poder navegar entre la configuración y el ejercicio sin perder cambios
-  useEffect(() => {
-    // Guardar la configuración cuando se cierra/vuelve atrás
-    return () => {
-      updateModuleSettings("addition", localSettings);
-    };
-  }, [localSettings, updateModuleSettings]);
+  // Eliminamos el efecto de guardar al desmontar para evitar doble guardado con debouncedSave
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {

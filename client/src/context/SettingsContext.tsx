@@ -198,17 +198,26 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       [moduleId]: updatedSettings,
     }));
     
+    // Sólo intentar guardar en el servidor si el usuario está autenticado
+    // y evitar peticiones innecesarias
     if (isAuthenticated) {
       try {
         await apiRequest("PUT", `/api/settings/module/${moduleId}`, updatedSettings);
       } catch (error) {
-        toast({
-          title: "Failed to Save Module Settings",
-          description: "Your settings will only be saved locally",
-          variant: "destructive",
-        });
+        // Solo mostrar una notificación si hay un error real (no error de autenticación)
+        if (error instanceof Error && !error.message.includes("401")) {
+          toast({
+            title: "Failed to Save Module Settings",
+            description: "Your settings will only be saved locally",
+            variant: "destructive",
+          });
+        }
         console.error(`Error saving settings for module ${moduleId}:`, error);
       }
+    } else {
+      // Si no está autenticado, simplemente guardar en localStorage
+      // y no intentar hacer peticiones al servidor
+      console.log(`User not authenticated, saving settings for ${moduleId} locally only`);
     }
   };
 
