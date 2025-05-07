@@ -54,9 +54,10 @@ interface ImageToLetterExercise {
 
 // Este componente implementa el módulo Alphabet Journey pero con una arquitectura interna diferente
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
-  // Referencias para audio y recompensas
+  // Referencias para audio, recompensas y seguimiento de dificultad
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const rewardTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prevDifficultyRef = useRef<string>(settings.difficulty);
   
   // Estados de la aplicación
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -279,24 +280,54 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const getAlphabetSubset = () => {
     const alphabet = getAlphabet();
     
+    // Registra cambio de dificultad en consola para depuración
+    if (prevDifficultyRef.current !== settings.difficulty) {
+      console.log(`[ALPHABET2] Cambiando dificultad de ${prevDifficultyRef.current} a ${settings.difficulty}`);
+      prevDifficultyRef.current = settings.difficulty;
+      
+      // Resetear el índice cuando cambia la dificultad para empezar desde el principio
+      setCurrentIndex(0);
+      
+      // Resetear los contadores
+      setCorrectAnswers(0);
+      setIncorrectAnswers(0);
+      setConsecutiveCorrectAnswers(0);
+    }
+    
     switch (settings.difficulty) {
       case 'beginner':
-        return alphabet.slice(0, 5); // A-E
+        // Nivel principiante: Solo primeras 5 letras (A-E)
+        // Este nivel es para usuarios que están empezando a aprender el alfabeto
+        return alphabet.slice(0, 5);
+        
       case 'elementary':
-        return alphabet.slice(0, 10); // A-J
+        // Nivel elemental: Primeras 10 letras (A-J)
+        // Un paso adelante del nivel principiante, incorpora más letras
+        return alphabet.slice(0, 10);
+        
       case 'intermediate':
-        return alphabet.slice(0, 15); // A-Ñ (o A-O en inglés)
+        // Nivel intermedio: Primeras 15 letras (A-O/Ñ)
+        // Para estudiantes que ya dominan la primera mitad del alfabeto
+        return alphabet.slice(0, 15);
+        
       case 'advanced':
-        return alphabet.slice(0, 21); // A-U
+        // Nivel avanzado: Primeras 21 letras (A-U)
+        // Incluye letras menos comunes y más desafiantes
+        return alphabet.slice(0, 21);
+        
       case 'expert':
-        // En modo experto, después de 10 respuestas correctas, mezclamos todo el alfabeto
+        // Nivel experto: Alfabeto completo con desafío adicional
         if (correctAnswers >= 10) {
-          // Esta implementación es diferente del módulo original
+          // Después de 10 respuestas correctas, mezclamos el alfabeto para mayor desafío
+          // También incluimos combinaciones más difíciles y todas las letras
           const shuffled = [...alphabet].sort(() => Math.random() - 0.5);
           return shuffled;
         }
-        return alphabet; // Alfabeto completo
+        // Alfabeto completo en orden normal para las primeras 10 preguntas
+        return alphabet;
+        
       default:
+        // Por defecto, usar configuración de principiante
         return alphabet.slice(0, 5);
     }
   };
