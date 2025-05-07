@@ -195,6 +195,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Generate quiz options: one correct, three random
   const prepareQuizOptions = () => {
     // Start with the correct answer
+    // NOTE: Se utiliza el currentLetter directamente, que corresponde a la letra mostrada
     let options = [currentLetter];
     
     // Add three random letters that are different from current
@@ -338,6 +339,9 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Quiz option selection
   const handleQuizOptionSelect = (letter: Letter) => {
     setSelectedOption(letter);
+    
+    // La respuesta correcta DEBE ser la letra actual que se muestra
+    // y debe corresponder con la imagen mostrada
     const isAnswerCorrect = letter.id === currentLetter.id;
     setIsCorrect(isAnswerCorrect);
     setShowDetails(true);
@@ -634,10 +638,12 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       <div className="text-2xl font-medium mb-4">
         {t('whichLetterMakesThisSound')}
       </div>
+      {/* Esta es la imagen que debe corresponder exactamente a la letra actual */}
       <div className="text-6xl mb-6">{currentLetter.image}</div>
       
       <div className="grid grid-cols-2 gap-4">
         {quizOptions.map((option) => {
+          // Esta comparación debe hacer match con la letra actual y su imagen
           const isThisCorrect = option.id === currentLetter.id;
           const isSelected = selectedOption?.id === option.id;
           
