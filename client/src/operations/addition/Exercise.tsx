@@ -1247,6 +1247,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </span>
           )}
           
+          {/* Mostrar el nivel de dificultad actual */}
+          <div className="mr-4 flex items-center gap-2">
+            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+              Nivel: {settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
+            </span>
+            {consecutiveCorrectAnswers >= 5 && (
+              <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                🔥 Racha: {consecutiveCorrectAnswers}
+              </span>
+            )}
+          </div>
+          
           <Button
             variant="outline"
             size="sm"
