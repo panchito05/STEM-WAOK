@@ -235,7 +235,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       case 'intermediate':
         setExerciseMode('image_to_letter');
-        generateImageToLetterExercise(currentLetter);
+        const exerciseIntermediate = generateImageToLetterExercise(currentLetter);
         break;
       
       case 'advanced':
@@ -253,10 +253,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Modo alternado para otros niveles
         if (currentIndex % 2 === 0) {
           setExerciseMode('letter_to_image');
-          generateLetterToImageExercise(currentLetter);
+          const exerciseDefault = generateLetterToImageExercise(currentLetter);
         } else {
           setExerciseMode('image_to_letter');
-          generateImageToLetterExercise(currentLetter);
+          const exerciseDefault = generateImageToLetterExercise(currentLetter);
         }
         break;
     }
