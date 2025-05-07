@@ -143,7 +143,11 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                             type="radio"
                             value="beginner"
                             checked={form.watch("difficulty") === "beginner"}
-                            onChange={() => form.setValue("difficulty", "beginner")}
+                            onChange={() => {
+                              form.setValue("difficulty", "beginner");
+                              // Guardar automáticamente al cambiar el nivel
+                              onSubmit(form.getValues());
+                            }}
                             className="w-4 h-4 text-blue-600"
                           />
                           <span>Beginner</span>
@@ -153,7 +157,11 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                             type="radio"
                             value="elementary"
                             checked={form.watch("difficulty") === "elementary"}
-                            onChange={() => form.setValue("difficulty", "elementary")}
+                            onChange={() => {
+                              form.setValue("difficulty", "elementary");
+                              // Guardar automáticamente al cambiar el nivel
+                              onSubmit(form.getValues());
+                            }}
                             className="w-4 h-4 text-blue-600"
                           />
                           <span>Elementary</span>
@@ -163,7 +171,11 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                             type="radio"
                             value="intermediate"
                             checked={form.watch("difficulty") === "intermediate"}
-                            onChange={() => form.setValue("difficulty", "intermediate")}
+                            onChange={() => {
+                              form.setValue("difficulty", "intermediate");
+                              // Guardar automáticamente al cambiar el nivel
+                              onSubmit(form.getValues());
+                            }}
                             className="w-4 h-4 text-blue-600"
                           />
                           <span>Intermediate</span>
@@ -173,7 +185,11 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                             type="radio"
                             value="advanced"
                             checked={form.watch("difficulty") === "advanced"}
-                            onChange={() => form.setValue("difficulty", "advanced")}
+                            onChange={() => {
+                              form.setValue("difficulty", "advanced");
+                              // Guardar automáticamente al cambiar el nivel
+                              onSubmit(form.getValues());
+                            }}
                             className="w-4 h-4 text-blue-600"
                           />
                           <span>Advanced</span>
@@ -183,7 +199,11 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                             type="radio"
                             value="expert"
                             checked={form.watch("difficulty") === "expert"}
-                            onChange={() => form.setValue("difficulty", "expert")}
+                            onChange={() => {
+                              form.setValue("difficulty", "expert");
+                              // Guardar automáticamente al cambiar el nivel
+                              onSubmit(form.getValues());
+                            }}
                             className="w-4 h-4 text-blue-600"
                           />
                           <span>Expert</span>
@@ -367,19 +387,12 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   >
                     Restablecer valores predeterminados
                   </Button>
-                  <div className="space-x-2">
+                  <div>
                     <Button 
                       type="button" 
-                      variant="outline" 
                       onClick={onBack}
                     >
-                      Cancelar
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      disabled={isSaving}
-                    >
-                      {isSaving ? 'Guardando...' : 'Guardar cambios'}
+                      Volver al ejercicio
                     </Button>
                   </div>
                 </div>
