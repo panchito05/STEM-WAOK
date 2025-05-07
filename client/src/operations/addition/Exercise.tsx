@@ -1163,15 +1163,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       </div>
     );
   }
+  
+  // Añadimos el componente LevelUpHandler fuera de los condicionales
+  // para que siempre esté disponible para escuchar eventos de nivel superado
+  // Nota: Este componente es "invisible" hasta que se dispara un evento de nivel superado
 
   if (exerciseCompleted) {
     return (
       <div className="px-4 py-5 sm:p-6">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Exercise Completed!</h2>
-          <p className="text-gray-600">Your score: {score}/{problems.length}</p>
-          <p className="text-gray-600">Time taken: {formatTime(timer)}</p>
-        </div>
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Exercise Completed!</h2>
+            <p className="text-gray-600">Your score: {score}/{problems.length}</p>
+            <p className="text-gray-600">Time taken: {formatTime(timer)}</p>
+          </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -1212,8 +1216,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }
 
   return (
-    <div className="px-4 py-5 sm:p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="relative">
+      <LevelUpHandler />
+      <div className="px-4 py-5 sm:p-6">
+        <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-900">Addition Exercise</h2>
           <p className="text-sm text-gray-500">Solve the following addition problems</p>
@@ -1528,6 +1534,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </>
         )}
       </div>
+    </div>
     </div>
   );
 }

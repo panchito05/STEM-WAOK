@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Trophy } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import confetti from 'canvas-confetti';
+import { useTranslations } from '@/hooks/use-translations';
 
 interface LevelUpModalProps {
   isOpen: boolean;
@@ -14,106 +15,128 @@ interface LevelUpModalProps {
  * Componente independiente que maneja exclusivamente la notificación de subida de nivel
  * Completamente separado de la lógica del ejercicio
  */
-const LevelUpModal: React.FC<LevelUpModalProps> = ({ 
-  isOpen, 
-  previousLevel, 
+const LevelUpModal: React.FC<LevelUpModalProps> = ({
+  isOpen,
+  previousLevel,
   newLevel,
-  onClose 
+  onClose
 }) => {
-  const [showModal, setShowModal] = useState(false);
+  const { t } = useTranslations();
+  const hasPlayedAnimation = useRef(false);
   
-  // Efecto para manejar la animación de entrada
+  // Función para disparar la animación de confeti
+  const triggerConfetti = () => {
+    if (typeof window === 'undefined' || !confetti) return;
+    
+    // Crear efecto de explosión de confeti desde el centro
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    
+    // Explosión principal (centro)
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { x: 0.5, y: 0.5 }
+    });
+    
+    // Explosiones adicionales con retraso (izquierda y derecha)
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 80,
+        origin: { x: 0, y: 0.65 }
+      });
+    }, 250);
+    
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 80,
+        origin: { x: 1, y: 0.65 }
+      });
+    }, 400);
+  };
+  
+  // Ejecutar animación cuando se abre el modal
   useEffect(() => {
-    if (isOpen) {
-      setShowModal(true);
-      
-      // Lanzar confetti cuando se muestra el modal
-      const duration = 3000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
-
-      const interval: NodeJS.Timeout = setInterval(() => {
-        const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
-        const particleCount = 50 * (timeLeft / duration);
-        
-        // Lanzar confetti desde diferentes ángulos
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
-        });
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
-        });
-      }, 250);
-      
-      return () => clearInterval(interval);
+    if (isOpen && !hasPlayedAnimation.current) {
+      triggerConfetti();
+      hasPlayedAnimation.current = true;
+    }
+    
+    if (!isOpen) {
+      hasPlayedAnimation.current = false;
     }
   }, [isOpen]);
-
-  // Manejar el cierre del modal
-  const handleClose = () => {
-    setShowModal(false);
-    // Pequeño retraso para permitir la animación de salida
-    setTimeout(() => {
-      onClose();
-    }, 300);
+  
+  // Obtener la traducción del nivel actual y anterior
+  const getPreviousLevelName = () => {
+    const levelKey = `difficulty.${previousLevel}`;
+    return t(levelKey) || previousLevel;
   };
-
-  // Si no está abierto, no renderizar nada
-  if (!isOpen) return null;
-
+  
+  const getNewLevelName = () => {
+    const levelKey = `difficulty.${newLevel}`;
+    return t(levelKey) || newLevel;
+  };
+  
   return (
-    <div 
-      className={`fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 transition-opacity duration-300 ${
-        showModal ? 'opacity-100' : 'opacity-0'
-      }`}
-      onClick={(e) => {
-        // Solo cerrar si se hace clic fuera del modal
-        if (e.target === e.currentTarget) {
-          handleClose();
-        }
-      }}
-    >
-      <div 
-        className={`bg-blue-100 rounded-3xl p-8 shadow-2xl text-center transform transition-all duration-300 max-w-md w-full border-4 border-indigo-300 ${
-          showModal ? 'scale-100' : 'scale-95'
-        }`}
-      >
-        <h3 className="text-5xl font-bold text-indigo-600 mb-6">¡NIVEL SUPERADO!</h3>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) onClose();
+    }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-center">
+            ¡NIVEL SUPERADO!
+          </DialogTitle>
+        </DialogHeader>
         
-        <div className="flex justify-center mb-6">
-          <Trophy 
-            className="h-32 w-32 text-indigo-500 drop-shadow-xl animate-bounce" 
-            fill="#818cf8"
-            strokeWidth={1}
-          />
+        <div className="flex flex-col items-center justify-center py-6 space-y-6">
+          <div className="text-center">
+            <p className="text-lg mb-4">
+              ¡Has completado 10 respuestas correctas consecutivas y has avanzado de nivel!
+            </p>
+            
+            <div className="flex items-center justify-center space-x-3 mt-6">
+              <div className="text-center p-3 border rounded bg-gray-100 opacity-60">
+                <p className="text-sm uppercase font-semibold text-gray-500">
+                  {t('levelUp.previousLevel')}
+                </p>
+                <p className="text-xl font-bold">
+                  {getPreviousLevelName()}
+                </p>
+              </div>
+              
+              <div className="text-4xl font-bold text-green-500">→</div>
+              
+              <div className="text-center p-3 border-2 border-green-500 rounded bg-green-50 shadow-md transform scale-110">
+                <p className="text-sm uppercase font-semibold text-green-600">
+                  {t('levelUp.newLevel')}
+                </p>
+                <p className="text-xl font-bold">
+                  {getNewLevelName()}
+                </p>
+              </div>
+            </div>
+            
+            <p className="mt-6 text-sm text-gray-600">
+              {t('levelUp.adaptiveDifficultyEnabled')}
+            </p>
+          </div>
         </div>
-   
-        <p className="text-2xl font-medium text-indigo-800 mb-2">
-          ¡Has demostrado excelentes habilidades matemáticas!
-        </p>
-        <p className="text-xl font-medium mb-8 text-indigo-700">
-          Has avanzado al siguiente nivel de dificultad
-        </p>
         
-        <Button
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-xl text-xl"
-          onClick={handleClose}
-        >
-          ¡Continuar el Desafío!
-        </Button>
-      </div>
-    </div>
+        <DialogFooter className="sm:justify-center">
+          <Button 
+            onClick={onClose}
+            className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+          >
+            {t('levelUp.continue')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
