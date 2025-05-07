@@ -81,11 +81,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { globalSettings } = useSettings();
   const selectedLanguage = globalSettings.language === 'english' ? 'english' : 'spanish';
   
-  // Símbolos de recompensa según tipo
+  // URLs de imágenes de recompensa según tipo
   const rewardSymbols = {
-    stars: ['⭐', '🌟', '✨'],
-    medals: ['🥉', '🥈', '🥇'],
-    trophies: ['🏆', '🏅', '🎖️']
+    stars: [
+      'https://em-content.zobj.net/thumbs/120/apple/354/star_2b50.png',
+      'https://em-content.zobj.net/thumbs/120/apple/354/glowing-star_1f31f.png',
+      'https://em-content.zobj.net/thumbs/120/apple/354/sparkles_2728.png'
+    ],
+    medals: [
+      'https://em-content.zobj.net/thumbs/120/apple/354/3rd-place-medal_1f949.png',
+      'https://em-content.zobj.net/thumbs/120/apple/354/2nd-place-medal_1f948.png',
+      'https://em-content.zobj.net/thumbs/120/apple/354/1st-place-medal_1f947.png'
+    ],
+    trophies: [
+      'https://em-content.zobj.net/thumbs/120/apple/354/trophy_1f3c6.png',
+      'https://em-content.zobj.net/thumbs/120/apple/354/sports-medal_1f3c5.png',
+      'https://em-content.zobj.net/thumbs/120/apple/354/military-medal_1f396-fe0f.png'
+    ]
   };
   
   // Definimos alfabetos en ambos idiomas con URL de imágenes para garantizar compatibilidad
@@ -564,7 +576,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <span>{letter.word}</span>
             </div>
             <div className="flex items-center">
-              <span className="text-3xl mr-2">{letter.image}</span>
+              <img 
+                src={letter.image} 
+                alt={letter.word} 
+                className="h-8 w-8 object-contain mr-2" 
+                onError={(e) => {
+                  console.error(`Error loading image: ${letter.image}`);
+                  // Fallback: If image fails to load, show the first letter of the word
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  const parentElement = (e.target as HTMLImageElement).parentElement;
+                  if (parentElement) {
+                    const textNode = document.createElement('span');
+                    textNode.className = 'text-3xl font-bold';
+                    textNode.textContent = letter.word.charAt(0);
+                    parentElement.appendChild(textNode);
+                  }
+                }}
+              />
               <span className="text-sm text-gray-500">
                 ({selectedLanguage === 'spanish' ? 'Ejemplo: ' : 'Example: '}{letter.word})
               </span>
@@ -657,7 +685,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <span>{image.word}</span>
             </div>
             <div className="flex items-center">
-              <span className="text-3xl mr-2">{image.image}</span>
+              <img 
+                src={image.image} 
+                alt={image.word} 
+                className="h-8 w-8 object-contain mr-2" 
+                onError={(e) => {
+                  console.error(`Error loading image: ${image.image}`);
+                  // Fallback: If image fails to load, show the first letter of the word
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  const parentElement = (e.target as HTMLImageElement).parentElement;
+                  if (parentElement) {
+                    const textNode = document.createElement('span');
+                    textNode.className = 'text-3xl font-bold';
+                    textNode.textContent = image.word.charAt(0);
+                    parentElement.appendChild(textNode);
+                  }
+                }}
+              />
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -692,8 +736,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (showReward) {
       return (
         <div className="flex flex-col items-center justify-center h-full">
-          <div className="text-9xl mb-6">
-            {rewardSymbols[rewardType][Math.floor(Math.random() * rewardSymbols[rewardType].length)]}
+          <div className="mb-6 flex justify-center">
+            <img 
+              src={rewardSymbols[rewardType][Math.floor(Math.random() * rewardSymbols[rewardType].length)]}
+              alt={selectedLanguage === 'spanish' ? "Premio" : "Reward"}
+              className="h-32 w-32 object-contain"
+              onError={(e) => {
+                console.error("Error loading reward image");
+                // Fallback to text-based symbol if image fails to load
+                (e.target as HTMLImageElement).style.display = 'none';
+                const parentElement = (e.target as HTMLImageElement).parentElement;
+                if (parentElement) {
+                  const textNode = document.createElement('span');
+                  textNode.className = 'text-9xl';
+                  textNode.textContent = rewardType === 'stars' ? '★' : rewardType === 'medals' ? '🥇' : '🏆';
+                  parentElement.appendChild(textNode);
+                }
+              }}
+            />
           </div>
           <h3 className="text-2xl font-bold text-center mb-2">
             {selectedLanguage === 'spanish' ? '¡Muy bien!' : 'Great job!'}
