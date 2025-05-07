@@ -108,9 +108,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
                 setAnswers(prev => [...prev, answer]);
                 
-                // Si está habilitada la compensación, incrementar contador
+                // Si está habilitada la compensación, añadimos un problema adicional inmediatamente
                 if (settings.enableCompensation) {
-                  setIncorrectAnswersCount(prev => prev + 1);
+                  // Añadir un problema adicional de compensación
+                  const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+                  const compensationProblem = generateAdditionProblem(difficultyToUse);
+                  
+                  // Añadimos el problema a la lista actual
+                  const updatedProblems = [...problems];
+                  // Insertar el problema después del problema actual
+                  updatedProblems.splice(currentProblemIndex + 1, 0, compensationProblem);
+                  
+                  console.log("[COMPENSATION] Añadiendo problema de compensación después del índice:", currentProblemIndex);
+                  console.log("[COMPENSATION] Total de problemas ahora:", updatedProblems.length);
+                  
+                  // Actualizamos la lista de problemas
+                  setProblems(updatedProblems);
                 }
                 
                 // Avanzar al siguiente problema después de un breve retraso
@@ -182,8 +195,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setFeedbackColor(null);
     setShowingExplanation(false);
     setShowHelpButton(false); // Reiniciamos el estado del botón de ayuda
-    setIncorrectAnswersCount(0); // Reiniciamos el contador de respuestas incorrectas
-    setRevealedAnswersCount(0); // Reiniciamos el contador de respuestas reveladas
+    // Ya no utilizamos estos contadores
+    // setIncorrectAnswersCount(0); 
+    // setRevealedAnswersCount(0);
     setAdaptiveDifficulty(settings.difficulty); // Reiniciamos la dificultad adaptativa
     setCurrentAttempts(0); // Reiniciamos el contador de intentos actuales
     setConsecutiveCorrectAnswers(0); // Reiniciamos el contador de respuestas correctas consecutivas
