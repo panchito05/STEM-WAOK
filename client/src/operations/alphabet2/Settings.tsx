@@ -96,35 +96,104 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <TabsContent value="general">
                   <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="difficulty"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Dificultad</FormLabel>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona la dificultad" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="beginner">Beginner</SelectItem>
-                              <SelectItem value="elementary">Elementary</SelectItem>
-                              <SelectItem value="intermediate">Intermediate</SelectItem>
-                              <SelectItem value="advanced">Advanced</SelectItem>
-                              <SelectItem value="expert">Expert</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            La dificultad determina qué tipo de ejercicios y desafíos se presentarán.
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
+                    <div>
+                      <h3 className="text-lg font-medium mb-3">Nivel de Dificultad</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            value="beginner"
+                            checked={form.watch("difficulty") === "beginner"}
+                            onChange={() => form.setValue("difficulty", "beginner")}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <span>Beginner</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            value="elementary"
+                            checked={form.watch("difficulty") === "elementary"}
+                            onChange={() => form.setValue("difficulty", "elementary")}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <span>Elementary</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            value="intermediate"
+                            checked={form.watch("difficulty") === "intermediate"}
+                            onChange={() => form.setValue("difficulty", "intermediate")}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <span>Intermediate</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            value="advanced"
+                            checked={form.watch("difficulty") === "advanced"}
+                            onChange={() => form.setValue("difficulty", "advanced")}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <span>Advanced</span>
+                        </label>
+                        <label className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            value="expert"
+                            checked={form.watch("difficulty") === "expert"}
+                            onChange={() => form.setValue("difficulty", "expert")}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <span>Expert</span>
+                        </label>
+                      </div>
+                      
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                        <h4 className="font-semibold mb-3">Ejemplos de Dificultad</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                          <div className={`p-3 rounded-md ${form.watch("difficulty") === "beginner" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
+                            <div className="font-bold mb-2 text-center">Beginner</div>
+                            <div className="text-center">A - E</div>
+                            <div className="text-center font-mono text-sm mt-2">Avión, Barco...</div>
+                          </div>
+                          
+                          <div className={`p-3 rounded-md ${form.watch("difficulty") === "elementary" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
+                            <div className="font-bold mb-2 text-center">Elementary</div>
+                            <div className="text-center">A - J</div>
+                            <div className="text-center font-mono text-sm mt-2">A...Jirafa</div>
+                          </div>
+                          
+                          <div className={`p-3 rounded-md ${form.watch("difficulty") === "intermediate" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
+                            <div className="font-bold mb-2 text-center">Intermediate</div>
+                            <div className="text-center">A - O</div>
+                            <div className="text-center font-mono text-sm mt-2">A...Oso</div>
+                          </div>
+                          
+                          <div className={`p-3 rounded-md ${form.watch("difficulty") === "advanced" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
+                            <div className="font-bold mb-2 text-center">Advanced</div>
+                            <div className="text-center">A - U</div>
+                            <div className="text-center font-mono text-sm mt-2">A...Uva</div>
+                          </div>
+                          
+                          <div className={`p-3 rounded-md ${form.watch("difficulty") === "expert" ? "bg-blue-800 text-white" : "bg-gray-100"}`}>
+                            <div className="font-bold mb-2 text-center">Expert</div>
+                            <div className="text-center">A - Z</div>
+                            <div className="text-center font-mono text-sm mt-2">Alfabeto completo</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-sm text-gray-500 mb-4">
+                        <strong>Beginner:</strong> 5 primeras letras (A-E)<br/>
+                        <strong>Elementary:</strong> 10 primeras letras (A-J)<br/>
+                        <strong>Intermediate:</strong> 15 primeras letras (A-O)<br/>
+                        <strong>Advanced:</strong> 21 primeras letras (A-U)<br/>
+                        <strong>Expert:</strong> Alfabeto completo (A-Z) con desafíos especiales
+                      </div>
+                    </div>
                     
                     <FormField
                       control={form.control}
