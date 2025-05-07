@@ -720,6 +720,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const newConsecutiveIncorrectAnswers = consecutiveIncorrectAnswers + 1;
       setConsecutiveIncorrectAnswers(newConsecutiveIncorrectAnswers);
       
+      // Logging para dificultad adaptativa
+      if (settings.enableAdaptiveDifficulty) {
+        console.log(`[ADAPTIVE DIFFICULTY] ✗ Respuesta incorrecta. Consecutivas: ${newConsecutiveIncorrectAnswers}/${5} necesarias para bajar de nivel`);
+        console.log(`[ADAPTIVE DIFFICULTY] Dificultad actual: ${adaptiveDifficulty}, Habilitada: ${settings.enableAdaptiveDifficulty}`);
+      }
+      
       // Verificar si hemos alcanzado el máximo de intentos permitidos
       const maxAttemptsReached = settings.maxAttempts > 0 && newAttemptCount >= settings.maxAttempts;
       
@@ -759,13 +765,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // Ajustar dificultad adaptativamente si está habilitada esa opción
         if (settings.enableAdaptiveDifficulty) {
+          // No necesitamos duplicar los logs aquí porque ya los tenemos en la sección anterior
+          
           // Si lleva 5 respuestas incorrectas seguidas, disminuir dificultad
           if (newConsecutiveIncorrectAnswers >= 5) {
+            console.log(`[ADAPTIVE DIFFICULTY] ✗✗✗ ¡Se alcanzaron ${newConsecutiveIncorrectAnswers} respuestas incorrectas! Intentando bajar nivel...`);
+            
             // Disminuir dificultad (si no está ya en el nivel mínimo)
             const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
             const currentIndex = difficulties.indexOf(adaptiveDifficulty);
+            console.log(`[ADAPTIVE DIFFICULTY] Nivel actual index: ${currentIndex}, mínimo es 0`);
+            
             if (currentIndex > 0) {
               const newDifficulty = difficulties[currentIndex - 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
+              console.log(`[ADAPTIVE DIFFICULTY] ¡BAJANDO DE NIVEL! De ${adaptiveDifficulty} a ${newDifficulty}`);
+              
+              // Actualizar la dificultad adaptativa
               setAdaptiveDifficulty(newDifficulty);
               
               // Mostrar mensaje informativo sobre la reducción de nivel
@@ -776,6 +791,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               
               // Reiniciar contador de respuestas incorrectas consecutivas
               setConsecutiveIncorrectAnswers(0);
+            } else {
+              console.log(`[ADAPTIVE DIFFICULTY] Ya estás en el nivel mínimo: ${adaptiveDifficulty}`);
             }
           }
         }
