@@ -88,121 +88,133 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     trophies: ['🏆', '🏅', '🎖️']
   };
   
-  // Definimos alfabetos en ambos idiomas con emojis simplificados para mayor compatibilidad
+  // Definimos alfabetos en ambos idiomas con URL de imágenes para garantizar compatibilidad
   const alphabetSpanish = [
-    { uppercase: 'A', lowercase: 'a', word: 'Avión', image: '✈️' },
-    { uppercase: 'B', lowercase: 'b', word: 'Barco', image: '🚢' },
-    { uppercase: 'C', lowercase: 'c', word: 'Casa', image: '🏠' },
-    { uppercase: 'D', lowercase: 'd', word: 'Dado', image: '🎲' },
-    { uppercase: 'E', lowercase: 'e', word: 'Elefante', image: '🐘' },
-    { uppercase: 'F', lowercase: 'f', word: 'Foca', image: '🦭' },
-    { uppercase: 'G', lowercase: 'g', word: 'Gato', image: '🐱' },
-    { uppercase: 'H', lowercase: 'h', word: 'Helado', image: '🍦' },
-    { uppercase: 'I', lowercase: 'i', word: 'Iglesia', image: '⛪' },
-    { uppercase: 'J', lowercase: 'j', word: 'Jirafa', image: '🦒' },
-    { uppercase: 'K', lowercase: 'k', word: 'Kiwi', image: '🥝' },
-    { uppercase: 'L', lowercase: 'l', word: 'León', image: '🦁' },
-    { uppercase: 'M', lowercase: 'm', word: 'Manzana', image: '🍎' },
-    { uppercase: 'N', lowercase: 'n', word: 'Nube', image: '☁️' },
-    { uppercase: 'Ñ', lowercase: 'ñ', word: 'Ñu', image: '🐂' },
-    { uppercase: 'O', lowercase: 'o', word: 'Oso', image: '🐻' },
-    { uppercase: 'P', lowercase: 'p', word: 'Pez', image: '🐟' },
-    { uppercase: 'Q', lowercase: 'q', word: 'Queso', image: '🧀' },
-    { uppercase: 'R', lowercase: 'r', word: 'Ratón', image: '🐭' },
-    { uppercase: 'S', lowercase: 's', word: 'Sol', image: '☀️' },
-    { uppercase: 'T', lowercase: 't', word: 'Tortuga', image: '🐢' },
-    { uppercase: 'U', lowercase: 'u', word: 'Uva', image: '🍇' },
-    { uppercase: 'V', lowercase: 'v', word: 'Vaca', image: '🐄' },
-    { uppercase: 'W', lowercase: 'w', word: 'Wifi', image: '📶' },
-    { uppercase: 'X', lowercase: 'x', word: 'Xilófono', image: '🎹' },
-    { uppercase: 'Y', lowercase: 'y', word: 'Yogur', image: '🥛' },
-    { uppercase: 'Z', lowercase: 'z', word: 'Zapato', image: '👞' }
+    { uppercase: 'A', lowercase: 'a', word: 'Avión', image: 'https://em-content.zobj.net/thumbs/120/apple/354/airplane_2708-fe0f.png' },
+    { uppercase: 'B', lowercase: 'b', word: 'Barco', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ship_1f6a2.png' },
+    { uppercase: 'C', lowercase: 'c', word: 'Casa', image: 'https://em-content.zobj.net/thumbs/120/apple/354/house_1f3e0.png' },
+    { uppercase: 'D', lowercase: 'd', word: 'Dado', image: 'https://em-content.zobj.net/thumbs/120/apple/354/game-die_1f3b2.png' },
+    { uppercase: 'E', lowercase: 'e', word: 'Elefante', image: 'https://em-content.zobj.net/thumbs/120/apple/354/elephant_1f418.png' },
+    { uppercase: 'F', lowercase: 'f', word: 'Foca', image: 'https://em-content.zobj.net/thumbs/120/apple/354/seal_1f9ad.png' },
+    { uppercase: 'G', lowercase: 'g', word: 'Gato', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cat_1f408.png' },
+    { uppercase: 'H', lowercase: 'h', word: 'Helado', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soft-ice-cream_1f366.png' },
+    { uppercase: 'I', lowercase: 'i', word: 'Iglesia', image: 'https://em-content.zobj.net/thumbs/120/apple/354/church_26ea.png' },
+    { uppercase: 'J', lowercase: 'j', word: 'Jirafa', image: 'https://em-content.zobj.net/thumbs/120/apple/354/giraffe_1f992.png' },
+    { uppercase: 'K', lowercase: 'k', word: 'Kiwi', image: 'https://em-content.zobj.net/thumbs/120/apple/354/kiwi-fruit_1f95d.png' },
+    { uppercase: 'L', lowercase: 'l', word: 'León', image: 'https://em-content.zobj.net/thumbs/120/apple/354/lion_1f981.png' },
+    { uppercase: 'M', lowercase: 'm', word: 'Manzana', image: 'https://em-content.zobj.net/thumbs/120/apple/354/red-apple_1f34e.png' },
+    { uppercase: 'N', lowercase: 'n', word: 'Nube', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cloud_2601-fe0f.png' },
+    { uppercase: 'Ñ', lowercase: 'ñ', word: 'Ñu', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ox_1f402.png' },
+    { uppercase: 'O', lowercase: 'o', word: 'Oso', image: 'https://em-content.zobj.net/thumbs/120/apple/354/bear_1f43b.png' },
+    { uppercase: 'P', lowercase: 'p', word: 'Pez', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fish_1f41f.png' },
+    { uppercase: 'Q', lowercase: 'q', word: 'Queso', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cheese-wedge_1f9c0.png' },
+    { uppercase: 'R', lowercase: 'r', word: 'Ratón', image: 'https://em-content.zobj.net/thumbs/120/apple/354/mouse_1f42d.png' },
+    { uppercase: 'S', lowercase: 's', word: 'Sol', image: 'https://em-content.zobj.net/thumbs/120/apple/354/sun_2600-fe0f.png' },
+    { uppercase: 'T', lowercase: 't', word: 'Tortuga', image: 'https://em-content.zobj.net/thumbs/120/apple/354/turtle_1f422.png' },
+    { uppercase: 'U', lowercase: 'u', word: 'Uva', image: 'https://em-content.zobj.net/thumbs/120/apple/354/grapes_1f347.png' },
+    { uppercase: 'V', lowercase: 'v', word: 'Vaca', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cow_1f404.png' },
+    { uppercase: 'W', lowercase: 'w', word: 'Wifi', image: 'https://em-content.zobj.net/thumbs/120/apple/354/antenna-bars_1f4f6.png' },
+    { uppercase: 'X', lowercase: 'x', word: 'Xilófono', image: 'https://em-content.zobj.net/thumbs/120/apple/354/musical-keyboard_1f3b9.png' },
+    { uppercase: 'Y', lowercase: 'y', word: 'Yogur', image: 'https://em-content.zobj.net/thumbs/120/apple/354/glass-of-milk_1f95b.png' },
+    { uppercase: 'Z', lowercase: 'z', word: 'Zapato', image: 'https://em-content.zobj.net/thumbs/120/apple/354/mans-shoe_1f45e.png' }
   ];
   
-  // Alfabeto en inglés (palabras adaptadas al idioma)
+  // Alfabeto en inglés (palabras adaptadas al idioma) con URLs seguras
   const alphabetEnglish = [
-    { uppercase: 'A', lowercase: 'a', word: 'Airplane', image: '🛩️' },
-    { uppercase: 'B', lowercase: 'b', word: 'Ball', image: '⚽' },
-    { uppercase: 'C', lowercase: 'c', word: 'Cat', image: '🐱' },
-    { uppercase: 'D', lowercase: 'd', word: 'Dog', image: '🐶' },
-    { uppercase: 'E', lowercase: 'e', word: 'Elephant', image: '🐘' },
-    { uppercase: 'F', lowercase: 'f', word: 'Fish', image: '🐟' },
-    { uppercase: 'G', lowercase: 'g', word: 'Giraffe', image: '🦒' },
-    { uppercase: 'H', lowercase: 'h', word: 'House', image: '🏠' },
-    { uppercase: 'I', lowercase: 'i', word: 'Ice cream', image: '🍦' },
-    { uppercase: 'J', lowercase: 'j', word: 'Jelly', image: '🍮' },
-    { uppercase: 'K', lowercase: 'k', word: 'Kite', image: '🪁' },
-    { uppercase: 'L', lowercase: 'l', word: 'Lion', image: '🦁' },
-    { uppercase: 'M', lowercase: 'm', word: 'Moon', image: '🌙' },
-    { uppercase: 'N', lowercase: 'n', word: 'Nose', image: '👃' },
-    { uppercase: 'O', lowercase: 'o', word: 'Orange', image: '🍊' },
-    { uppercase: 'P', lowercase: 'p', word: 'Pizza', image: '🍕' },
-    { uppercase: 'Q', lowercase: 'q', word: 'Queen', image: '👑' },
-    { uppercase: 'R', lowercase: 'r', word: 'Rainbow', image: '🌈' },
-    { uppercase: 'S', lowercase: 's', word: 'Sun', image: '☀️' },
-    { uppercase: 'T', lowercase: 't', word: 'Tree', image: '🌳' },
-    { uppercase: 'U', lowercase: 'u', word: 'Umbrella', image: '☂️' },
-    { uppercase: 'V', lowercase: 'v', word: 'Volcano', image: '🌋' },
-    { uppercase: 'W', lowercase: 'w', word: 'Watermelon', image: '🍉' },
-    { uppercase: 'X', lowercase: 'x', word: 'Xylophone', image: '🎹' },
-    { uppercase: 'Y', lowercase: 'y', word: 'Yarn', image: '🧶' },
-    { uppercase: 'Z', lowercase: 'z', word: 'Zebra', image: '🦓' }
+    { uppercase: 'A', lowercase: 'a', word: 'Airplane', image: 'https://em-content.zobj.net/thumbs/120/apple/354/small-airplane_1f6e9-fe0f.png' },
+    { uppercase: 'B', lowercase: 'b', word: 'Ball', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soccer-ball_26bd.png' },
+    { uppercase: 'C', lowercase: 'c', word: 'Cat', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cat_1f408.png' },
+    { uppercase: 'D', lowercase: 'd', word: 'Dog', image: 'https://em-content.zobj.net/thumbs/120/apple/354/dog_1f415.png' },
+    { uppercase: 'E', lowercase: 'e', word: 'Elephant', image: 'https://em-content.zobj.net/thumbs/120/apple/354/elephant_1f418.png' },
+    { uppercase: 'F', lowercase: 'f', word: 'Fish', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fish_1f41f.png' },
+    { uppercase: 'G', lowercase: 'g', word: 'Giraffe', image: 'https://em-content.zobj.net/thumbs/120/apple/354/giraffe_1f992.png' },
+    { uppercase: 'H', lowercase: 'h', word: 'House', image: 'https://em-content.zobj.net/thumbs/120/apple/354/house_1f3e0.png' },
+    { uppercase: 'I', lowercase: 'i', word: 'Ice cream', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ice-cream_1f368.png' },
+    { uppercase: 'J', lowercase: 'j', word: 'Jelly', image: 'https://em-content.zobj.net/thumbs/120/apple/354/custard_1f36e.png' },
+    { uppercase: 'K', lowercase: 'k', word: 'Kite', image: 'https://em-content.zobj.net/thumbs/120/apple/354/kite_1fa81.png' },
+    { uppercase: 'L', lowercase: 'l', word: 'Lion', image: 'https://em-content.zobj.net/thumbs/120/apple/354/lion_1f981.png' },
+    { uppercase: 'M', lowercase: 'm', word: 'Moon', image: 'https://em-content.zobj.net/thumbs/120/apple/354/crescent-moon_1f319.png' },
+    { uppercase: 'N', lowercase: 'n', word: 'Nose', image: 'https://em-content.zobj.net/thumbs/120/apple/354/nose_1f443.png' },
+    { uppercase: 'O', lowercase: 'o', word: 'Orange', image: 'https://em-content.zobj.net/thumbs/120/apple/354/tangerine_1f34a.png' },
+    { uppercase: 'P', lowercase: 'p', word: 'Pizza', image: 'https://em-content.zobj.net/thumbs/120/apple/354/pizza_1f355.png' },
+    { uppercase: 'Q', lowercase: 'q', word: 'Queen', image: 'https://em-content.zobj.net/thumbs/120/apple/354/crown_1f451.png' },
+    { uppercase: 'R', lowercase: 'r', word: 'Rainbow', image: 'https://em-content.zobj.net/thumbs/120/apple/354/rainbow_1f308.png' },
+    { uppercase: 'S', lowercase: 's', word: 'Sun', image: 'https://em-content.zobj.net/thumbs/120/apple/354/sun_2600-fe0f.png' },
+    { uppercase: 'T', lowercase: 't', word: 'Tree', image: 'https://em-content.zobj.net/thumbs/120/apple/354/deciduous-tree_1f333.png' },
+    { uppercase: 'U', lowercase: 'u', word: 'Umbrella', image: 'https://em-content.zobj.net/thumbs/120/apple/354/umbrella_2602-fe0f.png' },
+    { uppercase: 'V', lowercase: 'v', word: 'Volcano', image: 'https://em-content.zobj.net/thumbs/120/apple/354/volcano_1f30b.png' },
+    { uppercase: 'W', lowercase: 'w', word: 'Watermelon', image: 'https://em-content.zobj.net/thumbs/120/apple/354/watermelon_1f349.png' },
+    { uppercase: 'X', lowercase: 'x', word: 'Xylophone', image: 'https://em-content.zobj.net/thumbs/120/apple/354/musical-keyboard_1f3b9.png' },
+    { uppercase: 'Y', lowercase: 'y', word: 'Yarn', image: 'https://em-content.zobj.net/thumbs/120/apple/354/yarn_1f9f6.png' },
+    { uppercase: 'Z', lowercase: 'z', word: 'Zebra', image: 'https://em-content.zobj.net/thumbs/120/apple/354/zebra_1f993.png' }
   ];
   
-  // Alternativas en español
+  // Alternativas en español con URLs de imágenes para garantizar compatibilidad
   const alternativesSpanish: Record<string, AlternativeWord[]> = {
     'A': [
-      { word: 'Abeja', image: '🐝' },
-      { word: 'Arcoiris', image: '🌈' },
-      { word: 'Anillo', image: '💍' },
-      { word: 'Árbol', image: '🌳' }
+      { word: 'Abeja', image: 'https://em-content.zobj.net/thumbs/120/apple/354/honeybee_1f41d.png' },
+      { word: 'Arcoiris', image: 'https://em-content.zobj.net/thumbs/120/apple/354/rainbow_1f308.png' },
+      { word: 'Anillo', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ring_1f48d.png' },
+      { word: 'Árbol', image: 'https://em-content.zobj.net/thumbs/120/apple/354/deciduous-tree_1f333.png' }
     ],
     'B': [
-      { word: 'Balón', image: '⚽' },
-      { word: 'Banana', image: '🍌' },
-      { word: 'Bicicleta', image: '🚲' },
-      { word: 'Ballena', image: '🐋' }
+      { word: 'Balón', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soccer-ball_26bd.png' },
+      { word: 'Banana', image: 'https://em-content.zobj.net/thumbs/120/apple/354/banana_1f34c.png' },
+      { word: 'Bicicleta', image: 'https://em-content.zobj.net/thumbs/120/apple/354/bicycle_1f6b2.png' },
+      { word: 'Ballena', image: 'https://em-content.zobj.net/thumbs/120/apple/354/whale_1f40b.png' }
     ],
     'C': [
-      { word: 'Caballo', image: '🐴' },
-      { word: 'Corazón', image: '❤️' },
-      { word: 'Coche', image: '🚗' },
-      { word: 'Cámara', image: '📷' }
+      { word: 'Caballo', image: 'https://em-content.zobj.net/thumbs/120/apple/354/horse_1f40e.png' },
+      { word: 'Corazón', image: 'https://em-content.zobj.net/thumbs/120/apple/354/red-heart_2764-fe0f.png' },
+      { word: 'Coche', image: 'https://em-content.zobj.net/thumbs/120/apple/354/automobile_1f697.png' },
+      { word: 'Cámara', image: 'https://em-content.zobj.net/thumbs/120/apple/354/camera_1f4f7.png' }
+    ],
+    'F': [
+      { word: 'Flor', image: 'https://em-content.zobj.net/thumbs/120/apple/354/tulip_1f337.png' },
+      { word: 'Fresa', image: 'https://em-content.zobj.net/thumbs/120/apple/354/strawberry_1f353.png' },
+      { word: 'Fuego', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fire_1f525.png' },
+      { word: 'Fútbol', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soccer-ball_26bd.png' }
     ],
     'G': [
-      { word: 'Galleta', image: '🍪' },
-      { word: 'Guitarra', image: '🎸' },
-      { word: 'Globo', image: '🎈' },
-      { word: 'Gorra', image: '🧢' }
+      { word: 'Galleta', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cookie_1f36a.png' },
+      { word: 'Guitarra', image: 'https://em-content.zobj.net/thumbs/120/apple/354/guitar_1f3b8.png' },
+      { word: 'Globo', image: 'https://em-content.zobj.net/thumbs/120/apple/354/balloon_1f388.png' },
+      { word: 'Gorra', image: 'https://em-content.zobj.net/thumbs/120/apple/354/billed-cap_1f9e2.png' }
     ]
     // El resto del alfabeto seguiría con el mismo patrón
   };
   
-  // Alternativas en inglés
+  // Alternativas en inglés con URLs de imágenes para garantizar compatibilidad
   const alternativesEnglish: Record<string, AlternativeWord[]> = {
     'A': [
-      { word: 'Apple', image: '🍎' },
-      { word: 'Ant', image: '🐜' },
-      { word: 'Arrow', image: '➡️' },
-      { word: 'Astronaut', image: '👨‍🚀' }
+      { word: 'Apple', image: 'https://em-content.zobj.net/thumbs/120/apple/354/red-apple_1f34e.png' },
+      { word: 'Ant', image: 'https://em-content.zobj.net/thumbs/120/apple/354/ant_1f41c.png' },
+      { word: 'Arrow', image: 'https://em-content.zobj.net/thumbs/120/apple/354/right-arrow_27a1-fe0f.png' },
+      { word: 'Astronaut', image: 'https://em-content.zobj.net/thumbs/120/apple/354/astronaut_1f9d1-1f680.png' }
     ],
     'B': [
-      { word: 'Ball', image: '⚽' },
-      { word: 'Banana', image: '🍌' },
-      { word: 'Bicycle', image: '🚲' },
-      { word: 'Bear', image: '🐻' }
+      { word: 'Ball', image: 'https://em-content.zobj.net/thumbs/120/apple/354/soccer-ball_26bd.png' },
+      { word: 'Banana', image: 'https://em-content.zobj.net/thumbs/120/apple/354/banana_1f34c.png' },
+      { word: 'Bicycle', image: 'https://em-content.zobj.net/thumbs/120/apple/354/bicycle_1f6b2.png' },
+      { word: 'Bear', image: 'https://em-content.zobj.net/thumbs/120/apple/354/bear_1f43b.png' }
     ],
     'C': [
-      { word: 'Car', image: '🚗' },
-      { word: 'Cookie', image: '🍪' },
-      { word: 'Cow', image: '🐄' },
-      { word: 'Crown', image: '👑' }
+      { word: 'Car', image: 'https://em-content.zobj.net/thumbs/120/apple/354/automobile_1f697.png' },
+      { word: 'Cookie', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cookie_1f36a.png' },
+      { word: 'Cow', image: 'https://em-content.zobj.net/thumbs/120/apple/354/cow_1f404.png' },
+      { word: 'Crown', image: 'https://em-content.zobj.net/thumbs/120/apple/354/crown_1f451.png' }
+    ],
+    'F': [
+      { word: 'Fish', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fish_1f41f.png' },
+      { word: 'Flower', image: 'https://em-content.zobj.net/thumbs/120/apple/354/flower_1f33c.png' },
+      { word: 'Fire', image: 'https://em-content.zobj.net/thumbs/120/apple/354/fire_1f525.png' },
+      { word: 'Frog', image: 'https://em-content.zobj.net/thumbs/120/apple/354/frog_1f438.png' }
     ],
     'G': [
-      { word: 'Guitar', image: '🎸' },
-      { word: 'Gift', image: '🎁' },
-      { word: 'Game', image: '🎮' },
-      { word: 'Globe', image: '🌍' }
+      { word: 'Guitar', image: 'https://em-content.zobj.net/thumbs/120/apple/354/guitar_1f3b8.png' },
+      { word: 'Gift', image: 'https://em-content.zobj.net/thumbs/120/apple/354/wrapped-gift_1f381.png' },
+      { word: 'Game', image: 'https://em-content.zobj.net/thumbs/120/apple/354/video-game_1f3ae.png' },
+      { word: 'Globe', image: 'https://em-content.zobj.net/thumbs/120/apple/354/globe-showing-europe-africa_1f30d.png' }
     ]
     // El resto del alfabeto seguiría con el mismo patrón
   };
@@ -506,7 +518,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {options.map((option, index) => (
             <div key={index} className="relative">
               <button
-                className={`w-full h-32 text-5xl border-2 rounded-lg flex items-center justify-center ${
+                className={`w-full h-32 border-2 rounded-lg flex items-center justify-center ${
                   selectedOptionIndex === index
                     ? isCorrect
                       ? 'border-green-500 bg-green-50'
@@ -516,7 +528,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 onClick={() => checkAnswer(index)}
                 disabled={selectedOptionIndex !== null}
               >
-                {option.image}
+                <img 
+                  src={option.image} 
+                  alt={option.word} 
+                  className="h-20 w-20 object-contain" 
+                  onError={(e) => {
+                    console.error(`Error loading image: ${option.image}`);
+                    // Fallback: If image fails to load, show the first letter of the word
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    const parentElement = (e.target as HTMLImageElement).parentElement;
+                    if (parentElement) {
+                      const textNode = document.createElement('span');
+                      textNode.className = 'text-4xl font-bold';
+                      textNode.textContent = option.word.charAt(0);
+                      parentElement.appendChild(textNode);
+                    }
+                  }}
+                />
               </button>
               {showDetails && index === correctIndex && (
                 <div className="absolute -top-2 -right-2">
@@ -571,8 +599,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return (
       <div className="w-full max-w-lg">
         <div className="flex flex-col items-center mb-8">
-          <div className="text-8xl mb-4">
-            {image.image}
+          <div className="mb-4 flex justify-center">
+            <img 
+              src={image.image} 
+              alt={image.word} 
+              className="h-28 w-28 object-contain" 
+              onError={(e) => {
+                console.error(`Error loading image: ${image.image}`);
+                // Fallback: If image fails to load, show the first letter of the word
+                (e.target as HTMLImageElement).style.display = 'none';
+                const parentElement = (e.target as HTMLImageElement).parentElement;
+                if (parentElement) {
+                  const textNode = document.createElement('span');
+                  textNode.className = 'text-8xl font-bold';
+                  textNode.textContent = image.word.charAt(0);
+                  parentElement.appendChild(textNode);
+                }
+              }}
+            />
           </div>
           <h3 className="text-lg font-medium mb-2">
             {selectedLanguage === 'spanish' ? '¿Con qué letra comienza?' : 'What letter does it start with?'}
