@@ -78,7 +78,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Contextos
   const { saveExerciseResult } = useProgress();
   const { user } = useAuth();
-  const selectedLanguage = settings.language || 'spanish';
+  const { globalSettings } = useSettings();
+  const selectedLanguage = globalSettings.language === 'english' ? 'english' : 'spanish';
   
   // Símbolos de recompensa según tipo
   const rewardSymbols = {
@@ -120,7 +121,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Alfabeto en inglés (palabras adaptadas al idioma)
   const alphabetEnglish = [
-    { uppercase: 'A', lowercase: 'a', word: 'Airplane', image: '✈️' },
+    { uppercase: 'A', lowercase: 'a', word: 'Airplane', image: '🛩️' },
     { uppercase: 'B', lowercase: 'b', word: 'Ball', image: '⚽' },
     { uppercase: 'C', lowercase: 'c', word: 'Cat', image: '🐱' },
     { uppercase: 'D', lowercase: 'd', word: 'Dog', image: '🐶' },
@@ -129,7 +130,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     { uppercase: 'G', lowercase: 'g', word: 'Giraffe', image: '🦒' },
     { uppercase: 'H', lowercase: 'h', word: 'House', image: '🏠' },
     { uppercase: 'I', lowercase: 'i', word: 'Ice cream', image: '🍦' },
-    { uppercase: 'J', lowercase: 'j', word: 'Juice', image: '🧃' },
+    { uppercase: 'J', lowercase: 'j', word: 'Jelly', image: '🍮' },
     { uppercase: 'K', lowercase: 'k', word: 'Kite', image: '🪁' },
     { uppercase: 'L', lowercase: 'l', word: 'Lion', image: '🦁' },
     { uppercase: 'M', lowercase: 'm', word: 'Moon', image: '🌙' },
@@ -144,7 +145,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     { uppercase: 'V', lowercase: 'v', word: 'Volcano', image: '🌋' },
     { uppercase: 'W', lowercase: 'w', word: 'Watermelon', image: '🍉' },
     { uppercase: 'X', lowercase: 'x', word: 'Xylophone', image: '🎹' },
-    { uppercase: 'Y', lowercase: 'y', word: 'Yo-yo', image: '🪀' },
+    { uppercase: 'Y', lowercase: 'y', word: 'Yarn', image: '🧶' },
     { uppercase: 'Z', lowercase: 'z', word: 'Zebra', image: '🦓' }
   ];
   
@@ -216,7 +217,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (timerId) clearInterval(timerId);
       if (rewardTimeoutRef.current) clearTimeout(rewardTimeoutRef.current);
     };
-  }, [currentIndex, exerciseMode, settings.difficulty]);
+  }, [currentIndex, exerciseMode, settings.difficulty, globalSettings.language]);
   
   // Iniciar temporizador
   const startTimer = () => {
@@ -686,7 +687,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     <div className="flex flex-col h-full">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">
-          {selectedLanguage === 'spanish' ? 'Alphabet Journey' : 'Alphabet Journey'}
+          {selectedLanguage === 'spanish' ? 'Viaje Alfabético' : 'Alphabet Journey'}
         </h2>
         <div className="flex items-center space-x-2">
           <div className="text-sm text-gray-500">
