@@ -141,7 +141,49 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   // Iniciamos un nuevo temporizador
                   setProblemTimer(settings.timeValue);
                   problemTimerRef.current = window.setInterval(() => {
-                    setProblemTimer(p => p > 0 ? p - 1 : 0);
+                    setProblemTimer(p => {
+                      // Si el temporizador llega a cero, contamos como un intento usado
+                      if (p <= 1) {
+                        // Limpiamos este intervalo
+                        if (problemTimerRef.current) {
+                          clearInterval(problemTimerRef.current);
+                        }
+                        
+                        // Incrementamos el contador de intentos de nuevo
+                        setCurrentAttempts(attempts => {
+                          const newAttempts = attempts + 1;
+                          console.log("Incrementando intentos a:", newAttempts);
+                          
+                          // Si hemos alcanzado el máximo de intentos, mostramos la respuesta y avanzamos
+                          if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
+                            handleMaxAttemptsReached();
+                          } else {
+                            // Todavía tenemos intentos, reiniciamos el temporizador otra vez
+                            setTimeout(() => {
+                              setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
+                              setFeedbackColor("red");
+                              
+                              // Iniciamos un nuevo temporizador
+                              setProblemTimer(settings.timeValue);
+                              problemTimerRef.current = window.setInterval(() => {
+                                setProblemTimer(p => p > 0 ? p - 1 : 0);
+                              }, 1000);
+                              
+                              // Limpiar el mensaje después de un momento
+                              setTimeout(() => {
+                                setFeedbackMessage(null);
+                                setFeedbackColor(null);
+                              }, 1500);
+                            }, 500);
+                          }
+                          
+                          return newAttempts;
+                        });
+                        
+                        return 0;
+                      }
+                      return p - 1; // Decrementar el temporizador
+                    });
                   }, 1000);
                   
                   // Limpiar el mensaje después de un momento
@@ -252,6 +294,50 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       };
       
       setAnswers(prev => [...prev, answer]);
+      moveToNextProblem();
+    }, 2000);
+  };
+
+  // Función para manejar cuando se alcanzan los intentos máximos
+  const handleMaxAttemptsReached = () => {
+    const currentProblem = problems[currentProblemIndex];
+    const correctAnswer = currentProblem.num1 + currentProblem.num2;
+    
+    // Mostrar mensaje de tiempo agotado
+    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+    setFeedbackColor("red");
+    
+    // Guardar la respuesta como incorrecta
+    const answer: UserAnswer = {
+      problem: currentProblem,
+      userAnswer: parseInt(userAnswer) || 0,
+      isCorrect: false
+    };
+    
+    setAnswers(prev => [...prev, answer]);
+    
+    // Si está habilitada la compensación, añadimos un problema adicional inmediatamente
+    if (settings.enableCompensation) {
+      // Añadir un problema adicional de compensación
+      const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+      const compensationProblem = generateAdditionProblem(difficultyToUse);
+      
+      // Añadimos el problema a la lista actual
+      const updatedProblems = [...problems];
+      // Insertar el problema después del problema actual
+      updatedProblems.splice(currentProblemIndex + 1, 0, compensationProblem);
+      
+      console.log("[COMPENSATION] Añadiendo problema de compensación después del índice:", currentProblemIndex);
+      console.log("[COMPENSATION] Total de problemas ahora:", updatedProblems.length);
+      
+      // Actualizamos la lista de problemas
+      setProblems(updatedProblems);
+    }
+    
+    // Avanzar al siguiente problema después de un breve retraso
+    setTimeout(() => {
+      setFeedbackMessage(null);
+      setFeedbackColor(null);
       moveToNextProblem();
     }, 2000);
   };
