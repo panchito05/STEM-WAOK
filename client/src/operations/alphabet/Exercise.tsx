@@ -116,6 +116,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Variables para el quiz
   const [quizOptions, setQuizOptions] = useState<Letter[]>([]);
+  // Variables para el matching
+  const [letterOptions, setLetterOptions] = useState<Letter[]>([]);
   
   // Variables para ordenamiento de letras
   const [lettersToOrder, setLettersToOrder] = useState<{letter: string, id: string}[]>([]);
@@ -158,6 +160,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setAdjacentLetterInputs({ before: '', after: '' });
     setAdjacentCorrect({ before: false, after: false });
     
+    // Limpiar las opciones para que se regeneren
+    setLetterOptions([]); // Importante: reiniciar opciones para modo matching
+    
     // Determinar el tipo de ejercicio según el nivel de dificultad
     let newExerciseType: 'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed' = 'basic';
     
@@ -195,6 +200,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Preparar ejercicios según el tipo
     if (newExerciseType === 'quiz') {
       generateQuizOptions();
+    } else if (newExerciseType === 'matching') {
+      generateMatchingOptions();
     } else if (newExerciseType === 'ordering') {
       generateLettersToOrder();
     }
@@ -219,6 +226,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Shuffle options
     setQuizOptions(shuffleArray(options));
+  };
+  
+  // Generar opciones para el modo matching
+  const generateMatchingOptions = () => {
+    // Lista de 8 letras aleatorias para seleccionar
+    let options = shuffleArray(alphabet.slice(0, 8));
+    
+    // Asegúrarse de que la letra actual esté entre las opciones
+    const hasCurrentLetter = options.some(letter => letter.uppercase === currentLetter.uppercase);
+    if (!hasCurrentLetter) {
+      // Reemplazar una letra aleatoria con la actual
+      const randomIndex = Math.floor(Math.random() * options.length);
+      options[randomIndex] = currentLetter;
+    }
+    
+    // Guardar en el estado
+    setLetterOptions(options);
   };
 
   const shuffleArray = <T extends unknown>(array: T[]): T[] => {
@@ -511,15 +535,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const renderMatching = () => {
     // Usamos selectedLanguage que ya fue definido arriba
     
-    // Lista de 8 letras aleatorias para seleccionar
-    const letterOptions = shuffleArray(alphabet.slice(0, 8));
-    
-    // Asegúrarse de que la letra actual esté entre las opciones
-    const hasCurrentLetter = letterOptions.some(letter => letter.uppercase === currentLetter.uppercase);
-    if (!hasCurrentLetter) {
-      // Reemplazar una letra aleatoria con la actual
-      const randomIndex = Math.floor(Math.random() * letterOptions.length);
-      letterOptions[randomIndex] = currentLetter;
+    // Si no hay opciones generadas o si cambiamos de letra, regeneramos
+    if (letterOptions.length === 0) {
+      generateMatchingOptions();
     }
     
     // Función para mostrar la respuesta directamente
