@@ -7,14 +7,33 @@ import { relations } from "drizzle-orm";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  // Password puede ser nulo para usuarios que solo usan autenticación con proveedores externos
+  password: text("password"),
+  email: text("email").unique(),
+  name: text("name"),
+  provider: text("provider"), // 'local', 'google', etc.
+  providerId: text("provider_id"), // ID externo del proveedor
+  photoUrl: text("photo_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Esquema para registro con contraseña
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  email: true,
+  name: true,
+});
+
+// Esquema para registro/login con proveedores externos
+export const externalAuthUserSchema = createInsertSchema(users).pick({
+  username: true,
+  email: true,
+  name: true,
+  provider: true,
+  providerId: true,
+  photoUrl: true,
 });
 
 // Progress entries table
@@ -56,6 +75,7 @@ export const moduleSettingsRelations = relations(moduleSettings, ({ one }) => ({
 // Type definitions
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type ExternalAuthUser = z.infer<typeof externalAuthUserSchema>;
 
 export interface ExerciseProgress {
   operationId: string;
