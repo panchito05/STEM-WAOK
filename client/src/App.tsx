@@ -17,9 +17,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext"; 
 import { SettingsProvider } from "@/context/SettingsContext";
 import { ProgressProvider } from "@/context/ProgressContext";
+import { AccessibleDndContextProvider } from "@/components/AccessibleDndContext";
 import LevelUpHandler from "@/components/LevelUpHandler";
-
-// Los providers ahora están a nivel global, ya no necesitamos wrappers adicionales
 
 function Router() {
   return (
@@ -44,11 +43,13 @@ function App() {
       <AuthProvider>
         <SettingsProvider>
           <ProgressProvider>
-            <Layout>
-              <Router />
-            </Layout>
-            <Toaster />
-            <LevelUpHandler />
+            <AccessibleDndContextProvider>
+              <Layout>
+                <Router />
+              </Layout>
+              <Toaster />
+              <LevelUpHandler />
+            </AccessibleDndContextProvider>
           </ProgressProvider>
         </SettingsProvider>
       </AuthProvider>

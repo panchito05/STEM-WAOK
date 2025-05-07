@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import eventBus from '../lib/eventBus';
+import { on, off } from '../lib/eventBus';
 import LevelUpModal from './LevelUpModal';
 
 /**
@@ -35,11 +35,11 @@ const LevelUpHandler: React.FC = () => {
     };
     
     // Registrar el manejador de evento
-    eventBus.on('levelUp', handleLevelUp);
+    on('levelUp', handleLevelUp);
     
     // Limpiar al desmontar
     return () => {
-      eventBus.off('levelUp', handleLevelUp);
+      off('levelUp', handleLevelUp);
     };
   }, []);
   

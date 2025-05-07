@@ -24,32 +24,18 @@ const LevelUpModal: React.FC<LevelUpModalProps> = ({
 }) => {
   const hasPlayedAnimation = useRef(false);
   
-  // Usar español directamente - podríamos mejorarlo después
-  const lang = 'es';
-  
-  // Función para obtener traducción simple
+  // Traducciones estáticas para simplificar
   const t = (key: string): string => {
-    const parts = key.split('.');
-    let result: any = translations[lang];
-    
-    for (const part of parts) {
-      if (result && result[part]) {
-        result = result[part];
-      } else {
-        // Intentar en inglés como fallback
-        let fallback: any = translations['en'];
-        for (const p of parts) {
-          if (fallback && fallback[p]) {
-            fallback = fallback[p];
-          } else {
-            return key;
-          }
-        }
-        return typeof fallback === 'string' ? fallback : key;
-      }
-    }
-    
-    return typeof result === 'string' ? result : key;
+    if (key === 'levelUp.previousLevel') return 'Nivel Anterior';
+    if (key === 'levelUp.newLevel') return 'Nuevo Nivel';
+    if (key === 'levelUp.adaptiveDifficultyEnabled') return 'La dificultad adaptativa está activada. Tu nivel cambiará según tu desempeño.';
+    if (key === 'levelUp.continue') return 'Continuar';
+    if (key === 'difficulty.beginner') return 'Principiante';
+    if (key === 'difficulty.elementary') return 'Elemental';
+    if (key === 'difficulty.intermediate') return 'Intermedio';
+    if (key === 'difficulty.advanced') return 'Avanzado';
+    if (key === 'difficulty.expert') return 'Experto';
+    return key;
   };
   
   // Función para disparar la animación de confeti
