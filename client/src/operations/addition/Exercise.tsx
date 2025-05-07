@@ -1371,31 +1371,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
           
           {/* Mostrar recompensa especial por subir de nivel */}
-          {showLevelUpReward && settings.enableAdaptiveDifficulty && (
+          {showLevelUpReward && (
             <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-              <div className="bg-gradient-to-b from-blue-50 to-indigo-100 rounded-xl p-8 shadow-2xl text-center transform scale-110 transition-transform border-4 border-indigo-300">
-                <h3 className="text-3xl font-bold text-indigo-600 mb-4">¡NIVEL SUPERADO!</h3>
+              <div className="bg-blue-50 rounded-xl p-8 shadow-2xl text-center transform transition-transform max-w-md w-full">
+                <h3 className="text-4xl font-bold text-indigo-600 mb-6">¡NIVEL SUPERADO!</h3>
                 
-                <div className="flex justify-center mb-4 relative">
-                  <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-                    <div className="animate-ping absolute h-16 w-16 rounded-full bg-indigo-400 opacity-75"></div>
-                  </div>
+                <div className="flex justify-center mb-6">
                   <Trophy 
-                    className="h-40 w-40 text-indigo-600 drop-shadow-2xl animate-pulse relative z-10" 
-                    fill="#6366f1"
+                    className="h-28 w-28 text-indigo-500 drop-shadow-xl" 
+                    fill="#818cf8"
                     strokeWidth={1}
                   />
                 </div>
                 
-                <p className="text-xl font-medium mt-2 text-indigo-800">
+                <p className="text-xl font-medium mt-2 text-indigo-800 mb-2">
                   ¡Has demostrado excelentes habilidades matemáticas!
                 </p>
-                <p className="text-lg font-medium mb-4 text-indigo-700">
+                <p className="text-lg font-medium mb-6 text-indigo-700">
                   Has avanzado al siguiente nivel de dificultad
                 </p>
                 
                 <Button
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg mt-2"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg"
                   onClick={() => setShowLevelUpReward(false)}
                 >
                   ¡Continuar el Desafío!
