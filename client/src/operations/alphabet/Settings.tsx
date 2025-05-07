@@ -22,7 +22,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     difficulty: settings.difficulty,
     showImmediateFeedback: settings.showImmediateFeedback,
     enableSoundEffects: settings.enableSoundEffects,
-    enableRewards: settings.enableRewards || true,
+    enableRewards: settings.enableRewards === undefined ? true : settings.enableRewards,
     rewardType: settings.rewardType || "stars",
     enableAdaptiveDifficulty: settings.enableAdaptiveDifficulty || false,
   });
