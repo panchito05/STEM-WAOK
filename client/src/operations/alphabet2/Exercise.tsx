@@ -342,8 +342,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Para este ejercicio, seleccionamos 3-5 letras que incluyen la letra actual
     // El objetivo es ordenarlas alfabéticamente
     
-    // Fijar en 4 letras para mejor experiencia
-    const numLetters = 4;
+    // Determinar aleatoriamente cuántas letras usar (3-5)
+    const numLetters = Math.floor(Math.random() * 3) + 3; // 3, 4 o 5 letras
+    console.log(`Generando ejercicio avanzado con ${numLetters} letras`);
     
     // Obtener un conjunto de letras diferentes incluyendo la letra actual
     const otherLetters = alphabetSubset
@@ -354,36 +355,41 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Unir la letra actual con las otras seleccionadas
     let selectedLetters = [currentLetterItem, ...otherLetters];
     
-    // Verificar si tenemos suficientes letras (por seguridad)
-    if (selectedLetters.length < numLetters) {
-      console.log(`Advertencia: No se pudieron seleccionar ${numLetters} letras diferentes`);
-      // En caso extremo, repetir algunas letras
-      while (selectedLetters.length < numLetters) {
-        selectedLetters.push(alphabetSubset[Math.floor(Math.random() * alphabetSubset.length)]);
-      }
+    // Asegurarnos de que tenemos suficientes letras diferentes
+    if (otherLetters.length < numLetters - 1) {
+      console.log(`No hay suficientes letras diferentes disponibles. Usando ${otherLetters.length + 1} en total.`);
     }
     
-    // Verificar que todas las letras sean diferentes (asegurar unicidad)
+    // Verificar que todas las letras son diferentes
     const uppercaseLetters = selectedLetters.map(letter => letter.uppercase);
-    const uniqueLetters = [...new Set(uppercaseLetters)];
+    const uniqueLettersSet = new Set(uppercaseLetters);
     
-    // Si hay letras duplicadas, intentar reemplazarlas
-    if (uniqueLetters.length < selectedLetters.length) {
-      // Obtener letras que no están en la selección actual
-      const unusedLetters = alphabetSubset
-        .filter(letter => !uppercaseLetters.includes(letter.uppercase))
-        .sort(() => 0.5 - Math.random());
+    // Si tenemos letras duplicadas, intentar otra estrategia
+    if (uniqueLettersSet.size < selectedLetters.length) {
+      console.log("Detectadas letras duplicadas, intentando otra selección");
       
-      // Crear un nuevo conjunto de letras seleccionadas
-      selectedLetters = [currentLetterItem]; // Mantener la letra actual
+      // Mezclamos el alfabeto completo
+      const shuffledAlphabet = [...alphabetSubset].sort(() => 0.5 - Math.random());
       
-      // Agregar letras únicas (ya sea de las no usadas o de las que ya teníamos)
-      const remainingNeeded = numLetters - 1;
-      const additionalLetters = unusedLetters.length >= remainingNeeded 
-        ? unusedLetters.slice(0, remainingNeeded)
-        : [...unusedLetters, ...otherLetters.slice(0, remainingNeeded - unusedLetters.length)];
+      // Tomamos letras aleatorias garantizando que no haya duplicados
+      selectedLetters = [];
+      const usedUppercaseLetters = new Set<string>();
       
-      selectedLetters = [...selectedLetters, ...additionalLetters];
+      // Primero incluimos la letra actual
+      selectedLetters.push(currentLetterItem);
+      usedUppercaseLetters.add(currentLetterItem.uppercase);
+      
+      // Luego agregamos letras únicas hasta alcanzar el número deseado
+      for (const letter of shuffledAlphabet) {
+        if (!usedUppercaseLetters.has(letter.uppercase)) {
+          selectedLetters.push(letter);
+          usedUppercaseLetters.add(letter.uppercase);
+          
+          if (selectedLetters.length >= numLetters) {
+            break;
+          }
+        }
+      }
     }
     
     // Definir el orden correcto (alfabético)
@@ -923,10 +929,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (isCorrect) {
         setCorrectAnswers(prev => prev + 1);
         setConsecutiveCorrectAnswers(prev => prev + 1);
+        
+        // Mostrar recompensa después de 3 aciertos consecutivos
+        if (settings.enableRewards && consecutiveCorrectAnswers + 1 >= 3) {
+          setShowReward(true);
+          if (settings.enableSoundEffects) {
+            playRewardSound();
+          }
+        }
       } else {
         setIncorrectAnswers(prev => prev + 1);
         setConsecutiveCorrectAnswers(0);
       }
+      
+      // Generar nuevo ejercicio después de una breve pausa
+      setTimeout(() => {
+        // Obtener un subconjunto aleatorio del alfabeto
+        const alphabetSubset = getAlphabetSubset();
+        
+        // Seleccionar una letra aleatoria como punto de partida
+        const randomIndex = Math.floor(Math.random() * alphabetSubset.length);
+        const randomLetter = alphabetSubset[randomIndex];
+        
+        // Generar un nuevo ejercicio avanzado
+        generateAdvancedExercise(randomLetter, alphabetSubset);
+        
+        // Reiniciar el estado para el nuevo ejercicio
+        setAdvancedHasSubmitted(false);
+        setShowDetails(false);
+        setAdvancedIsOrderCorrect(false);
+        setAdvancedUserOrder([]); // Limpiar el orden actual
+      }, 2000); // Pausa de 2 segundos para mostrar resultado
     };
     
     // Manejar el movimiento de una letra
