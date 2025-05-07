@@ -342,27 +342,48 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Para este ejercicio, seleccionamos 3-5 letras que incluyen la letra actual
     // El objetivo es ordenarlas alfabéticamente
     
-    // Determinar cuántas letras usar (3-5)
-    const numLetters = Math.floor(Math.random() * 3) + 3; // 3, 4 o 5 letras
+    // Fijar en 4 letras para mejor experiencia
+    const numLetters = 4;
     
-    // Encontrar el índice actual en el alfabeto
-    const currentIndex = alphabetSubset.findIndex(letter => 
-      letter.uppercase === currentLetterItem.uppercase
-    );
+    // Obtener un conjunto de letras diferentes incluyendo la letra actual
+    const otherLetters = alphabetSubset
+      .filter(letter => letter.uppercase !== currentLetterItem.uppercase)
+      .sort(() => 0.5 - Math.random()) // Mezclarlas
+      .slice(0, numLetters - 1); // Tomar suficientes para completar el número requerido
     
-    let selectedLetters: Letter[] = [];
+    // Unir la letra actual con las otras seleccionadas
+    let selectedLetters = [currentLetterItem, ...otherLetters];
     
-    // Seleccionar letras alrededor de la letra actual
-    const startIndex = Math.max(0, currentIndex - Math.floor(numLetters / 2));
-    const endIndex = Math.min(alphabetSubset.length - 1, startIndex + numLetters - 1);
-    
-    // Obtener las letras en ese rango
-    selectedLetters = alphabetSubset.slice(startIndex, endIndex + 1);
-    
-    // Si no tenemos suficientes letras, agregar más desde el principio
+    // Verificar si tenemos suficientes letras (por seguridad)
     if (selectedLetters.length < numLetters) {
-      const remainingCount = numLetters - selectedLetters.length;
-      selectedLetters = [...selectedLetters, ...alphabetSubset.slice(0, remainingCount)];
+      console.log(`Advertencia: No se pudieron seleccionar ${numLetters} letras diferentes`);
+      // En caso extremo, repetir algunas letras
+      while (selectedLetters.length < numLetters) {
+        selectedLetters.push(alphabetSubset[Math.floor(Math.random() * alphabetSubset.length)]);
+      }
+    }
+    
+    // Verificar que todas las letras sean diferentes (asegurar unicidad)
+    const uppercaseLetters = selectedLetters.map(letter => letter.uppercase);
+    const uniqueLetters = [...new Set(uppercaseLetters)];
+    
+    // Si hay letras duplicadas, intentar reemplazarlas
+    if (uniqueLetters.length < selectedLetters.length) {
+      // Obtener letras que no están en la selección actual
+      const unusedLetters = alphabetSubset
+        .filter(letter => !uppercaseLetters.includes(letter.uppercase))
+        .sort(() => 0.5 - Math.random());
+      
+      // Crear un nuevo conjunto de letras seleccionadas
+      selectedLetters = [currentLetterItem]; // Mantener la letra actual
+      
+      // Agregar letras únicas (ya sea de las no usadas o de las que ya teníamos)
+      const remainingNeeded = numLetters - 1;
+      const additionalLetters = unusedLetters.length >= remainingNeeded 
+        ? unusedLetters.slice(0, remainingNeeded)
+        : [...unusedLetters, ...otherLetters.slice(0, remainingNeeded - unusedLetters.length)];
+      
+      selectedLetters = [...selectedLetters, ...additionalLetters];
     }
     
     // Definir el orden correcto (alfabético)
