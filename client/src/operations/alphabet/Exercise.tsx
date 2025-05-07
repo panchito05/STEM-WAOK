@@ -1,13 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, EyeIcon } from 'lucide-react';
+import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, EyeIcon, AlertCircle } from 'lucide-react';
 import { ModuleSettings } from '@/context/SettingsContext';
+import { useProgress } from '@/context/ProgressContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
+import { Progress } from '@/components/ui/progress';
+import { formatTime } from '@/lib/utils';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -51,11 +55,27 @@ const alphabet: Letter[] = [
 ];
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
+  // Accedemos al contexto de progreso para guardar resultados
+  const { saveExerciseResult } = useProgress();
+  
   // Variables de estado básicas
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  
+  // Variables para ejercicio
+  const [timer, setTimer] = useState(0);
+  const [exerciseStarted, setExerciseStarted] = useState(false);
+  const [exerciseCompleted, setExerciseCompleted] = useState(false);
+  const [problemTimer, setProblemTimer] = useState(0);
+  const [problemStartTime, setProblemStartTime] = useState(0);
+  const [waitingForContinue, setWaitingForContinue] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackColor, setFeedbackColor] = useState("gray");
+  const [currentAttempts, setCurrentAttempts] = useState(0);
+  const [autoContinue, setAutoContinue] = useState(false);
+  const [showingExplanation, setShowingExplanation] = useState(false);
   
   // Tipos de ejercicios
   const [exerciseType, setExerciseType] = useState<
@@ -819,17 +839,178 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Usar el idioma seleccionado en los settings
   const language = settings.language || 'english';
   
+  // Función para iniciar el ejercicio y temporizador
+  const startExercise = () => {
+    setExerciseStarted(true);
+    setProblemStartTime(timer);
+    setCurrentAttempts(0);
+  };
+  
+  // Efectos para el temporizador
+  useEffect(() => {
+    if (exerciseStarted && !exerciseCompleted) {
+      const interval = setInterval(() => {
+        setTimer(prev => prev + 1);
+        if (settings.timeValue > 0) {
+          setProblemTimer(prev => prev + 1);
+        }
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [exerciseStarted, exerciseCompleted, settings.timeValue]);
+  
+  // Verificar respuesta del ejercicio actual
+  const checkAnswer = () => {
+    if (!exerciseStarted) {
+      startExercise();
+    }
+    
+    setCurrentAttempts(prev => prev + 1);
+    
+    // Verificar según el tipo de ejercicio
+    let isAnswerCorrect = false;
+    
+    if (exerciseType === 'adjacentLetters') {
+      // Verificar letras adyacentes
+      const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
+      const prevLetter = index > 0 ? alphabet[index - 1].uppercase : 'Z';
+      const nextLetter = index < alphabet.length - 1 ? alphabet[index + 1].uppercase : 'A';
+      
+      const beforeCorrect = adjacentLetterInputs.before.toUpperCase() === prevLetter;
+      const afterCorrect = adjacentLetterInputs.after.toUpperCase() === nextLetter;
+      
+      setAdjacentCorrect({
+        before: beforeCorrect,
+        after: afterCorrect
+      });
+      
+      isAnswerCorrect = beforeCorrect && afterCorrect;
+    } 
+    else if (exerciseType === 'ordering') {
+      // Verificar orden de letras
+      const sortedLetters = [...lettersToOrder].sort((a, b) => {
+        return a.letter.localeCompare(b.letter);
+      });
+      
+      isAnswerCorrect = lettersToOrder.every((letter, index) => {
+        return letter.letter === sortedLetters[index].letter;
+      });
+    }
+    
+    setIsCorrect(isAnswerCorrect);
+    setShowDetails(true);
+    setWaitingForContinue(true);
+    
+    // Mensaje de feedback
+    if (isAnswerCorrect) {
+      setFeedbackMessage(language === 'spanish' ? '¡Correcto!' : 'Correct!');
+      setFeedbackColor("green");
+      setCorrectAnswers(prev => prev + 1);
+      
+      // Determinar si mostrar recompensa (3% al azar, 100% en múltiplos de 5)
+      const shouldShowReward = 
+        settings.enableRewards && 
+        (Math.random() < 0.03 || correctAnswers % 5 === 4);
+      
+      if (shouldShowReward) {
+        setShowReward(true);
+        setTimeout(() => setShowReward(false), 2000);
+      }
+    } else {
+      setFeedbackMessage(language === 'spanish' ? 'Incorrecto. Intenta de nuevo.' : 'Incorrect. Try again.');
+      setFeedbackColor("red");
+      
+      // Verificar si se agotaron los intentos
+      if (settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts - 1) {
+        // Mostrar respuesta correcta
+        if (exerciseType === 'adjacentLetters') {
+          const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
+          const prevLetter = index > 0 ? alphabet[index - 1].uppercase : 'Z';
+          const nextLetter = index < alphabet.length - 1 ? alphabet[index + 1].uppercase : 'A';
+          
+          setAdjacentLetterInputs({
+            before: prevLetter,
+            after: nextLetter
+          });
+          
+          setAdjacentCorrect({
+            before: true,
+            after: true
+          });
+        } 
+        else if (exerciseType === 'ordering') {
+          // Ordenar las letras alfabéticamente
+          const sortedLetters = [...lettersToOrder].sort((a, b) => {
+            return a.letter.localeCompare(b.letter);
+          });
+          
+          setLettersToOrder(sortedLetters);
+        }
+        
+        setFeedbackMessage(
+          language === 'spanish' 
+            ? 'Se agotaron los intentos. Aquí está la respuesta correcta.' 
+            : 'Out of attempts. Here\'s the correct answer.'
+        );
+      }
+    }
+    
+    if (settings.enableSoundEffects) {
+      if (isAnswerCorrect) {
+        playSound(language === 'spanish' ? "¡Correcto! ¡Buen trabajo!" : "Correct! Good job!");
+      } else {
+        playSound(language === 'spanish' ? "Incorrecto. Intenta de nuevo." : "Incorrect. Try again.");
+      }
+    }
+  };
+  
+  // Continuar al siguiente problema
+  const handleContinue = () => {
+    setWaitingForContinue(false);
+    setShowDetails(false);
+    setIsCorrect(null);
+    setFeedbackMessage("");
+    setCurrentAttempts(0);
+    
+    // Avanzar al siguiente problema/letra
+    handleNext();
+  };
+  
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">
           {language === 'spanish' ? 'Aprendizaje del Alfabeto' : 'Alphabet Learning'}
         </h1>
-        <div className="flex space-x-2">
-          <div className="text-sm text-gray-500 mr-2 pt-1">
+        <div className="flex items-center">
+          {exerciseStarted && !exerciseCompleted && (
+            <span className="mr-4 text-sm text-gray-500">
+              <span className="inline-flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {formatTime(timer)}
+              </span>
+            </span>
+          )}
+          
+          <div className="text-sm text-gray-500 mr-2">
             {language === 'spanish' ? 'Nivel: ' : 'Level: '}
             {settings.difficulty}
           </div>
+          
           <Button variant="ghost" size="icon" onClick={onOpenSettings}>
             <Cog className="h-5 w-5" />
             <span className="sr-only">
@@ -842,6 +1023,65 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       <Card className="mb-6">
         <CardContent className="p-6">
           {renderCurrentExercise()}
+          
+          {feedbackMessage && (
+            <div className={`mt-4 text-center text-lg font-medium text-${feedbackColor === "green" ? "green" : "red"}-500`}>
+              {feedbackMessage}
+            </div>
+          )}
+          
+          {/* Sección para mostrar botón Check Answer o Continue */}
+          {(exerciseType === 'adjacentLetters' || exerciseType === 'ordering') && (
+            <div className="mt-6 flex justify-center">
+              {waitingForContinue ? (
+                // Botón Continue
+                <Button 
+                  className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white 
+                            flex justify-between items-center relative" 
+                  onClick={handleContinue}
+                >
+                  <div className="flex justify-between items-center w-full">
+                    <span className="ml-5">
+                      {language === 'spanish' ? 'Continuar' : 'Continue'}
+                    </span>
+                    
+                    <div className="flex items-center">
+                      <div className="flex items-center bg-black/40 rounded px-2 py-1 h-[28px] mr-1">
+                        <Checkbox 
+                          id="auto-continue" 
+                          checked={autoContinue}
+                          className="border-white" 
+                          onCheckedChange={(checked) => {
+                            setAutoContinue(checked === true);
+                          }}
+                          onClick={(e) => e.stopPropagation()} 
+                        />
+                        <label
+                          htmlFor="auto-continue"
+                          className="text-xs font-medium leading-none text-white ml-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAutoContinue(!autoContinue);
+                          }}
+                        >
+                          Auto
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </Button>
+              ) : (
+                // Botón Check Answer
+                <Button 
+                  onClick={checkAnswer}
+                  className="min-w-[150px] bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  {language === 'spanish' ? 'Verificar Respuesta' : 'Check Answer'}
+                </Button>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
       
@@ -861,6 +1101,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {language === 'spanish' ? 'Siguiente' : 'Next'}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
+      </div>
+      
+      {/* Configuración de recompensas en un panel lateral */}
+      <div className="fixed top-20 right-4 flex flex-col gap-2 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg">
+        <div className="text-sm font-medium mb-2">
+          {language === 'spanish' ? 'Tipo de Recompensa' : 'Reward Type'}
+        </div>
+        
+        <div 
+          className={`cursor-pointer p-2 rounded-md flex items-center gap-2 ${rewardType === 'stars' ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
+          onClick={() => setRewardType('stars')}
+        >
+          <div className="text-xl">⭐</div>
+          <div className="text-sm">{language === 'spanish' ? 'Estrellas' : 'Stars'}</div>
+        </div>
+        
+        <div 
+          className={`cursor-pointer p-2 rounded-md flex items-center gap-2 ${rewardType === 'medals' ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
+          onClick={() => setRewardType('medals')}
+        >
+          <div className="text-xl">🥇</div>
+          <div className="text-sm">{language === 'spanish' ? 'Medallas' : 'Medals'}</div>
+        </div>
+        
+        <div 
+          className={`cursor-pointer p-2 rounded-md flex items-center gap-2 ${rewardType === 'trophies' ? 'bg-blue-100 dark:bg-blue-900' : ''}`}
+          onClick={() => setRewardType('trophies')}
+        >
+          <div className="text-xl">🏆</div>
+          <div className="text-sm">{language === 'spanish' ? 'Trofeos' : 'Trophies'}</div>
+        </div>
       </div>
       
       {showReward && (
