@@ -114,8 +114,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed'
   >('basic');
   
-  // Variables para el quiz
+  // Variables para el quiz y matching
   const [quizOptions, setQuizOptions] = useState<Letter[]>([]);
+  const [matchingOptions, setMatchingOptions] = useState<Letter[]>([]);
+  const [fixedPositions, setFixedPositions] = useState<boolean>(true);
   
   // Variables para ordenamiento de letras
   const [lettersToOrder, setLettersToOrder] = useState<{letter: string, id: string}[]>([]);
@@ -195,6 +197,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Preparar ejercicios según el tipo
     if (newExerciseType === 'quiz') {
       generateQuizOptions();
+    } else if (newExerciseType === 'matching') {
+      generateMatchingOptions();
     } else if (newExerciseType === 'ordering') {
       generateLettersToOrder();
     }
@@ -217,8 +221,75 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     }
     
-    // Shuffle options
-    setQuizOptions(shuffleArray(options));
+    // Solo mezclar las opciones cuando comenzamos un nuevo ejercicio
+    // esto permite que las posiciones se mantengan fijas después
+    if (fixedPositions) {
+      // Ordenamos alfabéticamente para que siempre sea consistente
+      options.sort((a, b) => a.uppercase.localeCompare(b.uppercase));
+      
+      // Luego mezclamos para que la respuesta correcta no esté siempre en la misma posición
+      const shuffledOptions = shuffleArray(options);
+      
+      // Registramos la posición correcta para debugging
+      const correctPosition = shuffledOptions.findIndex(
+        option => option.uppercase === correctLetter.uppercase
+      );
+      console.log("✓ Posición correcta:", correctPosition);
+      
+      setQuizOptions(shuffledOptions);
+    }
+  };
+  
+  // Generador de opciones para el ejercicio de matching
+  const generateMatchingOptions = () => {
+    // Always include the correct letter
+    const correctLetter = alphabet[currentIndex];
+    
+    // Generar 7 letras aleatorias diferentes (8 opciones totales con la correcta)
+    let options: Letter[] = [correctLetter];
+    
+    // Intentar tomar letras diferentes uniformemente del alfabeto
+    const step = Math.max(1, Math.floor(alphabet.length / 8));
+    
+    for (let i = 0; i < alphabet.length && options.length < 8; i += step) {
+      const randomOffset = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+      const index = (currentIndex + i + randomOffset) % alphabet.length;
+      
+      const letter = alphabet[index];
+      
+      // No añadir duplicados
+      if (!options.some(option => option.uppercase === letter.uppercase)) {
+        options.push(letter);
+      }
+    }
+    
+    // Si aún no hemos reunido suficientes opciones, añadir aleatorias
+    while (options.length < 8) {
+      const randomIndex = Math.floor(Math.random() * alphabet.length);
+      const randomLetter = alphabet[randomIndex];
+      
+      // No añadir duplicados
+      if (!options.some(option => option.uppercase === randomLetter.uppercase)) {
+        options.push(randomLetter);
+      }
+    }
+    
+    // En el caso de matching, siempre tomamos las primeras 8
+    options = options.slice(0, 8);
+    
+    // Ordenar alfabéticamente y luego mezclar
+    if (fixedPositions) {
+      options.sort((a, b) => a.uppercase.localeCompare(b.uppercase));
+      const shuffledOptions = shuffleArray(options);
+      
+      // Registrar la posición correcta para debugging
+      const correctPosition = shuffledOptions.findIndex(
+        option => option.uppercase === correctLetter.uppercase
+      );
+      console.log("🔤 Matching - Posición correcta:", correctPosition);
+      
+      setMatchingOptions(shuffledOptions);
+    }
   };
 
   const shuffleArray = <T extends unknown>(array: T[]): T[] => {
@@ -287,11 +358,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (exerciseType === 'quiz') {
       selectedLetter = quizOptions[index];
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
+      
+      // Registramos para debugging
+      console.log("👆 Usuario seleccionó:", selectedLetter.uppercase, selectedLetter.word);
+      console.log("✓ Respuesta correcta:", currentLetter.uppercase, currentLetter.word);
+      console.log("✅ ¿Es correcta?:", isAnswerCorrect);
     } 
-    // Si estamos en modo matching, comparamos con la letra actual
+    // Si estamos en modo matching, usamos las opciones de matching
     else if (exerciseType === 'matching') {
-      const randomLetters = shuffleArray(alphabet.slice(0, 8));
-      selectedLetter = randomLetters[index];
+      selectedLetter = matchingOptions[index];
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
     } 
     // Por defecto
@@ -511,27 +586,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const renderMatching = () => {
     // Usamos selectedLanguage que ya fue definido arriba
     
-    // Lista de 8 letras aleatorias para seleccionar
-    const letterOptions = shuffleArray(alphabet.slice(0, 8));
-    
-    // Asegúrarse de que la letra actual esté entre las opciones
-    const hasCurrentLetter = letterOptions.some(letter => letter.uppercase === currentLetter.uppercase);
-    if (!hasCurrentLetter) {
-      // Reemplazar una letra aleatoria con la actual
-      const randomIndex = Math.floor(Math.random() * letterOptions.length);
-      letterOptions[randomIndex] = currentLetter;
-    }
-    
     // Función para mostrar la respuesta directamente
     const showMatchingAnswer = () => {
       // Encontrar el índice de la letra correcta
-      const correctIndex = letterOptions.findIndex(letter => 
+      const correctIndex = matchingOptions.findIndex(letter => 
         letter.uppercase === currentLetter.uppercase);
       
       setSelectedOption(correctIndex);
       setIsCorrect(true);
       setShowDetails(true);
     };
+    
+    // Si no hay opciones generadas, las generamos aquí
+    if (matchingOptions.length === 0) {
+      generateMatchingOptions();
+      return <div className="flex justify-center items-center h-40">Cargando...</div>;
+    }
     
     return (
       <div className="flex flex-col items-center">
@@ -543,7 +613,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          {letterOptions.map((letter, index) => (
+          {matchingOptions.map((letter, index) => (
             <Button
               key={index}
               size="lg"
