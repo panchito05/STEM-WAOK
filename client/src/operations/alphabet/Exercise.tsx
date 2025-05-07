@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check } from 'lucide-react';
+import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, EyeIcon } from 'lucide-react';
 import { ModuleSettings } from '@/context/SettingsContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { DndProvider } from 'react-dnd';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -297,10 +300,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const renderQuiz = () => {
+    const language = settings.language || 'english';
+    
+    // Función para mostrar la respuesta sin esperar selección
+    const showQuizAnswer = () => {
+      // Marcar la opción correcta
+      const correctIndex = quizOptions.findIndex(option => 
+        option.uppercase === currentLetter.uppercase);
+      
+      setSelectedOption(correctIndex);
+      setIsCorrect(true);
+      setShowDetails(true);
+    };
+    
     return (
       <div className="flex flex-col items-center">
         <div className="text-2xl font-medium mb-4">
-          Which letter makes this sound?
+          {language === 'spanish'
+            ? '¿Qué letra hace este sonido?'
+            : 'Which letter makes this sound?'}
         </div>
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
@@ -325,10 +343,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           ))}
         </div>
         
+        {selectedOption === null && (
+          <Button 
+            variant="outline"
+            onClick={showQuizAnswer}
+            className="mt-4"
+          >
+            <EyeIcon className="mr-2 h-4 w-4" />
+            {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+          </Button>
+        )}
+        
         {showDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
-              {currentLetter.uppercase} is for {currentLetter.word}
+              {language === 'spanish'
+                ? `${currentLetter.uppercase} es para ${currentLetter.word}`
+                : `${currentLetter.uppercase} is for ${currentLetter.word}`}
             </div>
             <div className="text-6xl mt-2">{currentLetter.image}</div>
           </div>
@@ -339,13 +370,41 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Renderiza el ejercicio de emparejamiento (Elementary)
   const renderMatching = () => {
+    const language = settings.language || 'english';
+    
+    // Lista de 8 letras aleatorias para seleccionar
+    const letterOptions = shuffleArray(alphabet.slice(0, 8));
+    
+    // Asegúrarse de que la letra actual esté entre las opciones
+    const hasCurrentLetter = letterOptions.some(letter => letter.uppercase === currentLetter.uppercase);
+    if (!hasCurrentLetter) {
+      // Reemplazar una letra aleatoria con la actual
+      const randomIndex = Math.floor(Math.random() * letterOptions.length);
+      letterOptions[randomIndex] = currentLetter;
+    }
+    
+    // Función para mostrar la respuesta directamente
+    const showMatchingAnswer = () => {
+      // Encontrar el índice de la letra correcta
+      const correctIndex = letterOptions.findIndex(letter => 
+        letter.uppercase === currentLetter.uppercase);
+      
+      setSelectedOption(correctIndex);
+      setIsCorrect(true);
+      setShowDetails(true);
+    };
+    
     return (
       <div className="flex flex-col items-center">
-        <h2 className="text-2xl font-medium mb-6">¿Qué letra va con esta imagen?</h2>
+        <h2 className="text-2xl font-medium mb-6">
+          {language === 'spanish' 
+            ? '¿Qué letra va con esta imagen?' 
+            : 'Which letter goes with this image?'}
+        </h2>
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          {shuffleArray(alphabet.slice(0, 8)).map((letter, index) => (
+          {letterOptions.map((letter, index) => (
             <Button
               key={index}
               size="lg"
@@ -365,11 +424,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           ))}
         </div>
         
+        {selectedOption === null && (
+          <Button 
+            variant="outline"
+            onClick={showMatchingAnswer}
+            className="mt-4"
+          >
+            <EyeIcon className="mr-2 h-4 w-4" />
+            {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+          </Button>
+        )}
+        
         {showDetails && (
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
-              {currentLetter.uppercase} es para {currentLetter.word}
+              {language === 'spanish'
+                ? `${currentLetter.uppercase} es para ${currentLetter.word}`
+                : `${currentLetter.uppercase} is for ${currentLetter.word}`}
             </div>
+            <div className="text-6xl mt-2">{currentLetter.image}</div>
           </div>
         )}
       </div>
@@ -377,45 +450,245 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
   
   // Renderiza el ejercicio de ordenar letras (Advanced)
-  const renderOrdering = () => {
-    // No implementamos toda la funcionalidad de DnD aquí para simplificar
-    // Este es un ejemplo visual de cómo se vería
+  // Componente de letra arrastrable
+  const DraggableLetter = ({ id, letter, index, moveCard }: { 
+    id: string, 
+    letter: string, 
+    index: number, 
+    moveCard: (dragIndex: number, hoverIndex: number) => void 
+  }) => {
+    const ref = useRef<HTMLDivElement>(null);
+    
+    const [{ isDragging }, drag] = useDrag({
+      type: 'letter',
+      item: () => {
+        return { id, index };
+      },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
+    });
+    
+    const [, drop] = useDrop({
+      accept: 'letter',
+      hover(item: { id: string, index: number }, monitor) {
+        if (!ref.current) {
+          return;
+        }
+        const dragIndex = item.index;
+        const hoverIndex = index;
+        
+        // No reemplazar elementos en sí mismos
+        if (dragIndex === hoverIndex) {
+          return;
+        }
+        
+        // Determinar el rectángulo en la pantalla
+        const hoverBoundingRect = ref.current?.getBoundingClientRect();
+        // Obtener el punto medio vertical
+        const hoverMiddleX = (hoverBoundingRect.right - hoverBoundingRect.left) / 2;
+        // Determinar la posición del mouse
+        const clientOffset = monitor.getClientOffset();
+        
+        if (!clientOffset) {
+          return;
+        }
+        
+        // Obtener pixeles hasta el lado izquierdo
+        const hoverClientX = clientOffset.x - hoverBoundingRect.left;
+        
+        // Solo realizar el movimiento cuando el mouse haya cruzado la mitad de la altura del elemento
+        // Al arrastrar hacia la derecha, solo mover cuando el cursor esté después de la mitad
+        // Al arrastrar hacia la izquierda, solo mover cuando el cursor esté antes de la mitad
+        
+        // Arrastrando hacia la derecha
+        if (dragIndex < hoverIndex && hoverClientX < hoverMiddleX) {
+          return;
+        }
+        
+        // Arrastrando hacia la izquierda
+        if (dragIndex > hoverIndex && hoverClientX > hoverMiddleX) {
+          return;
+        }
+        
+        // Realizar la acción de movimiento
+        moveCard(dragIndex, hoverIndex);
+        // Actualizar el índice para el elemento arrastrado
+        item.index = hoverIndex;
+      },
+    });
+    
+    const opacity = isDragging ? 0.4 : 1;
+    drag(drop(ref));
+    
     return (
-      <div className="flex flex-col items-center">
-        <h2 className="text-2xl font-medium mb-6">Ordena las letras del alfabeto</h2>
-        
-        <div className="flex flex-wrap gap-3 justify-center mb-6">
-          {lettersToOrder.map((item) => (
-            <div 
-              key={item.id}
-              className="h-16 w-16 flex items-center justify-center text-3xl font-bold 
-                      bg-blue-100 dark:bg-blue-900 rounded-md cursor-move border-2 border-blue-300"
-            >
-              {item.letter}
-            </div>
-          ))}
-        </div>
-        
-        <div className="mt-4 flex flex-col items-center">
-          <p className="text-gray-500 text-sm mb-2">Arrastra las letras para ordenarlas correctamente</p>
-          <Button
-            variant="outline"
-            onClick={generateLettersToOrder}
-            className="mt-2"
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Nuevo conjunto
-          </Button>
-        </div>
+      <div 
+        ref={ref}
+        className={`h-16 w-16 flex items-center justify-center text-3xl font-bold 
+                   bg-blue-100 dark:bg-blue-900 rounded-md cursor-move border-2 
+                   border-blue-300 transition-opacity`}
+        style={{ opacity }}
+      >
+        {letter}
       </div>
+    );
+  };
+
+  const moveCard = (dragIndex: number, hoverIndex: number) => {
+    setLettersToOrder(prevCards => {
+      const newCards = [...prevCards];
+      // Eliminar la carta arrastrada
+      const draggedItem = newCards[dragIndex];
+      // Eliminar del array en la posición de arrastre
+      newCards.splice(dragIndex, 1);
+      // Insertar en la nueva posición
+      newCards.splice(hoverIndex, 0, draggedItem);
+      return newCards;
+    });
+  };
+
+  const checkLetterOrder = () => {
+    // Compara el orden actual con el orden alfabético correcto
+    const sortedLetters = [...lettersToOrder].sort((a, b) => {
+      return a.letter.localeCompare(b.letter);
+    });
+    
+    // Verifica si están en el mismo orden
+    const isCorrect = lettersToOrder.every((letter, index) => {
+      return letter.letter === sortedLetters[index].letter;
+    });
+
+    setIsCorrect(isCorrect);
+    setShowDetails(true);
+    
+    if (isCorrect) {
+      setCorrectAnswers(prev => prev + 1);
+      
+      // Determinar si mostrar recompensa (3% al azar, 100% en múltiplos de 5)
+      const shouldShowReward = 
+        settings.enableRewards && 
+        (Math.random() < 0.03 || correctAnswers % 5 === 4);
+      
+      if (shouldShowReward) {
+        setShowReward(true);
+        setTimeout(() => setShowReward(false), 2000);
+      }
+
+      if (settings.enableSoundEffects) {
+        playSound("Correct! The letters are in the right order!");
+      }
+    } else {
+      if (settings.enableSoundEffects) {
+        playSound("Try again. The letters are not in the correct order.");
+      }
+    }
+  };
+
+  const showOrderAnswer = () => {
+    // Ordena las letras alfabéticamente
+    const sortedLetters = [...lettersToOrder].sort((a, b) => {
+      return a.letter.localeCompare(b.letter);
+    });
+    
+    setLettersToOrder(sortedLetters);
+    setShowDetails(true);
+  };
+
+  const renderOrdering = () => {
+    const language = settings.language || 'english';
+    
+    return (
+      <DndProvider backend={HTML5Backend}>
+        <div className="flex flex-col items-center">
+          <h2 className="text-2xl font-medium mb-6">
+            {language === 'spanish' ? 'Ordena las letras del alfabeto' : 'Order the alphabet letters'}
+          </h2>
+          
+          <div className="flex flex-wrap gap-3 justify-center mb-6">
+            {lettersToOrder.map((item, index) => (
+              <DraggableLetter 
+                key={item.id}
+                id={item.id}
+                letter={item.letter}
+                index={index}
+                moveCard={moveCard}
+              />
+            ))}
+          </div>
+          
+          <div className="flex gap-3 mt-4">
+            <Button
+              onClick={checkLetterOrder}
+              disabled={showDetails && isCorrect === true}
+            >
+              <Check className="mr-2 h-4 w-4" />
+              {language === 'spanish' ? 'Verificar' : 'Check'}
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={showOrderAnswer}
+              disabled={showDetails && isCorrect === true}
+            >
+              <EyeIcon className="mr-2 h-4 w-4" />
+              {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+            </Button>
+          </div>
+          
+          {showDetails && isCorrect && (
+            <div className="mt-4 flex flex-col items-center animate-fade-in">
+              <p className="text-green-500 font-bold text-lg">
+                {language === 'spanish' ? '¡Correcto!' : 'Correct!'}
+              </p>
+              <p className="text-gray-500">
+                {language === 'spanish' ? 'Has ordenado las letras correctamente' : 'You ordered the letters correctly'}
+              </p>
+            </div>
+          )}
+          
+          <div className="mt-4 flex flex-col items-center">
+            <Button
+              variant="outline"
+              onClick={generateLettersToOrder}
+              className="mt-2"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {language === 'spanish' ? 'Nuevo conjunto' : 'New set'}
+            </Button>
+          </div>
+        </div>
+      </DndProvider>
     );
   };
   
   // Renderiza el ejercicio de letras adyacentes (Expert)
   const renderAdjacentLetters = () => {
+    const language = settings.language || 'english';
+    
+    // Obtenemos las letras adyacentes para usarlas en el botón de mostrar respuestas
+    const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
+    const prevLetter = index > 0 ? alphabet[index - 1].uppercase : 'Z';
+    const nextLetter = index < alphabet.length - 1 ? alphabet[index + 1].uppercase : 'A';
+    
+    const showAdjacentAnswers = () => {
+      setAdjacentLetterInputs({
+        before: prevLetter,
+        after: nextLetter
+      });
+      setAdjacentCorrect({
+        before: true,
+        after: true
+      });
+      setShowDetails(true);
+    };
+    
     return (
       <div className="flex flex-col items-center">
-        <h2 className="text-2xl font-medium mb-4">¿Qué letras van antes y después?</h2>
+        <h2 className="text-2xl font-medium mb-4">
+          {language === 'spanish' 
+            ? '¿Qué letras van antes y después?' 
+            : 'What letters come before and after?'}
+        </h2>
         
         <div className="text-8xl font-bold mb-6 bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
           {currentLetter.uppercase}
@@ -423,7 +696,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         <div className="grid grid-cols-2 gap-6 w-full max-w-md mb-6">
           <div>
-            <Label htmlFor="before-letter" className="mb-2 block">Antes</Label>
+            <Label htmlFor="before-letter" className="mb-2 block">
+              {language === 'spanish' ? 'Antes' : 'Before'}
+            </Label>
             <div className="flex gap-2">
               <Input
                 id="before-letter"
@@ -439,10 +714,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 variant={adjacentCorrect.before ? "default" : "outline"}
                 size="icon"
                 onClick={() => {
-                  // Calcular la letra anterior
-                  const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
-                  const prevLetter = index > 0 ? alphabet[index - 1].uppercase : 'Z';
-                  
                   const isCorrect = adjacentLetterInputs.before === prevLetter;
                   setAdjacentCorrect(prev => ({...prev, before: isCorrect}));
                   
@@ -458,7 +729,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
           
           <div>
-            <Label htmlFor="after-letter" className="mb-2 block">Después</Label>
+            <Label htmlFor="after-letter" className="mb-2 block">
+              {language === 'spanish' ? 'Después' : 'After'}
+            </Label>
             <div className="flex gap-2">
               <Input
                 id="after-letter"
@@ -474,10 +747,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 variant={adjacentCorrect.after ? "default" : "outline"}
                 size="icon"
                 onClick={() => {
-                  // Calcular la letra siguiente
-                  const index = alphabet.findIndex(l => l.uppercase === currentLetter.uppercase);
-                  const nextLetter = index < alphabet.length - 1 ? alphabet[index + 1].uppercase : 'A';
-                  
                   const isCorrect = adjacentLetterInputs.after === nextLetter;
                   setAdjacentCorrect(prev => ({...prev, after: isCorrect}));
                   
@@ -493,9 +762,26 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         </div>
         
+        <Button 
+          variant="outline"
+          onClick={showAdjacentAnswers}
+          className="mb-4"
+          disabled={adjacentCorrect.before && adjacentCorrect.after}
+        >
+          <EyeIcon className="mr-2 h-4 w-4" />
+          {language === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+        </Button>
+        
         {adjacentCorrect.before && adjacentCorrect.after && (
           <div className="mt-4 flex flex-col items-center animate-fade-in">
-            <div className="text-2xl font-medium mb-2">¡Excelente trabajo!</div>
+            <div className="text-2xl font-medium mb-2">
+              {language === 'spanish' ? '¡Excelente trabajo!' : 'Excellent work!'}
+            </div>
+            <div className="text-lg mb-2">
+              {language === 'spanish' 
+                ? `Antes de ${currentLetter.uppercase} viene ${prevLetter} y después viene ${nextLetter}` 
+                : `Before ${currentLetter.uppercase} comes ${prevLetter} and after comes ${nextLetter}`}
+            </div>
             {settings.enableRewards && (
               <div className="text-5xl animate-bounce">
                 {rewardType === 'stars' && '⭐'}
@@ -530,17 +816,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
 
+  // Usar el idioma seleccionado en los settings
+  const language = settings.language || 'english';
+  
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Alphabet Learning</h1>
+        <h1 className="text-2xl font-bold">
+          {language === 'spanish' ? 'Aprendizaje del Alfabeto' : 'Alphabet Learning'}
+        </h1>
         <div className="flex space-x-2">
           <div className="text-sm text-gray-500 mr-2 pt-1">
-            Level: {settings.difficulty}
+            {language === 'spanish' ? 'Nivel: ' : 'Level: '}
+            {settings.difficulty}
           </div>
           <Button variant="ghost" size="icon" onClick={onOpenSettings}>
             <Cog className="h-5 w-5" />
-            <span className="sr-only">Settings</span>
+            <span className="sr-only">
+              {language === 'spanish' ? 'Configuración' : 'Settings'}
+            </span>
           </Button>
         </div>
       </div>
@@ -557,17 +851,32 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           onClick={handlePrevious}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Previous
+          {language === 'spanish' ? 'Anterior' : 'Previous'}
         </Button>
         
         <Button
           variant="default"
           onClick={handleNext}
         >
-          Next
+          {language === 'spanish' ? 'Siguiente' : 'Next'}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
+      
+      {showReward && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg flex flex-col items-center animate-bounce">
+            <div className="text-7xl mb-4">
+              {rewardType === 'stars' && '⭐'}
+              {rewardType === 'medals' && '🥇'}
+              {rewardType === 'trophies' && '🏆'}
+            </div>
+            <div className="text-2xl font-bold text-center">
+              {language === 'spanish' ? '¡Buen trabajo!' : 'Good job!'}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

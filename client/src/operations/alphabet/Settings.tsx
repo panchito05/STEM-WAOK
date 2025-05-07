@@ -309,13 +309,13 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             onClick={handleReset}
             disabled={isLoading}
           >
-            Reset to Defaults
+            {localSettings.language === "spanish" ? "Restablecer Valores" : "Reset to Defaults"}
           </Button>
           <Button
             onClick={handleSave}
             disabled={isLoading}
           >
-            Save Changes
+            {localSettings.language === "spanish" ? "Guardar Cambios" : "Save Changes"}
           </Button>
         </CardFooter>
       </Card>
