@@ -632,7 +632,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 size="lg"
                 variant={buttonVariant}
                 className={`text-4xl h-20 w-20 ${
-                  selectedOption !== null && isCorrectOption 
+                  // NO mostrar el ring verde si la respuesta es incorrecta
+                  selectedOption !== null && isCorrectOption && isCorrect
                     ? "ring-2 ring-green-500" 
                     : ""
                 }`}
@@ -728,7 +729,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 size="lg"
                 variant={buttonVariant}
                 className={`text-3xl h-16 w-16 ${
-                  selectedOption !== null && isCorrectOption 
+                  // NO mostrar el ring verde si la respuesta es incorrecta
+                  selectedOption !== null && isCorrectOption && isCorrect
                     ? "ring-2 ring-green-500" 
                     : ""
                 }`}
