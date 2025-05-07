@@ -26,7 +26,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [exerciseStarted, setExerciseStarted] = useState(false);
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-  const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | null>(null);
+  const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | "blue" | null>(null);
   const [showHelpButton, setShowHelpButton] = useState(false); // Control si mostramos el botón de ayuda
   const [showingExplanation, setShowingExplanation] = useState(false);
   // Ya no necesitamos estos contadores porque agregamos problemas inmediatamente
@@ -35,7 +35,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(settings.difficulty); // Dificultad adaptiva
   const [currentAttempts, setCurrentAttempts] = useState(0); // Contador para intentos en el problema actual
   const [showReward, setShowReward] = useState(false); // Estado para mostrar la recompensa
+  const [showLevelUpReward, setShowLevelUpReward] = useState(false); // Recompensa especial para subida de nivel
   const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(0); // Contador para respuestas correctas consecutivas
+  const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(0); // Contador para respuestas incorrectas consecutivas
   const [rewardType, setRewardType] = useState<"medals" | "trophies" | "stars">("stars"); // Tipo de recompensa a mostrar
   const [rewardsShownIndices, setRewardsShownIndices] = useState<number[]>([]); // Índices donde se han mostrado recompensas
   const [totalRewardsShown, setTotalRewardsShown] = useState(0); // Contador total de recompensas mostradas
@@ -282,9 +284,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setAdaptiveDifficulty(settings.difficulty); // Reiniciamos la dificultad adaptativa
     setCurrentAttempts(0); // Reiniciamos el contador de intentos actuales
     setConsecutiveCorrectAnswers(0); // Reiniciamos el contador de respuestas correctas consecutivas
+    setConsecutiveIncorrectAnswers(0); // Reiniciamos el contador de respuestas incorrectas consecutivas
     setRewardsShownIndices([]); // Reiniciamos el registro de índices donde se mostraron recompensas
     setTotalRewardsShown(0); // Reiniciamos el contador total de recompensas mostradas
     setWaitingForContinue(false); // Aseguramos que no estamos esperando que el usuario presione "Continuar"
+    setShowLevelUpReward(false); // Reiniciamos el estado de recompensa por subir de nivel
   };
   
   const showAnswerWithExplanation = () => {
@@ -533,21 +537,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Ajustar dificultad adaptativamente si está habilitada esa opción
       if (settings.enableAdaptiveDifficulty) {
+        // Incrementar el contador de respuestas correctas consecutivas
+        const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
+        setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
+        
+        // Resetear el contador de respuestas incorrectas consecutivas
+        setConsecutiveIncorrectAnswers(0);
+        
         // Si lleva 10 respuestas correctas seguidas, aumentar dificultad
-        const lastTenAnswers = [...answers, answer].slice(-10);
-        if (lastTenAnswers.length === 10 && lastTenAnswers.every(a => a.isCorrect)) {
+        if (newConsecutiveCorrectAnswers >= 10) {
           // Aumentar dificultad (si no está ya en el nivel máximo)
           const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
           const currentIndex = difficulties.indexOf(adaptiveDifficulty);
           if (currentIndex < difficulties.length - 1) {
-            setAdaptiveDifficulty(difficulties[currentIndex + 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert");
+            const newDifficulty = difficulties[currentIndex + 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
+            setAdaptiveDifficulty(newDifficulty);
+            
+            // Mostrar mensaje de felicitación y activar recompensa especial
+            setFeedbackMessage(`¡Felicidades! Has demostrado excelentes capacidades matemáticas. Has subido al nivel ${newDifficulty} para un mayor desafío intelectual.`);
+            setFeedbackColor("green");
+            setShowLevelUpReward(true);
+            
+            // Reiniciar contador de respuestas correctas consecutivas
+            setConsecutiveCorrectAnswers(0);
           }
         }
+      } else {
+        // Si no está habilitada la dificultad adaptativa, simplemente incrementamos el contador
+        const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
+        setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
       }
-      
-      // Incrementar el contador de respuestas correctas consecutivas
-      const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
-      setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
       
       // Mostrar feedback de respuesta correcta
       setFeedbackMessage(t('exercises.correct'));
@@ -600,7 +619,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             const isFinalProblem = currentProblemIndex === problems.length - 1;
             
             // 5. Tras logros significativos (5 o más respuestas correctas consecutivas) - probabilidad alta (60%)
-            const isSignificantStreak = newConsecutiveCorrectAnswers >= 5;
+            const isSignificantStreak = consecutiveCorrectAnswers >= 5;
             
             // Asignamos probabilidades basadas en los criterios
             if (isFinalProblem) {
@@ -674,6 +693,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Reiniciar el contador de respuestas correctas consecutivas
       setConsecutiveCorrectAnswers(0);
       
+      // Incrementar el contador de respuestas incorrectas consecutivas
+      const newConsecutiveIncorrectAnswers = consecutiveIncorrectAnswers + 1;
+      setConsecutiveIncorrectAnswers(newConsecutiveIncorrectAnswers);
+      
       // Verificar si hemos alcanzado el máximo de intentos permitidos
       const maxAttemptsReached = settings.maxAttempts > 0 && newAttemptCount >= settings.maxAttempts;
       
@@ -714,13 +737,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Ajustar dificultad adaptativamente si está habilitada esa opción
         if (settings.enableAdaptiveDifficulty) {
           // Si lleva 5 respuestas incorrectas seguidas, disminuir dificultad
-          const lastFiveAnswers = [...answers, answer].slice(-5);
-          if (lastFiveAnswers.length === 5 && lastFiveAnswers.every(a => !a.isCorrect)) {
+          if (newConsecutiveIncorrectAnswers >= 5) {
             // Disminuir dificultad (si no está ya en el nivel mínimo)
             const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
             const currentIndex = difficulties.indexOf(adaptiveDifficulty);
             if (currentIndex > 0) {
-              setAdaptiveDifficulty(difficulties[currentIndex - 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert");
+              const newDifficulty = difficulties[currentIndex - 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
+              setAdaptiveDifficulty(newDifficulty);
+              
+              // Mostrar mensaje informativo sobre la reducción de nivel
+              setTimeout(() => {
+                setFeedbackMessage(`Estamos ajustando la dificultad a un nivel más adecuado. Ahora estás en el nivel ${newDifficulty}.`);
+                setFeedbackColor("blue");
+              }, 1500);
+              
+              // Reiniciar contador de respuestas incorrectas consecutivas
+              setConsecutiveIncorrectAnswers(0);
             }
           }
         }
@@ -1039,6 +1071,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 )}
                 
                 <p className="text-lg font-medium mt-2">¡Has ganado una recompensa por tu excelente trabajo!</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Mostrar recompensa especial por subir de nivel */}
+          {showLevelUpReward && settings.enableAdaptiveDifficulty && (
+            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+              <div className="bg-gradient-to-b from-blue-50 to-indigo-100 rounded-xl p-8 shadow-2xl text-center transform scale-110 transition-transform border-4 border-indigo-300">
+                <h3 className="text-3xl font-bold text-indigo-600 mb-4">¡NIVEL SUPERADO!</h3>
+                
+                <div className="flex justify-center mb-4 relative">
+                  <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                    <div className="animate-ping absolute h-16 w-16 rounded-full bg-indigo-400 opacity-75"></div>
+                  </div>
+                  <Trophy 
+                    className="h-40 w-40 text-indigo-600 drop-shadow-2xl animate-pulse relative z-10" 
+                    fill="#6366f1"
+                    strokeWidth={1}
+                  />
+                </div>
+                
+                <p className="text-xl font-medium mt-2 text-indigo-800">
+                  ¡Has demostrado excelentes habilidades matemáticas!
+                </p>
+                <p className="text-lg font-medium mb-4 text-indigo-700">
+                  Has avanzado al siguiente nivel de dificultad
+                </p>
+                
+                <Button
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-lg mt-2"
+                  onClick={() => setShowLevelUpReward(false)}
+                >
+                  ¡Continuar el Desafío!
+                </Button>
               </div>
             </div>
           )}
