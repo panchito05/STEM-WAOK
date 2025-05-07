@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useSettings } from '@/context/SettingsContext';
+import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft } from 'lucide-react';
 
 const settingsSchema = z.object({
@@ -31,6 +32,7 @@ interface SettingsProps {
 
 export default function Settings({ settings, onBack }: SettingsProps) {
   const { updateModuleSettings, resetModuleSettings } = useSettings();
+  const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   
   const form = useForm<SettingsFormValues>({
@@ -49,10 +51,29 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     setIsSaving(true);
     
     try {
+      console.log('Guardando configuración:', data);
+      
+      // Guardar configuración
       await updateModuleSettings('alphabet2', data);
+      
+      // Mostrar notificación de éxito
+      toast({
+        title: "Configuración guardada",
+        description: `Nivel de dificultad cambiado a: ${data.difficulty}`,
+        variant: "default",
+      });
+      
+      // Volver a la pantalla anterior
       onBack();
     } catch (error) {
       console.error('Error al guardar la configuración:', error);
+      
+      // Mostrar notificación de error
+      toast({
+        title: "Error al guardar",
+        description: "No se pudo guardar la configuración. Inténtalo de nuevo.",
+        variant: "destructive",
+      });
     } finally {
       setIsSaving(false);
     }
