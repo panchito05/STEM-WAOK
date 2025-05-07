@@ -32,11 +32,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [showingExplanation, setShowingExplanation] = useState(false);
   const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0); // Contador para respuestas incorrectas
   const [revealedAnswersCount, setRevealedAnswersCount] = useState(0); // Contador para respuestas reveladas
+  const [showHelpButton, setShowHelpButton] = useState(false); // Control si mostramos el botón de ayuda
   
   const numeratorRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
   const { saveExerciseResult } = useProgress();
+  const { t } = useTranslations();
 
   // Generate problems when settings change or initially
   useEffect(() => {
@@ -280,11 +282,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
 
+  const showAnswerWithExplanation = () => {
+    if (!exerciseStarted) {
+      startExercise();
+    }
+    
+    // Siempre permitimos mostrar la respuesta cuando showAnswerWithExplanation está activado
+    setShowingExplanation(true);
+    const currentProblem = problems[currentProblemIndex];
+    
+    // Si está habilitada la compensación, incrementar contador
+    if (settings.enableCompensation) {
+      setRevealedAnswersCount(prev => prev + 1);
+    }
+    
+    // Después de un tiempo, reiniciar el estado para seguir con el ejercicio
+    setTimeout(() => {
+      setShowingExplanation(false);
+    }, 5000); // La explicación se muestra durante 5 segundos
+  };
+  
   const completeExercise = () => {
     setExerciseCompleted(true);
     
     if (timerRef.current) {
       clearInterval(timerRef.current);
+    }
+    
+    if (problemTimerRef.current) {
+      clearInterval(problemTimerRef.current);
     }
     
     // Calculate score
@@ -491,8 +517,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </p>
         </div>
         <div className="flex items-center">
+          {/* Temporizador total */}
           <span className="mr-4 text-sm text-gray-500">
-            <span className="inline-flex items-center">
+            <span className="inline-flex items-center" title="Total time">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4 mr-1"
@@ -510,6 +537,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               {formatTime(timer)}
             </span>
           </span>
+          
+          {/* Temporizador por problema (si está habilitado) */}
+          {settings.timeValue > 0 && settings.timeLimit === "per-problem" && (
+            <span className="mr-4 text-sm text-gray-500">
+              <span className="inline-flex items-center rounded-md px-2 py-1 bg-blue-50 text-blue-800" title="Time per problem">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6h4m8 0a10 10 0 11-20 0 10 10 0 0120 0z"
+                  />
+                </svg>
+                {problemTimer}s
+              </span>
+            </span>
+          )}
+          
+          {/* Botón de configuración */}
           <Button
             variant="outline"
             size="sm"
@@ -682,19 +734,68 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <ChevronLeft className="mr-2 h-4 w-4" />
           Previous
         </Button>
-        {currentProblem.type !== "comparison" && (
-          <Button onClick={checkCurrentAnswer}>
-            {exerciseStarted ? (
-              <>
-                Check Answer
-                <Check className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              "Start Exercise"
-            )}
-          </Button>
-        )}
+        
+        <div className="flex space-x-2">
+          {/* Botón de ayuda con explicación (si está habilitado) */}
+          {settings.showAnswerWithExplanation && !showingExplanation && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    onClick={showAnswerWithExplanation}
+                    className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                  >
+                    <Info className="mr-2 h-4 w-4" />
+                    Ayuda
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("Muestra la respuesta con explicación")}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          
+          {currentProblem.type !== "comparison" && (
+            <Button onClick={checkCurrentAnswer}>
+              {exerciseStarted ? (
+                <>
+                  Check Answer
+                  <Check className="ml-2 h-4 w-4" />
+                </>
+              ) : (
+                "Start Exercise"
+              )}
+            </Button>
+          )}
+        </div>
       </div>
+      
+      {/* Mostrar respuesta con explicación */}
+      {showingExplanation && (
+        <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
+          <h3 className="font-medium text-amber-800 mb-2">Respuesta correcta:</h3>
+          {currentProblem.type === "addition" && (
+            <div className="text-sm text-amber-700">
+              <p className="mb-2">Para sumar fracciones con diferentes denominadores, encontramos un denominador común:</p>
+              <p className="mb-1">
+                {currentProblem.fraction1.numerator}/{currentProblem.fraction1.denominator} + {currentProblem.fraction2.numerator}/{currentProblem.fraction2.denominator}
+              </p>
+              <p>La respuesta simplificada es {currentProblem.answer.numerator}/{currentProblem.answer.denominator}</p>
+            </div>
+          )}
+          {currentProblem.type === "subtraction" && (
+            <div className="text-sm text-amber-700">
+              <p className="mb-2">Para restar fracciones con diferentes denominadores, encontramos un denominador común:</p>
+              <p className="mb-1">
+                {currentProblem.fraction1.numerator}/{currentProblem.fraction1.denominator} - {currentProblem.fraction2.numerator}/{currentProblem.fraction2.denominator}
+              </p>
+              <p>La respuesta simplificada es {currentProblem.answer.numerator}/{currentProblem.answer.denominator}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
