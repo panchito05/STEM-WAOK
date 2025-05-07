@@ -350,16 +350,53 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     setCurrentAttempts(0); // Reiniciamos el contador de intentos actuales
     
-    // SOLO reiniciamos los contadores consecutivos si NO es dificultad adaptativa
-    // De esta forma podemos mantener el progreso de respuestas consecutivas entre ejercicios
-    if (!settings.enableAdaptiveDifficulty) {
-      setConsecutiveCorrectAnswers(0);
-      localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
-      setConsecutiveIncorrectAnswers(0);
-      localStorage.setItem('addition_consecutiveIncorrectAnswers', '0');
-      console.log(`[ADAPTIVE DIFFICULTY] Reiniciando contadores porque no está habilitada la dificultad adaptativa`);
-    } else {
-      console.log(`[ADAPTIVE DIFFICULTY] Manteniendo contadores para conservar progreso: Correctas=${consecutiveCorrectAnswers}, Incorrectas=${consecutiveIncorrectAnswers}`);
+    // NUNCA reiniciamos los contadores consecutivos de respuestas correctas/incorrectas
+    // Esto permite que el sistema siempre detecte cuando se alcanzan 10 respuestas correctas consecutivas
+    // incluso cuando la dificultad adaptativa está desactivada
+    console.log(`[ADAPTIVE DIFFICULTY] Manteniendo contadores para conservar progreso: Correctas=${consecutiveCorrectAnswers}, Incorrectas=${consecutiveIncorrectAnswers}`);
+    
+    // Si la dificultad adaptativa está activada y tenemos 10 o más respuestas correctas consecutivas,
+    // debemos aumentar automáticamente la dificultad
+    if (settings.enableAdaptiveDifficulty && consecutiveCorrectAnswers >= 10) {
+      console.log(`[ADAPTIVE DIFFICULTY] ✓✓✓ ¡Se detectaron ${consecutiveCorrectAnswers} respuestas correctas acumuladas! Subiendo nivel...`);
+      
+      // Aumentar dificultad (si no está ya en el nivel máximo)
+      const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
+      const currentIndex = difficulties.indexOf(adaptiveDifficulty);
+      console.log(`[ADAPTIVE DIFFICULTY] Nivel actual index: ${currentIndex}, de total: ${difficulties.length - 1}`);
+      
+      if (currentIndex < difficulties.length - 1) {
+        const newDifficulty = difficulties[currentIndex + 1] as "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
+        console.log(`[ADAPTIVE DIFFICULTY] ¡SUBIENDO DE NIVEL! De ${adaptiveDifficulty} a ${newDifficulty}`);
+        
+        // Actualizar la dificultad adaptativa localmente
+        setAdaptiveDifficulty(newDifficulty);
+        
+        // Guardar en localStorage y mostrar mensaje
+        try {
+          const currentModuleSettings = localStorage.getItem('moduleSettings');
+          if (currentModuleSettings) {
+            const settings = JSON.parse(currentModuleSettings);
+            if (settings.addition) {
+              settings.addition.difficulty = newDifficulty;
+            } else {
+              settings.addition = { ...settings.addition || {}, difficulty: newDifficulty };
+            }
+            localStorage.setItem('moduleSettings', JSON.stringify(settings));
+            console.log(`[ADAPTIVE DIFFICULTY] Respaldo: Guardada nueva dificultad en localStorage: ${newDifficulty}`);
+          }
+        } catch (error) {
+          console.error("[ADAPTIVE DIFFICULTY] Error al guardar respaldo en localStorage:", error);
+        }
+        
+        // Reiniciar contador de respuestas correctas consecutivas después de subir de nivel
+        setConsecutiveCorrectAnswers(0);
+        localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+        
+        // Mostrar mensaje de subida de nivel
+        setFeedbackMessage(`¡Felicidades! Has subido al nivel ${newDifficulty}`);
+        setFeedbackColor("green");
+      }
     }
     setRewardsShownIndices([]); // Reiniciamos el registro de índices donde se mostraron recompensas
     setTotalRewardsShown(0); // Reiniciamos el contador total de recompensas mostradas
