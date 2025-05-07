@@ -25,6 +25,19 @@ interface Letter {
   image: string;
 }
 
+// Alternativas para cada letra (para tener más opciones de imágenes)
+interface AlternativeWord {
+  word: string;
+  image: string;
+}
+
+// Datos para el ejercicio de asociación de letras con imágenes
+interface ImageAssociationData {
+  letter: Letter;
+  options: AlternativeWord[];
+  correctIndex: number;
+}
+
 // Alfabeto en inglés
 const englishAlphabet: Letter[] = [
   { uppercase: 'A', lowercase: 'a', word: 'Apple', image: '🍎' },
@@ -86,6 +99,332 @@ const spanishAlphabet: Letter[] = [
   { uppercase: 'Z', lowercase: 'z', word: 'Zapato', image: '👞' },
 ];
 
+// Alternativas para cada letra en inglés (para tener más opciones de imágenes)
+const englishAlternatives: {[key: string]: AlternativeWord[]} = {
+  'A': [
+    { word: 'Apple', image: '🍎' },
+    { word: 'Airplane', image: '✈️' },
+    { word: 'Ant', image: '🐜' },
+    { word: 'Alligator', image: '🐊' }
+  ],
+  'B': [
+    { word: 'Ball', image: '⚽' },
+    { word: 'Banana', image: '🍌' },
+    { word: 'Bird', image: '🐦' },
+    { word: 'Book', image: '📚' }
+  ],
+  'C': [
+    { word: 'Cat', image: '🐱' },
+    { word: 'Car', image: '🚗' },
+    { word: 'Cake', image: '🍰' },
+    { word: 'Cow', image: '🐄' }
+  ],
+  'D': [
+    { word: 'Dog', image: '🐶' },
+    { word: 'Duck', image: '🦆' },
+    { word: 'Dolphin', image: '🐬' },
+    { word: 'Drum', image: '🥁' }
+  ],
+  'E': [
+    { word: 'Elephant', image: '🐘' },
+    { word: 'Egg', image: '🥚' },
+    { word: 'Eye', image: '👁️' },
+    { word: 'Eagle', image: '🦅' }
+  ],
+  'F': [
+    { word: 'Fish', image: '🐠' },
+    { word: 'Frog', image: '🐸' },
+    { word: 'Flower', image: '🌸' },
+    { word: 'Fox', image: '🦊' }
+  ],
+  'G': [
+    { word: 'Giraffe', image: '🦒' },
+    { word: 'Grape', image: '🍇' },
+    { word: 'Glasses', image: '👓' },
+    { word: 'Guitar', image: '🎸' }
+  ],
+  'H': [
+    { word: 'House', image: '🏠' },
+    { word: 'Hat', image: '🧢' },
+    { word: 'Heart', image: '❤️' },
+    { word: 'Horse', image: '🐴' }
+  ],
+  'I': [
+    { word: 'Ice Cream', image: '🍦' },
+    { word: 'Iguana', image: '🦎' },
+    { word: 'Insect', image: '🐛' },
+    { word: 'Island', image: '🏝️' }
+  ],
+  'J': [
+    { word: 'Jellyfish', image: '🪼' },
+    { word: 'Jaguar', image: '🐆' },
+    { word: 'Juice', image: '🧃' },
+    { word: 'Jam', image: '🍯' }
+  ],
+  'K': [
+    { word: 'Kite', image: '🪁' },
+    { word: 'Key', image: '🔑' },
+    { word: 'Kangaroo', image: '🦘' },
+    { word: 'King', image: '👑' }
+  ],
+  'L': [
+    { word: 'Lion', image: '🦁' },
+    { word: 'Leaf', image: '🍃' },
+    { word: 'Lemon', image: '🍋' },
+    { word: 'Lock', image: '🔒' }
+  ],
+  'M': [
+    { word: 'Monkey', image: '🐵' },
+    { word: 'Moon', image: '🌙' },
+    { word: 'Mouse', image: '🐭' },
+    { word: 'Mountain', image: '⛰️' }
+  ],
+  'N': [
+    { word: 'Nest', image: '🪺' },
+    { word: 'Nose', image: '👃' },
+    { word: 'Nut', image: '🥜' },
+    { word: 'Night', image: '🌃' }
+  ],
+  'O': [
+    { word: 'Orange', image: '🍊' },
+    { word: 'Octopus', image: '🐙' },
+    { word: 'Owl', image: '🦉' },
+    { word: 'Ocean', image: '🌊' }
+  ],
+  'P': [
+    { word: 'Penguin', image: '🐧' },
+    { word: 'Pizza', image: '🍕' },
+    { word: 'Pig', image: '🐷' },
+    { word: 'Pencil', image: '✏️' }
+  ],
+  'Q': [
+    { word: 'Queen', image: '👑' },
+    { word: 'Quilt', image: '🧵' },
+    { word: 'Question', image: '❓' },
+    { word: 'Quarter', image: '🪙' }
+  ],
+  'R': [
+    { word: 'Rabbit', image: '🐰' },
+    { word: 'Rainbow', image: '🌈' },
+    { word: 'Robot', image: '🤖' },
+    { word: 'Rocket', image: '🚀' }
+  ],
+  'S': [
+    { word: 'Sun', image: '☀️' },
+    { word: 'Snake', image: '🐍' },
+    { word: 'Star', image: '⭐' },
+    { word: 'Strawberry', image: '🍓' }
+  ],
+  'T': [
+    { word: 'Tree', image: '🌳' },
+    { word: 'Turtle', image: '🐢' },
+    { word: 'Train', image: '🚂' },
+    { word: 'Tiger', image: '🐯' }
+  ],
+  'U': [
+    { word: 'Umbrella', image: '☂️' },
+    { word: 'Unicorn', image: '🦄' },
+    { word: 'UFO', image: '🛸' },
+    { word: 'Uniform', image: '👕' }
+  ],
+  'V': [
+    { word: 'Violin', image: '🎻' },
+    { word: 'Volcano', image: '🌋' },
+    { word: 'Van', image: '🚐' },
+    { word: 'Vase', image: '🏺' }
+  ],
+  'W': [
+    { word: 'Whale', image: '🐋' },
+    { word: 'Watermelon', image: '🍉' },
+    { word: 'Watch', image: '⌚' },
+    { word: 'Wolf', image: '🐺' }
+  ],
+  'X': [
+    { word: 'Xylophone', image: '🎵' },
+    { word: 'X-ray', image: '🩻' },
+    { word: 'Box', image: '📦' },
+    { word: 'Fox', image: '🦊' }
+  ],
+  'Y': [
+    { word: 'Yo-yo', image: '🪀' },
+    { word: 'Yacht', image: '⛵' },
+    { word: 'Yogurt', image: '🥛' },
+    { word: 'Yellow', image: '🟡' }
+  ],
+  'Z': [
+    { word: 'Zebra', image: '🦓' },
+    { word: 'Zoo', image: '🦁' },
+    { word: 'Zipper', image: '🧥' },
+    { word: 'Zero', image: '0️⃣' }
+  ]
+};
+
+// Alternativas para cada letra en español (para tener más opciones de imágenes)
+const spanishAlternatives: {[key: string]: AlternativeWord[]} = {
+  'A': [
+    { word: 'Árbol', image: '🌳' },
+    { word: 'Abeja', image: '🐝' },
+    { word: 'Avión', image: '✈️' },
+    { word: 'Anillo', image: '💍' }
+  ],
+  'B': [
+    { word: 'Balón', image: '⚽' },
+    { word: 'Barco', image: '⛵' },
+    { word: 'Banana', image: '🍌' },
+    { word: 'Bicicleta', image: '🚲' }
+  ],
+  'C': [
+    { word: 'Casa', image: '🏠' },
+    { word: 'Coche', image: '🚗' },
+    { word: 'Conejo', image: '🐰' },
+    { word: 'Caracol', image: '🐌' }
+  ],
+  'D': [
+    { word: 'Delfín', image: '🐬' },
+    { word: 'Dado', image: '🎲' },
+    { word: 'Dinosaurio', image: '🦕' },
+    { word: 'Dragón', image: '🐉' }
+  ],
+  'E': [
+    { word: 'Elefante', image: '🐘' },
+    { word: 'Estrella', image: '⭐' },
+    { word: 'Espejo', image: '🪞' },
+    { word: 'Escuela', image: '🏫' }
+  ],
+  'F': [
+    { word: 'Flor', image: '🌸' },
+    { word: 'Fresa', image: '🍓' },
+    { word: 'Fuego', image: '🔥' },
+    { word: 'Fútbol', image: '⚽' }
+  ],
+  'G': [
+    { word: 'Gato', image: '🐱' },
+    { word: 'Galleta', image: '🍪' },
+    { word: 'Guitarra', image: '🎸' },
+    { word: 'Globo', image: '🎈' }
+  ],
+  'H': [
+    { word: 'Helado', image: '🍦' },
+    { word: 'Hoja', image: '🍃' },
+    { word: 'Hormiga', image: '🐜' },
+    { word: 'Huevo', image: '🥚' }
+  ],
+  'I': [
+    { word: 'Iguana', image: '🦎' },
+    { word: 'Isla', image: '🏝️' },
+    { word: 'Insecto', image: '🐛' },
+    { word: 'Iglesia', image: '⛪' }
+  ],
+  'J': [
+    { word: 'Jirafa', image: '🦒' },
+    { word: 'Juguete', image: '🧸' },
+    { word: 'Jugo', image: '🧃' },
+    { word: 'Jardín', image: '🌷' }
+  ],
+  'K': [
+    { word: 'Kiwi', image: '🥝' },
+    { word: 'Koala', image: '🐨' },
+    { word: 'Karate', image: '🥋' },
+    { word: 'Ketchup', image: '🍅' }
+  ],
+  'L': [
+    { word: 'León', image: '🦁' },
+    { word: 'Luna', image: '🌙' },
+    { word: 'Limón', image: '🍋' },
+    { word: 'Libro', image: '📚' }
+  ],
+  'M': [
+    { word: 'Manzana', image: '🍎' },
+    { word: 'Mono', image: '🐵' },
+    { word: 'Mariposa', image: '🦋' },
+    { word: 'Mar', image: '🌊' }
+  ],
+  'N': [
+    { word: 'Nube', image: '☁️' },
+    { word: 'Naranja', image: '🍊' },
+    { word: 'Nieve', image: '❄️' },
+    { word: 'Nido', image: '🪺' }
+  ],
+  'Ñ': [
+    { word: 'Ñandú', image: '🦢' },
+    { word: 'Ñu', image: '🦬' },
+    { word: 'Piñata', image: '🪅' },
+    { word: 'Cabaña', image: '🏡' }
+  ],
+  'O': [
+    { word: 'Oso', image: '🐻' },
+    { word: 'Ojo', image: '👁️' },
+    { word: 'Oveja', image: '🐑' },
+    { word: 'Oreja', image: '👂' }
+  ],
+  'P': [
+    { word: 'Pez', image: '🐠' },
+    { word: 'Perro', image: '🐶' },
+    { word: 'Pájaro', image: '🐦' },
+    { word: 'Playa', image: '🏖️' }
+  ],
+  'Q': [
+    { word: 'Queso', image: '🧀' },
+    { word: 'Quirófano', image: '🏥' },
+    { word: 'Química', image: '🧪' },
+    { word: 'Quince', image: '1️⃣5️⃣' }
+  ],
+  'R': [
+    { word: 'Ratón', image: '🐭' },
+    { word: 'Rana', image: '🐸' },
+    { word: 'Rosa', image: '🌹' },
+    { word: 'Robot', image: '🤖' }
+  ],
+  'S': [
+    { word: 'Sol', image: '☀️' },
+    { word: 'Serpiente', image: '🐍' },
+    { word: 'Sopa', image: '🍲' },
+    { word: 'Sombrero', image: '👒' }
+  ],
+  'T': [
+    { word: 'Tren', image: '🚂' },
+    { word: 'Tortuga', image: '🐢' },
+    { word: 'Tomate', image: '🍅' },
+    { word: 'Tigre', image: '🐯' }
+  ],
+  'U': [
+    { word: 'Uvas', image: '🍇' },
+    { word: 'Unicornio', image: '🦄' },
+    { word: 'Uña', image: '💅' },
+    { word: 'Uno', image: '1️⃣' }
+  ],
+  'V': [
+    { word: 'Vaca', image: '🐄' },
+    { word: 'Vela', image: '🕯️' },
+    { word: 'Ventana', image: '🪟' },
+    { word: 'Volcán', image: '🌋' }
+  ],
+  'W': [
+    { word: 'Windsurf', image: '🏄' },
+    { word: 'Waffle', image: '🧇' },
+    { word: 'Wifi', image: '📶' },
+    { word: 'Whisky', image: '🥃' }
+  ],
+  'X': [
+    { word: 'Xilófono', image: '🎵' },
+    { word: 'Saxofón', image: '🎷' },
+    { word: 'Taxi', image: '🚕' },
+    { word: 'Examen', image: '📝' }
+  ],
+  'Y': [
+    { word: 'Yogur', image: '🥛' },
+    { word: 'Yate', image: '⛵' },
+    { word: 'Yema', image: '🍳' },
+    { word: 'Yoyó', image: '🪀' }
+  ],
+  'Z': [
+    { word: 'Zapato', image: '👞' },
+    { word: 'Zanahoria', image: '🥕' },
+    { word: 'Zebra', image: '🦓' },
+    { word: 'Zorro', image: '🦊' }
+  ]
+};
+
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Accedemos al contexto de progreso para guardar resultados
   const { saveExerciseResult } = useProgress();
@@ -111,13 +450,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Tipos de ejercicios
   const [exerciseType, setExerciseType] = useState<
-    'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed'
-  >('basic');
+    'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed' | 'imageAssociation'
+  >('imageAssociation');
   
   // Variables para el quiz y matching
   const [quizOptions, setQuizOptions] = useState<Letter[]>([]);
   const [matchingOptions, setMatchingOptions] = useState<Letter[]>([]);
   const [fixedPositions, setFixedPositions] = useState<boolean>(true);
+  
+  // Variables para el nuevo ejercicio de asociación de imágenes
+  const [imageAssociationMode, setImageAssociationMode] = useState<'letterToImages' | 'imageToLetters'>('letterToImages');
+  const [imageAssociationData, setImageAssociationData] = useState<ImageAssociationData | null>(null);
   
   // Variables para ordenamiento de letras
   const [lettersToOrder, setLettersToOrder] = useState<{letter: string, id: string}[]>([]);
