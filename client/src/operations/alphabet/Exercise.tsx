@@ -89,7 +89,7 @@ const spanishAlphabet: Letter[] = [
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Accedemos al contexto de progreso para guardar resultados
   const { saveExerciseResult } = useProgress();
-  
+
   // Variables de estado básicas
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
@@ -105,14 +105,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed'
   >('basic');
   
-  // Variables para el quiz (nuevo sistema)
-  const [quizOptions, setQuizOptions] = useState<Letter[]>([]);
+  // Usar el alfabeto correspondiente al idioma seleccionado
+  const selectedLanguage = settings.language || 'english';
+  const alphabet = selectedLanguage === 'spanish' ? spanishAlphabet : englishAlphabet;
+  const currentLetter = alphabet[currentIndex];
+  
+  // Nuevo paquete de datos sincronizados para quiz
+  const [quizData, setQuizData] = useState<{
+    correctLetter: Letter;
+    options: Letter[];
+    exerciseId: string;
+  }>({
+    correctLetter: currentLetter,
+    options: [],
+    exerciseId: 'initial'
+  });
   const [quizSelectedOption, setQuizSelectedOption] = useState<Letter | null>(null);
   const [quizIsCorrect, setQuizIsCorrect] = useState<boolean | null>(null);
   const [quizShowDetails, setQuizShowDetails] = useState(false);
   
-  // Variables para el matching (nuevo sistema)
-  const [matchingOptions, setMatchingOptions] = useState<Letter[]>([]);
+  // Paquete para matching
+  const [matchingData, setMatchingData] = useState<{
+    correctLetter: Letter;
+    options: Letter[];
+    exerciseId: string;
+  }>({
+    correctLetter: currentLetter,
+    options: [],
+    exerciseId: 'initial'
+  });
   const [matchingSelectedOption, setMatchingSelectedOption] = useState<Letter | null>(null);
   const [matchingIsCorrect, setMatchingIsCorrect] = useState<boolean | null>(null);
   const [matchingShowDetails, setMatchingShowDetails] = useState(false);
@@ -144,11 +165,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [rewardType, setRewardType] = useState<'stars' | 'medals' | 'trophies'>(
     (settings.rewardType as 'stars' | 'medals' | 'trophies') || 'stars'
   );
-  
-  // Usar el alfabeto correspondiente al idioma seleccionado
-  const selectedLanguage = settings.language || 'english';
-  const alphabet = selectedLanguage === 'spanish' ? spanishAlphabet : englishAlphabet;
-  const currentLetter = alphabet[currentIndex];
 
   useEffect(() => {
     // Resetear estados
@@ -202,11 +218,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Efecto para generar opciones de quiz cuando cambia la letra o el tipo de ejercicio
   useEffect(() => {
     if (exerciseType === 'quiz') {
-      // Siempre incluir la letra correcta
-      const correctLetter = currentLetter;
+      // Crear un nuevo ID único para esta generación
+      const newExerciseId = `quiz-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Obtener una copia independiente de la letra actual
+      const currentQuizLetter = { ...currentLetter };
       
       // Crear el conjunto de opciones (3 aleatorias + la correcta)
-      let optionsSet: Letter[] = [correctLetter];
+      let optionsSet: Letter[] = [currentQuizLetter];
       
       // Necesitamos 3 letras aleatorias diferentes
       while (optionsSet.length < 4) {
@@ -215,25 +234,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // No agregar duplicados
         if (!optionsSet.some(opt => opt.uppercase === randomLetter.uppercase)) {
-          optionsSet.push(randomLetter);
+          optionsSet.push({ ...randomLetter }); // Copia para prevenir referencias
         }
       }
       
       // Mezclar las opciones
       const shuffledOptions = [...optionsSet].sort(() => Math.random() - 0.5);
       
-      // Actualizar el estado
-      setQuizOptions(shuffledOptions);
+      // Crear el paquete de datos sincronizado
+      const newQuizData = {
+        correctLetter: currentQuizLetter,
+        options: shuffledOptions,
+        exerciseId: newExerciseId
+      };
       
-      console.log('NUEVO SISTEMA QUIZ: Opciones generadas:', 
-        shuffledOptions.map(l => l.uppercase).join(', '));
-      console.log('NUEVO SISTEMA QUIZ: Letra correcta:', correctLetter.uppercase);
+      // Actualizar el estado con el paquete completo
+      setQuizData(newQuizData);
+      
+      console.log('QUIZ DATA UPDATE:');
+      console.log('- ID:', newExerciseId);
+      console.log('- Opciones:', shuffledOptions.map(l => l.uppercase).join(', '));
+      console.log('- Letra correcta:', currentQuizLetter.uppercase);
+      console.log('- Imagen correcta:', currentQuizLetter.image);
     }
-  }, [currentLetter, alphabet, exerciseType]);
+  }, [currentLetter, alphabet, exerciseType, currentIndex]);
   
   // Efecto para generar opciones de matching cuando cambia la letra o el tipo de ejercicio
   useEffect(() => {
     if (exerciseType === 'matching') {
+      // Crear un nuevo ID único para esta generación
+      const newExerciseId = `matching-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Obtener una copia independiente de la letra actual
+      const currentMatchingLetter = { ...currentLetter };
+      
       // Generar conjunto de opciones aleatorias para el matching
       const letterIndices: number[] = [];
       
@@ -246,18 +280,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
       
       // Convertir índices en letras
-      const randomLetters = letterIndices.map(index => alphabet[index]);
+      const randomLetters = letterIndices.map(index => ({ ...alphabet[index] }));
       
       // Agregar la letra actual y mezclar
-      const allOptions = [...randomLetters, currentLetter];
+      const allOptions = [...randomLetters, currentMatchingLetter];
       const shuffledOptions = [...allOptions].sort(() => Math.random() - 0.5);
       
-      // Actualizar estado
-      setMatchingOptions(shuffledOptions);
+      // Crear el paquete de datos sincronizado
+      const newMatchingData = {
+        correctLetter: currentMatchingLetter,
+        options: shuffledOptions,
+        exerciseId: newExerciseId
+      };
       
-      console.log('NUEVO SISTEMA MATCHING: Opciones generadas:', 
-        shuffledOptions.map(l => l.uppercase).join(', '));
-      console.log('NUEVO SISTEMA MATCHING: Letra correcta:', currentLetter.uppercase);
+      // Actualizar estado con el paquete completo
+      setMatchingData(newMatchingData);
+      
+      console.log('MATCHING DATA UPDATE:');
+      console.log('- ID:', newExerciseId);
+      console.log('- Opciones:', shuffledOptions.map(l => l.uppercase).join(', '));
+      console.log('- Letra correcta:', currentMatchingLetter.uppercase);
+      console.log('- Imagen correcta:', currentMatchingLetter.image);
     }
   }, [currentLetter, alphabet, currentIndex, exerciseType]);
   
@@ -322,14 +365,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleQuizOptionSelect = (selectedLetter: Letter) => {
     setQuizSelectedOption(selectedLetter);
     
-    // Comprobar si es correcta comparando directamente las letras
-    const isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
+    // Comprobar si es correcta comparando directamente con la letra correcta del paquete sincronizado
+    const correctLetter = quizData.correctLetter;
+    const isAnswerCorrect = selectedLetter.uppercase === correctLetter.uppercase;
     setQuizIsCorrect(isAnswerCorrect);
     setQuizShowDetails(true);
     
-    console.log('NUEVO SISTEMA QUIZ: Seleccionada:', selectedLetter.uppercase);
-    console.log('NUEVO SISTEMA QUIZ: Correcta:', currentLetter.uppercase);
-    console.log('NUEVO SISTEMA QUIZ: ¿Coinciden?', isAnswerCorrect);
+    console.log('QUIZ VERIFICATION:');
+    console.log('- Exercise ID:', quizData.exerciseId);
+    console.log('- Selected letter:', selectedLetter.uppercase);
+    console.log('- Correct letter:', correctLetter.uppercase);
+    console.log('- Correct letter image:', correctLetter.image);
+    console.log('- Coincide:', isAnswerCorrect);
     
     // Actualizar contadores
     if (isAnswerCorrect) {
@@ -355,20 +402,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Reproducir sonido de error
       if (settings.enableSoundEffects) {
-        playSound(`Incorrect. The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+        playSound(`Incorrect. The letter is ${correctLetter.uppercase} for ${correctLetter.word}`);
       }
     }
   };
   
   // Función para mostrar la respuesta directamente en el quiz
   const showQuizAnswer = () => {
-    setQuizSelectedOption(currentLetter);
+    // Usar la letra correcta del paquete sincronizado
+    const correctLetter = quizData.correctLetter;
+    setQuizSelectedOption(correctLetter);
     setQuizIsCorrect(true);
     setQuizShowDetails(true);
     
     // Reproducir sonido con la respuesta
     if (settings.enableSoundEffects) {
-      playSound(`The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+      playSound(`The letter is ${correctLetter.uppercase} for ${correctLetter.word}`);
     }
   };
 
@@ -376,14 +425,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleMatchingOptionSelect = (selectedLetter: Letter) => {
     setMatchingSelectedOption(selectedLetter);
     
-    // Comprobar si es correcta comparando directamente las letras
-    const isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
+    // Comprobar si es correcta comparando directamente con la letra correcta del paquete sincronizado
+    const correctLetter = matchingData.correctLetter;
+    const isAnswerCorrect = selectedLetter.uppercase === correctLetter.uppercase;
     setMatchingIsCorrect(isAnswerCorrect);
     setMatchingShowDetails(true);
     
-    console.log('NUEVO SISTEMA MATCHING: Seleccionada:', selectedLetter.uppercase);
-    console.log('NUEVO SISTEMA MATCHING: Correcta:', currentLetter.uppercase);
-    console.log('NUEVO SISTEMA MATCHING: ¿Coinciden?', isAnswerCorrect);
+    console.log('MATCHING VERIFICATION:');
+    console.log('- Exercise ID:', matchingData.exerciseId);
+    console.log('- Selected letter:', selectedLetter.uppercase);
+    console.log('- Correct letter:', correctLetter.uppercase);
+    console.log('- Correct letter image:', correctLetter.image);
+    console.log('- Coincide:', isAnswerCorrect);
     
     // Actualizar contadores
     if (isAnswerCorrect) {
@@ -409,20 +462,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Reproducir sonido de error
       if (settings.enableSoundEffects) {
-        playSound(`Incorrect. The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+        playSound(`Incorrect. The letter is ${correctLetter.uppercase} for ${correctLetter.word}`);
       }
     }
   };
   
   // Función para mostrar la respuesta directamente en el matching
   const showMatchingAnswer = () => {
-    setMatchingSelectedOption(currentLetter);
+    // Usar la letra correcta del paquete sincronizado
+    const correctLetter = matchingData.correctLetter;
+    setMatchingSelectedOption(correctLetter);
     setMatchingIsCorrect(true);
     setMatchingShowDetails(true);
     
     // Reproducir sonido con la respuesta
     if (settings.enableSoundEffects) {
-      playSound(`The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+      playSound(`The letter is ${correctLetter.uppercase} for ${correctLetter.word}`);
     }
   };
 
@@ -632,9 +687,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const renderQuiz = () => {
     // Si no hay opciones, mostrar loading
-    if (quizOptions.length === 0) {
+    if (quizData.options.length === 0) {
       return <div className="flex justify-center"><RefreshCw className="animate-spin" /></div>;
     }
+    
+    // Usar siempre la letra correcta del paquete sincronizado
+    const correctLetter = quizData.correctLetter;
     
     return (
       <div className="flex flex-col items-center">
@@ -643,17 +701,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             ? '¿Qué letra hace este sonido?'
             : 'Which letter makes this sound?'}
         </div>
-        <div className="text-6xl mb-6">{currentLetter.image}</div>
+        <div className="text-6xl mb-6">{correctLetter.image}</div>
         
         <div className="grid grid-cols-2 gap-4">
-          {quizOptions.map((option) => {
-            // Determinar si esta opción es la correcta
-            const isThisCorrect = option.uppercase === currentLetter.uppercase;
+          {quizData.options.map((option) => {
+            // Determinar si esta opción es la correcta comparando con el paquete
+            const isThisCorrect = option.uppercase === correctLetter.uppercase;
             const isSelected = quizSelectedOption?.uppercase === option.uppercase;
             
             return (
               <Button
-                key={`quiz-option-${option.uppercase}`}
+                key={`quiz-option-${option.uppercase}-${quizData.exerciseId}`}
                 size="lg"
                 variant={isSelected 
                   ? (isThisCorrect ? "default" : "destructive")
@@ -688,10 +746,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
               {selectedLanguage === 'spanish'
-                ? `${currentLetter.uppercase} es para ${currentLetter.word}`
-                : `${currentLetter.uppercase} is for ${currentLetter.word}`}
+                ? `${correctLetter.uppercase} es para ${correctLetter.word}`
+                : `${correctLetter.uppercase} is for ${correctLetter.word}`}
             </div>
-            <div className="text-6xl mt-2">{currentLetter.image}</div>
+            <div className="text-6xl mt-2">{correctLetter.image}</div>
           </div>
         )}
       </div>
@@ -700,9 +758,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const renderMatching = () => {
     // Si no hay opciones, mostrar loading
-    if (matchingOptions.length === 0) {
+    if (matchingData.options.length === 0) {
       return <div className="flex justify-center"><RefreshCw className="animate-spin" /></div>;
     }
+    
+    // Usar siempre la letra correcta del paquete sincronizado
+    const correctLetter = matchingData.correctLetter;
     
     return (
       <div className="flex flex-col items-center">
@@ -711,17 +772,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             ? '¿Qué letra va con esta imagen?' 
             : 'Which letter goes with this image?'}
         </h2>
-        <div className="text-6xl mb-6">{currentLetter.image}</div>
+        <div className="text-6xl mb-6">{correctLetter.image}</div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-          {matchingOptions.map((letter) => {
-            // Determinar si esta opción es la correcta
-            const isThisCorrect = letter.uppercase === currentLetter.uppercase;
+          {matchingData.options.map((letter) => {
+            // Determinar si esta opción es la correcta comparando con el paquete
+            const isThisCorrect = letter.uppercase === correctLetter.uppercase;
             const isSelected = matchingSelectedOption?.uppercase === letter.uppercase;
             
             return (
               <Button
-                key={`matching-option-${letter.uppercase}`}
+                key={`matching-option-${letter.uppercase}-${matchingData.exerciseId}`}
                 size="lg"
                 variant={isSelected 
                   ? (isThisCorrect ? "default" : "destructive") 
@@ -755,10 +816,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <div className="mt-6 flex flex-col items-center animate-fade-in">
             <div className="text-2xl font-medium">
               {selectedLanguage === 'spanish'
-                ? `${currentLetter.uppercase} es para ${currentLetter.word}`
-                : `${currentLetter.uppercase} is for ${currentLetter.word}`}
+                ? `${correctLetter.uppercase} es para ${correctLetter.word}`
+                : `${correctLetter.uppercase} is for ${correctLetter.word}`}
             </div>
-            <div className="text-6xl mt-2">{currentLetter.image}</div>
+            <div className="text-6xl mt-2">{correctLetter.image}</div>
           </div>
         )}
       </div>
