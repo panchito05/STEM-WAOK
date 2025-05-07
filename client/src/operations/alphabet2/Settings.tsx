@@ -51,10 +51,13 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     setIsSaving(true);
     
     try {
-      console.log('Guardando configuración:', data);
+      console.log('[ALPHABET2] Guardando configuración:', data);
       
-      // Guardar configuración
+      // Guardar configuración primero
       await updateModuleSettings('alphabet2', data);
+      
+      // Breve retraso para asegurar que la configuración se guarde completamente
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // Mostrar notificación de éxito
       toast({
@@ -63,10 +66,12 @@ export default function Settings({ settings, onBack }: SettingsProps) {
         variant: "default",
       });
       
-      // Volver a la pantalla anterior
+      console.log(`[ALPHABET2] Configuración guardada exitosamente. Dificultad: ${data.difficulty}`);
+      
+      // Volver a la pantalla anterior (ejercicio)
       onBack();
     } catch (error) {
-      console.error('Error al guardar la configuración:', error);
+      console.error('[ALPHABET2] Error al guardar la configuración:', error);
       
       // Mostrar notificación de error
       toast({
