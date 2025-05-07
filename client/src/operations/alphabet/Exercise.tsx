@@ -439,10 +439,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // 3. Actualizar el estado de correcto/incorrecto
     setIsCorrect(isAnswerCorrect);
     
-    // 4. Controlar explícitamente cuándo mostrar detalles
+    // 4. Si es la respuesta correcta, usamos EXACTAMENTE la misma lógica que el botón "Show Answer"
     if (isAnswerCorrect) {
-      // SOLO mostrar detalles si la respuesta es correcta
-      console.log("✅ Respuesta CORRECTA: mostrando detalles");
+      // Usar la misma lógica que showQuizAnswer/showMatchingAnswer
+      console.log("✅ Respuesta CORRECTA: mostrando detalles como el botón 'Show Answer'");
+      setIsCorrect(true);
       setShowDetails(true);
     } 
     else {
