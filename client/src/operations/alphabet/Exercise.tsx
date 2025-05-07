@@ -164,56 +164,66 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Genera un conjunto fijo de letras para el quiz (nivel intermediate)
   const generateInitialLetterSet = (): Letter[] => {
-    // Usar todas las letras del alfabeto, distribuidas uniformemente
+    // Usar todas las letras del alfabeto, pero asegurándonos de incluir la letra actual
     const letterSet: Letter[] = [...alphabet];
+    const currentLetterItem = alphabet[currentIndex];
     
-    // Ordenamos alfabéticamente para tener una base consistente
-    letterSet.sort((a, b) => a.uppercase.localeCompare(b.uppercase));
+    // Asegurarse de que currentLetterItem está incluido en el conjunto
+    const optionsWithoutCurrent = letterSet.filter(letter => 
+      letter.uppercase !== currentLetterItem.uppercase
+    );
     
-    // Mezclamos para tener variedad pero mantener las mismas posiciones en cada sesión
-    const shuffledSet = shuffleArray(letterSet);
+    // Mezclar el resto de las letras
+    const shuffledRest = shuffleArray(optionsWithoutCurrent);
     
-    // Tomamos solo 4 letras (esto es para el quiz - intermediate level)
-    const selectedFourLetters = shuffledSet.slice(0, 4);
+    // Tomar 3 letras aleatorias (además de la actual)
+    const randomThreeLetters = shuffledRest.slice(0, 3);
     
-    console.log("🌟 Conjunto inicial de letras generado para quiz");
-    return selectedFourLetters;
+    // Combinar con la letra actual y mezclar
+    const finalOptions = shuffleArray([...randomThreeLetters, currentLetterItem]);
+    
+    console.log("🌟 Conjunto inicial de letras generado para quiz, asegurando", currentLetterItem.uppercase);
+    return finalOptions;
   };
   
   // Genera un conjunto fijo de letras para el matching (nivel elementary)
   const generateInitialMatchingSet = (): Letter[] => {
-    // Usar todas las letras del alfabeto, distribuidas uniformemente
+    // Usar todas las letras del alfabeto, pero asegurándonos de incluir la letra actual
     const letterSet: Letter[] = [...alphabet];
+    const currentLetterItem = alphabet[currentIndex];
     
-    // Ordenamos alfabéticamente para tener una base consistente
-    letterSet.sort((a, b) => a.uppercase.localeCompare(b.uppercase));
+    // Asegurarse de que currentLetterItem está incluido en el conjunto
+    const optionsWithoutCurrent = letterSet.filter(letter => 
+      letter.uppercase !== currentLetterItem.uppercase
+    );
     
-    // Mezclamos para tener variedad pero mantener las mismas posiciones
-    const shuffledSet = shuffleArray(letterSet);
+    // Mezclar el resto de las letras
+    const shuffledRest = shuffleArray(optionsWithoutCurrent);
     
-    // Tomamos solo 8 letras (esto es para matching - elementary level)
-    const selectedEightLetters = shuffledSet.slice(0, 8);
+    // Tomar 7 letras aleatorias (además de la actual)
+    const randomSevenLetters = shuffledRest.slice(0, 7);
     
-    console.log("🌟 Conjunto inicial de letras generado para matching");
-    return selectedEightLetters;
+    // Combinar con la letra actual y mezclar
+    const finalOptions = shuffleArray([...randomSevenLetters, currentLetterItem]);
+    
+    console.log("🌟 Conjunto inicial de letras generado para matching, asegurando", currentLetterItem.uppercase);
+    return finalOptions;
   };
 
-  // Efecto que se ejecuta solo una vez al inicio
+  // Efecto para regenerar opciones cuando cambia la letra actual
   useEffect(() => {
-    // Generar opciones de quiz solo al inicio
-    if (quizOptions.length === 0 && settings.difficulty === 'intermediate') {
-      // Generar un conjunto fijo de letras para todas las preguntas
-      const initialLetters = generateInitialLetterSet();
-      setQuizOptions(initialLetters);
+    // Al cambiar de letra, debemos regenerar las opciones para incluir la letra correcta
+    if (settings.difficulty === 'intermediate') {
+      const updatedLetters = generateInitialLetterSet();
+      setQuizOptions(updatedLetters);
     }
     
-    // Generar opciones de matching solo al inicio
-    if (matchingOptions.length === 0 && settings.difficulty === 'elementary') {
-      // Generar un conjunto fijo de letras para todas las preguntas
-      const initialMatchingLetters = generateInitialMatchingSet();
-      setMatchingOptions(initialMatchingLetters);
+    // También regeneramos las opciones para el nivel elementary
+    if (settings.difficulty === 'elementary') {
+      const updatedMatchingLetters = generateInitialMatchingSet();
+      setMatchingOptions(updatedMatchingLetters);
     }
-  }, [settings.difficulty]);
+  }, [currentIndex, settings.difficulty]);
 
   // Efecto principal para cambios de letra y configuración
   useEffect(() => {
