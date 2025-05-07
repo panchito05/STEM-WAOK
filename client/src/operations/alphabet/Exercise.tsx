@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, EyeIcon, AlertCircle } from 'lucide-react';
+import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, EyeIcon, AlertCircle, Loader } from 'lucide-react';
 import { ModuleSettings } from '@/context/SettingsContext';
 import { useProgress } from '@/context/ProgressContext';
 import { Input } from '@/components/ui/input';
@@ -211,21 +211,41 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const generateQuizOptions = () => {
     // Always include the correct letter
     const correctLetter = alphabet[currentIndex];
+    console.log('Generando opciones para quiz - Letra correcta:', correctLetter.uppercase);
     
     // Get 3 random different letters
-    let options: Letter[] = [correctLetter];
-    while (options.length < 4) {
+    let options: Letter[] = [];
+    
+    // Primero agregamos la letra correcta
+    options.push(correctLetter);
+    
+    // Luego agregamos 3 letras aleatorias diferentes
+    let counter = 0;
+    const maxAttempts = 20; // Para evitar loops infinitos
+    
+    while (options.length < 4 && counter < maxAttempts) {
+      counter++;
       const randomIndex = Math.floor(Math.random() * alphabet.length);
       const randomLetter = alphabet[randomIndex];
       
-      // Don't add duplicates
+      // No agregar duplicados ni la letra actual
       if (!options.some(option => option.uppercase === randomLetter.uppercase)) {
         options.push(randomLetter);
       }
     }
     
-    // Shuffle options
-    setQuizOptions(shuffleArray(options));
+    // Shuffle options usando un nuevo método más seguro
+    const shuffledOptions = [...options].sort(() => Math.random() - 0.5);
+    
+    // Guardar índice de la respuesta correcta para referencia
+    const correctIndex = shuffledOptions.findIndex(
+      option => option.uppercase === correctLetter.uppercase
+    );
+    
+    console.log('Opciones de quiz generadas:', shuffledOptions.map(l => l.uppercase).join(', '));
+    console.log('Índice correcto:', correctIndex);
+    
+    setQuizOptions(shuffledOptions);
   };
   
   // Generar opciones para el modo matching
@@ -233,7 +253,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     console.log('Generando opciones de matching para la letra:', currentLetter.uppercase);
     
     // Crear un conjunto de opciones con letras dispersas (no solo del inicio)
-    const letterIndices = [];
+    const letterIndices: number[] = [];
     
     // Elegir índices aleatorios para 7 letras diferentes (excluyendo la letra actual)
     while (letterIndices.length < 7) {
@@ -511,16 +531,34 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const renderQuiz = () => {
-    // Usamos selectedLanguage que ya fue definido
+    // Asegurarse de que tengamos opciones generadas
+    if (quizOptions.length === 0) {
+      generateQuizOptions();
+      return <div className="flex justify-center"><RefreshCw className="animate-spin" /></div>;
+    }
+    
+    console.log('Renderizando quiz con opciones:', quizOptions.map(o => o.uppercase).join(', '));
+    console.log('Letra actual correcta:', currentLetter.uppercase);
+    
+    // Encontrar el índice de la letra correcta en las opciones
+    const correctOptionIndex = quizOptions.findIndex(opt => 
+      opt.uppercase === currentLetter.uppercase
+    );
+    
+    console.log('Índice correcto en opciones:', correctOptionIndex);
     
     // Función para mostrar la respuesta sin esperar selección
     const showQuizAnswer = () => {
-      // Marcar la opción correcta
-      const correctIndex = quizOptions.findIndex(option => 
-        option.uppercase === currentLetter.uppercase);
-      
-      setSelectedOption(correctIndex);
-      setIsCorrect(true);
+      // Seleccionar la opción correcta
+      if (correctOptionIndex >= 0) {
+        setSelectedOption(correctOptionIndex);
+        setIsCorrect(true);
+      } else {
+        console.error('ERROR! Letra correcta no encontrada en opciones');
+        // Fallback
+        setSelectedOption(0);
+        setIsCorrect(false);
+      }
       setShowDetails(true);
     };
     
@@ -534,24 +572,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="text-6xl mb-6">{currentLetter.image}</div>
         
         <div className="grid grid-cols-2 gap-4">
-          {quizOptions.map((option, index) => (
-            <Button
-              key={index}
-              size="lg"
-              variant={selectedOption === index 
-                ? isCorrect ? "default" : "destructive" 
-                : "outline"}
-              className={`text-4xl h-20 w-20 ${
-                selectedOption !== null && option.uppercase === currentLetter.uppercase 
-                  ? "ring-2 ring-green-500" 
-                  : ""
-              }`}
-              onClick={() => handleQuizOptionSelect(index)}
-              disabled={selectedOption !== null}
-            >
-              {option.uppercase}
-            </Button>
-          ))}
+          {quizOptions.map((option, index) => {
+            // Determinar si esta opción es la correcta
+            const isThisCorrect = option.uppercase === currentLetter.uppercase;
+            
+            return (
+              <Button
+                key={`quiz-option-${index}-${option.uppercase}`}
+                size="lg"
+                variant={selectedOption === index 
+                  ? (isThisCorrect ? "default" : "destructive")
+                  : "outline"
+                }
+                className={`text-4xl h-20 w-20 ${
+                  selectedOption !== null && isThisCorrect
+                    ? "ring-2 ring-green-500" 
+                    : ""
+                }`}
+                onClick={() => handleQuizOptionSelect(index)}
+                disabled={selectedOption !== null}
+              >
+                {option.uppercase}
+              </Button>
+            );
+          })}
         </div>
         
         {selectedOption === null && (
