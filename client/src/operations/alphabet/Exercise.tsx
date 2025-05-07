@@ -1,12 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check, Award } from 'lucide-react';
+import { Volume2, ArrowLeft, ArrowRight, Cog, RefreshCw, Check } from 'lucide-react';
 import { ModuleSettings } from '@/context/SettingsContext';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAccessibleDnd } from '@/components/AccessibleDndContext';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -50,9 +48,6 @@ const alphabet: Letter[] = [
 ];
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
-  // Acceso al contexto de drag and drop
-  const { useDragItem, useDropTarget } = useAccessibleDnd();
-  
   // Variables de estado básicas
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
