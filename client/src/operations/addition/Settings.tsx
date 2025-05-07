@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ModuleSettings } from "@/context/SettingsContext";
 import { useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { defaultModuleSettings } from "@/utils/operationComponents";
 import DifficultyExamples from "@/components/DifficultyExamples";
+import { debounce } from "@/lib/utils";
 
 interface SettingsProps {
   settings: ModuleSettings;
@@ -20,14 +21,23 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   const { updateModuleSettings, resetModuleSettings } = useSettings();
   const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-
-  // Guardar automáticamente cada vez que cambia un ajuste
+  
+  // Referencia a la función debounced para guardar la configuración
+  const debouncedSave = useMemo(
+    () =>
+      debounce((settings: ModuleSettings) => {
+        updateModuleSettings("addition", settings);
+        console.log(`[ADDITION] Guardando configuración (debounced):`, settings);
+      }, 1000), // 1 segundo de espera antes de guardar
+    [updateModuleSettings]
+  );
+  
+  // Guardar automáticamente cada vez que cambia un ajuste (con debounce)
   const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
     const updatedSettings = { ...localSettings, [key]: value };
     setLocalSettings(updatedSettings);
-    // Guardar automáticamente cuando cambia cualquier configuración
-    updateModuleSettings("addition", updatedSettings);
-    console.log(`[ADDITION] Guardando configuración:`, updatedSettings);
+    // Usar debounce para evitar múltiples llamadas de guardado
+    debouncedSave(updatedSettings);
   };
   
   // Para poder navegar entre la configuración y el ejercicio sin perder cambios
