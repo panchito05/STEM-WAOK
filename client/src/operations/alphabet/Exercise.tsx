@@ -195,13 +195,15 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Generate quiz options: one correct, three random
   const prepareQuizOptions = () => {
-    // Primero verificamos que currentLetter esté definido correctamente
-    // console.log("Preparando quiz para:", currentLetter);
+    // SOLUCIÓN AL PROBLEMA DE DESFASE:
+    // Almacenamos una copia exacta de la letra actual que se muestra en UI
+    // y la usamos para la validación de respuestas correctas
+    const letterToUse = {...alphabet[currentIndex]};
     
-    // Start with the correct answer - esta debe ser la letra que corresponde a la imagen mostrada
-    // El problema estaba aquí, ya que existía un desfase entre la imagen mostrada y la letra esperada
-    const correctLetter = currentLetter; // Aseguramos que la letra correcta es la actual
-    let options = [correctLetter];
+    console.log("Letra actual para quiz:", letterToUse.uppercase, letterToUse.word, letterToUse.image);
+    
+    // Start with the correct answer
+    let options = [letterToUse];
     
     // Add three random letters that are different from current
     while (options.length < 4) {
@@ -345,16 +347,19 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleQuizOptionSelect = (letter: Letter) => {
     setSelectedOption(letter);
     
-    // La respuesta correcta DEBE ser la letra actual que se muestra en la UI
-    // y debe corresponder con la imagen mostrada
-    // IMPORTANTE: La validación debe hacerse contra currentLetter 
-    // (la letra correspondiente a la imagen mostrada)
-    const isAnswerCorrect = letter.id === currentLetter.id;
+    // SOLUCIÓN PARA DESFASE:
+    // En lugar de comparar con currentLetter (que puede cambiar),
+    // verificamos si la opción seleccionada está en quizOptions[0],
+    // que es donde guardamos la letra correcta al generar las opciones
+    const correctLetter = quizOptions[0]; // La primera opción siempre es la correcta (antes de mezclar)
     
-    // Debugging (descomentar si es necesario)
-    // console.log("Usuario seleccionó:", letter.uppercase, letter.word);
-    // console.log("Letra correcta:", currentLetter.uppercase, currentLetter.word);
-    // console.log("¿Es correcta?:", isAnswerCorrect);
+    // Comprobación por ID, que es único para cada letra
+    const isAnswerCorrect = letter.id === correctLetter.id;
+    
+    // Debugging para verificar el problema
+    console.log("▶️ Quiz: Usuario seleccionó:", letter.uppercase, letter.word);
+    console.log("✓ Quiz: Letra correcta:", correctLetter.uppercase, correctLetter.word);
+    console.log("Quiz: ¿Es correcta?:", isAnswerCorrect);
     
     setIsCorrect(isAnswerCorrect);
     setShowDetails(true);
@@ -364,7 +369,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (isAnswerCorrect) {
       playSound("Correct! Good job!");
     } else {
-      playSound(`Incorrect. The letter is ${currentLetter.uppercase} for ${currentLetter.word}`);
+      playSound(`Incorrect. The letter is ${correctLetter.uppercase} for ${correctLetter.word}`);
     }
   };
   
@@ -646,63 +651,75 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     </div>
   );
   
-  const renderQuizMode = () => (
-    <div className="flex flex-col items-center">
-      <div className="text-2xl font-medium mb-4">
-        {t('whichLetterMakesThisSound')}
-      </div>
-      {/* Esta es la imagen que debe corresponder exactamente a la letra actual */}
-      <div className="text-6xl mb-6">{currentLetter.image}</div>
-      
-      <div className="grid grid-cols-2 gap-4">
-        {quizOptions.map((option) => {
-          // Esta comparación debe hacer match con la letra actual y su imagen
-          const isThisCorrect = option.id === currentLetter.id;
-          const isSelected = selectedOption?.id === option.id;
-          
-          return (
-            <Button
-              key={`quiz-option-${option.id}`}
-              size="lg"
-              variant={isSelected 
-                ? (isThisCorrect ? "default" : "destructive")
-                : "outline"
-              }
-              className={`text-4xl h-20 w-20 ${
-                selectedOption && isThisCorrect
-                  ? "ring-2 ring-green-500" 
-                  : ""
-              }`}
-              onClick={() => handleQuizOptionSelect(option)}
-              disabled={selectedOption !== null}
-            >
-              {option.uppercase}
-            </Button>
-          );
-        })}
-      </div>
-      
-      {selectedOption === null && (
-        <Button 
-          variant="outline"
-          onClick={showAnswer}
-          className="mt-4"
-        >
-          <EyeIcon className="mr-2 h-4 w-4" />
-          {t('showAnswer')}
-        </Button>
-      )}
-      
-      {showDetails && (
-        <div className="mt-6 flex flex-col items-center animate-fade-in">
-          <div className="text-2xl font-medium">
-            {`${currentLetter.uppercase} ${t('isFor')} ${currentLetter.word}`}
-          </div>
-          <div className="text-6xl mt-2">{currentLetter.image}</div>
+  const renderQuizMode = () => {
+    // Si no hay opciones disponibles o estamos cambiando entre letras, evitamos renderizar
+    if (quizOptions.length === 0) {
+      return <div className="flex flex-col items-center">
+        <div className="text-xl">Loading quiz options...</div>
+      </div>;
+    }
+    
+    // La primera opción (antes de mezclar) SIEMPRE es la letra correcta
+    const correctLetter = quizOptions[0];
+    
+    return (
+      <div className="flex flex-col items-center">
+        <div className="text-2xl font-medium mb-4">
+          {t('whichLetterMakesThisSound')}
         </div>
-      )}
-    </div>
-  );
+        {/* Usamos la imagen de la letra correcta guardada en quizOptions */}
+        <div className="text-6xl mb-6">{correctLetter.image}</div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          {quizOptions.map((option) => {
+            // Comparamos con la letra correcta desde quizOptions
+            const isThisCorrect = option.id === correctLetter.id;
+            const isSelected = selectedOption?.id === option.id;
+            
+            return (
+              <Button
+                key={`quiz-option-${option.id}`}
+                size="lg"
+                variant={isSelected 
+                  ? (isThisCorrect ? "default" : "destructive")
+                  : "outline"
+                }
+                className={`text-4xl h-20 w-20 ${
+                  selectedOption && isThisCorrect
+                    ? "ring-2 ring-green-500" 
+                    : ""
+                }`}
+                onClick={() => handleQuizOptionSelect(option)}
+                disabled={selectedOption !== null}
+              >
+                {option.uppercase}
+              </Button>
+            );
+          })}
+        </div>
+        
+        {selectedOption === null && (
+          <Button 
+            variant="outline"
+            onClick={showAnswer}
+            className="mt-4"
+          >
+            <EyeIcon className="mr-2 h-4 w-4" />
+            {t('showAnswer')}
+          </Button>
+        )}
+        
+        {showDetails && (
+          <div className="mt-6 flex flex-col items-center animate-fade-in">
+            <div className="text-2xl font-medium">
+              {`${correctLetter.uppercase} ${t('isFor')} ${correctLetter.word}`}
+            </div>
+            <div className="text-6xl mt-2">{correctLetter.image}</div>
+          </div>
+        )}
+      </div>
+    );
+  };
   
   const renderMatchingMode = () => (
     <div className="flex flex-col items-center">
