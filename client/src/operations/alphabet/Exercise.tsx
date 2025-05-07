@@ -11,8 +11,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Progress } from '@/components/ui/progress';
 import { useTranslations } from '@/hooks/use-translations';
-// Importamos solo el tipo de ExerciseType, ya que usamos nuestra propia definición de Letter
-import { ExerciseType } from '@/store/alphabetStore';
+// Definimos nuestro propio tipo de ejercicio para evitar cualquier dependencia externa
+type ExerciseType = 'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed';
 
 interface ExerciseProps {
   settings: ModuleSettings;
