@@ -11,6 +11,7 @@ import { useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider } from 'react-dnd';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatTime } from '@/lib/utils';
 
 interface ExerciseProps {
@@ -554,7 +555,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   // Efecto para regenerar opciones cuando cambia la letra actual
-  // Genera datos para el ejercicio de asociación de imágenes
   const generateImageAssociationData = () => {
     const currentLetterItem = alphabet[currentIndex];
     const alternatives = selectedLanguage === 'spanish' ? spanishAlternatives : englishAlternatives;
@@ -717,7 +717,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setAdjacentCorrect({ before: false, after: false });
     
     // Determinar el tipo de ejercicio según el nivel de dificultad
-    let newExerciseType: 'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed' = 'basic';
+    let newExerciseType: 'basic' | 'matching' | 'quiz' | 'ordering' | 'adjacentLetters' | 'mixed' | 'imageAssociation' = 'imageAssociation';
     
     // Si estamos en nivel Expert y tenemos más de 10 respuestas correctas, mezclamos todos los tipos
     if (settings.difficulty === 'expert' && correctAnswers >= 10) {
@@ -727,24 +727,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       newExerciseType = types[Math.floor(Math.random() * types.length)];
     } else {
       // Asignar tipo según nivel de dificultad
-      switch (settings.difficulty) {
-        case 'beginner':
-          newExerciseType = 'basic';
-          break;
-        case 'elementary':
-          newExerciseType = 'matching';
-          break;
-        case 'intermediate':
-          newExerciseType = 'quiz';
-          break;
-        case 'advanced':
-          newExerciseType = 'ordering';
-          break;
-        case 'expert':
-          newExerciseType = 'adjacentLetters';
-          break;
-        default:
-          newExerciseType = 'basic';
+      // Si queremos que el nuevo ejercicio de imágenes sea el predeterminado
+      if (settings.difficulty === 'beginner') {
+        newExerciseType = 'imageAssociation';
+        // Modo más sencillo para principiantes
+        setImageAssociationMode('letterToImages');
+      } else if (settings.difficulty === 'elementary') {
+        // Segundo nivel de dificultad
+        newExerciseType = 'imageAssociation';
+        // Modo más desafiante
+        setImageAssociationMode('imageToLetters');
+      } else {
+        // Para los demás niveles, mantener los ejercicios originales
+        switch (settings.difficulty) {
+          case 'intermediate':
+            newExerciseType = 'quiz';
+            break;
+          case 'advanced':
+            newExerciseType = 'ordering';
+            break;
+          case 'expert':
+            newExerciseType = 'adjacentLetters';
+            break;
+          default:
+            newExerciseType = 'imageAssociation';
+        }
       }
     }
     
@@ -794,6 +801,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
   
+  // No es necesaria esta función duplicada aquí, ya está definida más arriba
+
   // Generador de opciones para el ejercicio de matching
   const generateMatchingOptions = () => {
     // Always include the correct letter
@@ -1560,7 +1569,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
   
   // Renderiza el ejercicio de letras adyacentes (Expert)
-  // Renderiza el ejercicio de asociación de imágenes
   const renderImageAssociation = () => {
     if (!imageAssociationData) {
       return <div className="flex justify-center items-center h-40">Cargando...</div>;
@@ -1702,20 +1710,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         {/* Modos de ejercicio (pestañas) */}
         <div className="mt-8 w-full max-w-md">
-          <Tabs 
-            defaultValue={imageAssociationMode} 
-            onValueChange={(value) => setImageAssociationMode(value as 'letterToImages' | 'imageToLetters')}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="letterToImages">
-                {selectedLanguage === 'spanish' ? 'Letra → Imagen' : 'Letter → Image'}
-              </TabsTrigger>
-              <TabsTrigger value="imageToLetters">
-                {selectedLanguage === 'spanish' ? 'Imagen → Letra' : 'Image → Letter'}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex space-x-4">
+            <Button 
+              variant={imageAssociationMode === 'letterToImages' ? 'default' : 'outline'}
+              onClick={() => setImageAssociationMode('letterToImages')}
+            >
+              {selectedLanguage === 'spanish' ? 'Letra → Imagen' : 'Letter → Image'}
+            </Button>
+            <Button
+              variant={imageAssociationMode === 'imageToLetters' ? 'default' : 'outline'}
+              onClick={() => setImageAssociationMode('imageToLetters')}
+            >
+              {selectedLanguage === 'spanish' ? 'Imagen → Letra' : 'Image → Letter'}
+            </Button>
+          </div>
         </div>
       </div>
     );
