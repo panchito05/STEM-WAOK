@@ -230,19 +230,32 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Generar opciones para el modo matching
   const generateMatchingOptions = () => {
-    // Lista de 8 letras aleatorias para seleccionar
-    let options = shuffleArray(alphabet.slice(0, 8));
+    console.log('Generando opciones de matching para la letra:', currentLetter.uppercase);
     
-    // Asegúrarse de que la letra actual esté entre las opciones
-    const hasCurrentLetter = options.some(letter => letter.uppercase === currentLetter.uppercase);
-    if (!hasCurrentLetter) {
-      // Reemplazar una letra aleatoria con la actual
-      const randomIndex = Math.floor(Math.random() * options.length);
-      options[randomIndex] = currentLetter;
+    // Crear un conjunto de opciones con letras dispersas (no solo del inicio)
+    const letterIndices = [];
+    
+    // Elegir índices aleatorios para 7 letras diferentes (excluyendo la letra actual)
+    while (letterIndices.length < 7) {
+      const randomIndex = Math.floor(Math.random() * alphabet.length);
+      // No incluir la letra actual ni duplicados
+      if (randomIndex !== currentIndex && !letterIndices.includes(randomIndex)) {
+        letterIndices.push(randomIndex);
+      }
     }
     
+    // Extraer las letras basadas en los índices aleatorios
+    const randomLetters = letterIndices.map(index => alphabet[index]);
+    
+    // Agregar la letra actual a las opciones
+    const options = [...randomLetters, currentLetter];
+    
+    // Mezclar las opciones para que la letra actual no esté siempre al final
+    const shuffledOptions = shuffleArray(options);
+    
     // Guardar en el estado
-    setLetterOptions(options);
+    console.log('Opciones generadas:', shuffledOptions.map(l => l.uppercase).join(', '));
+    setLetterOptions(shuffledOptions);
   };
 
   const shuffleArray = <T extends unknown>(array: T[]): T[] => {
@@ -302,6 +315,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Actualiza el manejo de opciones para el quiz
   const handleQuizOptionSelect = (index: number) => {
+    console.log('-----------------------------------');
+    console.log('Exercise Type:', exerciseType);
+    console.log('Selected Index:', index);
+    console.log('Current Letter:', currentLetter.uppercase);
+    
+    // Registrar el índice seleccionado
     setSelectedOption(index);
     
     let selectedLetter: Letter;
@@ -310,19 +329,29 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Si estamos en el modo quiz, usamos las opciones del quiz
     if (exerciseType === 'quiz') {
       selectedLetter = quizOptions[index];
+      console.log('Quiz Option at index', index, '=', selectedLetter.uppercase);
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
     } 
     // Si estamos en modo matching, usamos las opciones mostradas
     else if (exerciseType === 'matching') {
       // Importante: Usamos las mismas letras que se muestran en el renderMatching
-      selectedLetter = letterOptions[index];
+      console.log('LetterOptions length:', letterOptions.length);
+      if (letterOptions.length > index) {
+        selectedLetter = letterOptions[index];
+        console.log('Matching Option at index', index, '=', selectedLetter.uppercase);
+      } else {
+        console.error('ERROR! Index out of bounds for letterOptions');
+        selectedLetter = currentLetter; // Fallback
+      }
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
     } 
     // Por defecto
     else {
       selectedLetter = alphabet[index % alphabet.length];
+      console.log('Default Option at index', index, '=', selectedLetter.uppercase);
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
     }
+    console.log('Is Correct?', isAnswerCorrect);
     
     setIsCorrect(isAnswerCorrect);
     
@@ -431,17 +460,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const renderLetterDisplay = () => {
+    // Función para mostrar la respuesta directamente
+    const showBasicAnswer = () => {
+      setShowDetails(true);
+      if (settings.enableSoundEffects) {
+        playSound(`${currentLetter.uppercase}. ${currentLetter.word}`);
+      }
+    };
+    
     return (
-      <div 
-        className="cursor-pointer flex flex-col items-center justify-center"
-        onClick={handleLetterClick}
-      >
-        <div className="text-9xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
+      <div className="flex flex-col items-center justify-center">
+        <div 
+          className="cursor-pointer text-9xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text"
+          onClick={handleLetterClick}
+        >
           {currentLetter.uppercase}
           {settings.showImmediateFeedback && (
             <span className="text-7xl ml-4">{currentLetter.lowercase}</span>
           )}
         </div>
+        
+        {!showDetails && (
+          <Button 
+            variant="outline"
+            onClick={showBasicAnswer}
+            className="mt-2 mb-4"
+          >
+            <EyeIcon className="mr-2 h-4 w-4" />
+            {selectedLanguage === 'spanish' ? 'Mostrar Respuesta' : 'Show Answer'}
+          </Button>
+        )}
         
         {showDetails && (
           <div className="flex flex-col items-center animate-fade-in">
