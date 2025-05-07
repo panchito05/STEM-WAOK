@@ -527,6 +527,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (settings.enableCompensation && (incorrectAnswersCount > 0 || revealedAnswersCount > 0)) {
       const compensationProblemsNeeded = incorrectAnswersCount + revealedAnswersCount;
       
+      console.log("[COMPENSATION] Se necesitan problemas de compensación:", compensationProblemsNeeded);
+      console.log("[COMPENSATION] Respuestas incorrectas:", incorrectAnswersCount);
+      console.log("[COMPENSATION] Respuestas reveladas:", revealedAnswersCount);
+      
       if (compensationProblemsNeeded > 0) {
         // Crear nuevos problemas de compensación
         const newProblems: Problem[] = [];
@@ -537,8 +541,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           newProblems.push(generateAdditionProblem(difficultyToUse));
         }
         
+        console.log("[COMPENSATION] Nuevos problemas generados:", newProblems.length);
+        
         // Añadir estos problemas a la lista existente
-        setProblems(prev => [...prev, ...newProblems]);
+        setProblems(prev => {
+          const updatedProblems = [...prev, ...newProblems];
+          console.log("[COMPENSATION] Total de problemas ahora:", updatedProblems.length);
+          return updatedProblems;
+        });
         
         // Mostrar mensaje informativo sobre problemas adicionales
         setFeedbackMessage(`Añadidos ${compensationProblemsNeeded} problemas de compensación`);
@@ -552,6 +562,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setTimeout(() => {
           setFeedbackMessage(null);
           setFeedbackColor(null);
+          
+          // Importante: como se han añadido nuevos problemas pero current index no cambia, 
+          // es necesario continuar en lugar de terminar el ejercicio
+          if (currentProblemIndex >= problems.length - compensationProblemsNeeded - 1) {
+            console.log("[COMPENSATION] Continuando con el problema:", currentProblemIndex + 1);
+            
+            // NO completamos el ejercicio, continuamos con los problemas de compensación
+            setCurrentProblemIndex(currentProblemIndex + 1);
+            setUserAnswer("");
+            setShowingExplanation(false);
+          }
         }, 2000);
         
         return; // No completamos el ejercicio todavía
