@@ -288,10 +288,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       selectedLetter = quizOptions[index];
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
     } 
-    // Si estamos en modo matching, comparamos con la letra actual
+    // Si estamos en modo matching, usamos las opciones mostradas
     else if (exerciseType === 'matching') {
-      const randomLetters = shuffleArray(alphabet.slice(0, 8));
-      selectedLetter = randomLetters[index];
+      // Importante: Usamos las mismas letras que se muestran en el renderMatching
+      selectedLetter = letterOptions[index];
       isAnswerCorrect = selectedLetter.uppercase === currentLetter.uppercase;
     } 
     // Por defecto
