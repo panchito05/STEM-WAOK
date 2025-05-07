@@ -64,41 +64,20 @@ export default function Settings({ settings, onBack }: SettingsProps) {
       <div className="space-y-6">
         <div>
           <h3 className="text-lg font-medium text-gray-900">Difficulty Level</h3>
-          <div className="mt-2">
-            <RadioGroup
-              value={localSettings.difficulty}
-              onValueChange={(value) => handleUpdateSetting("difficulty", value as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="beginner" id="beginner" />
-                  <Label htmlFor="beginner">Beginner</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="elementary" id="elementary" />
-                  <Label htmlFor="elementary">Elementary</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="intermediate" id="intermediate" />
-                  <Label htmlFor="intermediate">Intermediate</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="advanced" id="advanced" />
-                  <Label htmlFor="advanced">Advanced</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="expert" id="expert" />
-                  <Label htmlFor="expert">Expert</Label>
-                </div>
-              </div>
-            </RadioGroup>
-            
-            {/* Visual examples of difficulty levels */}
-            <div className="mt-4 mb-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
-              <DifficultyExamples operation="addition" />
-            </div>
-            
-            <p className="mt-2 text-sm text-gray-500">
+          <p className="text-sm text-gray-500 mb-2">Haz clic en un ejemplo para cambiar el nivel de dificultad:</p>
+          
+          <div className="mt-4 mb-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <DifficultyExamples 
+              operation="addition" 
+              activeDifficulty={localSettings.difficulty}
+              onSelectDifficulty={(difficulty) => 
+                handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
+              }
+            />
+          </div>
+          
+          <div className="mt-2 mb-4">
+            <p className="text-sm text-gray-500">
               <span className="font-medium">Beginner:</span> Single-digit addition (1+1 to 9+9)
             </p>
             <p className="text-sm text-gray-500">

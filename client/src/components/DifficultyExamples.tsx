@@ -4,16 +4,20 @@ interface DifficultyExampleProps {
   level: string;
   examples: string[];
   active?: boolean;
+  onClick?: () => void;
 }
 
-function DifficultyExample({ level, examples, active = false }: DifficultyExampleProps) {
+function DifficultyExample({ level, examples, active = false, onClick }: DifficultyExampleProps) {
   // Color para la tarjeta activa (seleccionada) y no activa
   const activeClass = active 
     ? "bg-blue-900 border-blue-700 text-white" 
-    : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700";
+    : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:scale-105";
 
   return (
-    <Card className={`w-full border border-gray-700 ${activeClass} transition-colors`}>
+    <Card 
+      className={`w-full border border-gray-700 ${activeClass} transition-all cursor-pointer`}
+      onClick={onClick}
+    >
       <CardContent className="p-4">
         <CardTitle className="text-lg font-medium mb-2">{level}</CardTitle>
         <div className="space-y-1 mt-2">
@@ -26,7 +30,15 @@ function DifficultyExample({ level, examples, active = false }: DifficultyExampl
   );
 }
 
-export default function DifficultyExamples({ operation = "addition" }: { operation?: string }) {
+export default function DifficultyExamples({ 
+  operation = "addition", 
+  activeDifficulty = "beginner", 
+  onSelectDifficulty
+}: { 
+  operation?: string; 
+  activeDifficulty?: string;
+  onSelectDifficulty?: (difficulty: string) => void;
+}) {
   // Ejemplos específicos para diferentes operaciones
   const examples = {
     addition: {
@@ -62,6 +74,9 @@ export default function DifficultyExamples({ operation = "addition" }: { operati
   const selectedOperation = operation in examples ? operation : "addition";
   const operationExamples = examples[selectedOperation as keyof typeof examples];
 
+  // Si no hay función para cambiar dificultad, mostrar como solo lectura
+  const handleClick = onSelectDifficulty ? onSelectDifficulty : undefined;
+  
   return (
     <div className="w-full">
       <h3 className="text-xl font-bold mb-4">Difficulty Examples</h3>
@@ -69,23 +84,32 @@ export default function DifficultyExamples({ operation = "addition" }: { operati
         <DifficultyExample 
           level="Beginner"
           examples={operationExamples.beginner} 
-          active={true} 
+          active={activeDifficulty === "beginner"}
+          onClick={handleClick ? () => handleClick("beginner") : undefined}
         />
         <DifficultyExample 
           level="Elementary"
           examples={operationExamples.elementary} 
+          active={activeDifficulty === "elementary"}
+          onClick={handleClick ? () => handleClick("elementary") : undefined}
         />
         <DifficultyExample 
           level="Intermediate"
           examples={operationExamples.intermediate} 
+          active={activeDifficulty === "intermediate"}
+          onClick={handleClick ? () => handleClick("intermediate") : undefined}
         />
         <DifficultyExample 
           level="Advanced"
           examples={operationExamples.advanced} 
+          active={activeDifficulty === "advanced"}
+          onClick={handleClick ? () => handleClick("advanced") : undefined}
         />
         <DifficultyExample 
           level="Expert"
           examples={operationExamples.expert} 
+          active={activeDifficulty === "expert"}
+          onClick={handleClick ? () => handleClick("expert") : undefined}
         />
       </div>
     </div>
