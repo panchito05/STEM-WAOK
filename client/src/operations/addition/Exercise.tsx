@@ -147,6 +147,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                         // Limpiamos este intervalo
                         if (problemTimerRef.current) {
                           clearInterval(problemTimerRef.current);
+                          problemTimerRef.current = null; // Importante establecer a null para evitar doble limpieza
                         }
                         
                         // Incrementamos el contador de intentos de nuevo
@@ -163,11 +164,41 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                               setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
                               setFeedbackColor("red");
                               
-                              // Iniciamos un nuevo temporizador
+                              // Iniciamos un nuevo temporizador correctamente recursivo
                               setProblemTimer(settings.timeValue);
-                              problemTimerRef.current = window.setInterval(() => {
-                                setProblemTimer(p => p > 0 ? p - 1 : 0);
+                              const newTimer = window.setInterval(() => {
+                                setProblemTimer(p => {
+                                  if (p <= 1) {
+                                    // Si llega a cero de nuevo
+                                    if (newTimer) {
+                                      clearInterval(newTimer);
+                                    }
+                                    
+                                    // Incrementamos intentos una vez más
+                                    setCurrentAttempts(previousAttempts => {
+                                      const nextAttempts = previousAttempts + 1;
+                                      console.log("Incrementando intentos a:", nextAttempts);
+                                      
+                                      // Verificamos máximo de intentos
+                                      if (settings.maxAttempts > 0 && nextAttempts >= settings.maxAttempts) {
+                                        // Si alcanzó el máximo, mostrar respuesta
+                                        handleMaxAttemptsReached();
+                                      } else {
+                                        // Aún hay intentos disponibles, reiniciar timer
+                                        setupNewTimer(nextAttempts);
+                                      }
+                                      
+                                      return nextAttempts;
+                                    });
+                                    
+                                    return 0;
+                                  }
+                                  return p - 1; // Decrementar temporizador
+                                });
                               }, 1000);
+                              
+                              // Guardamos la referencia del nuevo temporizador
+                              problemTimerRef.current = newTimer;
                               
                               // Limpiar el mensaje después de un momento
                               setTimeout(() => {
@@ -296,6 +327,58 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setAnswers(prev => [...prev, answer]);
       moveToNextProblem();
     }, 2000);
+  };
+
+  // Función auxiliar para configurar un nuevo temporizador
+  const setupNewTimer = (currentAttemptsCount: number) => {
+    // Mostramos mensaje de tiempo agotado nuevamente
+    setTimeout(() => {
+      setFeedbackMessage("¡Tiempo agotado! Intenta de nuevo.");
+      setFeedbackColor("red");
+      
+      // Reiniciamos el temporizador con el valor configurado
+      setProblemTimer(settings.timeValue);
+      
+      // Creamos un nuevo temporizador
+      const timerInstance = window.setInterval(() => {
+        setProblemTimer(p => {
+          if (p <= 1) {
+            // Si llega a cero de nuevo
+            if (timerInstance) {
+              clearInterval(timerInstance);
+            }
+            
+            // Incrementamos intentos una vez más
+            setCurrentAttempts(previousAttempts => {
+              const nextAttemptsCount = previousAttempts + 1;
+              console.log("Incrementando intentos a:", nextAttemptsCount);
+              
+              // Verificamos máximo de intentos
+              if (settings.maxAttempts > 0 && nextAttemptsCount >= settings.maxAttempts) {
+                handleMaxAttemptsReached();
+              } else {
+                // Todavía hay intentos disponibles
+                setupNewTimer(nextAttemptsCount);
+              }
+              
+              return nextAttemptsCount;
+            });
+            
+            return 0;
+          }
+          return p - 1; // Decrementar temporizador
+        });
+      }, 1000);
+      
+      // Guardamos la referencia
+      problemTimerRef.current = timerInstance;
+      
+      // Limpiar mensaje después de un momento
+      setTimeout(() => {
+        setFeedbackMessage(null);
+        setFeedbackColor(null);
+      }, 1500);
+    }, 500);
   };
 
   // Función para manejar cuando se alcanzan los intentos máximos
