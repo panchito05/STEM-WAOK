@@ -554,6 +554,137 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   // Efecto para regenerar opciones cuando cambia la letra actual
+  // Genera datos para el ejercicio de asociación de imágenes
+  const generateImageAssociationData = () => {
+    const currentLetterItem = alphabet[currentIndex];
+    const alternatives = selectedLanguage === 'spanish' ? spanishAlternatives : englishAlternatives;
+    
+    // Obtener alternativas para la letra actual
+    const letterAlternatives = alternatives[currentLetterItem.uppercase] || [];
+    if (!letterAlternatives.length) {
+      console.error(`No hay alternativas disponibles para la letra ${currentLetterItem.uppercase}`);
+      return null;
+    }
+    
+    // Modo 1: Letra a Imágenes - Se muestra una letra y hay que elegir la imagen correcta
+    if (imageAssociationMode === 'letterToImages') {
+      // Elegir una palabra/imagen correcta aleatoriamente para esta letra
+      const correctIndex = Math.floor(Math.random() * letterAlternatives.length);
+      const correctOption = letterAlternatives[correctIndex];
+      
+      // Obtener 3 opciones incorrectas de otras letras aleatorias
+      let incorrectOptions: AlternativeWord[] = [];
+      
+      // Coleccionar letras diferentes a la actual
+      const otherLetterKeys = Object.keys(alternatives).filter(key => 
+        key !== currentLetterItem.uppercase);
+      
+      // Mezclar para tomar aleatoriamente
+      const shuffledLetters = shuffleArray([...otherLetterKeys]);
+      
+      // Tomar alternativas de otras letras
+      for (let i = 0; i < Math.min(3, shuffledLetters.length) && incorrectOptions.length < 3; i++) {
+        const letterKey = shuffledLetters[i];
+        const letterOptions = alternatives[letterKey];
+        if (letterOptions && letterOptions.length) {
+          // Tomar una alternativa aleatoria
+          const randomIndex = Math.floor(Math.random() * letterOptions.length);
+          incorrectOptions.push(letterOptions[randomIndex]);
+        }
+      }
+      
+      // Si no tenemos suficientes opciones incorrectas, rellenar con más
+      while (incorrectOptions.length < 3 && otherLetterKeys.length) {
+        for (const key of otherLetterKeys) {
+          if (incorrectOptions.length >= 3) break;
+          const options = alternatives[key];
+          if (options && options.length) {
+            // Buscar una opción que no haya sido usada ya
+            const unused = options.find(opt => !incorrectOptions.some(
+              incOpt => incOpt.image === opt.image
+            ));
+            if (unused) {
+              incorrectOptions.push(unused);
+            }
+          }
+        }
+        
+        // Si aún no tenemos suficientes, repetir algunas (caso extremo)
+        if (incorrectOptions.length < 3) {
+          const fallbackOption = { 
+            word: "Fallback", 
+            image: ["🔄", "❓", "⚠️"][incorrectOptions.length] 
+          };
+          incorrectOptions.push(fallbackOption);
+        }
+      }
+      
+      // Mezclar todas las opciones (1 correcta + 3 incorrectas)
+      const allOptions = shuffleArray([correctOption, ...incorrectOptions]);
+      
+      // Encontrar el índice de la opción correcta en el array mezclado
+      const finalCorrectIndex = allOptions.findIndex(opt => 
+        opt.word === correctOption.word && opt.image === correctOption.image
+      );
+      
+      console.log(`🖼️ Generando ejercicio de letra a imágenes para ${currentLetterItem.uppercase}. Opción correcta en posición ${finalCorrectIndex}`);
+      
+      return {
+        letter: currentLetterItem,
+        options: allOptions,
+        correctIndex: finalCorrectIndex
+      };
+    }
+    // Modo 2: Imagen a Letras - Se muestra una imagen y hay que elegir la letra correcta
+    else {
+      // Elegir una palabra/imagen correcta aleatoriamente para esta letra
+      const correctIndex = Math.floor(Math.random() * letterAlternatives.length);
+      const correctOption = letterAlternatives[correctIndex];
+      
+      // Para este modo, las opciones son letras del alfabeto (no imágenes)
+      // La letra correcta
+      const correctLetter = currentLetterItem;
+      
+      // Obtener 3 letras incorrectas aleatorias
+      let incorrectLetterOptions: Letter[] = [];
+      
+      // Filtrar y mezclar el alfabeto para tomar letras aleatorias
+      const otherLetters = alphabet.filter(letter => 
+        letter.uppercase !== currentLetterItem.uppercase);
+      const shuffledLetters = shuffleArray([...otherLetters]);
+      
+      // Tomar 3 letras aleatorias
+      incorrectLetterOptions = shuffledLetters.slice(0, 3);
+      
+      // Mezclar todas las opciones de letras (1 correcta + 3 incorrectas)
+      const allLetterOptions = shuffleArray([correctLetter, ...incorrectLetterOptions]);
+      
+      // Encontrar el índice de la letra correcta en el array mezclado
+      const finalCorrectIndex = allLetterOptions.findIndex(letter => 
+        letter.uppercase === correctLetter.uppercase
+      );
+      
+      // Convertir las letras a alternativas para mantener la misma estructura de datos
+      const letterOptionsAsAlternatives = allLetterOptions.map(letter => ({
+        word: letter.uppercase,
+        image: letter.uppercase
+      }));
+      
+      console.log(`🔤 Generando ejercicio de imagen a letras para ${correctOption.word}. Letra correcta ${correctLetter.uppercase} en posición ${finalCorrectIndex}`);
+      
+      // Formateado especial para el modo imagen a letras
+      return {
+        letter: {
+          ...currentLetterItem,
+          word: correctOption.word,
+          image: correctOption.image
+        },
+        options: letterOptionsAsAlternatives,
+        correctIndex: finalCorrectIndex
+      };
+    }
+  };
+
   useEffect(() => {
     // Al cambiar de letra, debemos regenerar las opciones para incluir la letra correcta
     if (settings.difficulty === 'intermediate') {
@@ -566,7 +697,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const updatedMatchingLetters = generateInitialMatchingSet();
       setMatchingOptions(updatedMatchingLetters);
     }
-  }, [currentIndex, settings.difficulty]);
+    
+    // Generar datos para el ejercicio de asociación de imágenes
+    if (exerciseType === 'imageAssociation') {
+      const data = generateImageAssociationData();
+      if (data) {
+        setImageAssociationData(data);
+      }
+    }
+  }, [currentIndex, settings.difficulty, exerciseType, imageAssociationMode]);
 
   // Efecto principal para cambios de letra y configuración
   useEffect(() => {
@@ -753,6 +892,79 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
 
+  // Manejo de selección para el ejercicio de asociación de imágenes
+  const handleImageAssociationOptionSelect = (index: number) => {
+    if (!imageAssociationData) return;
+    
+    console.log(`🎯 Seleccionada opción ${index} en ejercicio de imágenes`);
+    
+    // Registrar qué opción seleccionó el usuario
+    setSelectedOption(index);
+    
+    // Verificar si la respuesta es correcta
+    const isAnswerCorrect = index === imageAssociationData.correctIndex;
+    console.log(`✅ Respuesta ${isAnswerCorrect ? 'CORRECTA' : 'INCORRECTA'}`);
+    
+    // Actualizar el estado de correcto/incorrecto
+    setIsCorrect(isAnswerCorrect);
+    
+    // Si es la respuesta correcta, mostrar detalles
+    if (isAnswerCorrect) {
+      setShowDetails(true);
+      
+      // Actualizar contadores para el sistema adaptativo
+      setCorrectAnswers(prev => prev + 1);
+      const newConsecutiveCorrectAnswers = consecutiveCorrectAnswers + 1;
+      setConsecutiveCorrectAnswers(newConsecutiveCorrectAnswers);
+      
+      // Feedback de sonido para respuesta correcta
+      if (settings.enableSoundEffects) {
+        playSound(`Correct! ${imageAssociationData.letter.uppercase} is for ${imageAssociationData.letter.word}`);
+      }
+      
+      // Sistema de recompensas (similar al existente)
+      if (settings.enableRewards) {
+        const shouldShowReward = Math.random() < 0.2 || correctAnswers % 5 === 4;
+        if (shouldShowReward) {
+          // Seleccionar aleatoriamente el tipo de recompensa
+          const rewardTypes: ("medals" | "trophies" | "stars")[] = ["medals", "trophies", "stars"];
+          const randomRewardType = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
+          setRewardType(randomRewardType);
+          
+          // Mostrar la recompensa con animación
+          setShowReward(true);
+          setTimeout(() => setShowReward(false), 2500);
+        }
+      }
+    } else {
+      // Feedback para respuesta incorrecta
+      if (settings.enableSoundEffects) {
+        playSound("Incorrect. Try again.");
+      }
+      
+      // Reiniciar contador de respuestas consecutivas correctas
+      setConsecutiveCorrectAnswers(0);
+    }
+  };
+  
+  // Función para mostrar la respuesta correcta directamente
+  const showImageAssociationAnswer = () => {
+    if (!imageAssociationData) return;
+    
+    // Actualizar estados para mostrar la respuesta correcta
+    setSelectedOption(imageAssociationData.correctIndex);
+    setIsCorrect(true);
+    setShowDetails(true);
+    
+    // Registrar para debugging
+    console.log("💡 Mostrando respuesta correcta en ejercicio de imágenes:", imageAssociationData.correctIndex);
+    
+    // Feedback de sonido
+    if (settings.enableSoundEffects) {
+      playSound(`${imageAssociationData.letter.uppercase} is for ${imageAssociationData.letter.word}`);
+    }
+  };
+  
   // COMPLETAMENTE REESCRITO: Manejo de opciones para el quiz
   const handleQuizOptionSelect = (index: number) => {
     console.log("🎯 NUEVO handleQuizOptionSelect con índice:", index);
@@ -1348,6 +1560,167 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
   
   // Renderiza el ejercicio de letras adyacentes (Expert)
+  // Renderiza el ejercicio de asociación de imágenes
+  const renderImageAssociation = () => {
+    if (!imageAssociationData) {
+      return <div className="flex justify-center items-center h-40">Cargando...</div>;
+    }
+
+    // Obtener traducciones según el idioma seleccionado
+    const translations = {
+      letterToImagesTitle: selectedLanguage === 'spanish' 
+        ? '¿Qué imagen corresponde a esta letra?' 
+        : 'Which image goes with this letter?',
+      imageToLettersTitle: selectedLanguage === 'spanish'
+        ? '¿Qué letra corresponde a esta imagen?' 
+        : 'Which letter goes with this image?',
+      showAnswer: selectedLanguage === 'spanish'
+        ? 'Mostrar Respuesta'
+        : 'Show Answer',
+      correct: selectedLanguage === 'spanish'
+        ? '¡Correcto!'
+        : 'Correct!',
+      letterIsFor: selectedLanguage === 'spanish'
+        ? `${imageAssociationData.letter.uppercase} es para ${imageAssociationData.letter.word}`
+        : `${imageAssociationData.letter.uppercase} is for ${imageAssociationData.letter.word}`
+    };
+
+    return (
+      <div className="flex flex-col items-center space-y-6">
+        {/* Modo 1: Mostrar letra y elegir imagen */}
+        {imageAssociationMode === 'letterToImages' && (
+          <>
+            <h2 className="text-2xl font-medium mb-2">
+              {translations.letterToImagesTitle}
+            </h2>
+            
+            <div className="text-9xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-500 text-transparent bg-clip-text">
+              {imageAssociationData.letter.uppercase}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-6 my-4">
+              {imageAssociationData.options.map((option, index) => {
+                // Determinar estilo según selección y corrección
+                let buttonClassName = "flex flex-col items-center justify-center p-4 rounded-lg border-2 h-32 w-32 transition-all";
+                
+                if (selectedOption === index) {
+                  if (index === imageAssociationData.correctIndex) {
+                    buttonClassName += " border-green-500 bg-green-50 dark:bg-green-900/20";
+                  } else {
+                    buttonClassName += " border-red-500 bg-red-50 dark:bg-red-900/20";
+                  }
+                } else {
+                  buttonClassName += " border-gray-200 hover:border-blue-300 dark:border-gray-700";
+                }
+                
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleImageAssociationOptionSelect(index)}
+                    className={buttonClassName}
+                    disabled={selectedOption !== null}
+                  >
+                    <span className="text-6xl mb-1">{option.image}</span>
+                    <span className="text-xs text-center mt-1">{option.word}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+        
+        {/* Modo 2: Mostrar imagen y elegir letra */}
+        {imageAssociationMode === 'imageToLetters' && (
+          <>
+            <h2 className="text-2xl font-medium mb-2">
+              {translations.imageToLettersTitle}
+            </h2>
+            
+            <div className="text-8xl mb-6">
+              {imageAssociationData.letter.image}
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 my-4">
+              {imageAssociationData.options.map((option, index) => {
+                // Determinar estilo según selección y corrección
+                let buttonVariant: "default" | "link" | "destructive" | "outline" | "secondary" | "ghost" = "outline";
+                
+                if (selectedOption === index) {
+                  buttonVariant = index === imageAssociationData.correctIndex ? "default" : "destructive";
+                }
+                
+                return (
+                  <Button
+                    key={index}
+                    variant={buttonVariant}
+                    size="lg"
+                    className={`text-4xl h-20 w-20 ${
+                      selectedOption !== null && 
+                      index === imageAssociationData.correctIndex &&
+                      isCorrect
+                        ? "ring-2 ring-green-500" 
+                        : ""
+                    }`}
+                    onClick={() => handleImageAssociationOptionSelect(index)}
+                    disabled={selectedOption !== null}
+                  >
+                    {option.image}
+                  </Button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* Botón para mostrar respuesta si no hay selección o es incorrecta */}
+        {(selectedOption === null || (selectedOption !== null && !isCorrect)) && (
+          <Button 
+            variant="outline"
+            onClick={showImageAssociationAnswer}
+            className="mt-4"
+          >
+            <EyeIcon className="mr-2 h-4 w-4" />
+            {translations.showAnswer}
+          </Button>
+        )}
+        
+        {/* Mostrar detalles cuando la respuesta es correcta o se pulsa "Show Answer" */}
+        {(showDetails || (selectedOption !== null && isCorrect)) && (
+          <div className="mt-6 flex flex-col items-center animate-fade-in">
+            <div className="text-2xl font-medium">
+              {translations.letterIsFor}
+            </div>
+            <div className="text-6xl mt-2">{imageAssociationData.letter.image}</div>
+            
+            {isCorrect && (
+              <div className="mt-2 text-green-500 font-bold">
+                {translations.correct}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Modos de ejercicio (pestañas) */}
+        <div className="mt-8 w-full max-w-md">
+          <Tabs 
+            defaultValue={imageAssociationMode} 
+            onValueChange={(value) => setImageAssociationMode(value as 'letterToImages' | 'imageToLetters')}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="letterToImages">
+                {selectedLanguage === 'spanish' ? 'Letra → Imagen' : 'Letter → Image'}
+              </TabsTrigger>
+              <TabsTrigger value="imageToLetters">
+                {selectedLanguage === 'spanish' ? 'Imagen → Letra' : 'Image → Letter'}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
+    );
+  };
+
   const renderAdjacentLetters = () => {
     // Usamos selectedLanguage que ya fue definido arriba
     
@@ -1547,6 +1920,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         return renderOrdering();
       case 'adjacentLetters':
         return renderAdjacentLetters();
+      case 'imageAssociation':
+        return renderImageAssociation();
       default:
         return <div>Unsupported exercise type</div>;
     }
