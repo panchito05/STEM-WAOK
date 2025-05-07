@@ -1065,6 +1065,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const moveToNextProblem = () => {
+    // IMPORTANTE: Si se está mostrando el mensaje de nivel superado, no permitimos avanzar
+    // hasta que el usuario haga clic en el botón de "Continuar el Desafío" de ese mensaje
+    if (showLevelUpReward) {
+      console.log('[NIVEL SUPERADO] No avanzando al siguiente problema hasta que el usuario cierre el mensaje de nivel superado');
+      return;
+    }
+    
     if (currentProblemIndex < problems.length - 1) {
       // Limpiar el temporizador del problema actual si existe
       if (problemTimerRef.current) {
@@ -1399,7 +1406,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
                 <Button
                   className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg"
-                  onClick={() => setShowLevelUpReward(false)}
+                  onClick={() => {
+                    // 1. Ocultar el mensaje de nivel superado
+                    setShowLevelUpReward(false);
+                    
+                    // 2. Después de ocultar el mensaje, avanzar al siguiente problema
+                    // con un pequeño retraso para mejor experiencia de usuario
+                    setTimeout(() => {
+                      moveToNextProblem();
+                    }, 300);
+                  }}
                 >
                   ¡Continuar el Desafío!
                 </Button>
