@@ -119,6 +119,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     };
   }, [exerciseStarted, exerciseCompleted]);
   
+  // Escuchar el evento de cierre del modal de nivel superado
+  useEffect(() => {
+    const handleLevelUpModalClosed = (event: CustomEvent) => {
+      if (event.detail && event.detail.stayOnCurrentProblem) {
+        console.log('[EXERCISE] Recibido evento de levelUpModalClosed - manteniendo el problema actual');
+        // Esto no avanza al siguiente problema, pero habilita la interfaz de usuario para
+        // que el usuario pueda continuar con el problema actual
+        setWaitingForContinue(false);
+        setFeedbackMessage("Ahora estás en un nuevo nivel de dificultad. Completa este problema para continuar.");
+        setFeedbackColor("blue");
+      }
+    };
+    
+    // Añadir el event listener
+    document.addEventListener('levelUpModalClosed', handleLevelUpModalClosed as EventListener);
+    
+    // Limpiar al desmontar
+    return () => {
+      document.removeEventListener('levelUpModalClosed', handleLevelUpModalClosed as EventListener);
+    };
+  }, []);
+  
   // Timer logic for problem time limit
   useEffect(() => {
     // Solo iniciamos el temporizador si hay un límite de tiempo configurado (timeValue > 0)
@@ -1369,12 +1391,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     // 2. CRÍTICO: Desbloquear la progresión automática que estaba bloqueada
                     setWaitingForContinue(false); 
                     
-                    // 3. Después de ocultar el mensaje, avanzar al siguiente problema
-                    // con un pequeño retraso para mejor experiencia de usuario
-                    setTimeout(() => {
-                      console.log('[NIVEL SUPERADO] Usuario hizo clic en Continuar el Desafío');
-                      moveToNextProblem();
-                    }, 300);
+                    // 3. Eliminamos la llamada automática a moveToNextProblem()
+                    // para que el usuario pueda completar el problema actual
+                    console.log('[NIVEL SUPERADO] Usuario hizo clic en Continuar el Desafío - Permaneciendo en el mismo problema');
+                    
+                    // 4. Mostrar mensaje informativo sobre el cambio de nivel
+                    setFeedbackMessage("Ahora estás en un nuevo nivel de dificultad. Completa este problema para continuar.");
+                    setFeedbackColor("blue");
                   }}
                 >
                   ¡Continuar el Desafío!
@@ -1415,7 +1438,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
           {feedbackMessage && (
-            <div className={`text-lg font-medium ${feedbackColor === "green" ? "text-green-600" : "text-red-600"}`}>
+            <div className={`text-lg font-medium ${
+              feedbackColor === "green" ? "text-green-600" : 
+              feedbackColor === "blue" ? "text-blue-600" : 
+              "text-red-600"
+            }`}>
               {feedbackMessage}
             </div>
           )}

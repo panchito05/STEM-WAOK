@@ -52,7 +52,15 @@ const LevelUpHandler: React.FC = () => {
     setShowModal(false);
     
     // Emitir evento indicando que el modal se ha cerrado
-    console.log('[LEVEL UP HANDLER] Modal cerrado por el usuario');
+    // y notificar que se debe mantener el problema actual
+    console.log('[LEVEL UP HANDLER] Modal cerrado por el usuario - manteniendo el problema actual');
+    
+    // Emitir un evento que pueda ser capturado por otros componentes
+    // para indicar que no se debe avanzar al siguiente problema
+    const event = new CustomEvent('levelUpModalClosed', {
+      detail: { stayOnCurrentProblem: true }
+    });
+    document.dispatchEvent(event);
   };
   
   // Renderizar el modal cuando sea necesario
