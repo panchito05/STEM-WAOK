@@ -465,9 +465,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Siempre permitimos mostrar la respuesta cuando showAnswerWithExplanation está activado
     setShowingExplanation(true);
     const currentProblem = problems[currentProblemIndex];
-    const correctAnswer = currentProblem.num1 + currentProblem.num2;
     
-    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+    // Usar la respuesta correcta ya calculada del problema
+    // En lugar de recalcularla, para asegurar que sea consistente
+    const correctAnswer = currentProblem.correctAnswer;
+    
+    // Formatear el número correctamente si es decimal
+    const formattedAnswer = Number.isInteger(correctAnswer) 
+      ? correctAnswer 
+      : correctAnswer.toFixed(2).replace(/\.?0+$/, '');
+    
+    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${formattedAnswer}`);
     setFeedbackColor("green");
 
     // Si está habilitada la compensación, añadimos un problema adicional inmediatamente
@@ -567,16 +575,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Función para manejar cuando se alcanzan los intentos máximos
   const handleMaxAttemptsReached = () => {
     const currentProblem = problems[currentProblemIndex];
-    const correctAnswer = currentProblem.num1 + currentProblem.num2;
+    
+    // Usar la respuesta correcta ya calculada del problema
+    const correctAnswer = currentProblem.correctAnswer;
+    
+    // Formatear el número correctamente si es decimal
+    const formattedAnswer = Number.isInteger(correctAnswer) 
+      ? correctAnswer 
+      : correctAnswer.toFixed(2).replace(/\.?0+$/, '');
     
     // Mostrar mensaje de tiempo agotado
-    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer}`);
+    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${formattedAnswer}`);
     setFeedbackColor("red");
     
     // Guardar la respuesta como incorrecta
+    // Asegurarnos de manejar la entrada decimal correctamente
+    const userNumericAnswer = userAnswer.includes('.') 
+      ? parseFloat(userAnswer) 
+      : parseInt(userAnswer) || 0;
+      
     const answer: UserAnswer = {
       problem: currentProblem,
-      userAnswer: parseInt(userAnswer) || 0,
+      userAnswer: userNumericAnswer,
       isCorrect: false
     };
     
@@ -603,7 +623,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
     // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
     setShowHelpButton(false); // Ocultamos el botón de ayuda
-    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
+    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${formattedAnswer}. Presiona Continuar para seguir.`);
     setFeedbackColor("red");
     
     // Activamos el estado de espera para el botón "Continuar"

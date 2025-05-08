@@ -124,5 +124,17 @@ export function generateAdditionProblem(difficulty: string): Problem {
 }
 
 export function checkAnswer(problem: Problem, userAnswer: number): boolean {
-  return problem.correctAnswer === userAnswer;
+  // Para números enteros, comparación directa
+  if (Number.isInteger(problem.correctAnswer) && Number.isInteger(userAnswer)) {
+    return problem.correctAnswer === userAnswer;
+  } 
+  
+  // Para números decimales, permitir una pequeña tolerancia debido a errores de punto flotante
+  // Redondear ambos números a 2 decimales para la comparación
+  const correctRounded = parseFloat(problem.correctAnswer.toFixed(2));
+  const userRounded = parseFloat(userAnswer.toFixed(2));
+  
+  console.log(`[DECIMALS] Comparando respuestas: Correcta=${correctRounded}, Usuario=${userRounded}`);
+  
+  return correctRounded === userRounded;
 }
