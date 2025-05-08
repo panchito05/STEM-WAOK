@@ -1,7 +1,12 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import * as storage from "./storage";
-import { exerciseProgressSchema, moduleSettingsSchema, users } from "@shared/schema";
+import { 
+  exerciseProgressSchema, 
+  moduleSettingsSchema, 
+  insertChildProfileSchema,
+  users 
+} from "@shared/schema";
 import { z } from "zod";
 import alphabet2Routes from "./routes-alphabet2";
 import { db } from "@db";
@@ -274,6 +279,245 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ success: true });
     } catch (error) {
       console.error("Error clearing progress:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Rutas para perfiles de niños
+  app.get("/api/child-profiles", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profiles = await storage.getChildProfilesForUser(userId);
+      
+      return res.json(profiles);
+    } catch (error) {
+      console.error("Error fetching child profiles:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get("/api/child-profiles/active", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const activeProfile = await storage.getActiveChildProfile(userId);
+      
+      if (!activeProfile) {
+        return res.json(null);
+      }
+      
+      return res.json(activeProfile);
+    } catch (error) {
+      console.error("Error fetching active child profile:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/child-profiles", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      // Validar datos del perfil
+      const validatedProfile = insertChildProfileSchema.parse({
+        ...req.body,
+        parentId: userId
+      });
+      
+      const newProfile = await storage.createChildProfile(validatedProfile);
+      
+      return res.status(201).json(newProfile);
+    } catch (error) {
+      console.error("Error creating child profile:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid profile data", details: error.errors });
+      }
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/child-profiles/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Actualizar perfil
+      const updatedProfile = await storage.updateChildProfile(profileId, req.body);
+      
+      return res.json(updatedProfile);
+    } catch (error) {
+      console.error("Error updating child profile:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/child-profiles/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Eliminar perfil
+      await storage.deleteChildProfile(profileId);
+      
+      return res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting child profile:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/child-profiles/:id/activate", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Activar perfil
+      const activatedProfile = await storage.setActiveChildProfile(userId, profileId);
+      
+      return res.json(activatedProfile);
+    } catch (error) {
+      console.error("Error activating child profile:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Rutas para progreso de perfiles de niños
+  app.get("/api/child-profiles/:id/progress", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Obtener progreso
+      const progress = await storage.getProgressForChildProfile(profileId);
+      
+      return res.json(progress);
+    } catch (error) {
+      console.error("Error fetching child profile progress:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/child-profiles/:id/progress", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Validar datos de progreso
+      const validatedProgress = exerciseProgressSchema.parse(req.body);
+      
+      // Guardar progreso
+      const newProgress = await storage.insertProgressForChildProfile(profileId, validatedProgress);
+      
+      return res.status(201).json(newProgress);
+    } catch (error) {
+      console.error("Error saving child profile progress:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid progress data", details: error.errors });
+      }
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Rutas para configuraciones de perfiles de niños
+  app.get("/api/child-profiles/:id/settings", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Obtener configuraciones
+      const moduleSettingsData = await storage.getModuleSettingsForChildProfile(profileId);
+      
+      // Convertir a formato para frontend
+      const moduleSettings: Record<string, any> = {};
+      if (Array.isArray(moduleSettingsData)) {
+        moduleSettingsData.forEach(setting => {
+          moduleSettings[setting.moduleId] = setting.settings;
+        });
+      }
+      
+      return res.json({ moduleSettings });
+    } catch (error) {
+      console.error("Error fetching child profile settings:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.put("/api/child-profiles/:id/settings/module/:moduleId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      const moduleId = req.params.moduleId;
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Validar datos de configuración
+      const validatedSettings = moduleSettingsSchema.parse(req.body);
+      
+      // Guardar configuración
+      const updatedSettings = await storage.saveModuleSettingsForChildProfile(
+        profileId,
+        moduleId,
+        validatedSettings
+      );
+      
+      return res.json(updatedSettings);
+    } catch (error) {
+      console.error("Error updating child profile module settings:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid settings data", details: error.errors });
+      }
       return res.status(500).json({ error: "Internal server error" });
     }
   });

@@ -1,6 +1,14 @@
 import { db } from "@db";
-import { users, progressEntries, moduleSettings, ExerciseProgress, ModuleSettingsData } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { 
+  users, 
+  progressEntries, 
+  moduleSettings, 
+  childProfiles,
+  ExerciseProgress, 
+  ModuleSettingsData,
+  InsertChildProfile 
+} from "@shared/schema";
+import { eq, and, desc } from "drizzle-orm";
 import { hash, compare } from "bcrypt";
 
 // User operations
@@ -224,4 +232,148 @@ export async function deleteModuleSettings(userId: number, moduleId?: string) {
   // Delete all module settings for user
   return db.delete(moduleSettings)
     .where(eq(moduleSettings.userId, userId));
+}
+
+// Child Profile operations
+export async function getChildProfilesForUser(parentId: number) {
+  return db.query.childProfiles.findMany({
+    where: eq(childProfiles.parentId, parentId),
+    orderBy: [desc(childProfiles.isActive), desc(childProfiles.createdAt)]
+  });
+}
+
+export async function getActiveChildProfile(parentId: number) {
+  return db.query.childProfiles.findFirst({
+    where: and(
+      eq(childProfiles.parentId, parentId),
+      eq(childProfiles.isActive, true)
+    )
+  });
+}
+
+export async function createChildProfile(data: InsertChildProfile) {
+  // Desactivar todos los perfiles existentes del padre
+  await db.update(childProfiles)
+    .set({ isActive: false })
+    .where(eq(childProfiles.parentId, data.parentId));
+  
+  // Crear nuevo perfil (activo por defecto)
+  const [newProfile] = await db.insert(childProfiles)
+    .values({ ...data, isActive: true })
+    .returning();
+  
+  return newProfile;
+}
+
+export async function updateChildProfile(id: number, data: Partial<InsertChildProfile>) {
+  const [updatedProfile] = await db.update(childProfiles)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(childProfiles.id, id))
+    .returning();
+  
+  return updatedProfile;
+}
+
+export async function deleteChildProfile(id: number) {
+  // Eliminar configuraciones asociadas
+  await db.delete(moduleSettings)
+    .where(eq(moduleSettings.childProfileId, id));
+  
+  // Eliminar progreso asociado
+  await db.delete(progressEntries)
+    .where(eq(progressEntries.childProfileId, id));
+  
+  // Eliminar perfil
+  return db.delete(childProfiles)
+    .where(eq(childProfiles.id, id));
+}
+
+export async function setActiveChildProfile(parentId: number, profileId: number) {
+  // Desactivar todos los perfiles del padre
+  await db.update(childProfiles)
+    .set({ isActive: false })
+    .where(eq(childProfiles.parentId, parentId));
+  
+  // Activar el perfil seleccionado
+  const [activatedProfile] = await db.update(childProfiles)
+    .set({ isActive: true })
+    .where(eq(childProfiles.id, profileId))
+    .returning();
+  
+  return activatedProfile;
+}
+
+// Functions for progress and settings with child profiles
+export async function getProgressForChildProfile(childProfileId: number) {
+  return db.query.progressEntries.findMany({
+    where: eq(progressEntries.childProfileId, childProfileId),
+    orderBy: (progressEntries, { desc }) => [desc(progressEntries.createdAt)]
+  });
+}
+
+export async function insertProgressForChildProfile(childProfileId: number, progressData: ExerciseProgress) {
+  const [newProgress] = await db.insert(progressEntries)
+    .values({
+      childProfileId,
+      operationId: progressData.operationId,
+      score: progressData.score,
+      totalProblems: progressData.totalProblems,
+      timeSpent: progressData.timeSpent,
+      difficulty: progressData.difficulty
+    })
+    .returning();
+  
+  return newProgress;
+}
+
+export async function getModuleSettingsForChildProfile(childProfileId: number, moduleId?: string) {
+  if (moduleId) {
+    return db.query.moduleSettings.findFirst({
+      where: and(
+        eq(moduleSettings.childProfileId, childProfileId),
+        eq(moduleSettings.moduleId, moduleId)
+      )
+    });
+  }
+  
+  return db.query.moduleSettings.findMany({
+    where: eq(moduleSettings.childProfileId, childProfileId)
+  });
+}
+
+export async function saveModuleSettingsForChildProfile(childProfileId: number, moduleId: string, settingsData: ModuleSettingsData) {
+  // Check if settings already exist for this module
+  const existingSettings = await db.query.moduleSettings.findFirst({
+    where: and(
+      eq(moduleSettings.childProfileId, childProfileId),
+      eq(moduleSettings.moduleId, moduleId)
+    )
+  });
+  
+  if (existingSettings) {
+    // Update existing settings
+    const [updatedSettings] = await db.update(moduleSettings)
+      .set({
+        settings: settingsData,
+        updatedAt: new Date()
+      })
+      .where(and(
+        eq(moduleSettings.childProfileId, childProfileId),
+        eq(moduleSettings.moduleId, moduleId)
+      ))
+      .returning();
+    
+    return updatedSettings;
+  } else {
+    // Insert new settings
+    const [newSettings] = await db.insert(moduleSettings)
+      .values({
+        childProfileId,
+        moduleId,
+        settings: settingsData
+      })
+      .returning();
+    
+    return newSettings;
+  }
 }
