@@ -3,12 +3,14 @@ import { useParams, useLocation } from "wouter";
 import { Helmet } from "react-helmet";
 import { operationComponents, operationModules } from "@/utils/operationComponents";
 import { useSettings } from "@/context/SettingsContext";
+import { useExercise } from "@/context/ExerciseContext";
 import { Card, CardContent } from "@/components/ui/card";
 
 export default function OperationPage() {
   const params = useParams<{ operation: string }>();
   const [, setLocation] = useLocation();
   const { getModuleSettings } = useSettings();
+  const { setExerciseActive } = useExercise();
   const [showSettings, setShowSettings] = useState(false);
   const [settingsUpdated, setSettingsUpdated] = useState(0); // Contador para forzar recarga
 
@@ -16,6 +18,19 @@ export default function OperationPage() {
   const operation = operationComponents[operationId];
   const moduleInfo = operationModules.find(m => m.id === operationId);
   
+  // Marcar el ejercicio como activo cuando se monta el componente
+  useEffect(() => {
+    // Establecer el ejercicio como activo solo cuando no estamos en la configuración
+    if (!showSettings) {
+      setExerciseActive(true);
+    }
+    
+    // Limpiar al desmontar
+    return () => {
+      setExerciseActive(false);
+    };
+  }, [setExerciseActive, showSettings]);
+
   useEffect(() => {
     // Redirect to home if operation doesn't exist
     if (!operation) {

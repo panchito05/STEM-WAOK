@@ -19,6 +19,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { ProgressProvider } from "@/context/ProgressContext";
 import { ChildProfilesProvider } from "@/context/ChildProfilesContext";
+import { ExerciseProvider } from "@/context/ExerciseContext";
 import { AccessibleDndContextProvider } from "@/components/AccessibleDndContext";
 import LevelUpHandler from "@/components/LevelUpHandler";
 
@@ -47,13 +48,15 @@ function App() {
         <ChildProfilesProvider>
           <SettingsProvider>
             <ProgressProvider>
-              <AccessibleDndContextProvider>
-                <Layout>
-                  <Router />
-                </Layout>
-                <Toaster />
-                <LevelUpHandler />
-              </AccessibleDndContextProvider>
+              <ExerciseProvider>
+                <AccessibleDndContextProvider>
+                  <Layout>
+                    <Router />
+                  </Layout>
+                  <Toaster />
+                  <LevelUpHandler />
+                </AccessibleDndContextProvider>
+              </ExerciseProvider>
             </ProgressProvider>
           </SettingsProvider>
         </ChildProfilesProvider>
