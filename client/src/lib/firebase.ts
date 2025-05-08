@@ -20,8 +20,8 @@ console.log("VITE_FIREBASE_APP_ID:", import.meta.env.VITE_FIREBASE_APP_ID || "No
 // Configuración de Firebase
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
-  // Usar específicamente el dominio registrado en Firebase
-  authDomain: "78d216dd-74cf-4f61-abfa-7cb32982bbb6-00-zpf65darfkfs.riker.replit.dev",
+  // Usar el dominio de Firebase para autenticación, pero también permitir nuestro dominio actual
+  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.firebaseapp.com`,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo",
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.appspot.com`,
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
@@ -100,35 +100,53 @@ export const signInWithGoogle = async () => {
     console.log("URL actual:", window.location.href);
     console.log("Dominio registrado en Firebase:", firebaseConfig.authDomain);
     
-    try {
-      // Intentar primero con popup (funciona mejor en muchos casos)
-      console.log("Intentando autenticación con popup...");
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log("Autenticación con popup exitosa:", result.user.displayName);
-      return result;
-    } catch (popupError: any) {
-      console.warn("Error con popup, intentando redirección:", popupError.code);
-      
-      // Si el popup falla, intentar con redirección
-      if (popupError.code === 'auth/popup-blocked' || 
-          popupError.code === 'auth/popup-closed-by-user' ||
-          popupError.code === 'auth/cancelled-popup-request') {
-        console.log("Cambiando a autenticación por redirección...");
-        return signInWithRedirect(auth, googleProvider);
-      }
-      
-      // Si es otro tipo de error, lanzarlo
-      throw popupError;
-    }
+    // Establecer directamente el authProvider con configuraciones simplificadas
+    // para mayor compatibilidad con diversos navegadores
+    const authProvider = new GoogleAuthProvider();
+    authProvider.addScope('email');
+    authProvider.addScope('profile');
     
-  } catch (error) {
+    // Usar preferentemente popup para mejor experiencia de usuario
+    console.log("Iniciando autenticación con popup de Google...");
+    return await signInWithPopup(auth, authProvider);
+    
+  } catch (error: any) {
     console.error("Error al iniciar sesión con Google:", error);
     
-    // Mostrar específicamente el error para facilitar la depuración
-    if (error instanceof Error) {
-      console.error("Mensaje de error:", error.message);
-      console.error("Error completo:", JSON.stringify(error, null, 2));
+    // Manejar errores específicos de manera adecuada
+    if (error.code === 'auth/popup-blocked') {
+      console.warn("Popup bloqueado por el navegador, intentando redirección...");
+      
+      // Reintento con redirección
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return null; // La redirección recargará la página, así que este return nunca se ejecuta realmente
+      } catch (redirectError) {
+        console.error("Error en redirección:", redirectError);
+        throw redirectError;
+      }
+    } 
+    else if (error.code === 'auth/popup-closed-by-user' || 
+             error.code === 'auth/cancelled-popup-request') {
+      // Estos no son errores reales, solo el usuario cerró la ventana o canceló el proceso
+      console.log("Autenticación cancelada por el usuario");
+      return null;
     }
+    else if (error.code === 'auth/unauthorized-domain') {
+      console.error("DOMINIO NO AUTORIZADO EN FIREBASE. Accede a la consola de Firebase y añade este dominio a la lista de dominios autorizados:");
+      console.error("Dominio actual:", window.location.hostname);
+      console.error("URL para configurar:", `https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/settings`);
+      
+      throw new Error("Este sitio web no está autorizado para autenticación con Google. Contacta al administrador.");
+    }
+    
+    // Para cualquier otro tipo de error, mostrarlo y lanzarlo
+    console.error("Detalles del error:", {
+      code: error.code,
+      message: error.message,
+      email: error.email,
+      credential: error.credential
+    });
     
     throw error;
   }
@@ -146,51 +164,69 @@ export const getGoogleRedirectResult = async () => {
     
     const result = await getRedirectResult(auth);
     
-    if (result) {
-      console.log("Redirección exitosa:", {
+    if (result && result.user) {
+      // Éxito en la autenticación por redirección
+      console.log("Autenticación por redirección exitosa:", {
         providerId: result.providerId,
         userId: result.user.uid,
         email: result.user.email,
         displayName: result.user.displayName,
-        metadata: result.user.metadata
+        photoURL: result.user.photoURL
       });
       
       return result;
     } else {
+      // No hay resultado de redirección, puede ser:
+      // 1. Primera carga de la página
+      // 2. La redirección no se ha completado aún
+      // 3. El usuario nunca usó la redirección para autenticarse
       console.log("No hay resultado de redirección disponible");
+      
+      // Podemos verificar el estado actual de autenticación
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        console.log("Ya hay un usuario autenticado:", currentUser.email);
+      }
+      
       return null;
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error al obtener resultado de redirección:", error);
     
-    // Registrar detalles específicos del error para depuración
-    if (error instanceof Error) {
-      console.error("Tipo de error:", error.name);
-      console.error("Mensaje:", error.message);
-      
-      // Si es un error de Firebase, tendrá propiedades adicionales
-      if ('code' in error) {
-        console.error("Código de error Firebase:", (error as any).code);
-        
-        // Errores comunes de Firebase Auth y sus posibles soluciones
-        switch ((error as any).code) {
-          case 'auth/unauthorized-domain':
-            console.error("Dominio no autorizado en Firebase. Verifica las configuraciones de dominio en la consola de Firebase.");
-            break;
-          case 'auth/operation-not-allowed':
-            console.error("Operación no permitida. Verifica que el método de inicio de sesión esté habilitado en Firebase.");
-            break;
-          case 'auth/cancelled-popup-request':
-          case 'auth/popup-closed-by-user':
-            console.error("El usuario cerró la ventana de autenticación antes de completar el proceso.");
-            // No es realmente un error, solo el usuario canceló
-            return null;
-          default:
-            console.error("Error de Firebase no reconocido");
-        }
-      }
+    // Manejar errores específicos con mensajes claros
+    if (error.code === 'auth/unauthorized-domain') {
+      console.error("========= ERROR DE DOMINIO =========");
+      console.error("El dominio actual no está autorizado en Firebase.");
+      console.error("Dominio actual:", window.location.hostname);
+      console.error("Dominio configurado:", firebaseConfig.authDomain);
+      console.error("Debes añadir tu dominio a la lista de dominios autorizados en la consola de Firebase:");
+      console.error(`https://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/settings`);
+      console.error("====================================");
+    } 
+    else if (error.code === 'auth/operation-not-allowed') {
+      console.error("El método de inicio de sesión no está habilitado en Firebase.");
+      console.error("Debes habilitar el proveedor de Google en la sección 'Sign-in method' en la consola de Firebase.");
+    }
+    else if (error.code === 'auth/web-storage-unsupported') {
+      console.error("Tu navegador no soporta almacenamiento web o está bloqueado.");
+      console.error("Intenta habilitar las cookies y el almacenamiento local en tu navegador.");
     }
     
+    // Registrar todos los detalles del error
+    console.error("Detalles completos del error:", {
+      code: error.code,
+      message: error.message,
+      name: error.name
+    });
+    
+    // Errores específicos que podemos considerar no críticos
+    if (error.code === 'auth/popup-closed-by-user' || 
+        error.code === 'auth/cancelled-popup-request') {
+      console.log("El usuario cerró la ventana de autenticación - no es un error crítico");
+      return null;
+    }
+    
+    // Para otros errores, lanzar para que sea manejado por el componente
     throw error;
   }
 };

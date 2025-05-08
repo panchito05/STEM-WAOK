@@ -190,37 +190,80 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.log("URL actual:", window.location.href);
       console.log("Dominio:", window.location.hostname);
       
-      await signInWithGoogle();
-      // No necesitamos hacer nada más aquí, ya que el resultado se manejará
-      // a través del efecto handleRedirectResult
-    } catch (error) {
-      console.error("Error signing in with Google:", error);
-      // Mostrar información más detallada del error
-      if (error && typeof error === 'object' && 'code' in error) {
-        console.error("Código de error específico:", (error as any).code);
+      // Intenta autenticar con Google
+      const result = await signInWithGoogle();
+      
+      // Si es null, significa que hubo un intento de redirección o el usuario cerró el popup
+      // No es un error, simplemente no seguimos procesando
+      if (!result) {
+        console.log("Proceso de login con Google interrumpido o redirigido");
+        return;
+      }
+      
+      // Si tenemos un resultado de autenticación, procesar el usuario
+      if (result.user) {
+        console.log("Login con Google exitoso mediante popup");
+        const { uid, email, displayName, photoURL } = result.user;
         
-        // Información específica para error de dominio no autorizado
-        if ((error as any).code === 'auth/unauthorized-domain') {
-          console.error("Dominio no autorizado. Verifica que el dominio actual esté en la lista de dominios autorizados en Firebase");
-          toast({
-            title: "Error de dominio",
-            description: "Este dominio no está autorizado para autenticación. Contacta al administrador.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Google Login Failed",
-            description: `Error: ${(error as any).code || "Unknown error"}`,
-            variant: "destructive",
-          });
+        // Enviar la información del usuario al backend
+        await handleGoogleAuthSuccess(uid, email || '', displayName || '', photoURL || '');
+      }
+    } catch (error: any) {
+      console.error("Error signing in with Google:", error);
+      
+      // Manejar tipos específicos de errores con mensajes apropiados
+      if (error.code) {
+        console.error("Código de error Firebase:", error.code);
+        
+        switch (error.code) {
+          case 'auth/unauthorized-domain':
+            toast({
+              title: "Error de dominio",
+              description: "Este dominio no está autorizado para autenticación con Google. Contacta al administrador.",
+              variant: "destructive",
+            });
+            break;
+            
+          case 'auth/popup-blocked':
+            toast({
+              title: "Popup bloqueado",
+              description: "Tu navegador ha bloqueado la ventana de autenticación. Permite popups para este sitio.",
+              variant: "destructive",
+            });
+            break;
+            
+          case 'auth/cancelled-popup-request':
+          case 'auth/popup-closed-by-user':
+            // Estos no son errores críticos, solo informar al usuario
+            toast({
+              title: "Autenticación cancelada",
+              description: "Has cerrado la ventana de autenticación antes de completar el proceso.",
+              variant: "default",
+            });
+            return; // No lanzar error en este caso
+            
+          default:
+            toast({
+              title: "Error de autenticación",
+              description: `Error: ${error.message || error.code || "Desconocido"}`,
+              variant: "destructive",
+            });
         }
       } else {
+        // Error genérico
         toast({
-          title: "Google Login Failed",
-          description: "Could not sign in with Google",
+          title: "Error de autenticación",
+          description: error.message || "No se pudo iniciar sesión con Google",
           variant: "destructive",
         });
       }
+      
+      // No lanzar el error para casos específicos que ya hemos manejado
+      if (error.code === 'auth/cancelled-popup-request' || 
+          error.code === 'auth/popup-closed-by-user') {
+        return;
+      }
+      
       throw error;
     }
   };
