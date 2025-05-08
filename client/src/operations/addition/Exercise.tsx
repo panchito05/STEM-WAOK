@@ -13,7 +13,7 @@ import { useTranslations } from "@/hooks/use-translations";
 import { createLevelManager, DifficultyLevel, CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus from '@/lib/eventBus';
 import LevelUpHandler from "@/components/LevelUpHandler";
-import { useRewardsStore, awardReward, getRewardProbability, checkAndAwardRewards } from '@/lib/rewards-system';
+import { useRewardsStore, awardReward, getRewardProbability, checkAndAwardRewards, RewardTheme } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
 
 interface ExerciseProps {
@@ -775,13 +775,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Decidir si mostrar recompensa basado en diferentes criterios
       if (settings.enableRewards) {
-        // NUEVO SISTEMA DE RECOMPENSAS
+        // NUEVO SISTEMA DE RECOMPENSAS INTEGRADO
         // - Sistema escalonado con diferentes niveles de recompensas
         // - Colecciones temáticas que el usuario puede completar
         // - Recompensas estratégicas basadas en contexto y progreso
         
-        // NUEVO SISTEMA DE RECOMPENSAS
-        // Determinamos la probabilidad de mostrar una recompensa basado en factores de contexto
+        // Información sobre el problema actual
         const isEarlyProblem = currentProblemIndex < Math.ceil(problems.length * 0.2);
         const isMidPointProblem = Math.abs(currentProblemIndex - Math.floor(problems.length / 2)) <= 1;
         const isLateProblem = currentProblemIndex >= Math.floor(problems.length * 0.9);
@@ -811,20 +810,53 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         let shouldShowReward = Math.random() < rewardProbability && 
                               (totalRewardsShown < maxRewardsPerSession || isFinalProblem);
         
+        // Si corresponde otorgar una recompensa, verificamos qué tipo otorgar según el contexto
         if (shouldShowReward) {
-          // Seleccionar aleatoriamente el tipo de recompensa (medallas, trofeos o estrellas)
-          const rewardTypes: ("medals" | "trophies" | "stars")[] = ["medals", "trophies", "stars"];
-          const randomRewardType = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
-          setRewardType(randomRewardType);
+          console.log('[REWARDS] Otorgando recompensa basada en el contexto del ejercicio');
+          
+          // Verificar y otorgar recompensas de hito o racha
+          if (consecutiveCorrectAnswers >= 10) {
+            // Racha de 10 - recompensa "streak-10"
+            awardReward('streak-10', { theme: 'addition', module: 'addition' });
+            console.log('[REWARDS] Otorgada recompensa streak-10 por 10 respuestas correctas consecutivas');
+          } else if (consecutiveCorrectAnswers >= 5) {
+            // Racha de 5 - recompensa "streak-5"  
+            awardReward('streak-5', { theme: 'addition', module: 'addition' });
+            console.log('[REWARDS] Otorgada recompensa streak-5 por 5 respuestas correctas consecutivas');
+          }
+          
+          // Si es el último problema, verificar recompensas de sesión
+          if (isFinalProblem) {
+            // Verificar si es una sesión perfecta (todas las respuestas correctas)
+            const allCorrect = answers.every(a => a.isCorrect);
+            if (allCorrect && answers.length >= problems.length - 1) {
+              awardReward('perfect-session', { theme: 'general', module: 'addition' });
+              console.log('[REWARDS] Otorgada recompensa perfect-session por completar todos los problemas correctamente');
+            } else {
+              // Recompensa por completar la sesión
+              awardReward('session-complete', { theme: 'general', module: 'addition' });
+              console.log('[REWARDS] Otorgada recompensa session-complete por completar la sesión');
+            }
+          }
+          
+          // Recompensas por cantidad de problemas completados
+          const totalCompleted = answers.filter(a => a.isCorrect).length + 1; // +1 por la respuesta actual
+          if (totalCompleted >= 25) {
+            awardReward('addition-enthusiast', { theme: 'addition', module: 'addition' });
+            console.log('[REWARDS] Otorgada recompensa addition-enthusiast por completar 25 problemas correctamente');
+          } else if (totalCompleted >= 10) {
+            awardReward('addition-novice', { theme: 'addition', module: 'addition' });
+            console.log('[REWARDS] Otorgada recompensa addition-novice por completar 10 problemas correctamente');
+          }
+          
+          // Activar la animación de recompensa del nuevo sistema
+          setShowRewardAnimation(true);
           
           // Mostrar mensaje específico para la recompensa
           setFeedbackMessage("¡Excelente! ¡Has ganado una recompensa!");
           setFeedbackColor("green");
           
-          // Mostrar recompensa con animación
-          setShowReward(true);
-          
-          // Registrar que se mostró una recompensa en este índice
+          // Registrar que se mostró una recompensa en este índice (para estadísticas y tracking)
           setRewardsShownIndices(prev => [...prev, currentProblemIndex]);
           setTotalRewardsShown(prev => prev + 1);
           
@@ -835,7 +867,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             
             // Solo ocultamos la recompensa sin avanzar al siguiente problema
             setTimeout(() => {
-              setShowReward(false);
               setFeedbackMessage("¡Correcta! Una respuesta correcta más y subirás de nivel.");
               setFeedbackColor("green");
               // No llamamos a moveToNextProblem() para que la siguiente respuesta active la subida de nivel
@@ -843,7 +874,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           } else {
             // Para cualquier otro valor de contador, comportamiento normal
             setTimeout(() => {
-              setShowReward(false);
               setFeedbackMessage(null);
               setFeedbackColor(null);
               moveToNextProblem();
