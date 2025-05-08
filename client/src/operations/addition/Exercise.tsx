@@ -1353,18 +1353,88 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       <LevelUpHandler />
       {/* El componente RewardAnimation se mostrará cuando el estado de recompensa esté activo */}
       <RewardAnimation />
-      <div className="px-4 py-5 sm:p-6">
+      {/* Contenedor principal con diseño según el nivel */}
+      <div className={`px-4 py-5 sm:p-6 rounded-xl ${
+        // Temas visuales coloridos según el nivel de dificultad
+        settings.enableAdaptiveDifficulty ? 
+          adaptiveDifficulty === "beginner" ? "bg-gradient-to-br from-sky-50 to-blue-100 border-2 border-blue-200" :
+          adaptiveDifficulty === "elementary" ? "bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-emerald-200" :
+          adaptiveDifficulty === "intermediate" ? "bg-gradient-to-br from-amber-50 to-orange-100 border-2 border-orange-200" :
+          adaptiveDifficulty === "advanced" ? "bg-gradient-to-br from-rose-50 to-purple-100 border-2 border-purple-200" :
+          "bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-200" :
+          
+          settings.difficulty === "beginner" ? "bg-gradient-to-br from-sky-50 to-blue-100 border-2 border-blue-200" :
+          settings.difficulty === "elementary" ? "bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-emerald-200" :
+          settings.difficulty === "intermediate" ? "bg-gradient-to-br from-amber-50 to-orange-100 border-2 border-orange-200" :
+          settings.difficulty === "advanced" ? "bg-gradient-to-br from-rose-50 to-purple-100 border-2 border-purple-200" :
+          "bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-200"
+      }`}>
         <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Addition Exercise</h2>
-          <p className="text-sm text-gray-500">Solve the following addition problems</p>
+          <h2 className={`text-2xl font-bold ${
+            settings.enableAdaptiveDifficulty ?
+              adaptiveDifficulty === "beginner" ? "text-blue-600" :
+              adaptiveDifficulty === "elementary" ? "text-emerald-600" :
+              adaptiveDifficulty === "intermediate" ? "text-orange-600" :
+              adaptiveDifficulty === "advanced" ? "text-purple-600" :
+              "text-indigo-600" :
+              
+              settings.difficulty === "beginner" ? "text-blue-600" :
+              settings.difficulty === "elementary" ? "text-emerald-600" :
+              settings.difficulty === "intermediate" ? "text-orange-600" :
+              settings.difficulty === "advanced" ? "text-purple-600" :
+              "text-indigo-600"
+          }`}>
+            {/* Emojis diferentes para cada nivel */}
+            {settings.enableAdaptiveDifficulty ?
+              adaptiveDifficulty === "beginner" ? "🔢 " :
+              adaptiveDifficulty === "elementary" ? "✨ " :
+              adaptiveDifficulty === "intermediate" ? "🚀 " :
+              adaptiveDifficulty === "advanced" ? "🏆 " :
+              "🧮 " :
+              
+              settings.difficulty === "beginner" ? "🔢 " :
+              settings.difficulty === "elementary" ? "✨ " :
+              settings.difficulty === "intermediate" ? "🚀 " :
+              settings.difficulty === "advanced" ? "🏆 " :
+              "🧮 "
+            }
+            Ejercicio de Suma
+          </h2>
+          <p className={`text-sm font-medium ${
+            settings.enableAdaptiveDifficulty ?
+              adaptiveDifficulty === "beginner" ? "text-blue-500" :
+              adaptiveDifficulty === "elementary" ? "text-emerald-500" :
+              adaptiveDifficulty === "intermediate" ? "text-orange-500" :
+              adaptiveDifficulty === "advanced" ? "text-purple-500" :
+              "text-indigo-500" :
+              
+              settings.difficulty === "beginner" ? "text-blue-500" :
+              settings.difficulty === "elementary" ? "text-emerald-500" :
+              settings.difficulty === "intermediate" ? "text-orange-500" :
+              settings.difficulty === "advanced" ? "text-purple-500" :
+              "text-indigo-500"
+          }`}>Resuelve los siguientes problemas de suma</p>
         </div>
         <div className="flex items-center">
-          <span className="mr-4 text-sm text-gray-500">
+          <span className={`mr-4 text-sm font-medium ${
+            settings.enableAdaptiveDifficulty ?
+              adaptiveDifficulty === "beginner" ? "text-blue-600" :
+              adaptiveDifficulty === "elementary" ? "text-emerald-600" :
+              adaptiveDifficulty === "intermediate" ? "text-orange-600" :
+              adaptiveDifficulty === "advanced" ? "text-purple-600" :
+              "text-indigo-600" :
+              
+              settings.difficulty === "beginner" ? "text-blue-600" :
+              settings.difficulty === "elementary" ? "text-emerald-600" :
+              settings.difficulty === "intermediate" ? "text-orange-600" :
+              settings.difficulty === "advanced" ? "text-purple-600" :
+              "text-indigo-600"
+          }`}>
             <span className="inline-flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mr-1"
+                className="h-5 w-5 mr-1"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -1382,11 +1452,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           
           {/* Mostrar temporizador por problema si está configurado */}
           {settings.timeValue > 0 && (
-            <span className={`mr-4 text-sm ${problemTimer <= 5 ? "text-red-600 font-bold animate-pulse" : "text-gray-500"}`}>
+            <span className={`mr-4 text-sm font-medium ${problemTimer <= 5 ? "text-red-600 animate-pulse" : 
+              settings.enableAdaptiveDifficulty ?
+                adaptiveDifficulty === "beginner" ? "text-blue-600" :
+                adaptiveDifficulty === "elementary" ? "text-emerald-600" :
+                adaptiveDifficulty === "intermediate" ? "text-orange-600" : 
+                "text-purple-600" :
+                
+                settings.difficulty === "beginner" ? "text-blue-600" :
+                settings.difficulty === "elementary" ? "text-emerald-600" :
+                settings.difficulty === "intermediate" ? "text-orange-600" :
+                "text-purple-600"
+            }`}>
               <span className="inline-flex items-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-4 w-4 mr-1 ${problemTimer <= 5 ? "text-red-600" : ""}`}
+                  className={`h-5 w-5 mr-1 ${problemTimer <= 5 ? "text-red-600" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -1405,11 +1486,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           
           {/* Mostrar el nivel de dificultad actual */}
           <div className="mr-4 flex items-center gap-2">
-            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-              Nivel: {settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
+            <span className={`${
+              settings.enableAdaptiveDifficulty ?
+                adaptiveDifficulty === "beginner" ? "bg-blue-200 text-blue-800" :
+                adaptiveDifficulty === "elementary" ? "bg-emerald-200 text-emerald-800" :
+                adaptiveDifficulty === "intermediate" ? "bg-orange-200 text-orange-800" :
+                adaptiveDifficulty === "advanced" ? "bg-purple-200 text-purple-800" :
+                "bg-indigo-200 text-indigo-800" :
+                
+                settings.difficulty === "beginner" ? "bg-blue-200 text-blue-800" :
+                settings.difficulty === "elementary" ? "bg-emerald-200 text-emerald-800" :
+                settings.difficulty === "intermediate" ? "bg-orange-200 text-orange-800" :
+                settings.difficulty === "advanced" ? "bg-purple-200 text-purple-800" :
+                "bg-indigo-200 text-indigo-800"
+            } text-xs font-medium px-3 py-1 rounded-full shadow-sm`}>
+              {settings.enableAdaptiveDifficulty ?
+                adaptiveDifficulty === "beginner" ? "🔵 Nivel: Principiante" :
+                adaptiveDifficulty === "elementary" ? "🟢 Nivel: Elemental" :
+                adaptiveDifficulty === "intermediate" ? "🟠 Nivel: Intermedio" :
+                adaptiveDifficulty === "advanced" ? "🟣 Nivel: Avanzado" :
+                "⚪ Nivel: Desconocido" :
+                
+                settings.difficulty === "beginner" ? "🔵 Nivel: Principiante" :
+                settings.difficulty === "elementary" ? "🟢 Nivel: Elemental" :
+                settings.difficulty === "intermediate" ? "🟠 Nivel: Intermedio" :
+                settings.difficulty === "advanced" ? "🟣 Nivel: Avanzado" :
+                "⚪ Nivel: Desconocido"
+              }
             </span>
             {consecutiveCorrectAnswers >= 5 && (
-              <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+              <span className="bg-gradient-to-r from-amber-200 to-yellow-200 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full shadow-sm animate-pulse">
                 🔥 Racha: {consecutiveCorrectAnswers}
               </span>
             )}
@@ -1419,40 +1525,156 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             variant="outline"
             size="sm"
             onClick={onOpenSettings}
+            className={`${
+              settings.enableAdaptiveDifficulty ?
+                adaptiveDifficulty === "beginner" ? "border-blue-300 hover:bg-blue-100" :
+                adaptiveDifficulty === "elementary" ? "border-emerald-300 hover:bg-emerald-100" :
+                adaptiveDifficulty === "intermediate" ? "border-orange-300 hover:bg-orange-100" :
+                adaptiveDifficulty === "advanced" ? "border-purple-300 hover:bg-purple-100" :
+                "border-indigo-300 hover:bg-indigo-100" :
+                
+                settings.difficulty === "beginner" ? "border-blue-300 hover:bg-blue-100" :
+                settings.difficulty === "elementary" ? "border-emerald-300 hover:bg-emerald-100" :
+                settings.difficulty === "intermediate" ? "border-orange-300 hover:bg-orange-100" :
+                settings.difficulty === "advanced" ? "border-purple-300 hover:bg-purple-100" :
+                "border-indigo-300 hover:bg-indigo-100"
+            }`}
           >
             <Cog className="mr-2 h-4 w-4" />
-            Settings
+            Configuración
           </Button>
         </div>
       </div>
 
       <div className="mb-8">
-        <Progress value={progress} className="h-2.5" />
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
-          <span>Problem {currentProblemIndex + 1} of {problems.length}</span>
-          <span>Score: {score}/{answers.length}</span>
+        <Progress value={progress} className={`h-3 ${
+          settings.enableAdaptiveDifficulty ?
+            adaptiveDifficulty === "beginner" ? "bg-blue-200" :
+            adaptiveDifficulty === "elementary" ? "bg-emerald-200" :
+            adaptiveDifficulty === "intermediate" ? "bg-orange-200" :
+            adaptiveDifficulty === "advanced" ? "bg-purple-200" :
+            "bg-indigo-200" :
+            
+            settings.difficulty === "beginner" ? "bg-blue-200" :
+            settings.difficulty === "elementary" ? "bg-emerald-200" :
+            settings.difficulty === "intermediate" ? "bg-orange-200" :
+            settings.difficulty === "advanced" ? "bg-purple-200" :
+            "bg-indigo-200"
+        }`} />
+        <div className="flex justify-between text-xs font-medium mt-2">
+          <span className={`${
+            settings.enableAdaptiveDifficulty ?
+              adaptiveDifficulty === "beginner" ? "text-blue-700" :
+              adaptiveDifficulty === "elementary" ? "text-emerald-700" :
+              adaptiveDifficulty === "intermediate" ? "text-orange-700" :
+              adaptiveDifficulty === "advanced" ? "text-purple-700" :
+              "text-indigo-700" :
+              
+              settings.difficulty === "beginner" ? "text-blue-700" :
+              settings.difficulty === "elementary" ? "text-emerald-700" :
+              settings.difficulty === "intermediate" ? "text-orange-700" :
+              settings.difficulty === "advanced" ? "text-purple-700" :
+              "text-indigo-700"
+          }`}>Problema {currentProblemIndex + 1} de {problems.length}</span>
+          <span className={`font-bold ${
+            settings.enableAdaptiveDifficulty ?
+              adaptiveDifficulty === "beginner" ? "text-blue-700" :
+              adaptiveDifficulty === "elementary" ? "text-emerald-700" :
+              adaptiveDifficulty === "intermediate" ? "text-orange-700" :
+              adaptiveDifficulty === "advanced" ? "text-purple-700" :
+              "text-indigo-700" :
+              
+              settings.difficulty === "beginner" ? "text-blue-700" :
+              settings.difficulty === "elementary" ? "text-emerald-700" :
+              settings.difficulty === "intermediate" ? "text-orange-700" :
+              settings.difficulty === "advanced" ? "text-purple-700" :
+              "text-indigo-700"
+          }`}>Puntuación: {score}/{answers.length}</span>
         </div>
         {settings.maxAttempts > 0 && (
-          <div className="flex justify-between items-center text-xs text-gray-600 mt-2 p-2 bg-gray-100 rounded-md">
-            <span className="font-semibold">Intentos permitidos: {settings.maxAttempts}</span>
+          <div className={`flex justify-between items-center text-xs font-medium mt-3 p-3 rounded-lg shadow-sm ${
+            settings.enableAdaptiveDifficulty ?
+              adaptiveDifficulty === "beginner" ? "bg-blue-50 border border-blue-200" :
+              adaptiveDifficulty === "elementary" ? "bg-emerald-50 border border-emerald-200" :
+              adaptiveDifficulty === "intermediate" ? "bg-orange-50 border border-orange-200" :
+              adaptiveDifficulty === "advanced" ? "bg-purple-50 border border-purple-200" :
+              "bg-indigo-50 border border-indigo-200" :
+              
+              settings.difficulty === "beginner" ? "bg-blue-50 border border-blue-200" :
+              settings.difficulty === "elementary" ? "bg-emerald-50 border border-emerald-200" :
+              settings.difficulty === "intermediate" ? "bg-orange-50 border border-orange-200" :
+              settings.difficulty === "advanced" ? "bg-purple-50 border border-purple-200" :
+              "bg-indigo-50 border border-indigo-200"
+          }`}>
+            <span className={`font-bold ${
+              settings.enableAdaptiveDifficulty ?
+                adaptiveDifficulty === "beginner" ? "text-blue-700" :
+                adaptiveDifficulty === "elementary" ? "text-emerald-700" :
+                adaptiveDifficulty === "intermediate" ? "text-orange-700" :
+                adaptiveDifficulty === "advanced" ? "text-purple-700" :
+                "text-indigo-700" :
+                
+                settings.difficulty === "beginner" ? "text-blue-700" :
+                settings.difficulty === "elementary" ? "text-emerald-700" :
+                settings.difficulty === "intermediate" ? "text-orange-700" :
+                settings.difficulty === "advanced" ? "text-purple-700" :
+                "text-indigo-700"
+            }`}>Intentos permitidos: {settings.maxAttempts}</span>
             <div className="flex gap-1">
               {Array.from({ length: settings.maxAttempts }).map((_, index) => (
                 <div 
                   key={index} 
-                  className={`w-3 h-3 rounded-full ${
+                  className={`w-4 h-4 rounded-full ${
                     index < currentAttempts 
-                      ? "bg-red-500" // Intentos usados
-                      : "bg-gray-300" // Intentos disponibles
+                      ? "bg-red-500 shadow-inner" // Intentos usados
+                      : settings.enableAdaptiveDifficulty ?
+                        adaptiveDifficulty === "beginner" ? "bg-blue-300" :
+                        adaptiveDifficulty === "elementary" ? "bg-emerald-300" :
+                        adaptiveDifficulty === "intermediate" ? "bg-orange-300" :
+                        adaptiveDifficulty === "advanced" ? "bg-purple-300" :
+                        "bg-indigo-300" :
+                        
+                        settings.difficulty === "beginner" ? "bg-blue-300" :
+                        settings.difficulty === "elementary" ? "bg-emerald-300" :
+                        settings.difficulty === "intermediate" ? "bg-orange-300" :
+                        settings.difficulty === "advanced" ? "bg-purple-300" :
+                        "bg-indigo-300" // Intentos disponibles
                   }`}
                 />
               ))}
             </div>
-            <span>Usados: {currentAttempts}/{settings.maxAttempts}</span>
+            <span className={`${
+              settings.enableAdaptiveDifficulty ?
+                adaptiveDifficulty === "beginner" ? "text-blue-700" :
+                adaptiveDifficulty === "elementary" ? "text-emerald-700" :
+                adaptiveDifficulty === "intermediate" ? "text-orange-700" :
+                adaptiveDifficulty === "advanced" ? "text-purple-700" :
+                "text-indigo-700" :
+                
+                settings.difficulty === "beginner" ? "text-blue-700" :
+                settings.difficulty === "elementary" ? "text-emerald-700" :
+                settings.difficulty === "intermediate" ? "text-orange-700" :
+                settings.difficulty === "advanced" ? "text-purple-700" :
+                "text-indigo-700"
+            }`}>Usados: {currentAttempts}/{settings.maxAttempts}</span>
           </div>
         )}
       </div>
 
-      <div className="p-6 bg-gray-50 rounded-lg mb-6">
+      <div className={`p-8 rounded-xl mb-6 shadow-sm ${
+        settings.enableAdaptiveDifficulty ?
+          adaptiveDifficulty === "beginner" ? "bg-gradient-to-br from-white to-blue-50 border-2 border-blue-100" :
+          adaptiveDifficulty === "elementary" ? "bg-gradient-to-br from-white to-emerald-50 border-2 border-emerald-100" :
+          adaptiveDifficulty === "intermediate" ? "bg-gradient-to-br from-white to-orange-50 border-2 border-orange-100" :
+          adaptiveDifficulty === "advanced" ? "bg-gradient-to-br from-white to-purple-50 border-2 border-purple-100" :
+          "bg-gradient-to-br from-white to-indigo-50 border-2 border-indigo-100" :
+          
+          settings.difficulty === "beginner" ? "bg-gradient-to-br from-white to-blue-50 border-2 border-blue-100" :
+          settings.difficulty === "elementary" ? "bg-gradient-to-br from-white to-emerald-50 border-2 border-emerald-100" :
+          settings.difficulty === "intermediate" ? "bg-gradient-to-br from-white to-orange-50 border-2 border-orange-100" :
+          settings.difficulty === "advanced" ? "bg-gradient-to-br from-white to-purple-50 border-2 border-purple-100" :
+          "bg-gradient-to-br from-white to-indigo-50 border-2 border-indigo-100"
+      }`}>
         <div className="text-center">
           {/* El sistema de recompensas antiguo ha sido reemplazado por el nuevo componente RewardAnimation */}
           
@@ -1502,16 +1724,99 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         
           {currentProblem ? (
-            <div className={`text-3xl font-bold mb-6 flex justify-center items-baseline ${feedbackMessage ? (feedbackColor === "green" ? "text-green-600" : "text-red-600") : ""}`}>
-              <span className="text-right w-16">{currentProblem.num1}</span>
-              <span className="mx-4">+</span>
-              <span className="text-right w-16">{currentProblem.num2}</span>
-              <span className="mx-4">=</span>
-              <div className="border-b-2 border-gray-400 w-16 relative">
+            <div className={`text-4xl font-bold mb-6 flex justify-center items-baseline ${
+              feedbackMessage ? 
+                (feedbackColor === "green" ? "text-green-600" : 
+                 feedbackColor === "blue" ? "text-blue-600" : 
+                 "text-red-600") : 
+                settings.enableAdaptiveDifficulty ? 
+                  adaptiveDifficulty === "beginner" ? "text-blue-700" :
+                  adaptiveDifficulty === "elementary" ? "text-emerald-700" :
+                  adaptiveDifficulty === "intermediate" ? "text-orange-700" :
+                  adaptiveDifficulty === "advanced" ? "text-purple-700" :
+                  "text-indigo-700" :
+                  settings.difficulty === "beginner" ? "text-blue-700" :
+                  settings.difficulty === "elementary" ? "text-emerald-700" :
+                  settings.difficulty === "intermediate" ? "text-orange-700" :
+                  settings.difficulty === "advanced" ? "text-purple-700" :
+                  "text-indigo-700"
+            }`}>
+              <span className={`text-right w-20 p-2 rounded-lg ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800" :
+                  
+                  settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800"
+              }`}>{currentProblem.num1}</span>
+              <span className="mx-4 text-5xl">+</span>
+              <span className={`text-right w-20 p-2 rounded-lg ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800" :
+                  
+                  settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800"
+              }`}>{currentProblem.num2}</span>
+              <span className="mx-4 text-5xl">=</span>
+              <div className={`w-20 relative ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "border-b-4 border-blue-400" :
+                  adaptiveDifficulty === "elementary" ? "border-b-4 border-emerald-400" :
+                  adaptiveDifficulty === "intermediate" ? "border-b-4 border-orange-400" :
+                  adaptiveDifficulty === "advanced" ? "border-b-4 border-purple-400" :
+                  "border-b-4 border-indigo-400" :
+                  
+                  settings.difficulty === "beginner" ? "border-b-4 border-blue-400" :
+                  settings.difficulty === "elementary" ? "border-b-4 border-emerald-400" :
+                  settings.difficulty === "intermediate" ? "border-b-4 border-orange-400" :
+                  settings.difficulty === "advanced" ? "border-b-4 border-purple-400" :
+                  "border-b-4 border-indigo-400"
+              }`}>
                 <Input
                   type="text"
                   ref={inputRef}
-                  className={`w-full text-center ${waitingForContinue || showingExplanation ? "bg-gray-100" : "bg-transparent"} focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2`}
+                  className={`w-full text-center text-2xl font-bold ${
+                    waitingForContinue || showingExplanation ? 
+                      settings.enableAdaptiveDifficulty ?
+                        adaptiveDifficulty === "beginner" ? "bg-blue-50" :
+                        adaptiveDifficulty === "elementary" ? "bg-emerald-50" :
+                        adaptiveDifficulty === "intermediate" ? "bg-orange-50" :
+                        adaptiveDifficulty === "advanced" ? "bg-purple-50" :
+                        "bg-indigo-50" :
+                        
+                        settings.difficulty === "beginner" ? "bg-blue-50" :
+                        settings.difficulty === "elementary" ? "bg-emerald-50" :
+                        settings.difficulty === "intermediate" ? "bg-orange-50" :
+                        settings.difficulty === "advanced" ? "bg-purple-50" :
+                        "bg-indigo-50"
+                    : "bg-transparent"
+                  } focus:outline-none focus:ring-2 ${
+                    settings.enableAdaptiveDifficulty ?
+                      adaptiveDifficulty === "beginner" ? "focus:ring-blue-400" :
+                      adaptiveDifficulty === "elementary" ? "focus:ring-emerald-400" :
+                      adaptiveDifficulty === "intermediate" ? "focus:ring-orange-400" :
+                      adaptiveDifficulty === "advanced" ? "focus:ring-purple-400" :
+                      "focus:ring-indigo-400" :
+                      
+                      settings.difficulty === "beginner" ? "focus:ring-blue-400" :
+                      settings.difficulty === "elementary" ? "focus:ring-emerald-400" :
+                      settings.difficulty === "intermediate" ? "focus:ring-orange-400" :
+                      settings.difficulty === "advanced" ? "focus:ring-purple-400" :
+                      "focus:ring-indigo-400"
+                  } focus:border-transparent h-12 px-2 rounded-lg`}
                   value={userAnswer}
                   onChange={handleInputChange}
                   onKeyDown={(e) => {
