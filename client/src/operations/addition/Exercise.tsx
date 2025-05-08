@@ -930,7 +930,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             setTimeout(() => {
               setFeedbackMessage(null);
               setFeedbackColor(null);
-              moveToNextProblem();
+              // Verificar si el avance automático está bloqueado antes de avanzar
+              if (!blockAutoAdvance) {
+                moveToNextProblem();
+              } else {
+                console.log("[EXERCISE] Avance automático bloqueado (recompensa). No avanzando al siguiente problema.");
+              }
             }, 2500);
           }
           
@@ -942,7 +947,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           setTimeout(() => {
             setFeedbackMessage(null);
             setFeedbackColor(null);
-            moveToNextProblem();
+            // Verificar si el avance automático está bloqueado antes de avanzar
+            if (!blockAutoAdvance) {
+              moveToNextProblem();
+            } else {
+              console.log("[EXERCISE] Avance automático bloqueado (sin recompensa). No avanzando al siguiente problema.");
+            }
           }, 1000);
         }
       } else {
@@ -950,7 +960,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setTimeout(() => {
           setFeedbackMessage(null);
           setFeedbackColor(null);
-          moveToNextProblem();
+          // Verificar si el avance automático está bloqueado antes de avanzar
+          if (!blockAutoAdvance) {
+            moveToNextProblem();
+          } else {
+            console.log("[EXERCISE] Avance automático bloqueado (recompensas desactivadas). No avanzando al siguiente problema.");
+          }
         }, 1000);
       }
     } 
