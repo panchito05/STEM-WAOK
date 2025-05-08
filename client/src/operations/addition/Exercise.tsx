@@ -1807,12 +1807,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     adaptiveDifficulty === "elementary" ? "text-emerald-700" :
                     adaptiveDifficulty === "intermediate" ? "text-orange-700" :
                     adaptiveDifficulty === "advanced" ? "text-purple-700" :
-                    "text-indigo-700" :
+                    adaptiveDifficulty === "expert" ? "text-gray-900" :
+                    "text-gray-700" :
                     settings.difficulty === "beginner" ? "text-blue-700" :
                     settings.difficulty === "elementary" ? "text-emerald-700" :
                     settings.difficulty === "intermediate" ? "text-orange-700" :
                     settings.difficulty === "advanced" ? "text-purple-700" :
-                    "text-indigo-700"
+                    settings.difficulty === "expert" ? "text-gray-900" :
+                    "text-gray-700"
               }`}>
                 <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
                   settings.enableAdaptiveDifficulty ?
