@@ -1782,7 +1782,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   settings.difficulty === "advanced" ? "text-purple-700" :
                   "text-indigo-700"
             }`}>
-              <span className={`text-right p-2 rounded-lg ${
+              <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
                 settings.enableAdaptiveDifficulty ?
                   adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
                   adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
@@ -1795,7 +1795,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
                   settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
                   "bg-indigo-100 text-indigo-800"
-              }`} style={{ minWidth: '8rem' }}>
+              }`} style={{ minWidth: '10rem' }}>
                 {/* Detectar si es decimal para asegurar formato correcto */}
                 {Number.isInteger(currentProblem.num1) 
                   ? currentProblem.num1 
@@ -1803,7 +1803,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 }
               </span>
               <span className="mx-4 text-5xl">+</span>
-              <span className={`text-right p-2 rounded-lg ${
+              <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
                 settings.enableAdaptiveDifficulty ?
                   adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
                   adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
@@ -1816,7 +1816,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
                   settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
                   "bg-indigo-100 text-indigo-800"
-              }`} style={{ minWidth: '8rem' }}>
+              }`} style={{ minWidth: '10rem' }}>
                 {/* Detectar si es decimal para asegurar formato correcto */}
                 {Number.isInteger(currentProblem.num2) 
                   ? currentProblem.num2 
@@ -1824,7 +1824,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 }
               </span>
               <span className="mx-4 text-5xl">=</span>
-              <div className={`w-20 relative ${
+              <div className={`relative ${
                 settings.enableAdaptiveDifficulty ?
                   adaptiveDifficulty === "beginner" ? "border-b-4 border-blue-400" :
                   adaptiveDifficulty === "elementary" ? "border-b-4 border-emerald-400" :
@@ -1837,7 +1837,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   settings.difficulty === "intermediate" ? "border-b-4 border-orange-400" :
                   settings.difficulty === "advanced" ? "border-b-4 border-purple-400" :
                   "border-b-4 border-indigo-400"
-              }`}>
+              }`} style={{ minWidth: '10rem' }}>
                 <Input
                   type="text"
                   ref={inputRef}
@@ -1869,7 +1869,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                       settings.difficulty === "intermediate" ? "focus:ring-orange-400" :
                       settings.difficulty === "advanced" ? "focus:ring-purple-400" :
                       "focus:ring-indigo-400"
-                  } focus:border-transparent h-12 px-2 rounded-lg`}
+                  } focus:border-transparent h-12 px-2 rounded-lg text-ellipsis text-right`}
                   value={userAnswer}
                   onChange={handleInputChange}
                   onKeyDown={(e) => {
