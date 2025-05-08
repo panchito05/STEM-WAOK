@@ -41,6 +41,23 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     if (key === "difficulty") {
       console.log("[ADDITION] Guardando configuración de dificultad inmediatamente:", value);
       updateModuleSettings("addition", updatedSettings);
+      
+      // Actualizar también el localStorage para asegurar coherencia entre ambos perfiles
+      try {
+        const storedSettings = localStorage.getItem('moduleSettings');
+        const settingsObj = storedSettings ? JSON.parse(storedSettings) : {};
+        
+        if (settingsObj.addition) {
+          settingsObj.addition.difficulty = value;
+        } else {
+          settingsObj.addition = { difficulty: value };
+        }
+        
+        localStorage.setItem('moduleSettings', JSON.stringify(settingsObj));
+        console.log("[ADDITION] También actualizado localStorage con difficulty:", value);
+      } catch (error) {
+        console.error("[ADDITION] Error al actualizar localStorage:", error);
+      }
     } else {
       // Para otros ajustes, usar debounce para evitar múltiples llamadas de guardado
       debouncedSave(updatedSettings);
