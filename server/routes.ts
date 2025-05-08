@@ -5,7 +5,8 @@ import {
   exerciseProgressSchema, 
   moduleSettingsSchema, 
   insertChildProfileSchema,
-  users 
+  users,
+  ModuleSettingsData
 } from "@shared/schema";
 import { z } from "zod";
 import alphabet2Routes from "./routes-alphabet2";

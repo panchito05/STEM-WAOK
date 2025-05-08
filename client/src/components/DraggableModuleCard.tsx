@@ -1,11 +1,11 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { useAccessibleDnd } from "./AccessibleDndContext";
-import { useModuleStore } from "@/store/moduleStore";
+import { useModuleStore, useModuleFavorites } from "@/store/moduleStore";
 import { Module } from "@/utils/operationComponents";
 import { 
-  GripVertical, MoreVertical, Star, Plus, Minus, X, 
+  GripVertical, MoreVertical, Star, StarOff, Plus, Minus, X, 
   DivideIcon, PieChart, BookOpen, Hash, Calculator, 
   ArrowLeftRight, Square, Percent, Triangle, LucideIcon,
   Eye, EyeOff, MapIcon
@@ -28,14 +28,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   const ref = useRef<HTMLDivElement>(null);
   const { useDragItem, useDropTarget } = useAccessibleDnd();
   const { 
-    toggleFavorite, 
     toggleHidden, 
     moveModule,
-    favoriteModules,
     hiddenModules
   } = useModuleStore();
+  
+  // Obtenemos los favoritos del perfil activo desde SettingsContext
+  const { toggleFavorite, isFavorite } = useModuleFavorites();
 
-  const isFavorite = favoriteModules.includes(module.id);
+  const isModuleFavorite = isFavorite(module.id);
   const isHidden = hiddenModules.includes(module.id);
 
   const [{ isDragging }, drag] = useDragItem(() => ({
@@ -81,6 +82,14 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       item.index = hoverIndex;
     },
   }));
+  
+  // Manejador para toggle favorite que previene la propagación de eventos
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    toggleFavorite(module.id);
+  };
   
   drag(drop(ref));
   
@@ -147,15 +156,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             className={`focus:outline-none ${
               module.comingSoon 
                 ? "text-gray-300 cursor-not-allowed" 
-                : isFavorite 
+                : isModuleFavorite 
                   ? "text-yellow-400 hover:text-white" 
                   : "text-white hover:text-yellow-400"
             }`}
-            onClick={() => !module.comingSoon && toggleFavorite(module.id)}
+            onClick={(e) => !module.comingSoon && handleToggleFavorite(e)}
             disabled={module.comingSoon}
-            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            aria-label={isModuleFavorite ? "Remove from favorites" : "Add to favorites"}
           >
-            <Star className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
+            <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           {!module.comingSoon && (
             <DropdownMenu>
@@ -165,6 +174,21 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleToggleFavorite}>
+                  <div className="flex items-center">
+                    {isModuleFavorite ? (
+                      <>
+                        <StarOff className="h-4 w-4 mr-2" />
+                        Quitar de favoritos
+                      </>
+                    ) : (
+                      <>
+                        <Star className="h-4 w-4 mr-2" />
+                        Añadir a favoritos
+                      </>
+                    )}
+                  </div>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => toggleHidden(module.id)}>
                   <div className="flex items-center">
                     {isHidden ? (
@@ -215,15 +239,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       className={`
         ${isDragging ? "opacity-50" : "opacity-100"}
         ${module.comingSoon ? "border-2 border-dashed border-gray-300" : ""}
-        ${isFavorite ? "ring-2 ring-yellow-400" : ""}
+        ${isModuleFavorite ? "ring-2 ring-yellow-400" : ""}
         ${isHidden ? "ring-2 ring-purple-400 border-purple-200" : ""}
         overflow-hidden
         transition-all
-        ${isFavorite ? "transform -translate-y-1" : ""}
+        ${isModuleFavorite ? "transform -translate-y-1" : ""}
       `}
       data-handler-id={handlerId}
     >
-      {isFavorite && (
+      {isModuleFavorite && (
         <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1 shadow-md">
           <Star className="h-4 w-4 text-white fill-current" />
         </div>

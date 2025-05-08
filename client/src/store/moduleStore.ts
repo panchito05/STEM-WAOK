@@ -1,12 +1,25 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { operationModules } from '@/utils/operationComponents';
+import { useSettings } from '@/context/SettingsContext';
 
+// Función para obtener los favoritos del SettingsContext
+// Esta se usará en componentes para integrar los favoritos del perfil activo
+export function useModuleFavorites() {
+  const { favoriteModules, toggleFavoriteModule, isFavorite } = useSettings();
+  
+  return {
+    favoriteModules,
+    toggleFavorite: toggleFavoriteModule,
+    isFavorite
+  };
+}
+
+// Estado para configuraciones que no son favoritos
+// (orden, visibilidad, filtros, etc.)
 interface ModuleState {
   // Custom order of modules (if reordered by user)
   customModuleOrder: string[];
-  // Modules marked as favorites
-  favoriteModules: string[];
   // Modules marked as hidden
   hiddenModules: string[];
   // Whether to show only favorites
@@ -16,7 +29,6 @@ interface ModuleState {
   
   // Actions
   moveModule: (fromIndex: number, toIndex: number) => void;
-  toggleFavorite: (moduleId: string) => void;
   toggleHidden: (moduleId: string) => void;
   toggleShowOnlyFavorites: () => void;
   toggleShowHidden: () => void;
@@ -28,7 +40,6 @@ export const useModuleStore = create<ModuleState>()(
   persist(
     (set) => ({
       customModuleOrder: operationModules.map(module => module.id),
-      favoriteModules: [],
       hiddenModules: [],
       showOnlyFavorites: false,
       showHidden: false,
@@ -39,16 +50,6 @@ export const useModuleStore = create<ModuleState>()(
           const [movedModule] = newOrder.splice(fromIndex, 1);
           newOrder.splice(toIndex, 0, movedModule);
           return { customModuleOrder: newOrder };
-        }),
-      
-      toggleFavorite: (moduleId) =>
-        set(state => {
-          const isFavorite = state.favoriteModules.includes(moduleId);
-          return {
-            favoriteModules: isFavorite
-              ? state.favoriteModules.filter(id => id !== moduleId)
-              : [...state.favoriteModules, moduleId]
-          };
         }),
       
       toggleHidden: (moduleId) =>

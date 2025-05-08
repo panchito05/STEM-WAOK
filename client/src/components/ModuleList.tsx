@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useModuleStore } from "@/store/moduleStore";
+import { useModuleStore, useModuleFavorites } from "@/store/moduleStore";
 import DraggableModuleCard from "./DraggableModuleCard";
 import FilterBar from "./FilterBar";
 import { operationModules } from "@/utils/operationComponents";
@@ -8,12 +8,14 @@ export default function ModuleList() {
   const [searchQuery, setSearchQuery] = useState("");
   const { 
     customModuleOrder, 
-    favoriteModules, 
     hiddenModules, 
     showOnlyFavorites,
     showHidden,
     resetHiddenModules
   } = useModuleStore();
+  
+  // Obtenemos los favoritos del perfil activo
+  const { favoriteModules } = useModuleFavorites();
 
   const filteredModules = useMemo(() => {
     // Start with all modules
