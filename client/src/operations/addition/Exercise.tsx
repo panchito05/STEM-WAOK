@@ -1582,6 +1582,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 settings.difficulty === "elementary" ? "border-emerald-300 hover:bg-emerald-100" :
                 settings.difficulty === "intermediate" ? "border-orange-300 hover:bg-orange-100" :
                 settings.difficulty === "advanced" ? "border-purple-300 hover:bg-purple-100" :
+                settings.difficulty === "expert" ? "border-gray-500 hover:bg-gray-100" :
                 "border-indigo-300 hover:bg-indigo-100"
             }`}
           >
@@ -1598,12 +1599,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             adaptiveDifficulty === "elementary" ? "bg-emerald-200" :
             adaptiveDifficulty === "intermediate" ? "bg-orange-200" :
             adaptiveDifficulty === "advanced" ? "bg-purple-200" :
+            adaptiveDifficulty === "expert" ? "bg-gray-200" :
             "bg-indigo-200" :
             
             settings.difficulty === "beginner" ? "bg-blue-200" :
             settings.difficulty === "elementary" ? "bg-emerald-200" :
             settings.difficulty === "intermediate" ? "bg-orange-200" :
             settings.difficulty === "advanced" ? "bg-purple-200" :
+            settings.difficulty === "expert" ? "bg-gray-200" :
             "bg-indigo-200"
         }`} />
         <div className="flex justify-between text-xs font-medium mt-2">
@@ -1643,6 +1646,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               adaptiveDifficulty === "elementary" ? "bg-emerald-50 border border-emerald-200" :
               adaptiveDifficulty === "intermediate" ? "bg-orange-50 border border-orange-200" :
               adaptiveDifficulty === "advanced" ? "bg-purple-50 border border-purple-200" :
+              adaptiveDifficulty === "expert" ? "bg-gray-50 border border-gray-500" :
               "bg-indigo-50 border border-indigo-200" :
               
               settings.difficulty === "beginner" ? "bg-blue-50 border border-blue-200" :
