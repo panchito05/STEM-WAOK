@@ -196,6 +196,14 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
 }
 
 export function checkAnswer(problem: Problem, userAnswer: number): boolean {
+  // TRUCO ESPECIAL: Si la respuesta del usuario es exactamente igual a la respuesta correcta
+  // esto significa que nuestro componente MultiVerticalExercise ha verificado la respuesta 
+  // y ha decidido que es correcta, así que aceptamos sin más comprobaciones
+  if (userAnswer === problem.correctAnswer) {
+    console.log(`[CHECK] Respuesta idéntica a la correcta, aceptando automáticamente.`);
+    return true;
+  }
+  
   // Para formato multi-vertical, hacer una comprobación especial con logs para depuración
   if ((problem as AdditionProblem).layout === 'multi-vertical') {
     const additionalNumbers = (problem as AdditionProblem).additionalNumbers || [];
@@ -210,8 +218,8 @@ export function checkAnswer(problem: Problem, userAnswer: number): boolean {
     console.log(`[MULTI-VERTICAL] - Respuesta correcta almacenada:`, problem.correctAnswer);
     console.log(`[MULTI-VERTICAL] - Respuesta del usuario:`, userAnswer);
     
-    // Usar el valor calculado para la comparación
-    return calculatedSum === userAnswer;
+    // Usar el valor calculado para la comparación con una pequeña tolerancia
+    return Math.abs(calculatedSum - userAnswer) < 0.01;
   }
   
   // Para números enteros, comparación directa
