@@ -1547,12 +1547,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 adaptiveDifficulty === "elementary" ? "🟢 Nivel: Elemental" :
                 adaptiveDifficulty === "intermediate" ? "🟠 Nivel: Intermedio" :
                 adaptiveDifficulty === "advanced" ? "🟣 Nivel: Avanzado" :
+                adaptiveDifficulty === "expert" ? "⚫ Nivel: Experto" :
                 "⚪ Nivel: Desconocido" :
                 
                 settings.difficulty === "beginner" ? "🔵 Nivel: Principiante" :
                 settings.difficulty === "elementary" ? "🟢 Nivel: Elemental" :
                 settings.difficulty === "intermediate" ? "🟠 Nivel: Intermedio" :
                 settings.difficulty === "advanced" ? "🟣 Nivel: Avanzado" :
+                settings.difficulty === "expert" ? "⚫ Nivel: Experto" :
                 "⚪ Nivel: Desconocido"
               }
             </span>
@@ -1573,6 +1575,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 adaptiveDifficulty === "elementary" ? "border-emerald-300 hover:bg-emerald-100" :
                 adaptiveDifficulty === "intermediate" ? "border-orange-300 hover:bg-orange-100" :
                 adaptiveDifficulty === "advanced" ? "border-purple-300 hover:bg-purple-100" :
+                adaptiveDifficulty === "expert" ? "border-gray-500 hover:bg-gray-100" :
                 "border-indigo-300 hover:bg-indigo-100" :
                 
                 settings.difficulty === "beginner" ? "border-blue-300 hover:bg-blue-100" :
