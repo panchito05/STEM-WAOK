@@ -485,7 +485,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const globalSettingsData = await storage.getModuleSettingsForChildProfile(profileId, "global");
       let favoriteModules: string[] = [];
       
-      if (globalSettingsData && 'favorites' in globalSettingsData.settings) {
+      if (globalSettingsData && !Array.isArray(globalSettingsData) && 
+          globalSettingsData.settings && 
+          typeof globalSettingsData.settings === 'object' && 
+          globalSettingsData.settings !== null &&
+          'favorites' in globalSettingsData.settings) {
         favoriteModules = globalSettingsData.settings.favorites as string[];
       }
       
@@ -526,6 +530,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid settings data", details: error.errors });
       }
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Ruta para manejar los favoritos de un perfil
+  app.put("/api/child-profiles/:id/favorites", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Verificar que el cuerpo incluya una lista de favoritos
+      if (!req.body.favorites || !Array.isArray(req.body.favorites)) {
+        return res.status(400).json({ error: "Invalid favorites data" });
+      }
+      
+      try {
+        // Validar los favoritos
+        const favoriteModules = req.body.favorites as string[];
+        
+        // Guardar favoritos en las configuraciones globales
+        const globalSettings: ModuleSettingsData = {
+          favorites: favoriteModules
+        };
+        
+        await storage.saveModuleSettingsForChildProfile(
+          profileId,
+          "global",
+          globalSettings
+        );
+        
+        return res.json({ 
+          success: true, 
+          favorites: favoriteModules 
+        });
+      } catch (validationError) {
+        console.error("Error validating favorites data:", validationError);
+        return res.status(400).json({ error: "Invalid favorites format" });
+      }
+    } catch (error) {
+      console.error("Error updating child profile favorites:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

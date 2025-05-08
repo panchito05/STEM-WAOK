@@ -128,18 +128,19 @@ export interface ExerciseProgress {
 }
 
 export interface ModuleSettingsData {
-  difficulty: string;
-  problemCount: number;
-  timeLimit: string;
-  timeValue: number;
-  maxAttempts: number;
-  showImmediateFeedback: boolean;
-  enableSoundEffects: boolean;
-  showAnswerWithExplanation: boolean;
-  enableAdaptiveDifficulty: boolean;
-  enableCompensation: boolean;
+  difficulty?: string;
+  problemCount?: number;
+  timeLimit?: string;
+  timeValue?: number;
+  maxAttempts?: number;
+  showImmediateFeedback?: boolean;
+  enableSoundEffects?: boolean;
+  showAnswerWithExplanation?: boolean;
+  enableAdaptiveDifficulty?: boolean;
+  enableCompensation?: boolean;
   requireSimplified?: boolean;
   fractionType?: string;
+  favorites?: string[];
   [key: string]: any;
 }
 
@@ -153,16 +154,17 @@ export const exerciseProgressSchema = z.object({
 });
 
 export const moduleSettingsSchema = z.object({
-  difficulty: z.string(),
-  problemCount: z.number().int().min(1).max(100),
-  timeLimit: z.string(),
-  timeValue: z.number().int().min(0).max(600),
-  maxAttempts: z.number().int().min(0).max(10),
-  showImmediateFeedback: z.boolean(),
-  enableSoundEffects: z.boolean(),
-  showAnswerWithExplanation: z.boolean(),
-  enableAdaptiveDifficulty: z.boolean(),
-  enableCompensation: z.boolean(),
+  difficulty: z.string().optional(),
+  problemCount: z.number().int().min(1).max(100).optional(),
+  timeLimit: z.string().optional(),
+  timeValue: z.number().int().min(0).max(600).optional(),
+  maxAttempts: z.number().int().min(0).max(10).optional(),
+  showImmediateFeedback: z.boolean().optional(),
+  enableSoundEffects: z.boolean().optional(),
+  showAnswerWithExplanation: z.boolean().optional(),
+  enableAdaptiveDifficulty: z.boolean().optional(),
+  enableCompensation: z.boolean().optional(),
   requireSimplified: z.boolean().optional(),
   fractionType: z.string().optional(),
-});
+  favorites: z.array(z.string()).optional(),
+}).passthrough();
