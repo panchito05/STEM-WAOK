@@ -13,6 +13,8 @@ import { useTranslations } from "@/hooks/use-translations";
 import { createLevelManager, DifficultyLevel, CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus from '@/lib/eventBus';
 import LevelUpHandler from "@/components/LevelUpHandler";
+import { useRewardsStore, awardReward, getRewardProbability, checkAndAwardRewards } from '@/lib/rewards-system';
+import RewardAnimation from '@/components/rewards/RewardAnimation';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -95,6 +97,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { saveExerciseResult } = useProgress();
   const { updateModuleSettings } = useSettings();
   const { t } = useTranslations();
+  const { setShowRewardAnimation } = useRewardsStore();
 
   // Generate problems when settings change or initially
   useEffect(() => {
