@@ -289,17 +289,7 @@ export default function VerticalExercise({
           </div>
         </div>
         
-        {/* Botones de control */}
-        <div className="mt-6 flex justify-center">
-          <Button 
-            onClick={handleSubmit}
-            disabled={waitingForContinue}
-            className="px-6"
-          >
-            {t('exercises.check')}
-            <Check className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
+        {/* No necesitamos un botón adicional, ya se puede verificar con Enter */}
       </div>
     </div>
   );
