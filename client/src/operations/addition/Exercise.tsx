@@ -775,75 +775,41 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Decidir si mostrar recompensa basado en diferentes criterios
       if (settings.enableRewards) {
-        // Sistema de recompensas mucho más estratégico y menos predecible
-        // - Evitamos que aparezcan recompensas en problemas consecutivos
-        // - Limitamos el número total de recompensas por sesión
-        // - Garantizamos recompensas solo en momentos clave del progreso
-        // - Introducimos una mecánica de "racha oculta" para sorprender
+        // NUEVO SISTEMA DE RECOMPENSAS
+        // - Sistema escalonado con diferentes niveles de recompensas
+        // - Colecciones temáticas que el usuario puede completar
+        // - Recompensas estratégicas basadas en contexto y progreso
         
-        let shouldShowReward = false;
+        // NUEVO SISTEMA DE RECOMPENSAS
+        // Determinamos la probabilidad de mostrar una recompensa basado en factores de contexto
+        const isEarlyProblem = currentProblemIndex < Math.ceil(problems.length * 0.2);
+        const isMidPointProblem = Math.abs(currentProblemIndex - Math.floor(problems.length / 2)) <= 1;
+        const isLateProblem = currentProblemIndex >= Math.floor(problems.length * 0.9);
+        const isFinalProblem = currentProblemIndex === problems.length - 1;
         
-        // Máximo de recompensas permitidas por sesión (aproximadamente 20-25% de los problemas)
-        const maxRewardsPerSession = Math.max(2, Math.ceil(problems.length * 0.2));
+        // Contexto para determinar probabilidad de recompensa
+        const rewardContext = {
+          isFirstProblem: currentProblemIndex === 0,
+          isLastProblem: isFinalProblem,
+          isMidPoint: isMidPointProblem,
+          problemIndex: currentProblemIndex,
+          totalProblems: problems.length,
+          streak: consecutiveCorrectAnswers,
+          correctAnswers: answers.filter(a => a.isCorrect).length,
+          incorrectAnswers: answers.filter(a => !a.isCorrect).length,
+          difficulty: settings.difficulty,
+          previousRewardShown: rewardsShownIndices.length > 0 ? rewardsShownIndices[rewardsShownIndices.length - 1] : -1
+        };
         
-        // Si ya hemos mostrado suficientes recompensas, limitamos su aparición
-        if (totalRewardsShown >= maxRewardsPerSession) {
-          // Solo permitimos una recompensa final si es el último problema y aún no hemos mostrado una allí
-          shouldShowReward = currentProblemIndex === problems.length - 1 && 
-                             !rewardsShownIndices.includes(problems.length - 1);
-        } 
-        else {
-          // Evitamos mostrar recompensas en problemas consecutivos o muy cercanos
-          const lastRewardIndex = rewardsShownIndices.length > 0 ? 
-                                  rewardsShownIndices[rewardsShownIndices.length - 1] : -1;
-          
-          // Mínimo de problemas entre recompensas (al menos 3-4 problemas entre recompensas)
-          const minProblemsBetweenRewards = Math.max(3, Math.floor(problems.length / 8));
-          const problemsSinceLastReward = lastRewardIndex === -1 ? 
-                                          currentProblemIndex + 1 : 
-                                          currentProblemIndex - lastRewardIndex;
-          
-          // Solo considerar mostrar recompensa si ha pasado suficiente tiempo desde la última
-          if (lastRewardIndex === -1 || problemsSinceLastReward > minProblemsBetweenRewards) {
-            
-            // Momentos estratégicos para recompensas con mayor probabilidad:
-            // 1. Al inicio del ejercicio (primer 20% de problemas) - muy baja probabilidad (8%)
-            const isEarlyProblem = currentProblemIndex < Math.ceil(problems.length * 0.2);
-            
-            // 2. A mitad del ejercicio (promedio 50% completado) - probabilidad media (25%)
-            const isMidPointProblem = Math.abs(currentProblemIndex - Math.floor(problems.length / 2)) <= 1;
-            
-            // 3. Al final del ejercicio (último 10% de problemas) - alta probabilidad (75%) 
-            const isLateProblem = currentProblemIndex >= Math.floor(problems.length * 0.9);
-            
-            // 4. Específicamente en el último problema - garantizada (100%)
-            const isFinalProblem = currentProblemIndex === problems.length - 1;
-            
-            // 5. Tras logros significativos (5 o más respuestas correctas consecutivas) - probabilidad alta (60%)
-            const isSignificantStreak = consecutiveCorrectAnswers >= 5;
-            
-            // Asignamos probabilidades basadas en los criterios
-            if (isFinalProblem) {
-              shouldShowReward = true; // Garantizada en el último problema
-            }
-            else if (isSignificantStreak) {
-              shouldShowReward = Math.random() < 0.6; // Alta probabilidad por racha significativa
-            }
-            else if (isLateProblem) {
-              shouldShowReward = Math.random() < 0.35; // Probabilidad moderada hacia el final
-            }
-            else if (isMidPointProblem) {
-              shouldShowReward = Math.random() < 0.25; // Probabilidad media en el punto medio
-            }
-            else if (isEarlyProblem) {
-              shouldShowReward = Math.random() < 0.08; // Muy baja probabilidad al inicio
-            }
-            else {
-              // Factor sorpresa - muy raro (3%)
-              shouldShowReward = Math.random() < 0.03;
-            }
-          }
-        }
+        // Obtener probabilidad de recompensa basada en el contexto
+        const rewardProbability = getRewardProbability(rewardContext);
+        
+        // Máximo de recompensas permitidas (más restrictivo que antes)
+        const maxRewardsPerSession = Math.max(2, Math.ceil(problems.length * 0.15));
+        
+        // Determinar si mostrar una recompensa
+        let shouldShowReward = Math.random() < rewardProbability && 
+                              (totalRewardsShown < maxRewardsPerSession || isFinalProblem);
         
         if (shouldShowReward) {
           // Seleccionar aleatoriamente el tipo de recompensa (medallas, trofeos o estrellas)
