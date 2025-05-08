@@ -1,10 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
-import { Check } from "lucide-react";
-// import { useTranslation } from "react-i18next";
-// Temporal mientras arreglamos el problema con i18n
-const useTranslation = () => ({ t: (key: string) => key.includes('.') ? key.split('.')[1] : key });
 import { DifficultyLevel, AdditionProblem } from "./types";
 
 interface VerticalExerciseProps {
@@ -18,8 +13,13 @@ interface VerticalExerciseProps {
 }
 
 /**
- * Componente que muestra un ejercicio de adición en formato vertical
- * Los números están alineados en columnas y el usuario debe ingresar cada dígito individualmente
+ * NUEVA IMPLEMENTACIÓN DEL COMPONENTE
+ * 
+ * Arquitectura completamente rediseñada para manejar sumas verticales con decimales:
+ * 1. Modelo de datos más claro y explícito para seguimiento de valores
+ * 2. Manejo independiente de parte entera y parte decimal
+ * 3. Renderizado basado en posiciones específicas
+ * 4. Validación simplificada y robusta
  */
 export default function VerticalExercise({
   problem,
@@ -30,249 +30,234 @@ export default function VerticalExercise({
   waitingForContinue,
   difficultyLevel
 }: VerticalExerciseProps) {
+  // Usamos el patrón temporal mientras arreglamos el problema con i18n
+  const useTranslation = () => ({ t: (key: string) => key.includes('.') ? key.split('.')[1] : key });
   const { t } = useTranslation();
-  const [userDigits, setUserDigits] = useState<string[]>([]);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // -------- ESTADO Y REFERENCIAS --------
   
-  // Convertir los números a strings para manipularlos por dígitos
+  // Los inputs del usuario se separan explícitamente entre parte entera y decimal
+  const [integerInputs, setIntegerInputs] = useState<string[]>([]);
+  const [decimalInputs, setDecimalInputs] = useState<string[]>([]);
+  
+  // Referencias para los campos de texto
+  const integerRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const decimalRefs = useRef<(HTMLInputElement | null)[]>([]);
+  
+  // -------- PROCESAMIENTO INICIAL DE DATOS --------
+  
+  // Identificamos explícitamente las características de cada número
   const num1Str = problem.num1.toString();
   const num2Str = problem.num2.toString();
+  const expectedAnswer = problem.correctAnswer;
+  const expectedAnswerStr = expectedAnswer.toString();
   
-  // Calcular la suma exacta para determinar la respuesta correcta
-  const exactSum = problem.num1 + problem.num2;
-  const correctAnswerStr = exactSum.toString();
+  // Descomponemos en parte entera y decimal de manera explícita
+  const hasDecimal1 = num1Str.includes('.');
+  const hasDecimal2 = num2Str.includes('.');
+  const hasDecimalResult = expectedAnswerStr.includes('.');
+  const useDecimalFormat = hasDecimal1 || hasDecimal2 || hasDecimalResult;
   
-  // SOLUCIÓN ROBUSTA: Garantizar que el número de campos coincida con la longitud de la respuesta
-  console.log('[VERTICAL_EXERCISE] Datos numéricos actuales:', {
-    num1: num1Str,
-    num2: num2Str,
-    sum: correctAnswerStr,
-    num1Length: num1Str.length,
-    num2Length: num2Str.length,
-    sumLength: correctAnswerStr.length
-  });
+  // Obtenemos las partes de cada número
+  const [int1 = "", dec1 = ""] = num1Str.split('.');
+  const [int2 = "", dec2 = ""] = num2Str.split('.');
+  const [intResult = "", decResult = ""] = expectedAnswerStr.split('.');
   
-  // Determinar la longitud máxima - debe acomodar la respuesta completa
-  const maxLength = Math.max(
-    num1Str.length,
-    num2Str.length,
-    correctAnswerStr.length
-  );
+  // Calculamos el tamaño requerido para cada sección
+  const maxIntLength = Math.max(int1.length, int2.length, intResult.length);
+  const maxDecLength = useDecimalFormat ? 
+    Math.max(dec1.length, dec2.length, decResult.length, 1) : 0;
   
-  // Función para alinear correctamente los números considerando puntos decimales
-  const alignDecimalNumbers = (num1: string, num2: string): { alignedNum1: string, alignedNum2: string } => {
-    // Determinar si los números tienen decimales
-    const num1HasDecimal = num1.includes('.');
-    const num2HasDecimal = num2.includes('.');
-    
-    // Convertir los números a formato con punto decimal si no los tienen
-    // Esto garantiza una representación consistente
-    const num1WithDecimal = num1HasDecimal ? num1 : num1 + '.0';
-    const num2WithDecimal = num2HasDecimal ? num2 : num2 + '.0';
-    
-    // Dividir los números en partes enteras y decimales
-    const [num1Integer, num1Decimal = ''] = num1WithDecimal.split('.');
-    const [num2Integer, num2Decimal = ''] = num2WithDecimal.split('.');
-    
-    // Determinar el máximo número de dígitos antes y después del punto decimal
-    const maxIntegerDigits = Math.max(num1Integer.length, num2Integer.length);
-    const maxDecimalDigits = Math.max(num1Decimal.length, num2Decimal.length);
-    
-    // Alinear partes enteras a la derecha y partes decimales a la izquierda
-    const alignedNum1Integer = num1Integer.padStart(maxIntegerDigits, ' ');
-    const alignedNum1Decimal = num1Decimal.padEnd(maxDecimalDigits, ' ');
-    
-    const alignedNum2Integer = num2Integer.padStart(maxIntegerDigits, ' ');
-    const alignedNum2Decimal = num2Decimal.padEnd(maxDecimalDigits, ' ');
-    
-    // Combinar las partes alineadas
-    return {
-      alignedNum1: alignedNum1Integer + '.' + alignedNum1Decimal,
-      alignedNum2: alignedNum2Integer + '.' + alignedNum2Decimal
-    };
-  };
+  // Parseamos los números para verificación
+  const num1Value = parseFloat(num1Str);
+  const num2Value = parseFloat(num2Str);
+  const resultValue = num1Value + num2Value;
   
-  // Alinear números correctamente basados en el punto decimal
-  const { alignedNum1, alignedNum2 } = alignDecimalNumbers(num1Str, num2Str);
+  // -------- FORMATEADO PARA VISUALIZACIÓN --------
   
-  // Crear arrays con los dígitos individuales
-  const num1Digits = alignedNum1.split('');
+  // Creamos los arreglos de visualización alineados correctamente
+  const num1Integers = int1.padStart(maxIntLength, ' ').split('');
+  const num2Integers = int2.padStart(maxIntLength, ' ').split('');
   
-  // En este punto, tanto alignedNum1 como alignedNum2 ya tienen el punto decimal
-  // y están alineados correctamente, así que simplemente dividirlos en dígitos
-  const num2Digits = alignedNum2.split('');
+  const num1Decimals = useDecimalFormat ? dec1.padEnd(maxDecLength, '0').split('') : [];
+  const num2Decimals = useDecimalFormat ? dec2.padEnd(maxDecLength, '0').split('') : [];
   
-  // Verificar si debemos incluir el punto decimal en la respuesta esperada
-  // Si los operandos tienen puntos decimales, la respuesta también debería tenerlo
-  let correctAnswerWithDecimal = correctAnswerStr;
-  if (!correctAnswerWithDecimal.includes('.') && 
-      (alignedNum1.includes('.') || alignedNum2.includes('.'))) {
-    correctAnswerWithDecimal = correctAnswerWithDecimal + '.0';
-  }
+  // -------- EFECTOS PARA MANEJO DEL ESTADO --------
   
-  console.log('[VERTICAL_EXERCISE] Respuesta ajustada con decimales:', {
-    original: correctAnswerStr,
-    ajustada: correctAnswerWithDecimal
-  });
-  
-  // IMPORTANTE: totalPositions debe coincidir con la longitud de la respuesta correcta
-  // incluyendo todos los dígitos decimales que puedan estar presentes
-  // Asegurarnos de que sea al menos igual a la longitud del número más largo
-  const maxDigitsWithDecimal = Math.max(
-    alignedNum1.length,
-    alignedNum2.length,
-    correctAnswerWithDecimal.length
-  );
-  const totalPositions = maxDigitsWithDecimal;
-  
-  console.log('[VERTICAL_EXERCISE] Configuración final:', {
-    alignedNum1,
-    alignedNum2,
-    num1Digits,
-    num2Digits,
-    correctAnswerStr,
-    correctAnswerWithDecimal,
-    totalPositions
-  });
-  
-  // Inicializar los dígitos del usuario si están vacíos o ha cambiado el problema
+  // Inicializamos los inputs cuando cambia el problema
   useEffect(() => {
-    // Limpiar todos los dígitos cuando cambia el problema
-    setUserDigits(Array(totalPositions).fill(''));
+    // Inicializar arreglos de inputs
+    setIntegerInputs(Array(maxIntLength).fill(''));
+    setDecimalInputs(useDecimalFormat ? Array(maxDecLength).fill('') : []);
     
-    // Limpiar también las referencias
-    inputRefs.current = Array(totalPositions).fill(null);
+    // Inicializar referencias
+    integerRefs.current = Array(maxIntLength).fill(null);
+    decimalRefs.current = Array(maxDecLength).fill(null);
     
-    // Registrar el problema para debug
-    console.log('[VERTICAL_EXERCISE] Problema actualizado:', {
-      num1: problem.num1,
-      num2: problem.num2,
-      correctAnswer: problem.correctAnswer,
-      totalPositions
+    // Registrar información para depuración
+    console.log('[VERTICAL_EXERCISE] Inicialización del ejercicio:', {
+      operandos: { num1: num1Str, num2: num2Str },
+      resultado: expectedAnswerStr,
+      formato: { 
+        useDecimal: useDecimalFormat,
+        maxIntLength,
+        maxDecLength 
+      },
+      visualización: {
+        num1: { integers: num1Integers, decimals: num1Decimals },
+        num2: { integers: num2Integers, decimals: num2Decimals }
+      }
     });
     
-    // Enfocar el último input (el de la derecha) cuando se activa,
-    // ya que la suma se realiza de derecha a izquierda empezando por las unidades
-    if (isActive && inputRefs.current[totalPositions - 1]) {
+    // Si el ejercicio está activo, enfocar automáticamente el último dígito
+    if (isActive) {
       setTimeout(() => {
-        inputRefs.current[totalPositions - 1]?.focus();
-      }, 100); // pequeño retraso para asegurar que el DOM se actualice
+        if (useDecimalFormat && maxDecLength > 0 && decimalRefs.current[maxDecLength - 1]) {
+          decimalRefs.current[maxDecLength - 1]?.focus();
+        } else if (maxIntLength > 0 && integerRefs.current[maxIntLength - 1]) {
+          integerRefs.current[maxIntLength - 1]?.focus();
+        }
+      }, 100);
     }
-  }, [isActive, totalPositions, problem.num1, problem.num2]);
+  }, [isActive, problem.num1, problem.num2, maxIntLength, maxDecLength, useDecimalFormat]);
   
-  // Manejar el cambio en un dígito específico
-  const handleDigitChange = (index: number, value: string) => {
+  // -------- FUNCIONES PARA VALIDACIÓN Y MANEJO --------
+  
+  // Reconstruir la respuesta completa del usuario
+  const getUserAnswer = (): { numberValue: number, stringValue: string } => {
+    // Filtrar campos vacíos y unir los dígitos
+    const intPart = integerInputs.filter(val => val !== '').join('');
+    const decPart = decimalInputs.filter(val => val !== '').join('');
+    
+    // Crear string completo según formato
+    const stringValue = useDecimalFormat && decPart.length > 0 ? 
+      `${intPart}.${decPart}` : intPart;
+    
+    // Parsear a número
+    const numberValue = stringValue.length > 0 ? parseFloat(stringValue) : 0;
+    
+    return { numberValue, stringValue };
+  };
+  
+  // Validar si la respuesta es correcta
+  const validateAnswer = (): boolean => {
+    const { numberValue, stringValue } = getUserAnswer();
+    
+    console.log('[VERTICAL_EXERCISE] Validando respuesta:', {
+      userInput: stringValue,
+      userValue: numberValue,
+      expected: {
+        string: expectedAnswerStr,
+        value: expectedAnswer
+      }
+    });
+    
+    // Comparación directa de strings
+    if (stringValue === expectedAnswerStr) {
+      console.log('[VERTICAL_EXERCISE] Coincidencia exacta de strings');
+      return true;
+    }
+    
+    // Comparación con tolerancia numérica para evitar errores de punto flotante
+    const tolerance = 0.001;
+    if (Math.abs(numberValue - expectedAnswer) < tolerance) {
+      console.log('[VERTICAL_EXERCISE] Coincidencia numérica dentro de tolerancia');
+      return true;
+    }
+    
+    // Normalización para comparar ignorando ceros iniciales o finales
+    const normalizedUser = stringValue.replace(/^0+/, '').replace(/\.0+$/, '');
+    const normalizedExpected = expectedAnswerStr.replace(/^0+/, '').replace(/\.0+$/, '');
+    
+    if (normalizedUser === normalizedExpected) {
+      console.log('[VERTICAL_EXERCISE] Coincidencia tras normalización');
+      return true;
+    }
+    
+    console.log('[VERTICAL_EXERCISE] Respuesta incorrecta');
+    return false;
+  };
+  
+  // Manejar cambio en input de parte entera
+  const handleIntegerChange = (index: number, value: string) => {
     if (waitingForContinue) return;
     
-    // Caso especial: si el valor está vacío, permite borrar el dígito
+    // Permitir borrar
     if (value === '') {
-      const newDigits = [...userDigits];
-      newDigits[index] = '';
-      setUserDigits(newDigits);
+      const newValues = [...integerInputs];
+      newValues[index] = '';
+      setIntegerInputs(newValues);
       return;
     }
     
-    // Solo permitir dígitos y punto decimal
-    if (!/^[0-9]$/.test(value) && value !== '.') {
+    // Solo permitir dígitos
+    if (!/^[0-9]$/.test(value)) {
       return;
     }
     
-    // Actualizar el dígito
-    const newDigits = [...userDigits];
-    newDigits[index] = value;
-    setUserDigits(newDigits);
+    // Actualizar valor
+    const newValues = [...integerInputs];
+    newValues[index] = value;
+    setIntegerInputs(newValues);
     
-    // Mover al input anterior (a la izquierda) si existe,
-    // ya que la suma se realiza de derecha a izquierda
-    if (index > 0 && inputRefs.current[index - 1]) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-  
-  // Calcular la respuesta completa del usuario
-  const calculateUserAnswer = (): number => {
-    // SOLUCIÓN DEFINITIVA: Comparar directamente con la respuesta correcta
-    console.log('[VERTICAL_EXERCISE] Comprobación directa con respuesta esperada:', exactSum);
-    
-    // Convertir el array de dígitos a un formato más estructurado para debug
-    console.log('[VERTICAL_EXERCISE] Dígitos ingresados por el usuario:', 
-      userDigits.map((d, i) => `[${i}]: "${d}"`).join(', '));
-      
-    // Crear un string con los dígitos ingresados, ignorando espacios vacíos
-    const userEnteredDigits = userDigits.filter(d => d !== '' && d !== ' ').join('');
-    
-    console.log('[VERTICAL_EXERCISE] Comparación directa:', userEnteredDigits, 'vs', correctAnswerStr, 'o', correctAnswerWithDecimal);
-    
-    // SOLUCIÓN 1: Si el usuario ingresó exactamente la respuesta correcta (con o sin punto decimal)
-    if (userEnteredDigits === correctAnswerStr || userEnteredDigits === correctAnswerWithDecimal) {
-      console.log('[VERTICAL_EXERCISE] ¡Coincidencia directa con la respuesta correcta!');
-      return exactSum;
-    }
-    
-    // SOLUCIÓN 2: Si el usuario ingresó un número que, interpretado, coincide con la respuesta
-    const userNumber = parseFloat(userEnteredDigits);
-    if (!isNaN(userNumber) && userNumber === exactSum) {
-      console.log('[VERTICAL_EXERCISE] Coincidencia numérica exacta tras parseo');
-      return exactSum;
-    }
-    
-    // SOLUCIÓN 3: Si el usuario dejó campos vacíos al inicio pero el resto es correcto
-    if (userEnteredDigits && 
-        (correctAnswerStr.endsWith(userEnteredDigits) || 
-         correctAnswerWithDecimal.endsWith(userEnteredDigits))) {
-      console.log('[VERTICAL_EXERCISE] Coincidencia con la parte final de la respuesta correcta');
-      return exactSum;
-    }
-    
-    // SOLUCIÓN 4: Si falta un solo dígito pero el resto coincide (casi completo)
-    const validAnswers = [correctAnswerStr, correctAnswerWithDecimal];
-    
-    for (const answer of validAnswers) {
-      if (userEnteredDigits.length === answer.length - 1) {
-        // Verificar si al eliminar un dígito de la respuesta correcta, coincide con lo ingresado
-        let isPartialMatch = false;
-        for (let i = 0; i < answer.length; i++) {
-          const partialCorrect = answer.slice(0, i) + answer.slice(i + 1);
-          if (userEnteredDigits === partialCorrect) {
-            isPartialMatch = true;
-            break;
-          }
-        }
-        
-        if (isPartialMatch) {
-          console.log('[VERTICAL_EXERCISE] Coincidencia parcial - falta un solo dígito');
-          return exactSum;
-        }
+    // Mover al siguiente input a la izquierda
+    if (index > 0) {
+      integerRefs.current[index - 1]?.focus();
+    } else if (useDecimalFormat && maxDecLength > 0) {
+      // Si llegamos al final de la parte entera, saltar al punto decimal
+      const decimalPoint = document.getElementById('decimal-point');
+      if (decimalPoint) {
+        decimalPoint.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
-    
-    // SOLUCIÓN 5: Si los números coinciden (para casos con decimales donde puede haber errores de precisión)
-    const tolerance = 0.005; // Tolerancia para errores de punto flotante
-    if (!isNaN(userNumber) && Math.abs(userNumber - exactSum) < tolerance) {
-      console.log('[VERTICAL_EXERCISE] Coincidencia dentro de tolerancia para decimales');
-      return exactSum;
-    }
-    
-    // SOLUCIÓN FALLBACK: Si no hay coincidencia, devolver el valor ingresado o 0
-    if (!userEnteredDigits) {
-      console.log('[VERTICAL_EXERCISE] No hay respuesta del usuario, devolviendo 0');
-      return 0;
-    }
-    
-    const numericAnswer = parseFloat(userEnteredDigits) || 0;
-    console.log('[VERTICAL_EXERCISE] Respuesta procesada (sin coincidencia):', numericAnswer);
-    return numericAnswer;
   };
   
-  // Enviar la respuesta
+  // Manejar cambio en input de parte decimal
+  const handleDecimalChange = (index: number, value: string) => {
+    if (waitingForContinue) return;
+    
+    // Permitir borrar
+    if (value === '') {
+      const newValues = [...decimalInputs];
+      newValues[index] = '';
+      setDecimalInputs(newValues);
+      return;
+    }
+    
+    // Solo permitir dígitos
+    if (!/^[0-9]$/.test(value)) {
+      return;
+    }
+    
+    // Actualizar valor
+    const newValues = [...decimalInputs];
+    newValues[index] = value;
+    setDecimalInputs(newValues);
+    
+    // Navegar al siguiente input
+    if (index > 0) {
+      decimalRefs.current[index - 1]?.focus();
+    } else if (maxIntLength > 0) {
+      // Si llegamos al primer decimal, pasar a la parte entera
+      integerRefs.current[maxIntLength - 1]?.focus();
+    }
+  };
+  
+  // Enviar respuesta
   const handleSubmit = () => {
     if (waitingForContinue) return;
     
-    const userAnswer = calculateUserAnswer();
-    onSubmit(userAnswer);
+    const isCorrect = validateAnswer();
+    const { numberValue } = getUserAnswer();
+    
+    // Si es correcto, devolver el valor exacto esperado
+    // Si es incorrecto, devolver el valor ingresado
+    onSubmit(isCorrect ? expectedAnswer : numberValue);
   };
   
-  // Obtener el color de fondo según el nivel de dificultad
+  // -------- UTILIDADES DE UI --------
+  
+  // Colores según nivel de dificultad
   const getDifficultyColor = () => {
     switch (difficultyLevel) {
       case "beginner": return "bg-blue-50 border-blue-300";
@@ -284,7 +269,6 @@ export default function VerticalExercise({
     }
   };
   
-  // Color del texto según dificultad
   const getDifficultyTextColor = () => {
     switch (difficultyLevel) {
       case "beginner": return "text-blue-700";
@@ -296,6 +280,8 @@ export default function VerticalExercise({
     }
   };
   
+  // -------- RENDERIZADO --------
+  
   return (
     <div className="flex flex-col items-center">
       <div className={`p-6 rounded-xl ${getDifficultyColor()} shadow-sm mb-6 max-w-md`}>
@@ -303,75 +289,176 @@ export default function VerticalExercise({
         <div className="flex justify-center">
           <div className="grid grid-cols-1 gap-2 text-xl font-medium">
             {/* Primera fila - Primer número */}
-            <div className="flex justify-end space-x-2">
-              {num1Digits.map((digit, index) => (
-                <div 
-                  key={`num1-${index}`} 
-                  className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
-                >
-                  {digit === ' ' ? '' : digit}
-                </div>
-              ))}
+            <div className="flex justify-end items-center">
+              {/* Parte entera del primer número */}
+              <div className="flex space-x-2">
+                {num1Integers.map((digit, index) => (
+                  <div 
+                    key={`num1-int-${index}`} 
+                    className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
+                  >
+                    {digit === ' ' ? '' : digit}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Punto decimal y parte decimal del primer número */}
+              {useDecimalFormat && (
+                <>
+                  <div className={`w-6 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}>
+                    .
+                  </div>
+                  <div className="flex space-x-2">
+                    {num1Decimals.map((digit, index) => (
+                      <div 
+                        key={`num1-dec-${index}`} 
+                        className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
+                      >
+                        {digit}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
             
             {/* Segunda fila - Operador y segundo número */}
-            <div className="flex justify-end space-x-2 border-b-2 border-gray-400 pb-1">
+            <div className="flex justify-end items-center border-b-2 border-gray-400 pb-1">
               <div className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}>+</div>
-              {num2Digits.map((digit, index) => (
-                <div 
-                  key={`num2-${index}`} 
-                  className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
-                >
-                  {digit === ' ' ? '' : digit}
-                </div>
-              ))}
+              
+              {/* Parte entera del segundo número */}
+              <div className="flex space-x-2">
+                {num2Integers.map((digit, index) => (
+                  <div 
+                    key={`num2-int-${index}`} 
+                    className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
+                  >
+                    {digit === ' ' ? '' : digit}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Punto decimal y parte decimal del segundo número */}
+              {useDecimalFormat && (
+                <>
+                  <div className={`w-6 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}>
+                    .
+                  </div>
+                  <div className="flex space-x-2">
+                    {num2Decimals.map((digit, index) => (
+                      <div 
+                        key={`num2-dec-${index}`} 
+                        className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
+                      >
+                        {digit}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
             
             {/* Tercera fila - Campos de entrada para la respuesta */}
-            <div className="flex justify-end space-x-2 pt-1">
-              {Array(totalPositions).fill(0).map((_, index) => (
-                <Input
-                  key={`input-${index}`}
-                  type="text"
-                  maxLength={1}
-                  className={`w-10 h-10 text-center font-bold text-xl p-0 ${
-                    waitingForContinue ? getDifficultyColor() : 'bg-white'
-                  }`}
-                  value={userDigits[index] || ''}
-                  onChange={(e) => handleDigitChange(index, e.target.value)}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  disabled={waitingForContinue}
-                  readOnly={waitingForContinue}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSubmit();
-                    } else if (e.key === "Backspace") {
-                      // Si el campo actual está vacío, moverse al campo de la derecha
-                      if (!userDigits[index]) {
-                        if (index < totalPositions - 1) {
-                          inputRefs.current[index + 1]?.focus();
+            <div className="flex justify-end items-center pt-1">
+              {/* Parte entera de la respuesta */}
+              <div className="flex space-x-2">
+                {Array(maxIntLength).fill(0).map((_, index) => (
+                  <Input
+                    key={`input-int-${index}`}
+                    type="text"
+                    maxLength={1}
+                    className={`w-10 h-10 text-center font-bold text-xl p-0 ${
+                      waitingForContinue ? getDifficultyColor() : 'bg-white'
+                    }`}
+                    value={integerInputs[index] || ''}
+                    onChange={(e) => handleIntegerChange(index, e.target.value)}
+                    ref={(el) => (integerRefs.current[index] = el)}
+                    disabled={waitingForContinue}
+                    readOnly={waitingForContinue}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleSubmit();
+                      } else if (e.key === "Backspace") {
+                        // Si el campo está vacío, ir al campo de la derecha
+                        if (!integerInputs[index] && index < maxIntLength - 1) {
+                          integerRefs.current[index + 1]?.focus();
+                        } else {
+                          // Si hay contenido, borrarlo
+                          const newValues = [...integerInputs];
+                          newValues[index] = '';
+                          setIntegerInputs(newValues);
                         }
-                      } else {
-                        // Si hay un dígito, borrarlo y permanecer en el mismo campo
-                        const newDigits = [...userDigits];
-                        newDigits[index] = '';
-                        setUserDigits(newDigits);
+                      } else if (e.key === "ArrowRight" && index < maxIntLength - 1) {
+                        integerRefs.current[index + 1]?.focus();
+                      } else if (e.key === "ArrowLeft" && index > 0) {
+                        integerRefs.current[index - 1]?.focus();
+                      } else if (e.key === "ArrowRight" && index === maxIntLength - 1 && useDecimalFormat) {
+                        // Si presiona derecha en el último entero, ir al primer decimal
+                        decimalRefs.current[0]?.focus();
                       }
-                    } else if (e.key === "ArrowRight" && index < totalPositions - 1) {
-                      // Permitir navegación con flecha derecha
-                      inputRefs.current[index + 1]?.focus();
-                    } else if (e.key === "ArrowLeft" && index > 0) {
-                      // Permitir navegación con flecha izquierda
-                      inputRefs.current[index - 1]?.focus();
-                    }
-                  }}
-                />
-              ))}
+                    }}
+                  />
+                ))}
+              </div>
+              
+              {/* Punto decimal y parte decimal de la respuesta */}
+              {useDecimalFormat && (
+                <>
+                  <div 
+                    id="decimal-point"
+                    className={`w-6 h-10 flex items-center justify-center text-xl font-bold ${getDifficultyTextColor()}`}
+                  >
+                    .
+                  </div>
+                  <div className="flex space-x-2">
+                    {Array(maxDecLength).fill(0).map((_, index) => (
+                      <Input
+                        key={`input-dec-${index}`}
+                        type="text"
+                        maxLength={1}
+                        className={`w-10 h-10 text-center font-bold text-xl p-0 ${
+                          waitingForContinue ? getDifficultyColor() : 'bg-white'
+                        }`}
+                        value={decimalInputs[index] || ''}
+                        onChange={(e) => handleDecimalChange(index, e.target.value)}
+                        ref={(el) => (decimalRefs.current[index] = el)}
+                        disabled={waitingForContinue}
+                        readOnly={waitingForContinue}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleSubmit();
+                          } else if (e.key === "Backspace") {
+                            // Si el campo está vacío, ir al campo de la derecha
+                            if (!decimalInputs[index]) {
+                              if (index < maxDecLength - 1) {
+                                decimalRefs.current[index + 1]?.focus();
+                              } else if (index === 0) {
+                                // Si es el primer decimal y está vacío, ir al último entero
+                                integerRefs.current[0]?.focus();
+                              }
+                            } else {
+                              // Si hay contenido, borrarlo
+                              const newValues = [...decimalInputs];
+                              newValues[index] = '';
+                              setDecimalInputs(newValues);
+                            }
+                          } else if (e.key === "ArrowRight" && index < maxDecLength - 1) {
+                            decimalRefs.current[index + 1]?.focus();
+                          } else if (e.key === "ArrowLeft" && index > 0) {
+                            decimalRefs.current[index - 1]?.focus();
+                          } else if (e.key === "ArrowLeft" && index === 0) {
+                            // Si presiona izquierda en el primer decimal, ir al último entero
+                            integerRefs.current[maxIntLength - 1]?.focus();
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
-        
-        {/* No necesitamos un botón adicional, ya se puede verificar con Enter */}
       </div>
     </div>
   );
