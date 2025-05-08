@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { generateAdditionProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, Clock, Flame, Delete, Loader2 } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/use-translations";
 import { createLevelManager, DifficultyLevel, CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
@@ -1353,112 +1353,121 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       <LevelUpHandler />
       {/* El componente RewardAnimation se mostrará cuando el estado de recompensa esté activo */}
       <RewardAnimation />
-      
-      {/* Contenedor principal con sombra y fondo suave */}
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
-        {/* Cabecera del ejercicio con gradiente */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold">Ejercicio de Suma</h2>
-              <p className="text-sm text-blue-100">Resuelve los siguientes problemas de suma</p>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              {/* Tiempo total del ejercicio */}
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center">
-                <Clock className="h-4 w-4 mr-2 text-blue-100" />
-                <span className="text-sm font-medium">{formatTime(timer)}</span>
-              </div>
-              
-              {/* Tiempo por problema */}
-              {settings.timeValue > 0 && (
-                <div className={`bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center 
-                  ${problemTimer <= 5 ? "bg-red-500/30 animate-pulse" : ""}`}>
-                  <Clock className={`h-4 w-4 mr-2 ${problemTimer <= 5 ? "text-red-100" : "text-blue-100"}`} />
-                  <span className="text-sm font-medium">{problemTimer}s</span>
-                </div>
-              )}
-              
-              {/* Nivel actual con estilo más moderno */}
-              <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 py-1.5">
-                <span className="text-sm font-medium">
-                  Nivel: {settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
-                </span>
-              </div>
-              
-              {/* Botón de ajustes con mejor estilo */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onOpenSettings}
-                className="bg-white/20 hover:bg-white/30 text-white rounded-lg"
+      <div className="px-4 py-5 sm:p-6">
+        <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Addition Exercise</h2>
+          <p className="text-sm text-gray-500">Solve the following addition problems</p>
+        </div>
+        <div className="flex items-center">
+          <span className="mr-4 text-sm text-gray-500">
+            <span className="inline-flex items-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4 mr-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <Cog className="h-4 w-4 mr-2" />
-                Ajustes
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Barra de progreso con diseño mejorado */}
-        <div className="px-6 pt-4">
-          <Progress 
-            value={progress} 
-            className="h-2 bg-gray-100" 
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-2">
-            <span className="font-medium">Problema {currentProblemIndex + 1} de {problems.length}</span>
-            <span className="font-medium">Puntuación: {score}/{answers.length}</span>
-          </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              {formatTime(timer)}
+            </span>
+          </span>
           
-          {/* Contador de intentos con diseño mejorado */}
-          {settings.maxAttempts > 0 && (
-            <div className="flex justify-between items-center mt-2 py-2 px-3 bg-blue-50 rounded-xl">
-              <span className="text-xs font-semibold text-blue-800">Intentos: {currentAttempts}/{settings.maxAttempts}</span>
-              <div className="flex gap-1.5">
-                {Array.from({ length: settings.maxAttempts }).map((_, index) => (
-                  <div 
-                    key={index} 
-                    className={`w-3 h-3 rounded-full transition-all ${
-                      index < currentAttempts 
-                        ? "bg-red-500 scale-100" // Intentos usados
-                        : "bg-blue-200 scale-90" // Intentos disponibles
-                    }`}
+          {/* Mostrar temporizador por problema si está configurado */}
+          {settings.timeValue > 0 && (
+            <span className={`mr-4 text-sm ${problemTimer <= 5 ? "text-red-600 font-bold animate-pulse" : "text-gray-500"}`}>
+              <span className="inline-flex items-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-4 w-4 mr-1 ${problemTimer <= 5 ? "text-red-600" : ""}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
-                ))}
-              </div>
-            </div>
+                </svg>
+                Tiempo: {problemTimer}s
+              </span>
+            </span>
           )}
           
-          {/* Racha de respuestas correctas */}
-          {consecutiveCorrectAnswers >= 3 && (
-            <div className="flex justify-center mt-2">
-              <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center">
-                <Flame className="h-4 w-4 mr-1.5 text-amber-100" />
-                Racha: {consecutiveCorrectAnswers}
-              </div>
-            </div>
-          )}
+          {/* Mostrar el nivel de dificultad actual */}
+          <div className="mr-4 flex items-center gap-2">
+            <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+              Nivel: {settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
+            </span>
+            {consecutiveCorrectAnswers >= 5 && (
+              <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                🔥 Racha: {consecutiveCorrectAnswers}
+              </span>
+            )}
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onOpenSettings}
+          >
+            <Cog className="mr-2 h-4 w-4" />
+            Settings
+          </Button>
         </div>
+      </div>
 
-        {/* Área del problema con fondo suave */}
-        <div className="px-6 py-8 flex flex-col items-center">
-          {/* Modal de nivel superado */}
+      <div className="mb-8">
+        <Progress value={progress} className="h-2.5" />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>Problem {currentProblemIndex + 1} of {problems.length}</span>
+          <span>Score: {score}/{answers.length}</span>
+        </div>
+        {settings.maxAttempts > 0 && (
+          <div className="flex justify-between items-center text-xs text-gray-600 mt-2 p-2 bg-gray-100 rounded-md">
+            <span className="font-semibold">Intentos permitidos: {settings.maxAttempts}</span>
+            <div className="flex gap-1">
+              {Array.from({ length: settings.maxAttempts }).map((_, index) => (
+                <div 
+                  key={index} 
+                  className={`w-3 h-3 rounded-full ${
+                    index < currentAttempts 
+                      ? "bg-red-500" // Intentos usados
+                      : "bg-gray-300" // Intentos disponibles
+                  }`}
+                />
+              ))}
+            </div>
+            <span>Usados: {currentAttempts}/{settings.maxAttempts}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="p-6 bg-gray-50 rounded-lg mb-6">
+        <div className="text-center">
+          {/* El sistema de recompensas antiguo ha sido reemplazado por el nuevo componente RewardAnimation */}
+          
+          {/* Mostrar recompensa especial por subir de nivel - DISEÑO EXACTO al proporcionado */}
           {showLevelUpReward && (
-            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50 backdrop-blur-sm">
-              <div className="bg-gradient-to-b from-blue-50 to-indigo-100 rounded-3xl p-8 shadow-2xl text-center transform transition-transform max-w-md w-full border border-indigo-200">
-                <h3 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent mb-6">¡NIVEL SUPERADO!</h3>
+            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+              <div className="bg-blue-100 rounded-3xl p-8 shadow-2xl text-center transform transition-transform max-w-md w-full border-4 border-indigo-300">
+                <h3 className="text-5xl font-bold text-indigo-600 mb-6">¡NIVEL SUPERADO!</h3>
                 
                 <div className="flex justify-center mb-6">
-                  <div className="relative">
-                    <div className="absolute inset-0 rounded-full bg-indigo-400 blur-xl opacity-30 animate-pulse"></div>
-                    <Trophy 
-                      className="h-32 w-32 text-indigo-500 drop-shadow-xl relative z-10" 
-                      fill="#818cf8"
-                      strokeWidth={1}
-                    />
-                  </div>
+                  <Trophy 
+                    className="h-32 w-32 text-indigo-500 drop-shadow-xl" 
+                    fill="#818cf8"
+                    strokeWidth={1}
+                  />
                 </div>
            
                 <p className="text-2xl font-medium text-indigo-800 mb-2">
@@ -1469,7 +1478,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </p>
                 
                 <Button
-                  className="bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600 text-white font-bold py-4 px-8 rounded-xl text-xl shadow-lg transform transition hover:scale-105"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-xl text-xl"
                   onClick={() => {
                     // 1. Ocultar el mensaje de nivel superado
                     setShowLevelUpReward(false);
@@ -1492,108 +1501,83 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         
-          {/* Problema actual con diseño mejorado */}
           {currentProblem ? (
-            <div className="mb-8 w-full">
-              <div className={`flex justify-center items-center text-4xl font-bold py-8 px-4 rounded-xl bg-blue-50 ${
-                feedbackMessage ? (
-                  feedbackColor === "green" ? "bg-green-50 text-green-700" : 
-                  feedbackColor === "blue" ? "bg-blue-50 text-blue-700" : 
-                  "bg-red-50 text-red-700"
-                ) : "text-gray-800"
-              }`}>
-                <div className="flex items-center gap-6 sm:gap-8">
-                  <div className="flex justify-end w-16 sm:w-20">
-                    <span className="text-right">{currentProblem.num1}</span>
-                  </div>
-                  <div className="flex items-center justify-center w-8">
-                    <span className="text-blue-600">+</span>
-                  </div>
-                  <div className="flex justify-end w-16 sm:w-20">
-                    <span className="text-right">{currentProblem.num2}</span>
-                  </div>
-                  <div className="flex items-center justify-center w-8">
-                    <span className="text-blue-600">=</span>
-                  </div>
-                  <div className="w-16 sm:w-20">
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        ref={inputRef}
-                        className={`w-full text-center text-3xl py-2 ${
-                          waitingForContinue || showingExplanation 
-                            ? "bg-gray-100 border-gray-300" 
-                            : "bg-white border-blue-300 focus:border-blue-500"
-                        } focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 rounded-lg transition-all`}
-                        value={userAnswer}
-                        onChange={handleInputChange}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
-                            checkCurrentAnswer();
-                          }
-                        }}
-                        pattern="[0-9]*"
-                        inputMode="numeric"
-                        disabled={waitingForContinue || showingExplanation}
-                        readOnly={waitingForContinue || showingExplanation}
-                        aria-readonly={waitingForContinue || showingExplanation}
-                      />
-                    </div>
-                  </div>
-                </div>
+            <div className={`text-3xl font-bold mb-6 flex justify-center items-baseline ${feedbackMessage ? (feedbackColor === "green" ? "text-green-600" : "text-red-600") : ""}`}>
+              <span className="text-right w-16">{currentProblem.num1}</span>
+              <span className="mx-4">+</span>
+              <span className="text-right w-16">{currentProblem.num2}</span>
+              <span className="mx-4">=</span>
+              <div className="border-b-2 border-gray-400 w-16 relative">
+                <Input
+                  type="text"
+                  ref={inputRef}
+                  className={`w-full text-center ${waitingForContinue || showingExplanation ? "bg-gray-100" : "bg-transparent"} focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent h-10 px-2`}
+                  value={userAnswer}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
+                      checkCurrentAnswer();
+                    }
+                  }}
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                  disabled={waitingForContinue || showingExplanation}
+                  readOnly={waitingForContinue || showingExplanation}
+                  aria-readonly={waitingForContinue || showingExplanation}
+                />
               </div>
-              
-              {/* Mensaje de retroalimentación con mejor estilo */}
-              {feedbackMessage && (
-                <div className={`text-center mt-4 px-4 py-3 rounded-lg ${
-                  feedbackColor === "green" ? "bg-green-50 text-green-600" : 
-                  feedbackColor === "blue" ? "bg-blue-50 text-blue-600" : 
-                  "bg-red-50 text-red-600"
-                } font-medium animate-fadeIn transition-all`}>
-                  {feedbackMessage}
-                </div>
-              )}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <div className="inline-block rounded-lg bg-blue-50 p-3">
-                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-              </div>
-              <p className="mt-2 text-blue-600">Cargando el siguiente problema...</p>
+            <div className="text-center py-4">
+              <p>Cargando el siguiente problema...</p>
             </div>
           )}
+          {feedbackMessage && (
+            <div className={`text-lg font-medium ${
+              feedbackColor === "green" ? "text-green-600" : 
+              feedbackColor === "blue" ? "text-blue-600" : 
+              "text-red-600"
+            }`}>
+              {feedbackMessage}
+            </div>
+          )}
+        </div>
 
-          {/* Teclado numérico con diseño mejorado */}
-          <div className="mt-6 grid grid-cols-3 sm:grid-cols-5 gap-3 w-full max-w-md mx-auto">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((num) => (
-              <button
-                key={num}
-                className={`aspect-square ${
-                  waitingForContinue || showingExplanation 
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                    : "bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-700"
-                } rounded-xl shadow-sm border border-gray-200 text-2xl font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all`}
-                onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput(num)}
-                disabled={waitingForContinue || showingExplanation}
-                aria-disabled={waitingForContinue || showingExplanation}
-              >
-                {num}
-              </button>
-            ))}
+        <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((num) => (
             <button
-              className={`aspect-square ${
-                waitingForContinue || showingExplanation 
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                  : "bg-white hover:bg-blue-50 active:bg-blue-100 text-blue-700"
-              } rounded-xl shadow-sm border border-gray-200 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all col-span-2`}
-              onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput("backspace")}
+              key={num}
+              className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
+              onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput(num)}
               disabled={waitingForContinue || showingExplanation}
               aria-disabled={waitingForContinue || showingExplanation}
             >
-              <Delete className="h-6 w-6 mx-auto" />
+              {num}
             </button>
-          </div>
+          ))}
+          <button
+            className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
+            onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput("backspace")}
+            disabled={waitingForContinue || showingExplanation}
+            aria-disabled={waitingForContinue || showingExplanation}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 mx-auto"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+              />
+            </svg>
+          </button>
         </div>
+      </div>
 
       <div className="flex justify-between">
         <Button
