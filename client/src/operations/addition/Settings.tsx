@@ -77,25 +77,120 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     }
   };
 
+  // Obtener el color del tema basado en la dificultad seleccionada
+  const getDifficultyTheme = (difficulty: string) => {
+    switch (difficulty) {
+      case "beginner":
+        return {
+          bg: "bg-gradient-to-br from-blue-50 to-blue-100", 
+          border: "border-blue-200",
+          text: "text-blue-600",
+          textSecondary: "text-blue-500",
+          bgContainer: "bg-blue-50",
+          bgLight: "bg-blue-100",
+          bgMedium: "bg-blue-200",
+          accent: "text-blue-700",
+          emoji: "🔵",
+          name: "Principiante"
+        };
+      case "elementary":
+        return {
+          bg: "bg-gradient-to-br from-emerald-50 to-emerald-100",
+          border: "border-emerald-200",
+          text: "text-emerald-600",
+          textSecondary: "text-emerald-500",
+          bgContainer: "bg-emerald-50",
+          bgLight: "bg-emerald-100",
+          bgMedium: "bg-emerald-200",
+          accent: "text-emerald-700",
+          emoji: "🟢",
+          name: "Elemental"
+        };
+      case "intermediate":
+        return {
+          bg: "bg-gradient-to-br from-orange-50 to-orange-100",
+          border: "border-orange-200",
+          text: "text-orange-600",
+          textSecondary: "text-orange-500",
+          bgContainer: "bg-orange-50",
+          bgLight: "bg-orange-100",
+          bgMedium: "bg-orange-200",
+          accent: "text-orange-700",
+          emoji: "🟠",
+          name: "Intermedio"
+        };
+      case "advanced":
+        return {
+          bg: "bg-gradient-to-br from-purple-50 to-purple-100",
+          border: "border-purple-200",
+          text: "text-purple-600",
+          textSecondary: "text-purple-500",
+          bgContainer: "bg-purple-50",
+          bgLight: "bg-purple-100",
+          bgMedium: "bg-purple-200",
+          accent: "text-purple-700",
+          emoji: "🟣",
+          name: "Avanzado"
+        };
+      case "expert":
+        return {
+          bg: "bg-gradient-to-br from-rose-50 to-rose-100",
+          border: "border-rose-200",
+          text: "text-rose-600",
+          textSecondary: "text-rose-500",
+          bgContainer: "bg-rose-50",
+          bgLight: "bg-rose-100",
+          bgMedium: "bg-rose-200",
+          accent: "text-rose-700",
+          emoji: "⭐",
+          name: "Experto"
+        };
+      default:
+        return {
+          bg: "bg-gradient-to-br from-indigo-50 to-indigo-100",
+          border: "border-indigo-200",
+          text: "text-indigo-600",
+          textSecondary: "text-indigo-500",
+          bgContainer: "bg-indigo-50",
+          bgLight: "bg-indigo-100",
+          bgMedium: "bg-indigo-200",
+          accent: "text-indigo-700",
+          emoji: "⚡",
+          name: "General"
+        };
+    }
+  };
+
+  const theme = getDifficultyTheme(localSettings.difficulty || "beginner");
+
   return (
-    <div className="px-4 py-5 sm:p-6">
+    <div className={`px-4 py-5 sm:p-6 rounded-xl shadow-md ${theme.bg} border-2 ${theme.border}`}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Addition Exercise Settings</h2>
-          <p className="text-sm text-gray-500">Customize your exercise experience</p>
+          <h2 className={`text-2xl font-bold ${theme.text} flex items-center`}>
+            {theme.emoji} Configuración - Ejercicio de Suma
+          </h2>
+          <p className={`text-sm font-medium ${theme.textSecondary}`}>Personaliza tu experiencia de ejercicio</p>
         </div>
-        <Button variant="outline" size="sm" onClick={onBack}>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onBack}
+          className={`border ${theme.border} hover:${theme.bgContainer}`}
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Exercise
+          Volver al Ejercicio
         </Button>
       </div>
 
       <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-medium text-gray-900">Difficulty Level</h3>
-          <p className="text-sm text-gray-500 mb-2">Haz clic en un ejemplo para cambiar el nivel de dificultad:</p>
+        <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
+          <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
+            <span className="mr-2">🎯</span>Nivel de Dificultad
+          </h3>
+          <p className={`text-sm ${theme.textSecondary} mb-2`}>Haz clic en un ejemplo para cambiar el nivel de dificultad:</p>
           
-          <div className="mt-4 mb-6 bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
             <DifficultyExamples 
               operation="addition" 
               activeDifficulty={localSettings.difficulty}
@@ -105,28 +200,30 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             />
           </div>
           
-          <div className="mt-2 mb-4">
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Beginner:</span> Sumas con dígitos simples (1+8, 7+5)
+          <div className="mt-3 mb-2 space-y-1.5">
+            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
+              <span className="font-bold">Principiante:</span> Sumas con dígitos simples (1+8, 7+5)
             </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Elementary:</span> Sumas de números de dos dígitos (12+15, 24+13)
+            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
+              <span className="font-bold">Elemental:</span> Sumas de números de dos dígitos (12+15, 24+13)
             </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Intermediate:</span> Sumas con números grandes (65+309, 392+132)
+            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
+              <span className="font-bold">Intermedio:</span> Sumas con números grandes (65+309, 392+132)
             </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Advanced:</span> Sumas de números de 4 dígitos (1247+3568, 5934+8742)
+            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
+              <span className="font-bold">Avanzado:</span> Sumas de números de 4 dígitos (1247+3568, 5934+8742)
             </p>
-            <p className="text-sm text-gray-500">
-              <span className="font-medium">Expert:</span> Sumas con números muy grandes (70960+11650, 28730+59436)
+            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
+              <span className="font-bold">Experto:</span> Sumas con números muy grandes (70960+11650, 28730+59436)
             </p>
           </div>
         </div>
 
-        <div>
-          <h3 className="text-lg font-medium text-gray-900">Number of Problems</h3>
-          <div className="mt-2">
+        <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
+          <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
+            <span className="mr-2">🔢</span>Número de Problemas
+          </h3>
+          <div className="mt-3">
             <div className="flex items-center space-x-4">
               <div className="flex-1">
                 <Slider
@@ -135,9 +232,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   max={50}
                   step={1}
                   onValueChange={(value) => handleUpdateSetting("problemCount", value[0])}
-                  className="w-full"
+                  className={`w-full ${theme.bgLight}`}
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className={`flex justify-between text-xs font-medium mt-1 ${theme.accent}`}>
                   <span>1</span>
                   <span>25</span>
                   <span>50</span>
@@ -155,19 +252,21 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   }}
                   min={1}
                   max={50}
-                  className="w-full"
+                  className={`w-full border ${theme.border}`}
                 />
               </div>
             </div>
-            <p className="mt-2 text-sm text-gray-600">
-              Especifica cuántos problemas quieres resolver en este ejercicio (1-50)
+            <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
+              <span className="font-medium">Especifica cuántos problemas quieres resolver:</span> <span className={`font-bold ${theme.text}`}>{localSettings.problemCount}</span>
             </p>
           </div>
         </div>
 
-        <div>
-          <h3 className="text-lg font-medium text-gray-900">Límite de Tiempo</h3>
-          <div className="mt-2">
+        <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
+          <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
+            <span className="mr-2">⏱️</span>Límite de Tiempo
+          </h3>
+          <div className="mt-3">
             <div className="flex items-center space-x-4">
               <div className="flex-1">
                 <Slider
@@ -176,9 +275,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   max={300}
                   step={5}
                   onValueChange={(value) => handleUpdateSetting("timeValue", value[0])}
-                  className="w-full"
+                  className={`w-full ${theme.bgLight}`}
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className={`flex justify-between text-xs font-medium mt-1 ${theme.accent}`}>
                   <span>0</span>
                   <span>150</span>
                   <span>300</span>
@@ -196,19 +295,21 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   }}
                   min={0}
                   max={300}
-                  className="w-full"
+                  className={`w-full border ${theme.border}`}
                 />
               </div>
             </div>
-            <p className="mt-2 text-sm text-gray-600">
-              Tiempo en segundos (0 para sin límite)
+            <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
+              <span className="font-medium">Tiempo en segundos:</span> <span className={`font-bold ${theme.text}`}>{localSettings.timeValue}</span> <span className="text-xs">(0 para sin límite)</span>
             </p>
           </div>
         </div>
 
-        <div>
-          <h3 className="text-lg font-medium text-gray-900">Maximum Attempts per Problem</h3>
-          <div className="mt-2">
+        <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
+          <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
+            <span className="mr-2">🔄</span>Máximo de Intentos por Problema
+          </h3>
+          <div className="mt-3">
             <div className="flex items-center space-x-4">
               <div className="flex-1">
                 <Slider
@@ -217,9 +318,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   max={10}
                   step={1}
                   onValueChange={(value) => handleUpdateSetting("maxAttempts", value[0])}
-                  className="w-full"
+                  className={`w-full ${theme.bgLight}`}
                 />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <div className={`flex justify-between text-xs font-medium mt-1 ${theme.accent}`}>
                   <span>0</span>
                   <span>5</span>
                   <span>10</span>
@@ -237,100 +338,115 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   }}
                   min={0}
                   max={10}
-                  className="w-full"
+                  className={`w-full border ${theme.border}`}
                 />
               </div>
             </div>
-            <p className="mt-2 text-sm text-gray-600">
-              Establece el máximo de intentos por problema (0 para intentos ilimitados)
+            <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
+              <span className="font-medium">Intentos máximos:</span> <span className={`font-bold ${theme.text}`}>{localSettings.maxAttempts}</span> <span className="text-xs">(0 para intentos ilimitados)</span>
             </p>
           </div>
 
-          <h3 className="text-lg font-medium text-gray-900 mt-6">Additional Settings</h3>
-          <div className="mt-2 space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="show-immediate-feedback" className="cursor-pointer">
-                Show immediate feedback
+          <h3 className={`text-lg font-bold ${theme.text} flex items-center mt-6`}>
+            <span className="mr-2">⚙️</span>Configuración Adicional
+          </h3>
+          <div className="mt-3 space-y-3">
+            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
+              <Label htmlFor="show-immediate-feedback" className={`cursor-pointer ${theme.accent} flex items-center`}>
+                <span className="mr-2">📝</span>Mostrar retroalimentación inmediata
               </Label>
               <Switch
                 id="show-immediate-feedback"
                 checked={localSettings.showImmediateFeedback}
                 onCheckedChange={(checked) => handleUpdateSetting("showImmediateFeedback", checked)}
+                className={theme.bgLight}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="enable-sound-effects" className="cursor-pointer">
-                Enable sound effects
+            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
+              <Label htmlFor="enable-sound-effects" className={`cursor-pointer ${theme.accent} flex items-center`}>
+                <span className="mr-2">🔊</span>Habilitar efectos de sonido
               </Label>
               <Switch
                 id="enable-sound-effects"
                 checked={localSettings.enableSoundEffects}
                 onCheckedChange={(checked) => handleUpdateSetting("enableSoundEffects", checked)}
+                className={theme.bgLight}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="show-answer-explanation" className="cursor-pointer">
-                Desactive Buttom Show answer with explanation for help Student
+            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
+              <Label htmlFor="show-answer-explanation" className={`cursor-pointer ${theme.accent} flex items-center`}>
+                <span className="mr-2">❓</span>Mostrar explicación de respuestas
               </Label>
               <Switch
                 id="show-answer-explanation"
                 checked={localSettings.showAnswerWithExplanation}
                 onCheckedChange={(checked) => handleUpdateSetting("showAnswerWithExplanation", checked)}
+                className={theme.bgLight}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="enable-adaptive-difficulty" className="cursor-pointer">
-                Habilitar Dificultad Adaptativa
+            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
+              <Label htmlFor="enable-adaptive-difficulty" className={`cursor-pointer ${theme.accent} flex items-center`}>
+                <span className="mr-2">📈</span>Habilitar Dificultad Adaptativa
               </Label>
               <Switch
                 id="enable-adaptive-difficulty"
                 checked={localSettings.enableAdaptiveDifficulty}
                 onCheckedChange={(checked) => handleUpdateSetting("enableAdaptiveDifficulty", checked)}
+                className={theme.bgLight}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="enable-compensation" className="cursor-pointer">
-                Habilitar Compensación (Añadir 1 problema por cada incorrecto/revelado)
+            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
+              <Label htmlFor="enable-compensation" className={`cursor-pointer ${theme.accent} flex items-center`}>
+                <span className="mr-2">➕</span>Habilitar Compensación
+                <br/><span className="text-xs ml-5 opacity-80">(Añadir 1 problema por cada incorrecto/revelado)</span>
               </Label>
               <Switch
                 id="enable-compensation"
                 checked={localSettings.enableCompensation}
                 onCheckedChange={(checked) => handleUpdateSetting("enableCompensation", checked)}
+                className={theme.bgLight}
               />
             </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="enable-rewards" className="cursor-pointer">
-                Activar sistema de recompensas para motivar al estudiante
+            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
+              <Label htmlFor="enable-rewards" className={`cursor-pointer ${theme.accent} flex items-center`}>
+                <span className="mr-2">🏆</span>Activar sistema de recompensas
               </Label>
               <Switch
                 id="enable-rewards"
                 checked={localSettings.enableRewards}
                 onCheckedChange={(checked) => handleUpdateSetting("enableRewards", checked)}
+                className={theme.bgLight}
               />
             </div>
             {localSettings.enableRewards && (
-              <div className="ml-6 mt-2">
-                <Label htmlFor="reward-type" className="block text-sm font-medium mb-1">
-                  Tipo de recompensa
+              <div className={`ml-6 mt-3 p-3 rounded-md bg-white/70 border ${theme.border}`}>
+                <Label htmlFor="reward-type" className={`block text-sm font-medium mb-2 ${theme.text}`}>
+                  <span className="mr-2">🎁</span>Tipo de recompensa
                 </Label>
                 <RadioGroup
                   value={localSettings.rewardType}
                   onValueChange={(value) => 
                     handleUpdateSetting("rewardType", value as "medals" | "trophies" | "stars")
                   }
-                  className="flex flex-col space-y-1"
+                  className="flex flex-col space-y-2 pl-2"
                 >
-                  <div className="flex items-center space-x-2">
+                  <div className={`flex items-center p-1.5 rounded-md ${localSettings.rewardType === "medals" ? theme.bgLight : ""}`}>
                     <RadioGroupItem value="medals" id="reward-medals" />
-                    <Label htmlFor="reward-medals">Medallas</Label>
+                    <Label htmlFor="reward-medals" className={`ml-2 cursor-pointer text-sm ${theme.accent}`}>
+                      <span className="mr-1">🏅</span>Medallas
+                    </Label>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className={`flex items-center p-1.5 rounded-md ${localSettings.rewardType === "trophies" ? theme.bgLight : ""}`}>
                     <RadioGroupItem value="trophies" id="reward-trophies" />
-                    <Label htmlFor="reward-trophies">Trofeos</Label>
+                    <Label htmlFor="reward-trophies" className={`ml-2 cursor-pointer text-sm ${theme.accent}`}>
+                      <span className="mr-1">🏆</span>Trofeos
+                    </Label>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className={`flex items-center p-1.5 rounded-md ${localSettings.rewardType === "stars" ? theme.bgLight : ""}`}>
                     <RadioGroupItem value="stars" id="reward-stars" />
-                    <Label htmlFor="reward-stars">Estrellas</Label>
+                    <Label htmlFor="reward-stars" className={`ml-2 cursor-pointer text-sm ${theme.accent}`}>
+                      <span className="mr-1">⭐</span>Estrellas
+                    </Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -338,20 +454,20 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           </div>
         </div>
 
-        <div className="pt-5">
+        <div className="pt-4">
           <div className="flex justify-end">
             <Button
               type="button"
               variant={showResetConfirm ? "destructive" : "outline"}
               onClick={handleResetSettings}
-              className="mr-3"
+              className={`mr-3 ${showResetConfirm ? "" : `border ${theme.border} hover:${theme.bgContainer}`}`}
             >
               {showResetConfirm ? (
-                "Confirm Reset"
+                "Confirmar Restablecimiento"
               ) : (
                 <>
                   <RotateCcw className="mr-2 h-4 w-4" />
-                  Reset to Defaults
+                  Restablecer valores predeterminados
                 </>
               )}
             </Button>
