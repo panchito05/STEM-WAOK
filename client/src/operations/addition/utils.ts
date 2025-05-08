@@ -55,9 +55,6 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
       // 20% de probabilidad de usar decimales en nivel avanzado
       useDecimals = Math.random() < 0.2;
       
-      // 60% de probabilidad de usar formato vertical en nivel avanzado
-      layout = Math.random() < 0.6 ? 'vertical' : 'horizontal';
-      
       if (useDecimals) {
         // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
         const decimalMode = getRandomInt(1, 3);
@@ -90,9 +87,6 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
       // 35% de probabilidad de usar decimales en nivel experto
       useDecimals = Math.random() < 0.35;
       
-      // 70% de probabilidad de usar formato vertical en nivel experto
-      layout = Math.random() < 0.7 ? 'vertical' : 'horizontal';
-      
       if (useDecimals) {
         // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
         const decimalMode = getRandomInt(1, 3);
@@ -123,73 +117,31 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
       num2 = getRandomInt(1, 9);
   }
 
-  // Si estamos usando decimales, manejar cuidadosamente para evitar errores de punto flotante
-  let correctAnswer: number;
-  
-  if (useDecimals) {
-    // Para operaciones con decimales, calcular con precisión
-    // Convertir a cadena, aplicar toFixed(2) y luego volver a convertir a número
-    const sum = num1 + num2;
-    const preciseSum = parseFloat(sum.toFixed(2));
-    
-    // Registrar el cálculo para debug
-    console.log(`[DECIMALS] Cálculo decimal: ${num1} + ${num2} = ${sum} → ${preciseSum}`);
-    
-    correctAnswer = preciseSum;
-  } else {
-    // Para números enteros, la suma directa es suficiente
-    correctAnswer = num1 + num2;
-  }
+  // Si estamos usando decimales, asegurarse de que la respuesta se redondee a 2 decimales 
+  // para evitar errores de punto flotante
+  const correctAnswer = useDecimals 
+    ? parseFloat((num1 + num2).toFixed(2)) 
+    : num1 + num2;
 
   return {
     num1,
     num2,
-    correctAnswer,
-    layout
+    correctAnswer
   };
 }
 
 export function checkAnswer(problem: Problem, userAnswer: number): boolean {
-  console.log(`[CHECK_ANSWER] Verificando respuesta: Correcta=${problem.correctAnswer}, Usuario=${userAnswer}`);
-  
   // Para números enteros, comparación directa
   if (Number.isInteger(problem.correctAnswer) && Number.isInteger(userAnswer)) {
-    const result = problem.correctAnswer === userAnswer;
-    console.log(`[CHECK_ANSWER] Comparación de enteros: ${result ? "CORRECTA" : "INCORRECTA"}`);
-    return result;
-  }
-  
-  // Si la respuesta correcta es decimal pero el usuario ingresó un entero,
-  // podemos verificar si el entero es un redondeo válido de la respuesta decimal
-  if (!Number.isInteger(problem.correctAnswer) && Number.isInteger(userAnswer)) {
-    const roundedCorrect = Math.round(problem.correctAnswer);
-    
-    if (roundedCorrect === userAnswer) {
-      console.log(`[CHECK_ANSWER] Usuario ingresó el valor redondeado correcto: ${userAnswer} vs ${problem.correctAnswer}`);
-      // Podemos ser flexibles si el usuario ingresó el redondeo correcto
-      return true;
-    }
-  }
+    return problem.correctAnswer === userAnswer;
+  } 
   
   // Para números decimales, permitir una pequeña tolerancia debido a errores de punto flotante
   // Redondear ambos números a 2 decimales para la comparación
   const correctRounded = parseFloat(problem.correctAnswer.toFixed(2));
   const userRounded = parseFloat(userAnswer.toFixed(2));
   
-  console.log(`[CHECK_ANSWER] Comparando respuestas decimales: Correcta=${correctRounded}, Usuario=${userRounded}`);
+  console.log(`[DECIMALS] Comparando respuestas: Correcta=${correctRounded}, Usuario=${userRounded}`);
   
-  // Primera verificación: exactamente igual después de redondear a 2 decimales
-  if (correctRounded === userRounded) {
-    console.log(`[CHECK_ANSWER] Respuestas exactamente iguales con 2 decimales`);
-    return true;
-  }
-  
-  // Segunda verificación: permitir un margen de error muy pequeño para problemas de punto flotante
-  const tolerance = 0.005; // Tolerancia de ±0.005 (medio centésimo)
-  const areApproximatelyEqual = Math.abs(correctRounded - userRounded) < tolerance;
-  
-  console.log(`[CHECK_ANSWER] Diferencia: ${Math.abs(correctRounded - userRounded)}, Tolerancia: ${tolerance}`);
-  console.log(`[CHECK_ANSWER] Comparación con tolerancia: ${areApproximatelyEqual ? "CORRECTA" : "INCORRECTA"}`);
-  
-  return areApproximatelyEqual;
+  return correctRounded === userRounded;
 }

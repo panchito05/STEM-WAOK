@@ -5,18 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { generateAdditionProblem, checkAnswer } from "./utils";
-import { Problem, UserAnswer, AdditionProblem, DifficultyLevel } from "./types";
+import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/use-translations";
-import { createLevelManager, CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
+import { createLevelManager, DifficultyLevel, CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus, { on, off } from '@/lib/eventBus';
 import LevelUpHandler from "@/components/LevelUpHandler";
 import { useRewardsStore, awardReward, getRewardProbability, checkAndAwardRewards, RewardTheme } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
-import VerticalExercise from './VerticalExercise';
-import { DifficultyLabel } from './Labels';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -189,7 +187,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
                 // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
                 // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
-                setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer} Presiona Continuar para seguir.`);
+                setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
                 setFeedbackColor("red");
                 
                 // Activamos el estado de espera para el botón "Continuar"
@@ -515,7 +513,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
     // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
-    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer} Presiona Continuar para seguir.`);
+    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
     setFeedbackColor("green");
     
     // Activamos el estado de espera para el botón "Continuar"
@@ -625,7 +623,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
     // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
     setShowHelpButton(false); // Ocultamos el botón de ayuda
-    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${formattedAnswer} Presiona Continuar para seguir.`);
+    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${formattedAnswer}. Presiona Continuar para seguir.`);
     setFeedbackColor("red");
     
     // Activamos el estado de espera para el botón "Continuar"
@@ -1175,7 +1173,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setTimeout(() => {
           // Luego mostrar la respuesta correcta y el mensaje para continuar
           const correctAnswer = currentProblem.num1 + currentProblem.num2;
-          setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer} Presiona Continuar para seguir.`);
+          setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
           setFeedbackColor("green");
           
           // Activamos el estado de espera para el botón "Continuar"
@@ -1535,7 +1533,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 adaptiveDifficulty === "elementary" ? "bg-emerald-200 text-emerald-800" :
                 adaptiveDifficulty === "intermediate" ? "bg-orange-200 text-orange-800" :
                 adaptiveDifficulty === "advanced" ? "bg-purple-200 text-purple-800" :
-                adaptiveDifficulty === "expert" ? "bg-gray-200 text-gray-800" :
                 "bg-indigo-200 text-indigo-800" :
                 
                 settings.difficulty === "beginner" ? "bg-blue-200 text-blue-800" :
@@ -1549,14 +1546,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 adaptiveDifficulty === "elementary" ? "🟢 Nivel: Elemental" :
                 adaptiveDifficulty === "intermediate" ? "🟠 Nivel: Intermedio" :
                 adaptiveDifficulty === "advanced" ? "🟣 Nivel: Avanzado" :
-                adaptiveDifficulty === "expert" ? "⚫ Nivel: Experto" :
                 "⚪ Nivel: Desconocido" :
                 
                 settings.difficulty === "beginner" ? "🔵 Nivel: Principiante" :
                 settings.difficulty === "elementary" ? "🟢 Nivel: Elemental" :
                 settings.difficulty === "intermediate" ? "🟠 Nivel: Intermedio" :
                 settings.difficulty === "advanced" ? "🟣 Nivel: Avanzado" :
-                settings.difficulty === "expert" ? "⚫ Nivel: Experto" :
                 "⚪ Nivel: Desconocido"
               }
             </span>
@@ -1577,14 +1572,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 adaptiveDifficulty === "elementary" ? "border-emerald-300 hover:bg-emerald-100" :
                 adaptiveDifficulty === "intermediate" ? "border-orange-300 hover:bg-orange-100" :
                 adaptiveDifficulty === "advanced" ? "border-purple-300 hover:bg-purple-100" :
-                adaptiveDifficulty === "expert" ? "border-gray-500 hover:bg-gray-100" :
                 "border-indigo-300 hover:bg-indigo-100" :
                 
                 settings.difficulty === "beginner" ? "border-blue-300 hover:bg-blue-100" :
                 settings.difficulty === "elementary" ? "border-emerald-300 hover:bg-emerald-100" :
                 settings.difficulty === "intermediate" ? "border-orange-300 hover:bg-orange-100" :
                 settings.difficulty === "advanced" ? "border-purple-300 hover:bg-purple-100" :
-                settings.difficulty === "expert" ? "border-gray-500 hover:bg-gray-100" :
                 "border-indigo-300 hover:bg-indigo-100"
             }`}
           >
@@ -1601,14 +1594,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             adaptiveDifficulty === "elementary" ? "bg-emerald-200" :
             adaptiveDifficulty === "intermediate" ? "bg-orange-200" :
             adaptiveDifficulty === "advanced" ? "bg-purple-200" :
-            adaptiveDifficulty === "expert" ? "bg-gray-200" :
             "bg-indigo-200" :
             
             settings.difficulty === "beginner" ? "bg-blue-200" :
             settings.difficulty === "elementary" ? "bg-emerald-200" :
             settings.difficulty === "intermediate" ? "bg-orange-200" :
             settings.difficulty === "advanced" ? "bg-purple-200" :
-            settings.difficulty === "expert" ? "bg-gray-200" :
             "bg-indigo-200"
         }`} />
         <div className="flex justify-between text-xs font-medium mt-2">
@@ -1648,7 +1639,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               adaptiveDifficulty === "elementary" ? "bg-emerald-50 border border-emerald-200" :
               adaptiveDifficulty === "intermediate" ? "bg-orange-50 border border-orange-200" :
               adaptiveDifficulty === "advanced" ? "bg-purple-50 border border-purple-200" :
-              adaptiveDifficulty === "expert" ? "bg-gray-50 border border-gray-500" :
               "bg-indigo-50 border border-indigo-200" :
               
               settings.difficulty === "beginner" ? "bg-blue-50 border border-blue-200" :
@@ -1683,7 +1673,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                         adaptiveDifficulty === "elementary" ? "bg-emerald-300" :
                         adaptiveDifficulty === "intermediate" ? "bg-orange-300" :
                         adaptiveDifficulty === "advanced" ? "bg-purple-300" :
-                        adaptiveDifficulty === "expert" ? "bg-gray-400" :
                         "bg-indigo-300" :
                         
                         settings.difficulty === "beginner" ? "bg-blue-300" :
@@ -1719,14 +1708,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           adaptiveDifficulty === "elementary" ? "bg-gradient-to-br from-white to-emerald-50 border-2 border-emerald-100" :
           adaptiveDifficulty === "intermediate" ? "bg-gradient-to-br from-white to-orange-50 border-2 border-orange-100" :
           adaptiveDifficulty === "advanced" ? "bg-gradient-to-br from-white to-purple-50 border-2 border-purple-100" :
-          adaptiveDifficulty === "expert" ? "bg-gradient-to-br from-white to-gray-50 border-2 border-gray-300" :
           "bg-gradient-to-br from-white to-indigo-50 border-2 border-indigo-100" :
           
           settings.difficulty === "beginner" ? "bg-gradient-to-br from-white to-blue-50 border-2 border-blue-100" :
           settings.difficulty === "elementary" ? "bg-gradient-to-br from-white to-emerald-50 border-2 border-emerald-100" :
           settings.difficulty === "intermediate" ? "bg-gradient-to-br from-white to-orange-50 border-2 border-orange-100" :
           settings.difficulty === "advanced" ? "bg-gradient-to-br from-white to-purple-50 border-2 border-purple-100" :
-          settings.difficulty === "expert" ? "bg-gradient-to-br from-white to-gray-50 border-2 border-gray-300" :
           "bg-gradient-to-br from-white to-indigo-50 border-2 border-indigo-100"
       }`}>
         <div className="text-center">
@@ -1778,148 +1765,126 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         
           {currentProblem ? (
-            // Verificamos si el problema es de tipo AdditionProblem y tiene layout vertical
-            (currentProblem as AdditionProblem).layout === 'vertical' ? (
-              // Renderizar formato vertical si el problema lo especifica
-              <VerticalExercise 
-                problem={currentProblem as AdditionProblem}
-                onSubmit={(answer: number) => {
-                  // Convertir la respuesta a string para mantener consistencia con el manejo actual
-                  setUserAnswer(answer.toString());
-                  // Y llamar a la función de verificación
-                  checkCurrentAnswer();
-                }}
-                isActive={exerciseStarted && !exerciseCompleted && !waitingForContinue && !showingExplanation}
-                currentAttempts={currentAttempts}
-                maxAttempts={settings.maxAttempts}
-                waitingForContinue={waitingForContinue || showingExplanation}
-                difficultyLevel={(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) as DifficultyLevel}
-              />
-            ) : (
-              // Renderizar formato horizontal (tradicional)
-              <div className={`text-4xl font-bold mb-6 flex justify-center items-baseline ${
-                feedbackMessage ? 
-                  (feedbackColor === "green" ? "text-green-600" : 
-                  feedbackColor === "blue" ? "text-blue-600" : 
-                  "text-red-600") : 
-                  settings.enableAdaptiveDifficulty ? 
-                    adaptiveDifficulty === "beginner" ? "text-blue-700" :
-                    adaptiveDifficulty === "elementary" ? "text-emerald-700" :
-                    adaptiveDifficulty === "intermediate" ? "text-orange-700" :
-                    adaptiveDifficulty === "advanced" ? "text-purple-700" :
-                    adaptiveDifficulty === "expert" ? "text-gray-900" :
-                    "text-gray-700" :
-                    settings.difficulty === "beginner" ? "text-blue-700" :
-                    settings.difficulty === "elementary" ? "text-emerald-700" :
-                    settings.difficulty === "intermediate" ? "text-orange-700" :
-                    settings.difficulty === "advanced" ? "text-purple-700" :
-                    settings.difficulty === "expert" ? "text-gray-900" :
-                    "text-gray-700"
-              }`}>
-                <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
-                  settings.enableAdaptiveDifficulty ?
-                    adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                    adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                    adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                    adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                    "bg-indigo-100 text-indigo-800" :
-                    
-                    settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                    settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                    settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                    settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                    "bg-indigo-100 text-indigo-800"
-                }`} style={{ minWidth: '10rem' }}>
-                  {/* Detectar si es decimal para asegurar formato correcto */}
-                  {Number.isInteger(currentProblem.num1) 
-                    ? currentProblem.num1 
-                    : currentProblem.num1.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
-                  }
-                </span>
-                <span className="mx-4 text-5xl">+</span>
-                <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
-                  settings.enableAdaptiveDifficulty ?
-                    adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                    adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                    adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                    adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                    "bg-indigo-100 text-indigo-800" :
-                    
-                    settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                    settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                    settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                    settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                    "bg-indigo-100 text-indigo-800"
-                }`} style={{ minWidth: '10rem' }}>
-                  {/* Detectar si es decimal para asegurar formato correcto */}
-                  {Number.isInteger(currentProblem.num2) 
-                    ? currentProblem.num2 
-                    : currentProblem.num2.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
-                  }
-                </span>
-                <span className="mx-4 text-5xl">=</span>
-                <div className={`relative ${
-                  settings.enableAdaptiveDifficulty ?
-                    adaptiveDifficulty === "beginner" ? "border-b-4 border-blue-400" :
-                    adaptiveDifficulty === "elementary" ? "border-b-4 border-emerald-400" :
-                    adaptiveDifficulty === "intermediate" ? "border-b-4 border-orange-400" :
-                    adaptiveDifficulty === "advanced" ? "border-b-4 border-purple-400" :
-                    "border-b-4 border-indigo-400" :
-                    
-                    settings.difficulty === "beginner" ? "border-b-4 border-blue-400" :
-                    settings.difficulty === "elementary" ? "border-b-4 border-emerald-400" :
-                    settings.difficulty === "intermediate" ? "border-b-4 border-orange-400" :
-                    settings.difficulty === "advanced" ? "border-b-4 border-purple-400" :
-                    "border-b-4 border-indigo-400"
-                }`} style={{ minWidth: '10rem' }}>
-                  <Input
-                    type="text"
-                    ref={inputRef}
-                    className={`w-full text-center text-2xl font-bold ${
-                      waitingForContinue || showingExplanation ? 
-                        settings.enableAdaptiveDifficulty ?
-                          adaptiveDifficulty === "beginner" ? "bg-blue-50" :
-                          adaptiveDifficulty === "elementary" ? "bg-emerald-50" :
-                          adaptiveDifficulty === "intermediate" ? "bg-orange-50" :
-                          adaptiveDifficulty === "advanced" ? "bg-purple-50" :
-                          "bg-indigo-50" :
-                          
-                          settings.difficulty === "beginner" ? "bg-blue-50" :
-                          settings.difficulty === "elementary" ? "bg-emerald-50" :
-                          settings.difficulty === "intermediate" ? "bg-orange-50" :
-                          settings.difficulty === "advanced" ? "bg-purple-50" :
-                          "bg-indigo-50"
-                      : "bg-transparent"
-                    } focus:outline-none focus:ring-2 ${
+            <div className={`text-4xl font-bold mb-6 flex justify-center items-baseline ${
+              feedbackMessage ? 
+                (feedbackColor === "green" ? "text-green-600" : 
+                 feedbackColor === "blue" ? "text-blue-600" : 
+                 "text-red-600") : 
+                settings.enableAdaptiveDifficulty ? 
+                  adaptiveDifficulty === "beginner" ? "text-blue-700" :
+                  adaptiveDifficulty === "elementary" ? "text-emerald-700" :
+                  adaptiveDifficulty === "intermediate" ? "text-orange-700" :
+                  adaptiveDifficulty === "advanced" ? "text-purple-700" :
+                  "text-indigo-700" :
+                  settings.difficulty === "beginner" ? "text-blue-700" :
+                  settings.difficulty === "elementary" ? "text-emerald-700" :
+                  settings.difficulty === "intermediate" ? "text-orange-700" :
+                  settings.difficulty === "advanced" ? "text-purple-700" :
+                  "text-indigo-700"
+            }`}>
+              <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800" :
+                  
+                  settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800"
+              }`} style={{ minWidth: '10rem' }}>
+                {/* Detectar si es decimal para asegurar formato correcto */}
+                {Number.isInteger(currentProblem.num1) 
+                  ? currentProblem.num1 
+                  : currentProblem.num1.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
+                }
+              </span>
+              <span className="mx-4 text-5xl">+</span>
+              <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800" :
+                  
+                  settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800"
+              }`} style={{ minWidth: '10rem' }}>
+                {/* Detectar si es decimal para asegurar formato correcto */}
+                {Number.isInteger(currentProblem.num2) 
+                  ? currentProblem.num2 
+                  : currentProblem.num2.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
+                }
+              </span>
+              <span className="mx-4 text-5xl">=</span>
+              <div className={`relative ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "border-b-4 border-blue-400" :
+                  adaptiveDifficulty === "elementary" ? "border-b-4 border-emerald-400" :
+                  adaptiveDifficulty === "intermediate" ? "border-b-4 border-orange-400" :
+                  adaptiveDifficulty === "advanced" ? "border-b-4 border-purple-400" :
+                  "border-b-4 border-indigo-400" :
+                  
+                  settings.difficulty === "beginner" ? "border-b-4 border-blue-400" :
+                  settings.difficulty === "elementary" ? "border-b-4 border-emerald-400" :
+                  settings.difficulty === "intermediate" ? "border-b-4 border-orange-400" :
+                  settings.difficulty === "advanced" ? "border-b-4 border-purple-400" :
+                  "border-b-4 border-indigo-400"
+              }`} style={{ minWidth: '10rem' }}>
+                <Input
+                  type="text"
+                  ref={inputRef}
+                  className={`w-full text-center text-2xl font-bold ${
+                    waitingForContinue || showingExplanation ? 
                       settings.enableAdaptiveDifficulty ?
-                        adaptiveDifficulty === "beginner" ? "focus:ring-blue-400" :
-                        adaptiveDifficulty === "elementary" ? "focus:ring-emerald-400" :
-                        adaptiveDifficulty === "intermediate" ? "focus:ring-orange-400" :
-                        adaptiveDifficulty === "advanced" ? "focus:ring-purple-400" :
-                        "focus:ring-indigo-400" :
+                        adaptiveDifficulty === "beginner" ? "bg-blue-50" :
+                        adaptiveDifficulty === "elementary" ? "bg-emerald-50" :
+                        adaptiveDifficulty === "intermediate" ? "bg-orange-50" :
+                        adaptiveDifficulty === "advanced" ? "bg-purple-50" :
+                        "bg-indigo-50" :
                         
-                        settings.difficulty === "beginner" ? "focus:ring-blue-400" :
-                        settings.difficulty === "elementary" ? "focus:ring-emerald-400" :
-                        settings.difficulty === "intermediate" ? "focus:ring-orange-400" :
-                        settings.difficulty === "advanced" ? "focus:ring-purple-400" :
-                        "focus:ring-indigo-400"
-                    } focus:border-transparent h-12 px-2 rounded-lg text-ellipsis text-right`}
-                    value={userAnswer}
-                    onChange={handleInputChange}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
-                        checkCurrentAnswer();
-                      }
-                    }}
-                    pattern="[0-9]*"
-                    inputMode="numeric"
-                    disabled={waitingForContinue || showingExplanation}
-                    readOnly={waitingForContinue || showingExplanation}
-                    aria-readonly={waitingForContinue || showingExplanation}
-                  />
-                </div>
+                        settings.difficulty === "beginner" ? "bg-blue-50" :
+                        settings.difficulty === "elementary" ? "bg-emerald-50" :
+                        settings.difficulty === "intermediate" ? "bg-orange-50" :
+                        settings.difficulty === "advanced" ? "bg-purple-50" :
+                        "bg-indigo-50"
+                    : "bg-transparent"
+                  } focus:outline-none focus:ring-2 ${
+                    settings.enableAdaptiveDifficulty ?
+                      adaptiveDifficulty === "beginner" ? "focus:ring-blue-400" :
+                      adaptiveDifficulty === "elementary" ? "focus:ring-emerald-400" :
+                      adaptiveDifficulty === "intermediate" ? "focus:ring-orange-400" :
+                      adaptiveDifficulty === "advanced" ? "focus:ring-purple-400" :
+                      "focus:ring-indigo-400" :
+                      
+                      settings.difficulty === "beginner" ? "focus:ring-blue-400" :
+                      settings.difficulty === "elementary" ? "focus:ring-emerald-400" :
+                      settings.difficulty === "intermediate" ? "focus:ring-orange-400" :
+                      settings.difficulty === "advanced" ? "focus:ring-purple-400" :
+                      "focus:ring-indigo-400"
+                  } focus:border-transparent h-12 px-2 rounded-lg text-ellipsis text-right`}
+                  value={userAnswer}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
+                      checkCurrentAnswer();
+                    }
+                  }}
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                  disabled={waitingForContinue || showingExplanation}
+                  readOnly={waitingForContinue || showingExplanation}
+                  aria-readonly={waitingForContinue || showingExplanation}
+                />
               </div>
-            )
+            </div>
           ) : (
             <div className="text-center py-4">
               <p>Cargando el siguiente problema...</p>
