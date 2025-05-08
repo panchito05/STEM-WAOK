@@ -189,7 +189,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
                 // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
                 // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
-                setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
+                setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${correctAnswer} Presiona Continuar para seguir.`);
                 setFeedbackColor("red");
                 
                 // Activamos el estado de espera para el botón "Continuar"
@@ -515,7 +515,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
     // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
-    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
+    setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer} Presiona Continuar para seguir.`);
     setFeedbackColor("green");
     
     // Activamos el estado de espera para el botón "Continuar"
@@ -625,7 +625,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Mostrar la respuesta correcta y esperar a que el usuario presione continuar
     // No avanzamos automáticamente, el usuario debe presionar el botón "Continuar"
     setShowHelpButton(false); // Ocultamos el botón de ayuda
-    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${formattedAnswer}. Presiona Continuar para seguir.`);
+    setFeedbackMessage(`¡Tiempo agotado! ${t('exercises.correctAnswerIs')} ${formattedAnswer} Presiona Continuar para seguir.`);
     setFeedbackColor("red");
     
     // Activamos el estado de espera para el botón "Continuar"
@@ -1175,7 +1175,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setTimeout(() => {
           // Luego mostrar la respuesta correcta y el mensaje para continuar
           const correctAnswer = currentProblem.num1 + currentProblem.num2;
-          setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer}. Presiona Continuar para seguir.`);
+          setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${correctAnswer} Presiona Continuar para seguir.`);
           setFeedbackColor("green");
           
           // Activamos el estado de espera para el botón "Continuar"
