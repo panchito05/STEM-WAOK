@@ -1,9 +1,11 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import * as storage from "./storage";
-import { exerciseProgressSchema, moduleSettingsSchema } from "@shared/schema";
+import { exerciseProgressSchema, moduleSettingsSchema, users } from "@shared/schema";
 import { z } from "zod";
 import alphabet2Routes from "./routes-alphabet2";
+import { db } from "@db";
+import { eq } from "drizzle-orm";
 
 // Verificar si el usuario está autenticado
 const isAuthenticated = (req: any, res: Response, next: NextFunction) => {
@@ -72,7 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ruta de registro
   app.post("/api/auth/register", async (req: any, res) => {
     try {
-      const { username, password } = req.body;
+      const { username, password, email, name } = req.body;
       
       if (!username || !password) {
         return res.status(400).json({ error: "Username and password are required" });
@@ -85,18 +87,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(409).json({ error: "Username already exists" });
       }
       
+      // Verificar si el email ya existe (si se proporcionó uno)
+      if (email) {
+        const existingUserByEmail = await db.query.users.findFirst({
+          where: eq(users.email, email)
+        });
+        
+        if (existingUserByEmail) {
+          return res.status(409).json({ error: "Email already in use" });
+        }
+      }
+      
       // Crear el usuario
-      const newUser = await storage.insertUser(username, password);
+      const newUser = await storage.insertUser(username, password, email, name);
       
       // Establecer sesión
       req.session.userId = newUser.id;
       
       return res.status(201).json({
         id: newUser.id,
-        username: newUser.username
+        username: newUser.username,
+        email: newUser.email,
+        name: newUser.name
       });
     } catch (error) {
       console.error("Error during registration:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  // Ruta para autenticación con Google
+  app.post("/api/auth/google", async (req: any, res) => {
+    try {
+      const { 
+        providerId, 
+        email, 
+        name, 
+        photoUrl 
+      } = req.body;
+      
+      if (!providerId || !email) {
+        return res.status(400).json({ error: "Provider ID and email are required" });
+      }
+      
+      // Insertar o actualizar el usuario externo
+      const user = await storage.insertOrUpdateExternalUser(
+        providerId,
+        'google',
+        email,
+        name || '',
+        photoUrl
+      );
+      
+      // Establecer sesión
+      req.session.userId = user.id;
+      
+      return res.json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        photoUrl: user.photoUrl,
+        provider: user.provider
+      });
+    } catch (error) {
+      console.error("Error during Google authentication:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   });

@@ -3,13 +3,20 @@ import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "@shared/schema";
+import { 
+  signInWithGoogle, 
+  getGoogleRedirectResult, 
+  firebaseSignOut,
+  subscribeToAuthChanges
+} from "@/lib/firebase";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string, email?: string, name?: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -44,9 +51,78 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Manejar los resultados de la redirección de Google Auth al cargar la página
   useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        setIsLoading(true);
+        const result = await getGoogleRedirectResult();
+        
+        if (result && result.user) {
+          const { uid, email, displayName, photoURL } = result.user;
+          
+          // Enviar la información del usuario al backend para crear/sincronizar la cuenta
+          await handleGoogleAuthSuccess(uid, email || '', displayName || '', photoURL || '');
+        }
+      } catch (error) {
+        console.error("Error handling redirect result:", error);
+        toast({
+          title: "Authentication Error",
+          description: "There was a problem authenticating with Google",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Suscribirse a cambios en el estado de autenticación de Firebase
+    const unsubscribe = subscribeToAuthChanges(async (firebaseUser) => {
+      if (firebaseUser) {
+        // El usuario está autenticado en Firebase, pero necesitamos sincronizar con nuestro backend
+        console.log("Firebase user authenticated:", firebaseUser.email);
+      }
+    });
+
+    handleRedirectResult();
     fetchUser();
-  }, []);
+    
+    return () => unsubscribe();
+  }, [toast]);
+
+  // Función para manejar el éxito de autenticación con Google
+  const handleGoogleAuthSuccess = async (
+    providerId: string, 
+    email: string, 
+    name: string, 
+    photoUrl: string
+  ) => {
+    try {
+      const res = await apiRequest("POST", "/api/auth/google", {
+        providerId,
+        email,
+        name,
+        photoUrl
+      });
+      
+      const userData = await res.json();
+      setUser(userData);
+      
+      toast({
+        title: "Login Successful",
+        description: `Welcome, ${userData.name || userData.username}!`,
+      });
+      
+      setLocation("/");
+    } catch (error) {
+      console.error("Error durante la autenticación con Google:", error);
+      toast({
+        title: "Authentication Error",
+        description: "There was a problem with Google authentication",
+        variant: "destructive",
+      });
+    }
+  };
 
   const login = async (username: string, password: string) => {
     try {
@@ -68,9 +144,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const register = async (username: string, password: string) => {
+  const loginWithGoogle = async () => {
     try {
-      const res = await apiRequest("POST", "/api/auth/register", { username, password });
+      await signInWithGoogle();
+      // No necesitamos hacer nada más aquí, ya que el resultado se manejará
+      // a través del efecto handleRedirectResult
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+      toast({
+        title: "Google Login Failed",
+        description: "Could not sign in with Google",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const register = async (username: string, password: string, email?: string, name?: string) => {
+    try {
+      const res = await apiRequest("POST", "/api/auth/register", { 
+        username, 
+        password,
+        email,
+        name
+      });
       const userData = await res.json();
       setUser(userData);
       toast({
@@ -90,7 +187,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
+      // Cerrar sesión en nuestro backend
       await apiRequest("POST", "/api/auth/logout", {});
+      
+      // Cerrar sesión en Firebase si está inicializado
+      try {
+        await firebaseSignOut();
+      } catch (firebaseError) {
+        console.warn("Firebase logout error:", firebaseError);
+      }
+      
       setUser(null);
       toast({
         title: "Logged Out",
@@ -113,6 +219,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithGoogle,
         register,
         logout,
       }}
