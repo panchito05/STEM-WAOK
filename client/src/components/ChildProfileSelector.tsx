@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useChildProfiles } from "@/context/ChildProfilesContext";
-import { useTranslations } from "@/hooks/use-translations";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -40,7 +39,6 @@ interface CreateProfileFormProps {
 
 function CreateProfileForm({ onClose }: CreateProfileFormProps) {
   const { createProfile, isLoading } = useChildProfiles();
-  const { t } = useTranslations();
   const [name, setName] = useState("");
   const [age, setAge] = useState<string>("");
 
@@ -57,21 +55,21 @@ function CreateProfileForm({ onClose }: CreateProfileFormProps) {
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-2">
         <div className="grid gap-2">
-          <Label htmlFor="name">{t('childProfile.name')}</Label>
+          <Label htmlFor="name">Nombre</Label>
           <Input
             id="name"
-            placeholder={t('childProfile.namePlaceholder')}
+            placeholder="Nombre del niño/a"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="age">{t('childProfile.age')}</Label>
+          <Label htmlFor="age">Edad</Label>
           <Input
             id="age"
             type="number"
-            placeholder={t('childProfile.agePlaceholder')}
+            placeholder="Edad del niño/a"
             value={age}
             onChange={(e) => setAge(e.target.value)}
             min="1"
@@ -81,10 +79,10 @@ function CreateProfileForm({ onClose }: CreateProfileFormProps) {
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose}>
-          {t('common.cancel')}
+          Cancelar
         </Button>
         <Button type="submit" disabled={isLoading || !name.trim()}>
-          {isLoading ? t('common.creating') : t('common.create')}
+          {isLoading ? "Creando..." : "Crear perfil"}
         </Button>
       </DialogFooter>
     </form>
@@ -100,7 +98,6 @@ interface EditProfileFormProps {
 
 function EditProfileForm({ profileId, profileName, profileAge, onClose }: EditProfileFormProps) {
   const { updateProfile, isLoading } = useChildProfiles();
-  const { t } = useTranslations();
   const [name, setName] = useState(profileName);
   const [age, setAge] = useState<string>(profileAge?.toString() || "");
 
@@ -117,21 +114,21 @@ function EditProfileForm({ profileId, profileName, profileAge, onClose }: EditPr
     <form onSubmit={handleSubmit}>
       <div className="grid gap-4 py-2">
         <div className="grid gap-2">
-          <Label htmlFor="edit-name">{t('childProfile.name')}</Label>
+          <Label htmlFor="edit-name">Nombre</Label>
           <Input
             id="edit-name"
-            placeholder={t('childProfile.namePlaceholder')}
+            placeholder="Nombre del niño/a"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="edit-age">{t('childProfile.age')}</Label>
+          <Label htmlFor="edit-age">Edad</Label>
           <Input
             id="edit-age"
             type="number"
-            placeholder={t('childProfile.agePlaceholder')}
+            placeholder="Edad del niño/a"
             value={age}
             onChange={(e) => setAge(e.target.value)}
             min="1"
@@ -141,10 +138,10 @@ function EditProfileForm({ profileId, profileName, profileAge, onClose }: EditPr
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onClose}>
-          {t('common.cancel')}
+          Cancelar
         </Button>
         <Button type="submit" disabled={isLoading || !name.trim()}>
-          {isLoading ? t('common.saving') : t('common.save')}
+          {isLoading ? "Guardando..." : "Guardar cambios"}
         </Button>
       </DialogFooter>
     </form>
@@ -153,7 +150,6 @@ function EditProfileForm({ profileId, profileName, profileAge, onClose }: EditPr
 
 export default function ChildProfileSelector() {
   const { profiles, activeProfile, setActiveProfile, deleteProfile, isLoading } = useChildProfiles();
-  const { t } = useTranslations();
   
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -167,14 +163,14 @@ export default function ChildProfileSelector() {
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="gap-1">
             <PlusCircle className="h-4 w-4" />
-            <span>{t('childProfile.addFirst')}</span>
+            <span>Crear perfil</span>
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('childProfile.createProfile')}</DialogTitle>
+            <DialogTitle>Crear perfil</DialogTitle>
             <DialogDescription>
-              {t('childProfile.createDescription')}
+              Crea un perfil para tu hijo/a para personalizar su experiencia de aprendizaje.
             </DialogDescription>
           </DialogHeader>
           <CreateProfileForm onClose={() => setCreateDialogOpen(false)} />
@@ -229,18 +225,20 @@ export default function ChildProfileSelector() {
         <DropdownMenuContent align="end">
           <DropdownMenuItem
             onClick={() => {
-              setProfileToEdit({
-                id: activeProfile!.id,
-                name: activeProfile!.name,
-                age: activeProfile!.age
-              });
-              setEditDialogOpen(true);
+              if (activeProfile) {
+                setProfileToEdit({
+                  id: activeProfile.id,
+                  name: activeProfile.name,
+                  age: activeProfile.age
+                });
+                setEditDialogOpen(true);
+              }
             }}
             disabled={!activeProfile}
             className="gap-2"
           >
             <Edit className="h-4 w-4" />
-            {t('childProfile.editCurrent')}
+            Editar perfil
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => activeProfile && setProfileToDelete(activeProfile.id)}
@@ -248,7 +246,7 @@ export default function ChildProfileSelector() {
             className="gap-2 text-destructive"
           >
             <Trash2 className="h-4 w-4" />
-            {t('childProfile.deleteCurrent')}
+            Eliminar perfil
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -262,9 +260,9 @@ export default function ChildProfileSelector() {
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('childProfile.createProfile')}</DialogTitle>
+            <DialogTitle>Crear perfil</DialogTitle>
             <DialogDescription>
-              {t('childProfile.createDescription')}
+              Crea un perfil para tu hijo/a para personalizar su experiencia de aprendizaje.
             </DialogDescription>
           </DialogHeader>
           <CreateProfileForm onClose={() => setCreateDialogOpen(false)} />
@@ -275,9 +273,9 @@ export default function ChildProfileSelector() {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('childProfile.editProfile')}</DialogTitle>
+            <DialogTitle>Editar perfil</DialogTitle>
             <DialogDescription>
-              {t('childProfile.editDescription')}
+              Modifica los datos del perfil seleccionado.
             </DialogDescription>
           </DialogHeader>
           <EditProfileForm 
@@ -293,13 +291,13 @@ export default function ChildProfileSelector() {
       <AlertDialog open={profileToDelete !== null} onOpenChange={(open) => !open && setProfileToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('childProfile.confirmDelete')}</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar perfil?</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('childProfile.deleteWarning')}
+              Esta acción no se puede deshacer. Se eliminarán todos los datos asociados a este perfil.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={async () => {
                 if (profileToDelete !== null) {
@@ -309,7 +307,7 @@ export default function ChildProfileSelector() {
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {t('common.delete')}
+              Eliminar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
