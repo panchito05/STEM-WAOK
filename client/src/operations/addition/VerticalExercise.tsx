@@ -104,7 +104,7 @@ export default function VerticalExercise({
     
     // Mover al siguiente input si existe
     if (index < totalPositions - 1 && inputRefs.current[index + 1]) {
-      inputRefs.current[index + 1].focus();
+      inputRefs.current[index + 1]?.focus();
     }
   };
   
