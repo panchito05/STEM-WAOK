@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { on, off } from '../lib/eventBus';
+import eventBus, { on, off } from '../lib/eventBus';
 import LevelUpModal from './LevelUpModal';
 
 /**
