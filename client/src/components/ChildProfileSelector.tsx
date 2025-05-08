@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { useChildProfiles } from "@/context/ChildProfilesContext";
+import { useExercise } from "@/context/ExerciseContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -28,10 +30,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-import { PlusCircle, User, Edit, Trash2, ChevronDown, EllipsisVertical } from "lucide-react";
+import { PlusCircle, User, Edit, Trash2, ChevronDown, EllipsisVertical, AlertTriangle } from "lucide-react";
 
 interface CreateProfileFormProps {
   onClose: () => void;
@@ -150,11 +151,15 @@ function EditProfileForm({ profileId, profileName, profileAge, onClose }: EditPr
 
 export default function ChildProfileSelector() {
   const { profiles, activeProfile, setActiveProfile, deleteProfile, isLoading } = useChildProfiles();
+  const { isExerciseActive } = useExercise();
+  const [, setLocation] = useLocation();
   
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [profileToEdit, setProfileToEdit] = useState<{ id: number; name: string; age?: number | null }>({ id: 0, name: "" });
   const [profileToDelete, setProfileToDelete] = useState<number | null>(null);
+  const [profileToChange, setProfileToChange] = useState<number | null>(null);
+  const [showChangeWarning, setShowChangeWarning] = useState(false);
 
   if (profiles.length === 0) {
     // Si no hay perfiles, mostrar solo botón para crear uno nuevo
@@ -199,7 +204,18 @@ export default function ChildProfileSelector() {
           {profiles.map(profile => (
             <DropdownMenuItem
               key={profile.id}
-              onClick={() => !isLoading && setActiveProfile(profile.id)}
+              onClick={() => {
+                // Si hay un ejercicio activo, mostrar advertencia
+                if (isExerciseActive && profile.id !== activeProfile?.id) {
+                  setProfileToChange(profile.id);
+                  setShowChangeWarning(true);
+                } else if (!isLoading && profile.id !== activeProfile?.id) {
+                  // Cambiar perfil y redirigir a la página principal
+                  setActiveProfile(profile.id).then(() => {
+                    setLocation("/");
+                  });
+                }
+              }}
               disabled={isLoading || profile.id === activeProfile?.id}
               className={profile.id === activeProfile?.id ? "bg-muted" : ""}
             >
@@ -308,6 +324,45 @@ export default function ChildProfileSelector() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Diálogo de advertencia para cambio de perfil durante ejercicio activo */}
+      <AlertDialog open={showChangeWarning} onOpenChange={setShowChangeWarning}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-amber-600">
+              <AlertTriangle className="h-5 w-5" />
+              Advertencia: Ejercicio en progreso
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Hay un ejercicio actualmente en progreso. Si cambias de perfil ahora, perderás todo el progreso 
+              no guardado en el ejercicio actual.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setProfileToChange(null);
+              setShowChangeWarning(false);
+            }}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={async () => {
+                if (profileToChange !== null) {
+                  // Cambiar perfil y redirigir a la pantalla de inicio
+                  await setActiveProfile(profileToChange);
+                  setProfileToChange(null);
+                  setShowChangeWarning(false);
+                  // Redirigir a la página principal
+                  setLocation("/");
+                }
+              }}
+              className="bg-amber-600 text-white hover:bg-amber-700"
+            >
+              Cambiar de perfil
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
