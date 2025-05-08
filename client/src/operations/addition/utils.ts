@@ -55,6 +55,9 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
       // 20% de probabilidad de usar decimales en nivel avanzado
       useDecimals = Math.random() < 0.2;
       
+      // 60% de probabilidad de usar formato vertical en nivel avanzado
+      layout = Math.random() < 0.6 ? 'vertical' : 'horizontal';
+      
       if (useDecimals) {
         // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
         const decimalMode = getRandomInt(1, 3);
@@ -86,6 +89,9 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
       
       // 35% de probabilidad de usar decimales en nivel experto
       useDecimals = Math.random() < 0.35;
+      
+      // 70% de probabilidad de usar formato vertical en nivel experto
+      layout = Math.random() < 0.7 ? 'vertical' : 'horizontal';
       
       if (useDecimals) {
         // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
@@ -126,7 +132,8 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
   return {
     num1,
     num2,
-    correctAnswer
+    correctAnswer,
+    layout
   };
 }
 
