@@ -1795,13 +1795,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   difficultyLevel={settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
                 />
               ) : (currentProblem as AdditionProblem).layout === 'multi-vertical' ? (
-                <MultiVerticalExercise
+                <UltraSecureMultiVerticalExercise
                   problem={currentProblem as AdditionProblem}
-                  onSubmit={handleExternalSubmit}
-                  isActive={!waitingForContinue && !showingExplanation}
-                  currentAttempts={currentAttempts}
-                  maxAttempts={settings.maxAttempts}
-                  waitingForContinue={waitingForContinue || showingExplanation}
+                  onCorrect={() => handleExternalSubmit(currentProblem.correctAnswer)}
+                  onIncorrect={() => handleExternalSubmit(0)}
                   difficultyLevel={settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
                 />
               ) : (
