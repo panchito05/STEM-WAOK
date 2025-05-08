@@ -20,9 +20,9 @@ const firebaseConfig = {
 };
 
 // Inicializar Firebase
-let firebaseApp;
-let auth;
-let googleProvider;
+let firebaseApp: ReturnType<typeof initializeApp> | undefined;
+let auth: ReturnType<typeof getAuth> | undefined;
+let googleProvider: GoogleAuthProvider | undefined;
 
 try {
   firebaseApp = initializeApp(firebaseConfig);

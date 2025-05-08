@@ -16,11 +16,98 @@ export async function getUserByUsername(username: string) {
   });
 }
 
-export async function insertUser(username: string, password: string) {
+export async function insertUser(username: string, password: string, email?: string, name?: string) {
   const passwordHash = await hash(password, 10);
   
   const [newUser] = await db.insert(users)
-    .values({ username, password: passwordHash })
+    .values({ 
+      username, 
+      password: passwordHash,
+      email,
+      name,
+      provider: 'local'
+    })
+    .returning();
+  
+  return newUser;
+}
+
+export async function insertOrUpdateExternalUser(
+  providerId: string,
+  provider: string,
+  email: string,
+  name: string,
+  photoUrl?: string
+) {
+  // Verificar si el usuario ya existe por providerId
+  const existingUserByProviderId = await db.query.users.findFirst({
+    where: and(
+      eq(users.providerId, providerId),
+      eq(users.provider, provider)
+    )
+  });
+  
+  if (existingUserByProviderId) {
+    // Actualizar el usuario existente 
+    const [updatedUser] = await db.update(users)
+      .set({ 
+        email,
+        name,
+        photoUrl,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, existingUserByProviderId.id))
+      .returning();
+      
+    return updatedUser;
+  }
+  
+  // Si no existe por providerId, buscar por email
+  const existingUserByEmail = await db.query.users.findFirst({
+    where: eq(users.email, email)
+  });
+  
+  if (existingUserByEmail) {
+    // Si existe un usuario con el mismo email pero diferente proveedor, actualizar sus datos
+    const [updatedUser] = await db.update(users)
+      .set({ 
+        providerId,
+        provider,
+        name,
+        photoUrl,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, existingUserByEmail.id))
+      .returning();
+      
+    return updatedUser;
+  }
+  
+  // Si no existe, crear un nuevo usuario
+  // Generar un nombre de usuario único basado en el email
+  let username = email.split('@')[0];
+  let isUnique = false;
+  let counter = 1;
+  
+  while (!isUnique) {
+    const existingUser = await getUserByUsername(username);
+    if (!existingUser) {
+      isUnique = true;
+    } else {
+      username = `${email.split('@')[0]}${counter}`;
+      counter++;
+    }
+  }
+  
+  const [newUser] = await db.insert(users)
+    .values({ 
+      username,
+      email,
+      name,
+      photoUrl,
+      provider,
+      providerId,
+    })
     .returning();
   
   return newUser;
