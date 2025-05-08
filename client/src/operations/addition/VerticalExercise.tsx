@@ -102,8 +102,28 @@ export default function VerticalExercise({
   // y están alineados correctamente, así que simplemente dividirlos en dígitos
   const num2Digits = alignedNum2.split('');
   
+  // Verificar si debemos incluir el punto decimal en la respuesta esperada
+  // Si los operandos tienen puntos decimales, la respuesta también debería tenerlo
+  let correctAnswerWithDecimal = correctAnswerStr;
+  if (!correctAnswerWithDecimal.includes('.') && 
+      (alignedNum1.includes('.') || alignedNum2.includes('.'))) {
+    correctAnswerWithDecimal = correctAnswerWithDecimal + '.0';
+  }
+  
+  console.log('[VERTICAL_EXERCISE] Respuesta ajustada con decimales:', {
+    original: correctAnswerStr,
+    ajustada: correctAnswerWithDecimal
+  });
+  
   // IMPORTANTE: totalPositions debe coincidir con la longitud de la respuesta correcta
-  const totalPositions = correctAnswerStr.length;
+  // incluyendo todos los dígitos decimales que puedan estar presentes
+  // Asegurarnos de que sea al menos igual a la longitud del número más largo
+  const maxDigitsWithDecimal = Math.max(
+    alignedNum1.length,
+    alignedNum2.length,
+    correctAnswerWithDecimal.length
+  );
+  const totalPositions = maxDigitsWithDecimal;
   
   console.log('[VERTICAL_EXERCISE] Configuración final:', {
     alignedNum1,
@@ -111,6 +131,7 @@ export default function VerticalExercise({
     num1Digits,
     num2Digits,
     correctAnswerStr,
+    correctAnswerWithDecimal,
     totalPositions
   });
   
@@ -180,10 +201,10 @@ export default function VerticalExercise({
     // Crear un string con los dígitos ingresados, ignorando espacios vacíos
     const userEnteredDigits = userDigits.filter(d => d !== '' && d !== ' ').join('');
     
-    console.log('[VERTICAL_EXERCISE] Comparación directa:', userEnteredDigits, 'vs', correctAnswerStr);
+    console.log('[VERTICAL_EXERCISE] Comparación directa:', userEnteredDigits, 'vs', correctAnswerStr, 'o', correctAnswerWithDecimal);
     
-    // SOLUCIÓN 1: Si el usuario ingresó exactamente la respuesta correcta
-    if (userEnteredDigits === correctAnswerStr) {
+    // SOLUCIÓN 1: Si el usuario ingresó exactamente la respuesta correcta (con o sin punto decimal)
+    if (userEnteredDigits === correctAnswerStr || userEnteredDigits === correctAnswerWithDecimal) {
       console.log('[VERTICAL_EXERCISE] ¡Coincidencia directa con la respuesta correcta!');
       return exactSum;
     }
@@ -196,26 +217,32 @@ export default function VerticalExercise({
     }
     
     // SOLUCIÓN 3: Si el usuario dejó campos vacíos al inicio pero el resto es correcto
-    if (userEnteredDigits && correctAnswerStr.endsWith(userEnteredDigits)) {
+    if (userEnteredDigits && 
+        (correctAnswerStr.endsWith(userEnteredDigits) || 
+         correctAnswerWithDecimal.endsWith(userEnteredDigits))) {
       console.log('[VERTICAL_EXERCISE] Coincidencia con la parte final de la respuesta correcta');
       return exactSum;
     }
     
     // SOLUCIÓN 4: Si falta un solo dígito pero el resto coincide (casi completo)
-    if (userEnteredDigits.length === correctAnswerStr.length - 1) {
-      // Verificar si al eliminar un dígito de la respuesta correcta, coincide con lo ingresado
-      let isPartialMatch = false;
-      for (let i = 0; i < correctAnswerStr.length; i++) {
-        const partialCorrect = correctAnswerStr.slice(0, i) + correctAnswerStr.slice(i + 1);
-        if (userEnteredDigits === partialCorrect) {
-          isPartialMatch = true;
-          break;
+    const validAnswers = [correctAnswerStr, correctAnswerWithDecimal];
+    
+    for (const answer of validAnswers) {
+      if (userEnteredDigits.length === answer.length - 1) {
+        // Verificar si al eliminar un dígito de la respuesta correcta, coincide con lo ingresado
+        let isPartialMatch = false;
+        for (let i = 0; i < answer.length; i++) {
+          const partialCorrect = answer.slice(0, i) + answer.slice(i + 1);
+          if (userEnteredDigits === partialCorrect) {
+            isPartialMatch = true;
+            break;
+          }
         }
-      }
-      
-      if (isPartialMatch) {
-        console.log('[VERTICAL_EXERCISE] Coincidencia parcial - falta un solo dígito');
-        return exactSum;
+        
+        if (isPartialMatch) {
+          console.log('[VERTICAL_EXERCISE] Coincidencia parcial - falta un solo dígito');
+          return exactSum;
+        }
       }
     }
     
