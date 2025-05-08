@@ -7,13 +7,5 @@ import { ProgressProvider } from "./context/ProgressContext";
 import { SettingsProvider } from "./context/SettingsContext";
 
 createRoot(document.getElementById("root")!).render(
-  <AuthProvider>
-    <ProgressProvider>
-      <SettingsProvider>
-        <AccessibleDndContextProvider>
-          <App />
-        </AccessibleDndContextProvider>
-      </SettingsProvider>
-    </ProgressProvider>
-  </AuthProvider>
+  <App />
 );

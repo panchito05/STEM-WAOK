@@ -56,13 +56,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const handleRedirectResult = async () => {
       try {
         setIsLoading(true);
+        console.log("Intentando obtener el resultado de redirección de Google...");
         const result = await getGoogleRedirectResult();
         
+        console.log("Resultado de redirección:", result ? "Obtenido" : "No hay resultado");
+        
         if (result && result.user) {
+          console.log("Usuario autenticado con Google:", result.user.email);
           const { uid, email, displayName, photoURL } = result.user;
           
           // Enviar la información del usuario al backend para crear/sincronizar la cuenta
           await handleGoogleAuthSuccess(uid, email || '', displayName || '', photoURL || '');
+        } else {
+          console.log("No hay usuario en el resultado de redirección");
         }
       } catch (error) {
         console.error("Error handling redirect result:", error);
