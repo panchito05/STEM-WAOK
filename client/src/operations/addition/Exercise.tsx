@@ -17,6 +17,7 @@ import { useRewardsStore, awardReward, getRewardProbability, checkAndAwardReward
 import RewardAnimation from '@/components/rewards/RewardAnimation';
 import VerticalExercise from './VerticalExercise';
 import MultiVerticalExercise from './MultiVerticalExercise';
+import { UltraSecureMultiVerticalExercise } from './UltraSecureMultiVerticalExercise';
 
 interface ExerciseProps {
   settings: ModuleSettings;
