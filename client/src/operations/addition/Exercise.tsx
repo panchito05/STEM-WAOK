@@ -318,6 +318,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     console.log('[ADAPTIVE DIFFICULTY] Guardando contador de respuestas incorrectas consecutivas:', consecutiveIncorrectAnswers);
   }, [consecutiveIncorrectAnswers]);
 
+  // Sincronizar la dificultad de localStorage
+  useEffect(() => {
+    try {
+      const storedSettings = localStorage.getItem('moduleSettings');
+      if (storedSettings) {
+        const parsedSettings = JSON.parse(storedSettings);
+        if (parsedSettings.addition && parsedSettings.addition.difficulty && 
+            parsedSettings.addition.difficulty !== adaptiveDifficulty) {
+          console.log(`[EXERCISE] Sincronizando dificultad desde localStorage: ${parsedSettings.addition.difficulty}`);
+          setAdaptiveDifficulty(parsedSettings.addition.difficulty);
+        }
+      }
+    } catch (error) {
+      console.error('[EXERCISE] Error al sincronizar con localStorage:', error);
+    }
+  }, [settings]);
+
   const generateProblems = () => {
     const newProblems: Problem[] = [];
     
