@@ -82,9 +82,10 @@ export default function VerticalExercise({
       setUserDigits(Array(totalPositions).fill(''));
     }
     
-    // Enfocar el primer input cuando se activa
-    if (isActive && inputRefs.current[0]) {
-      inputRefs.current[0].focus();
+    // Enfocar el último input (el de la derecha) cuando se activa,
+    // ya que la suma se realiza de derecha a izquierda empezando por las unidades
+    if (isActive && inputRefs.current[totalPositions - 1]) {
+      inputRefs.current[totalPositions - 1]?.focus();
     }
   }, [isActive, totalPositions, userDigits.length]);
   
@@ -102,9 +103,10 @@ export default function VerticalExercise({
     newDigits[index] = value;
     setUserDigits(newDigits);
     
-    // Mover al siguiente input si existe
-    if (index < totalPositions - 1 && inputRefs.current[index + 1]) {
-      inputRefs.current[index + 1]?.focus();
+    // Mover al input anterior (a la izquierda) si existe,
+    // ya que la suma se realiza de derecha a izquierda
+    if (index > 0 && inputRefs.current[index - 1]) {
+      inputRefs.current[index - 1]?.focus();
     }
   };
   
@@ -195,9 +197,12 @@ export default function VerticalExercise({
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       handleSubmit();
-                    } else if (e.key === "Backspace" && !userDigits[index] && index > 0) {
-                      // Si el campo actual está vacío y presiona backspace, volver al anterior
-                      inputRefs.current[index - 1]?.focus();
+                    } else if (e.key === "Backspace" && !userDigits[index]) {
+                      // Si el campo actual está vacío y presiona backspace, moverse al campo de la derecha
+                      // ya que estamos trabajando de derecha a izquierda
+                      if (index < totalPositions - 1) {
+                        inputRefs.current[index + 1]?.focus();
+                      }
                     }
                   }}
                 />
