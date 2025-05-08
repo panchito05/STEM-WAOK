@@ -51,18 +51,31 @@ const LevelUpHandler: React.FC = () => {
     // Ocultar el modal
     setShowModal(false);
     
-    // Emitir evento indicando que el modal se ha cerrado
-    console.log('[LEVEL UP HANDLER] Modal cerrado por el usuario - desbloqueando avance automático');
+    console.log('[LEVEL UP HANDLER] Modal cerrado por el usuario - ejecutando callback especial');
     
-    // Usar eventBus para emitir un evento que desbloquee el avance automático
-    // Esto será capturado por el componente Exercise.tsx
-    eventBus.emit('levelUpModalClosed', { unblockAutoAdvance: true });
-    
-    // Mantener el CustomEvent para compatibilidad con código existente
-    const event = new CustomEvent('levelUpModalClosed', {
-      detail: { stayOnCurrentProblem: true }
-    });
-    document.dispatchEvent(event);
+    // MÉTODO RADICAL Y DIRECTO:
+    // 1. Verificar si existe el callback especial registrado en window
+    // Este callback habrá sido registrado por el componente Exercise.tsx
+    if (typeof window.levelUpCallback === 'function') {
+      console.log('[LEVEL UP HANDLER] Ejecutando callback especial registrado');
+      
+      // Llamamos directamente al callback
+      window.levelUpCallback();
+      
+      // Limpiamos el callback después de usarlo para evitar duplicidades
+      window.levelUpCallback = undefined;
+    } else {
+      console.log('[LEVEL UP HANDLER] No se encontró callback especial, usando método alternativo');
+      
+      // Usar eventBus como método de respaldo
+      eventBus.emit('levelUpModalClosed', { unblockAutoAdvance: true });
+      
+      // Mantener el CustomEvent para compatibilidad con código existente
+      const event = new CustomEvent('levelUpModalClosed', {
+        detail: { stayOnCurrentProblem: true }
+      });
+      document.dispatchEvent(event);
+    }
   };
   
   // Renderizar el modal cuando sea necesario

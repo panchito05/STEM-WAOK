@@ -120,48 +120,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     };
   }, [exerciseStarted, exerciseCompleted]);
   
-  // Escuchar el evento de cierre del modal de nivel superado
-  useEffect(() => {
-    // Manejar el evento DOM custom
-    const handleLevelUpModalClosed = (event: CustomEvent) => {
-      if (event.detail && event.detail.stayOnCurrentProblem) {
-        console.log('[EXERCISE] Recibido evento de levelUpModalClosed - manteniendo el problema actual');
-        // Esto no avanza al siguiente problema, pero habilita la interfaz de usuario para
-        // que el usuario pueda continuar con el problema actual
-        
-        // IMPORTANTE: NO desbloqueamos el avance automático aquí, eso lo haremos
-        // solo cuando el usuario explícitamente haga clic en "Continuar"
-        setWaitingForContinue(true); // <-- Cambio crítico: esperamos a que el usuario haga clic en continuar
-        setFeedbackMessage("Ahora estás en un nuevo nivel de dificultad. Haz clic en Continuar para seguir.");
-        setFeedbackColor("blue");
-      }
-    };
-    
-    // Manejar el evento del bus de eventos
-    const handleEventBusLevelUp = (data: any) => {
-      console.log('[EXERCISE] Recibido evento del bus: levelUpModalClosed');
-      
-      // IMPORTANTE: NO desbloqueamos automáticamente el avance
-      // Lo mantenemos bloqueado hasta que el usuario haga clic en "Continuar"
-      console.log('[EXERCISE] Manteniendo el bloqueo hasta que el usuario haga clic en Continuar');
-      
-      // Mostrar mensaje para que el usuario sepa que debe hacer clic en Continuar
-      setShowLevelUpReward(false);
-      setWaitingForContinue(true); // <-- Cambio crítico: esperamos a que el usuario haga clic en continuar
-      setFeedbackMessage("¡Has subido de nivel! Haz clic en Continuar para seguir.");
-      setFeedbackColor("blue");
-    };
-    
-    // Añadir los event listeners
-    document.addEventListener('levelUpModalClosed', handleLevelUpModalClosed as EventListener);
-    on('levelUpModalClosed', handleEventBusLevelUp);
-    
-    // Limpiar al desmontar
-    return () => {
-      document.removeEventListener('levelUpModalClosed', handleLevelUpModalClosed as EventListener);
-      off('levelUpModalClosed', handleEventBusLevelUp);
-    };
-  }, [blockAutoAdvance]);
+  // Ya no necesitamos este efecto - estamos usando un método más directo
+  // con window.levelUpCallback para manejar el cierre del modal
+  // Eliminamos todos los manejadores de eventos para evitar interferencias
   
   // Timer logic for problem time limit
   useEffect(() => {
@@ -808,10 +769,26 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           
           console.log(`[EXERCISE] ¡Nivel superado! De ${previousLevel} a ${newDifficulty}`);
           
-          // Actualizar la UI para mostrar el nuevo nivel
+          // ESTRATEGIA COMPLETAMENTE NUEVA:
+          // 1. Desactivar TODOS los timers para que no avancen automáticamente
+          if (problemTimerRef.current) {
+            clearInterval(problemTimerRef.current);
+            problemTimerRef.current = null;
+          }
+          
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          
+          // 2. Guardar el problema actual para referencia futura
+          const currentProblemToSave = problems[currentProblemIndex];
+          const currentProblemIndexToSave = currentProblemIndex;
+          
+          // 3. Actualizar la UI para mostrar el nuevo nivel
           setAdaptiveDifficulty(newDifficulty);
           
-          // Actualizar la configuración del módulo
+          // 4. Actualizar la configuración del módulo
           try {
             updateModuleSettings("addition", {
               difficulty: newDifficulty,
@@ -821,19 +798,49 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             console.error("[EXERCISE] Error al guardar configuración:", error);
           }
           
-          // Guardar en localStorage como respaldo
+          // 5. Guardar en localStorage como respaldo
           localStorage.setItem('addition_currentDifficulty', newDifficulty);
           localStorage.setItem('addition_enableAdaptiveDifficulty', 'true');
           
-          // Reiniciar el contador
+          // 6. Reiniciar el contador
           setConsecutiveCorrectAnswers(0);
           localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
           
-          // Bloquear el avance automático al siguiente problema
+          // 7. Bloquear TERMINANTEMENTE el avance automático
           setBlockAutoAdvance(true);
           console.log("[EXERCISE] Bloqueando avance automático por subida de nivel");
           
-          // EMITIR EVENTO DE NIVEL SUPERADO a través del bus de eventos
+          // 8. CLAVE: Usar una función especial para el modal de nivel superado
+          // Esta función tendrá un callback especial que se ejecutará al cerrar el modal
+          const handleLevelUpClose = () => {
+            console.log("[EXERCISE] Callback especial para el cierre del modal de nivel superado");
+            
+            // Forzar que no avance al siguiente problema, manteniendo explícitamente el índice actual
+            setCurrentProblemIndex(currentProblemIndexToSave);
+            
+            // Mostrar un mensaje explícito
+            setFeedbackMessage("Continúa con este problema en tu nuevo nivel de dificultad.");
+            setFeedbackColor("blue");
+            
+            // Asegurarnos de que la interfaz está habilitada
+            setWaitingForContinue(false);
+            
+            // Asegurarnos que no se muestre recompensa
+            setShowLevelUpReward(false);
+            
+            // Desbloquear avance automático solo después de unos segundos
+            setTimeout(() => {
+              setBlockAutoAdvance(false);
+              setFeedbackMessage(null);
+              setFeedbackColor(null);
+            }, 3000);
+          };
+          
+          // 9. Registrar este callback especial en alguna parte
+          // Por ejemplo, en localStorage o en un estado que luego compruebe el efecto que maneja el evento
+          window.levelUpCallback = handleLevelUpClose;
+          
+          // 10. EMITIR EVENTO DE NIVEL SUPERADO a través del bus de eventos
           // Esto activará el modal sin tener referencia directa a él
           eventBus.emit('levelUp', {
             previousLevel: previousLevel,
