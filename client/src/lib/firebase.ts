@@ -73,9 +73,9 @@ const initFirebase = () => {
     
     // Configuraciones adicionales del proveedor de Google
     googleProvider.setCustomParameters({
-      prompt: 'select_account',
-      // Indicar el dominio actual y asegurarnos de que se use para la redirección
-      redirect_uri: `https://78d216dd-74cf-4f61-abfa-7cb32982bbb6-00-zpf65darfkfs.riker.replit.dev/google-login`
+      prompt: 'select_account'
+      // No es necesario especificar redirect_uri, Firebase lo maneja automáticamente
+      // basado en la URI actual
     });
 
     return true;
@@ -100,9 +100,26 @@ export const signInWithGoogle = async () => {
     console.log("URL actual:", window.location.href);
     console.log("Dominio registrado en Firebase:", firebaseConfig.authDomain);
     
-    // Para mayor consistencia y evitar problemas, siempre usar redirect
-    // Esto funciona mejor con domains en Firebase Auth
-    return signInWithRedirect(auth, googleProvider);
+    try {
+      // Intentar primero con popup (funciona mejor en muchos casos)
+      console.log("Intentando autenticación con popup...");
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log("Autenticación con popup exitosa:", result.user.displayName);
+      return result;
+    } catch (popupError: any) {
+      console.warn("Error con popup, intentando redirección:", popupError.code);
+      
+      // Si el popup falla, intentar con redirección
+      if (popupError.code === 'auth/popup-blocked' || 
+          popupError.code === 'auth/popup-closed-by-user' ||
+          popupError.code === 'auth/cancelled-popup-request') {
+        console.log("Cambiando a autenticación por redirección...");
+        return signInWithRedirect(auth, googleProvider);
+      }
+      
+      // Si es otro tipo de error, lanzarlo
+      throw popupError;
+    }
     
   } catch (error) {
     console.error("Error al iniciar sesión con Google:", error);
