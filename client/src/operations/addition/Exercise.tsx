@@ -1234,6 +1234,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   return (
     <div className="relative">
       <LevelUpHandler />
+      {/* El componente RewardAnimation se mostrará cuando el estado de recompensa esté activo */}
+      <RewardAnimation />
       <div className="px-4 py-5 sm:p-6">
         <div className="flex items-center justify-between mb-6">
         <div>
@@ -1335,49 +1337,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
       <div className="p-6 bg-gray-50 rounded-lg mb-6">
         <div className="text-center">
-          {/* Mostrar recompensa cuando corresponda */}
-          {showReward && settings.enableRewards && (
-            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-30">
-              <div className="bg-white rounded-xl p-6 shadow-2xl text-center transform scale-110 transition-transform">
-                <h3 className="text-2xl font-bold text-green-600 mb-4">¡FELICIDADES!</h3>
-                
-                {rewardType === "stars" && (
-                  <div className="flex justify-center mb-3">
-                    {[...Array(3)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`h-20 w-20 text-yellow-400 drop-shadow-lg ${i === 1 ? 'scale-125 mx-2' : ''}`}
-                        fill="gold" 
-                        strokeWidth={1}
-                      />
-                    ))}
-                  </div>
-                )}
-                
-                {rewardType === "medals" && (
-                  <div className="flex justify-center mb-3">
-                    <Award 
-                      className="h-32 w-32 text-yellow-600 drop-shadow-xl animate-pulse" 
-                      fill="gold"
-                      strokeWidth={1}
-                    />
-                  </div>
-                )}
-                
-                {rewardType === "trophies" && (
-                  <div className="flex justify-center mb-3">
-                    <Trophy 
-                      className="h-32 w-32 text-yellow-500 drop-shadow-xl animate-pulse" 
-                      fill="gold"
-                      strokeWidth={1}
-                    />
-                  </div>
-                )}
-                
-                <p className="text-lg font-medium mt-2">¡Has ganado una recompensa por tu excelente trabajo!</p>
-              </div>
-            </div>
-          )}
+          {/* El sistema de recompensas antiguo ha sido reemplazado por el nuevo componente RewardAnimation */}
           
           {/* Mostrar recompensa especial por subir de nivel - DISEÑO EXACTO al proporcionado */}
           {showLevelUpReward && (
