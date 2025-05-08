@@ -10,6 +10,7 @@ import ProgressPage from "@/pages/ProgressPage";
 import SettingsPage from "@/pages/SettingsPage";
 import LoginPage from "@/pages/LoginPage";
 import SimpleLoginPage from "@/pages/SimpleLoginPage";
+import GoogleLoginPage from "@/pages/GoogleLoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import ProfilePage from "@/pages/ProfilePage";
 import SoonPage from "@/pages/SoonPage";
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/profile" component={ProtectedRoute(ProfilePage)} />
       <Route path="/login" component={LoginPage} />
       <Route path="/quick-login" component={SimpleLoginPage} />
+      <Route path="/google-login" component={GoogleLoginPage} />
       <Route path="/register" component={RegisterPage} />
       <Route path="/coming-soon" component={SoonPage} />
       <Route component={NotFound} />
