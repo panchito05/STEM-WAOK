@@ -124,6 +124,10 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
         const allNumbers = [num1, num2, ...additionalNums];
         const total = allNumbers.reduce((sum, num) => sum + num, 0);
         
+        // Registrar los detalles para depuración
+        console.log("[MULTI-VERTICAL] Generando problema con números:", allNumbers);
+        console.log("[MULTI-VERTICAL] Suma total:", total);
+        
         // Usar la suma total como la respuesta correcta
         const totalAnswer = total;
         
@@ -192,6 +196,24 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
 }
 
 export function checkAnswer(problem: Problem, userAnswer: number): boolean {
+  // Para formato multi-vertical, hacer una comprobación especial con logs para depuración
+  if ((problem as AdditionProblem).layout === 'multi-vertical') {
+    const additionalNumbers = (problem as AdditionProblem).additionalNumbers || [];
+    const allNumbers = [problem.num1, problem.num2, ...additionalNumbers];
+    
+    // Recalcular la suma total para verificar
+    const calculatedSum = allNumbers.reduce((sum, num) => sum + num, 0);
+    
+    console.log(`[MULTI-VERTICAL] Verificando respuesta multi-vertical:`);
+    console.log(`[MULTI-VERTICAL] - Números:`, allNumbers);
+    console.log(`[MULTI-VERTICAL] - Suma calculada:`, calculatedSum);
+    console.log(`[MULTI-VERTICAL] - Respuesta correcta almacenada:`, problem.correctAnswer);
+    console.log(`[MULTI-VERTICAL] - Respuesta del usuario:`, userAnswer);
+    
+    // Usar el valor calculado para la comparación
+    return calculatedSum === userAnswer;
+  }
+  
   // Para números enteros, comparación directa
   if (Number.isInteger(problem.correctAnswer) && Number.isInteger(userAnswer)) {
     return problem.correctAnswer === userAnswer;

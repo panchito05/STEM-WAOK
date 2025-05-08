@@ -38,6 +38,14 @@ export default function MultiVerticalExercise({
   // Asegurarse de que tengamos los datos que necesitamos
   const numbers = [problem.num1, problem.num2, ...(problem.additionalNumbers || [])];
   
+  // Registrar los números para depuración
+  console.log("[MULTI-VERTICAL] Números a sumar:", numbers);
+  console.log("[MULTI-VERTICAL] Respuesta correcta esperada:", problem.correctAnswer);
+  
+  // Calcular manualmente la suma correcta
+  const calculatedSum = numbers.reduce((sum, num) => sum + num, 0);
+  console.log("[MULTI-VERTICAL] Suma calculada manualmente:", calculatedSum);
+  
   // Convertir todos los números a strings para manipularlos
   const numberStrings = numbers.map(num => num.toString());
   
@@ -102,7 +110,17 @@ export default function MultiVerticalExercise({
     
     const parsedAnswer = parseFloat(userAnswer);
     if (!isNaN(parsedAnswer)) {
-      onSubmit(parsedAnswer);
+      console.log("[MULTI-VERTICAL] Enviando respuesta:", parsedAnswer);
+      console.log("[MULTI-VERTICAL] Comparando con respuesta esperada:", problem.correctAnswer);
+      console.log("[MULTI-VERTICAL] Respuesta calculada localmente:", calculatedSum);
+      
+      // En caso de discrepancia, usar nuestra propia suma calculada como comprobación adicional
+      if (Math.abs(calculatedSum - parsedAnswer) < 0.001) {
+        console.log("[MULTI-VERTICAL] La respuesta coincide con la suma calculada localmente, enviando respuesta correcta");
+        onSubmit(calculatedSum); // Enviar la suma calculada localmente como respuesta
+      } else {
+        onSubmit(parsedAnswer); // Enviar la respuesta tal cual ingresada por el usuario
+      }
     } else {
       onSubmit(0); // Si no hay una respuesta válida, enviar 0
     }
