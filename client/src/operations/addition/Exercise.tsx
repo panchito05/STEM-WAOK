@@ -91,6 +91,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [rewardsShownIndices, setRewardsShownIndices] = useState<number[]>([]); // Índices donde se han mostrado recompensas
   const [totalRewardsShown, setTotalRewardsShown] = useState(0); // Contador total de recompensas mostradas
   const [waitingForContinue, setWaitingForContinue] = useState(false); // Estado para saber si estamos esperando que el usuario presione "Continuar"
+  const [blockAutoAdvance, setBlockAutoAdvance] = useState(false); // Estado para bloquear el avance automático después de subir de nivel
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | null>(null);
   const problemTimerRef = useRef<number | null>(null); // Referencia para el temporizador del problema
@@ -1081,8 +1082,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const moveToNextProblem = () => {
-    // NOTA: Eliminada la restricción que evitaba avanzar si se mostraba el mensaje de nivel superado
-    // Ahora el botón de "Continuar el Desafío" es quien controla el avance correctamente
+    // Verificar si el avance automático está bloqueado (ej. después de subir de nivel)
+    if (blockAutoAdvance) {
+      console.log("[EXERCISE] Avance automático bloqueado. No se avanzará al siguiente problema.");
+      return;
+    }
     
     if (currentProblemIndex < problems.length - 1) {
       // Limpiar el temporizador del problema actual si existe
