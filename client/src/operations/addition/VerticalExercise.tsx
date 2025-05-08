@@ -108,6 +108,14 @@ export default function VerticalExercise({
   const handleDigitChange = (index: number, value: string) => {
     if (waitingForContinue) return;
     
+    // Caso especial: si el valor está vacío, permite borrar el dígito
+    if (value === '') {
+      const newDigits = [...userDigits];
+      newDigits[index] = '';
+      setUserDigits(newDigits);
+      return;
+    }
+    
     // Solo permitir dígitos y punto decimal
     if (!/^[0-9]$/.test(value) && value !== '.') {
       return;
@@ -275,12 +283,24 @@ export default function VerticalExercise({
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       handleSubmit();
-                    } else if (e.key === "Backspace" && !userDigits[index]) {
-                      // Si el campo actual está vacío y presiona backspace, moverse al campo de la derecha
-                      // ya que estamos trabajando de derecha a izquierda
-                      if (index < totalPositions - 1) {
-                        inputRefs.current[index + 1]?.focus();
+                    } else if (e.key === "Backspace") {
+                      // Si el campo actual está vacío, moverse al campo de la derecha
+                      if (!userDigits[index]) {
+                        if (index < totalPositions - 1) {
+                          inputRefs.current[index + 1]?.focus();
+                        }
+                      } else {
+                        // Si hay un dígito, borrarlo y permanecer en el mismo campo
+                        const newDigits = [...userDigits];
+                        newDigits[index] = '';
+                        setUserDigits(newDigits);
                       }
+                    } else if (e.key === "ArrowRight" && index < totalPositions - 1) {
+                      // Permitir navegación con flecha derecha
+                      inputRefs.current[index + 1]?.focus();
+                    } else if (e.key === "ArrowLeft" && index > 0) {
+                      // Permitir navegación con flecha izquierda
+                      inputRefs.current[index - 1]?.focus();
                     }
                   }}
                 />
