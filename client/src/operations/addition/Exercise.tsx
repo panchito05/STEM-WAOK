@@ -128,8 +128,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         console.log('[EXERCISE] Recibido evento de levelUpModalClosed - manteniendo el problema actual');
         // Esto no avanza al siguiente problema, pero habilita la interfaz de usuario para
         // que el usuario pueda continuar con el problema actual
-        setWaitingForContinue(false);
-        setFeedbackMessage("Ahora estás en un nuevo nivel de dificultad. Completa este problema para continuar.");
+        
+        // IMPORTANTE: NO desbloqueamos el avance automático aquí, eso lo haremos
+        // solo cuando el usuario explícitamente haga clic en "Continuar"
+        setWaitingForContinue(true); // <-- Cambio crítico: esperamos a que el usuario haga clic en continuar
+        setFeedbackMessage("Ahora estás en un nuevo nivel de dificultad. Haz clic en Continuar para seguir.");
         setFeedbackColor("blue");
       }
     };
@@ -138,16 +141,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const handleEventBusLevelUp = (data: any) => {
       console.log('[EXERCISE] Recibido evento del bus: levelUpModalClosed');
       
-      // Desbloquear avance automático si estaba bloqueado
-      if (blockAutoAdvance) {
-        console.log('[EXERCISE] Desbloqueando avance automático después de cerrar modal de nivel superado');
-        setBlockAutoAdvance(false);
-      }
+      // IMPORTANTE: NO desbloqueamos automáticamente el avance
+      // Lo mantenemos bloqueado hasta que el usuario haga clic en "Continuar"
+      console.log('[EXERCISE] Manteniendo el bloqueo hasta que el usuario haga clic en Continuar');
       
-      // Habilitar la interfaz para que el usuario pueda continuar
+      // Mostrar mensaje para que el usuario sepa que debe hacer clic en Continuar
       setShowLevelUpReward(false);
-      setWaitingForContinue(false);
-      setFeedbackMessage("Ahora estás en un nuevo nivel de dificultad. Completa este problema para continuar.");
+      setWaitingForContinue(true); // <-- Cambio crítico: esperamos a que el usuario haga clic en continuar
+      setFeedbackMessage("¡Has subido de nivel! Haz clic en Continuar para seguir.");
       setFeedbackColor("blue");
     };
     
@@ -662,19 +663,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       return;
     }
     
+    console.log("[EXERCISE] Usuario hizo clic en Continuar.");
+    
+    // Si el avance automático está bloqueado (después de subir de nivel)
+    if (blockAutoAdvance) {
+      console.log("[EXERCISE] Detectado bloqueo de avance automático. Manejando situación post-nivel.");
+      
+      // Desbloquear el avance automático primero
+      console.log("[EXERCISE] Desbloqueando avance automático - el usuario continuará manualmente");
+      setBlockAutoAdvance(false);
+      
+      // IMPORTANTE: Para el escenario de subida de nivel, sólo limpiamos la interfaz
+      // pero NO avanzamos automáticamente al siguiente problema.
+      // Dejamos que el usuario continue trabajando en el problema actual.
+      setWaitingForContinue(false);
+      setFeedbackMessage("Continúa con este problema en tu nuevo nivel de dificultad.");
+      setFeedbackColor("blue");
+      
+      // Establecer un timeout para limpiar este mensaje después de unos segundos
+      setTimeout(() => {
+        setFeedbackMessage(null);
+        setFeedbackColor(null);
+      }, 3000);
+      
+      // Devolvemos aquí para no ejecutar moveToNextProblem()
+      return;
+    }
+    
+    // Para otros escenarios (no relacionados con subir de nivel)
     // Reseteamos el estado de espera
     setWaitingForContinue(false);
     
     // Limpiamos el mensaje de feedback
     setFeedbackMessage(null);
     setFeedbackColor(null);
-    
-    // Si el avance automático está bloqueado, lo desbloqueamos
-    // Esto es importante para poder avanzar manualmente después de subir de nivel
-    if (blockAutoAdvance) {
-      console.log("[EXERCISE] Desbloqueando avance automático - el usuario continuará manualmente");
-      setBlockAutoAdvance(false);
-    }
     
     // Avanzamos al siguiente problema
     moveToNextProblem();
