@@ -96,13 +96,13 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty) {
       case "beginner":
-        return <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">Beginner</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">Beginner</Badge>;
       case "intermediate":
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">Intermediate</Badge>;
+        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">Intermediate</Badge>;
       case "advanced":
-        return <Badge variant="outline" className="bg-red-100 text-red-800 hover:bg-red-100">Advanced</Badge>;
+        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">Advanced</Badge>;
       default:
-        return <Badge variant="outline" className="bg-gray-100 text-gray-500 hover:bg-gray-100">Coming Soon</Badge>;
+        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">Coming Soon</Badge>;
     }
   };
 
@@ -131,34 +131,46 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   const cardContent = (
     <>
       <div 
-        className="flex justify-between items-center p-4 border-b border-gray-200"
+        className="flex justify-between items-center p-4 border-b border-gray-200 relative overflow-hidden"
         style={{ 
           backgroundColor: module.color || '#ffffff',
           color: 'white',
           opacity: module.comingSoon ? 0.7 : 1 
         }}
       >
-        <div className="flex items-center">
-          <div className="mr-2 cursor-move text-white" aria-hidden="true">
+        {/* Background pattern for more visual interest */}
+        <div className="absolute inset-0 opacity-10">
+          <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id={`grid-${module.id}`} width="10" height="10" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1" fill="white" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill={`url(#grid-${module.id})`} />
+          </svg>
+        </div>
+        
+        <div className="flex items-center relative z-10">
+          <div className="mr-2 cursor-move text-white opacity-80 hover:opacity-100 transition-opacity" aria-hidden="true">
             <GripVertical className="h-5 w-5" />
           </div>
           <div className="flex items-center">
-            <div className="mr-2 text-white">
+            <div className="mr-3 bg-white/25 p-2 rounded-lg shadow-inner">
               {getModuleIcon()}
             </div>
-            <h3 className={`text-lg font-semibold text-white`}>
+            <h3 className="text-xl font-bold text-white text-shadow">
               {module.displayName}
             </h3>
           </div>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 relative z-10">
           <button 
-            className={`focus:outline-none ${
+            className={`focus:outline-none p-1.5 rounded-full transition-all ${
               module.comingSoon 
                 ? "text-gray-300 cursor-not-allowed" 
                 : isModuleFavorite 
-                  ? "text-yellow-400 hover:text-white" 
-                  : "text-white hover:text-yellow-400"
+                  ? "text-yellow-400 hover:text-white bg-white/20 hover:bg-white/10" 
+                  : "text-white hover:text-yellow-400 hover:bg-white/20"
             }`}
             onClick={(e) => !module.comingSoon && handleToggleFavorite(e)}
             disabled={module.comingSoon}
@@ -169,36 +181,36 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           {!module.comingSoon && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:text-gray-200 h-8 w-8">
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0">
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleToggleFavorite}>
+              <DropdownMenuContent align="end" className="rounded-xl shadow-lg border-blue-100">
+                <DropdownMenuItem onClick={handleToggleFavorite} className="cursor-pointer">
                   <div className="flex items-center">
                     {isModuleFavorite ? (
                       <>
-                        <StarOff className="h-4 w-4 mr-2" />
+                        <StarOff className="h-4 w-4 mr-2 text-amber-500" />
                         Quitar de favoritos
                       </>
                     ) : (
                       <>
-                        <Star className="h-4 w-4 mr-2" />
+                        <Star className="h-4 w-4 mr-2 text-amber-500" />
                         Añadir a favoritos
                       </>
                     )}
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => toggleHidden(module.id)}>
+                <DropdownMenuItem onClick={() => toggleHidden(module.id)} className="cursor-pointer">
                   <div className="flex items-center">
                     {isHidden ? (
                       <>
-                        <Eye className="h-4 w-4 mr-2" />
+                        <Eye className="h-4 w-4 mr-2 text-purple-500" />
                         Restaurar módulo
                       </>
                     ) : (
                       <>
-                        <EyeOff className="h-4 w-4 mr-2" />
+                        <EyeOff className="h-4 w-4 mr-2 text-purple-500" />
                         Ocultar módulo
                       </>
                     )}
@@ -209,8 +221,8 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           )}
         </div>
       </div>
-      <div className="p-4">
-        <p className={`text-sm mb-4 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
+      <div className="p-5 bg-gradient-to-b from-white to-blue-50">
+        <p className={`text-sm mb-5 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
           {module.description}
         </p>
         <div className="flex justify-between items-center">
@@ -218,12 +230,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
-            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed">
-              Start
+            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-5">
+              Coming Soon
             </Button>
           ) : (
             <Link href={`/operation/${module.id}`}>
-              <Button variant="default" className="text-white">
+              <Button 
+                variant="default" 
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-5"
+              >
                 Start
               </Button>
             </Link>
@@ -238,22 +253,24 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       ref={ref} 
       className={`
         ${isDragging ? "opacity-50" : "opacity-100"}
-        ${module.comingSoon ? "border-2 border-dashed border-gray-300" : ""}
+        ${module.comingSoon ? "border-2 border-dashed border-gray-300" : "rounded-2xl"}
         ${isModuleFavorite ? "ring-2 ring-yellow-400" : ""}
         ${isHidden ? "ring-2 ring-purple-400 border-purple-200" : ""}
         overflow-hidden
-        transition-all
-        ${isModuleFavorite ? "transform -translate-y-1" : ""}
+        transition-all duration-300
+        ${isModuleFavorite ? "transform -translate-y-1 shadow-lg" : "shadow hover:shadow-md"}
+        border-blue-100
+        hover:border-blue-200
       `}
       data-handler-id={handlerId}
     >
       {isModuleFavorite && (
-        <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1 shadow-md">
+        <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1.5 shadow-md z-20">
           <Star className="h-4 w-4 text-white fill-current" />
         </div>
       )}
       {isHidden && (
-        <div className="absolute -top-2 -left-2 bg-purple-500 rounded-full p-1 shadow-md">
+        <div className="absolute -top-2 -left-2 bg-purple-500 rounded-full p-1.5 shadow-md z-20">
           <EyeOff className="h-4 w-4 text-white" />
         </div>
       )}

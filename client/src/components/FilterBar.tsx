@@ -17,28 +17,28 @@ export default function FilterBar({ searchQuery, setSearchQuery }: FilterBarProp
   } = useModuleStore();
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+    <div className="bg-white p-5 rounded-xl shadow-md mb-6 border border-blue-100">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
         <div className="flex-grow max-w-md">
-          <div className="relative rounded-md shadow-sm">
+          <div className="relative rounded-lg shadow-sm">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+              <Search className="h-5 w-5 text-blue-400" />
             </div>
             <Input
               type="text"
               placeholder="Search modules..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 border-blue-200 focus:border-blue-400 focus:ring-blue-400 rounded-lg"
             />
           </div>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-3">
           <Button
             variant={showOnlyFavorites ? "default" : "outline"}
-            className={`text-sm ${showOnlyFavorites 
-              ? "text-white bg-yellow-500 hover:bg-yellow-600 border-yellow-500" 
-              : "text-yellow-600 hover:text-yellow-700 hover:border-yellow-500"}`}
+            className={`text-sm rounded-full px-4 transition-all ${showOnlyFavorites 
+              ? "text-white bg-amber-500 hover:bg-amber-600 border-amber-500 shadow-md" 
+              : "text-amber-600 hover:text-amber-700 hover:border-amber-500 border-amber-200"}`}
             onClick={toggleShowOnlyFavorites}
             size="sm"
           >
@@ -56,7 +56,11 @@ export default function FilterBar({ searchQuery, setSearchQuery }: FilterBarProp
           </Button>
           <Button
             variant={showHidden ? "default" : "outline"}
-            className={`text-sm ${showHidden ? "bg-purple-500 hover:bg-purple-600" : ""}`}
+            className={`text-sm rounded-full px-4 transition-all ${
+              showHidden 
+                ? "bg-purple-500 hover:bg-purple-600 text-white shadow-md" 
+                : "border-purple-200 text-purple-600 hover:border-purple-400"
+            }`}
             onClick={toggleShowHidden}
             size="sm"
           >
