@@ -77,17 +77,16 @@ export default function VerticalExercise({
     : maxIntLength;
   
   // Inicializar los dígitos del usuario si están vacíos
+  // Resetear los campos cuando cambia el problema o se inicia un nuevo problema
   useEffect(() => {
-    if (userDigits.length === 0) {
-      setUserDigits(Array(totalPositions).fill(''));
-    }
+    setUserDigits(Array(totalPositions).fill(''));
     
     // Enfocar el último input (el de la derecha) cuando se activa,
     // ya que la suma se realiza de derecha a izquierda empezando por las unidades
     if (isActive && inputRefs.current[totalPositions - 1]) {
       inputRefs.current[totalPositions - 1]?.focus();
     }
-  }, [isActive, totalPositions, userDigits.length]);
+  }, [isActive, totalPositions, problem.num1, problem.num2]);
   
   // Manejar el cambio en un dígito específico
   const handleDigitChange = (index: number, value: string) => {
@@ -150,7 +149,7 @@ export default function VerticalExercise({
   
   return (
     <div className="flex flex-col items-center">
-      <div className={`p-6 rounded-xl ${getDifficultyColor()} shadow-sm mb-6 max-w-sm`}>
+      <div className={`p-6 rounded-xl ${getDifficultyColor()} shadow-sm mb-6 max-w-md`}>
         {/* Contenedor principal para el formato vertical */}
         <div className="flex justify-center">
           <div className="grid grid-cols-1 gap-2 text-xl font-medium">
@@ -159,7 +158,7 @@ export default function VerticalExercise({
               {num1Digits.map((digit, index) => (
                 <div 
                   key={`num1-${index}`} 
-                  className={`w-8 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
+                  className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
                 >
                   {digit === ' ' ? '' : digit}
                 </div>
@@ -168,11 +167,11 @@ export default function VerticalExercise({
             
             {/* Segunda fila - Operador y segundo número */}
             <div className="flex justify-end space-x-2 border-b-2 border-gray-400 pb-1">
-              <div className={`w-8 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}>+</div>
+              <div className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}>+</div>
               {num2Digits.map((digit, index) => (
                 <div 
                   key={`num2-${index}`} 
-                  className={`w-8 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
+                  className={`w-10 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
                 >
                   {digit === ' ' ? '' : digit}
                 </div>
@@ -186,7 +185,7 @@ export default function VerticalExercise({
                   key={`input-${index}`}
                   type="text"
                   maxLength={1}
-                  className={`w-8 h-10 text-center font-bold text-xl p-0 ${
+                  className={`w-10 h-10 text-center font-bold text-xl p-0 ${
                     waitingForContinue ? getDifficultyColor() : 'bg-white'
                   }`}
                   value={userDigits[index] || ''}
