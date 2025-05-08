@@ -59,12 +59,47 @@ export default function VerticalExercise({
     correctAnswerStr.length
   );
   
-  // Alinear números a la derecha para que las columnas coincidan
-  const alignedNum1 = num1Str.padStart(maxLength, ' ');
-  const alignedNum2 = num2Str.padStart(maxLength, ' ');
+  // Función para alinear correctamente los números considerando puntos decimales
+  const alignDecimalNumbers = (num1: string, num2: string): { alignedNum1: string, alignedNum2: string } => {
+    // Determinar si los números tienen decimales
+    const num1HasDecimal = num1.includes('.');
+    const num2HasDecimal = num2.includes('.');
+    
+    // Convertir los números a formato con punto decimal si no los tienen
+    // Esto garantiza una representación consistente
+    const num1WithDecimal = num1HasDecimal ? num1 : num1 + '.0';
+    const num2WithDecimal = num2HasDecimal ? num2 : num2 + '.0';
+    
+    // Dividir los números en partes enteras y decimales
+    const [num1Integer, num1Decimal = ''] = num1WithDecimal.split('.');
+    const [num2Integer, num2Decimal = ''] = num2WithDecimal.split('.');
+    
+    // Determinar el máximo número de dígitos antes y después del punto decimal
+    const maxIntegerDigits = Math.max(num1Integer.length, num2Integer.length);
+    const maxDecimalDigits = Math.max(num1Decimal.length, num2Decimal.length);
+    
+    // Alinear partes enteras a la derecha y partes decimales a la izquierda
+    const alignedNum1Integer = num1Integer.padStart(maxIntegerDigits, ' ');
+    const alignedNum1Decimal = num1Decimal.padEnd(maxDecimalDigits, ' ');
+    
+    const alignedNum2Integer = num2Integer.padStart(maxIntegerDigits, ' ');
+    const alignedNum2Decimal = num2Decimal.padEnd(maxDecimalDigits, ' ');
+    
+    // Combinar las partes alineadas
+    return {
+      alignedNum1: alignedNum1Integer + '.' + alignedNum1Decimal,
+      alignedNum2: alignedNum2Integer + '.' + alignedNum2Decimal
+    };
+  };
+  
+  // Alinear números correctamente basados en el punto decimal
+  const { alignedNum1, alignedNum2 } = alignDecimalNumbers(num1Str, num2Str);
   
   // Crear arrays con los dígitos individuales
   const num1Digits = alignedNum1.split('');
+  
+  // En este punto, tanto alignedNum1 como alignedNum2 ya tienen el punto decimal
+  // y están alineados correctamente, así que simplemente dividirlos en dígitos
   const num2Digits = alignedNum2.split('');
   
   // IMPORTANTE: totalPositions debe coincidir con la longitud de la respuesta correcta
