@@ -11,7 +11,7 @@ import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Tro
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/use-translations";
 import { createLevelManager, DifficultyLevel, CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
-import eventBus from '@/lib/eventBus';
+import eventBus, { on, off } from '@/lib/eventBus';
 import LevelUpHandler from "@/components/LevelUpHandler";
 import { useRewardsStore, awardReward, getRewardProbability, checkAndAwardRewards, RewardTheme } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
@@ -122,6 +122,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Escuchar el evento de cierre del modal de nivel superado
   useEffect(() => {
+    // Manejar el evento DOM custom
     const handleLevelUpModalClosed = (event: CustomEvent) => {
       if (event.detail && event.detail.stayOnCurrentProblem) {
         console.log('[EXERCISE] Recibido evento de levelUpModalClosed - manteniendo el problema actual');
@@ -133,14 +134,33 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     };
     
-    // Añadir el event listener
+    // Manejar el evento del bus de eventos
+    const handleEventBusLevelUp = (data: any) => {
+      console.log('[EXERCISE] Recibido evento del bus: levelUpModalClosed');
+      
+      // Desbloquear avance automático si estaba bloqueado
+      if (blockAutoAdvance) {
+        console.log('[EXERCISE] Desbloqueando avance automático después de cerrar modal de nivel superado');
+        setBlockAutoAdvance(false);
+      }
+      
+      // Habilitar la interfaz para que el usuario pueda continuar
+      setShowLevelUpReward(false);
+      setWaitingForContinue(false);
+      setFeedbackMessage("Ahora estás en un nuevo nivel de dificultad. Completa este problema para continuar.");
+      setFeedbackColor("blue");
+    };
+    
+    // Añadir los event listeners
     document.addEventListener('levelUpModalClosed', handleLevelUpModalClosed as EventListener);
+    on('levelUpModalClosed', handleEventBusLevelUp);
     
     // Limpiar al desmontar
     return () => {
       document.removeEventListener('levelUpModalClosed', handleLevelUpModalClosed as EventListener);
+      off('levelUpModalClosed', handleEventBusLevelUp);
     };
-  }, []);
+  }, [blockAutoAdvance]);
   
   // Timer logic for problem time limit
   useEffect(() => {

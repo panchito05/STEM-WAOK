@@ -56,8 +56,7 @@ const LevelUpHandler: React.FC = () => {
     
     // Usar eventBus para emitir un evento que desbloquee el avance automático
     // Esto será capturado por el componente Exercise.tsx
-    const { emit } = require('../lib/eventBus');
-    emit('levelUpModalClosed', { unblockAutoAdvance: true });
+    eventBus.emit('levelUpModalClosed', { unblockAutoAdvance: true });
     
     // Mantener el CustomEvent para compatibilidad con código existente
     const event = new CustomEvent('levelUpModalClosed', {

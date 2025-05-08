@@ -9,6 +9,7 @@
 // Tipos de eventos soportados por el sistema
 export type EventName = 
   | 'levelUp' 
+  | 'levelUpModalClosed'
   | 'exerciseCompleted' 
   | 'streakAchieved' 
   | 'showReward';
@@ -19,6 +20,9 @@ export interface EventData {
     previousLevel: string;
     newLevel: string;
     consecutiveCorrectAnswers: number;
+  };
+  levelUpModalClosed: {
+    unblockAutoAdvance: boolean;
   };
   exerciseCompleted: {
     score: number;
