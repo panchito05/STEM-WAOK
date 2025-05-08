@@ -1258,15 +1258,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Calculate score
     const correctAnswers = answers.filter(a => a.isCorrect).length;
     
-    // Save results
-    saveExerciseResult({
-      operationId: "addition",
-      date: new Date().toISOString(),
-      score: correctAnswers,
-      totalProblems: problems.length,
-      timeSpent: timer,
-      difficulty: settings.difficulty
-    });
+    // Save results - Arreglado para asegurar que todos los campos requeridos estén presentes
+    // y usar la dificultad correcta (adaptativa o configurada)
+    try {
+      // Determinar qué dificultad usar
+      const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+      
+      console.log("[PROGRESS] Guardando resultado del ejercicio con:", {
+        operationId: "addition",
+        totalProblems: problems.length,
+        score: correctAnswers,
+        timeSpent: timer,
+        difficulty: difficultyToUse
+      });
+      
+      saveExerciseResult({
+        operationId: "addition",
+        date: new Date().toISOString(),
+        score: correctAnswers || 0, // Asegurar que siempre hay un valor numérico
+        totalProblems: problems.length || 10, // Valor por defecto si falta
+        timeSpent: timer || 0, // Valor por defecto si falta
+        difficulty: difficultyToUse || "beginner" // Valor por defecto si falta
+      });
+    } catch (error) {
+      console.error("[PROGRESS] Error al guardar resultado:", error);
+    }
   };
 
   const currentProblem = problems[currentProblemIndex];

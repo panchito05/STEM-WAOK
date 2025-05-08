@@ -106,7 +106,10 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     }
 
     try {
-      const res = await apiRequest("POST", "/api/progress", { result });
+      console.log("Enviando progreso al servidor:", result);
+      
+      // Enviamos directamente el objeto resultado, sin anidarlo dentro de otro objeto
+      const res = await apiRequest("POST", "/api/progress", result);
       
       if (res.ok) {
         const data = await res.json();
@@ -116,6 +119,16 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         toast({
           title: "Progress Saved",
           description: `Score: ${result.score}/${result.totalProblems}`,
+        });
+      } else {
+        // Capturar y mostrar error específico
+        const errorData = await res.json();
+        console.error("Error del servidor al guardar progreso:", errorData);
+        
+        toast({
+          title: "Failed to Save Progress",
+          description: errorData.error || "An unknown error occurred",
+          variant: "destructive",
         });
       }
     } catch (error) {
