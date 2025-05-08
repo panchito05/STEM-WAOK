@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ChildProfileSelector from "@/components/ChildProfileSelector";
 
 export default function Navbar() {
   const [location] = useLocation();
@@ -64,6 +65,12 @@ export default function Navbar() {
           </div>
           {!isMobile && (
             <div className="ml-6 flex items-center">
+              {isAuthenticated && (
+                <div className="mr-4">
+                  <ChildProfileSelector />
+                </div>
+              )}
+
               <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-500">
                 <Bell className="h-5 w-5" />
               </Button>
@@ -161,7 +168,13 @@ export default function Navbar() {
                   </div>
                 </div>
               </div>
-              <div className="mt-3 space-y-1">
+              
+              {/* Selector de perfiles para móvil */}
+              <div className="mt-3 mb-4 px-4">
+                <ChildProfileSelector />
+              </div>
+              
+              <div className="mt-1 space-y-1">
                 <Link 
                   href="/profile"
                   className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"

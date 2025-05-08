@@ -18,6 +18,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext"; 
 import { SettingsProvider } from "@/context/SettingsContext";
 import { ProgressProvider } from "@/context/ProgressContext";
+import { ChildProfilesProvider } from "@/context/ChildProfilesContext";
 import { AccessibleDndContextProvider } from "@/components/AccessibleDndContext";
 import LevelUpHandler from "@/components/LevelUpHandler";
 
@@ -43,17 +44,19 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SettingsProvider>
-          <ProgressProvider>
-            <AccessibleDndContextProvider>
-              <Layout>
-                <Router />
-              </Layout>
-              <Toaster />
-              <LevelUpHandler />
-            </AccessibleDndContextProvider>
-          </ProgressProvider>
-        </SettingsProvider>
+        <ChildProfilesProvider>
+          <SettingsProvider>
+            <ProgressProvider>
+              <AccessibleDndContextProvider>
+                <Layout>
+                  <Router />
+                </Layout>
+                <Toaster />
+                <LevelUpHandler />
+              </AccessibleDndContextProvider>
+            </ProgressProvider>
+          </SettingsProvider>
+        </ChildProfilesProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

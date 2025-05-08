@@ -22,9 +22,48 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [profiles, setProfiles] = useState<ChildProfile[]>([]);
-  const [activeProfile, setActiveProfile] = useState<ChildProfile | null>(null);
+  const [activeProfile, setActiveProfileState] = useState<ChildProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  // Función para activar un perfil
+  const activateProfile = async (id: number): Promise<ChildProfile | null> => {
+    if (!isAuthenticated) return null;
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await apiRequest("POST", `/api/child-profiles/${id}/activate`);
+      
+      if (!response.ok) {
+        throw new Error("Failed to set active profile");
+      }
+      
+      const updatedProfile = await response.json();
+      
+      // Actualizar el perfil activo en el estado
+      setActiveProfileState(updatedProfile);
+      
+      // Actualizar la lista de perfiles para reflejar el cambio en isActive
+      setProfiles(prev => prev.map(profile => 
+        profile.id === id 
+          ? { ...profile, isActive: true } 
+          : { ...profile, isActive: false }
+      ));
+      
+      return updatedProfile;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Failed to set active profile"));
+      toast({
+        title: "Error al cambiar perfil",
+        description: "No se pudo establecer el perfil activo",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const fetchProfiles = async () => {
     if (!isAuthenticated) return;
@@ -43,12 +82,12 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
       const activeProfileData = await activeProfileResponse.json();
       
       if (activeProfileData) {
-        setActiveProfile(activeProfileData);
+        setActiveProfileState(activeProfileData);
       } else if (data.length > 0) {
         // Si no hay perfil activo pero hay perfiles, activar el primero
-        await setActiveProfile(data[0].id);
+        await activateProfile(data[0].id);
       } else {
-        setActiveProfile(null);
+        setActiveProfileState(null);
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to fetch profiles"));
@@ -82,7 +121,7 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
       
       // Actualizar la lista de perfiles y establecer el nuevo como activo
       setProfiles(prev => [...prev, newProfile]);
-      setActiveProfile(newProfile);
+      await activateProfile(newProfile.id);
       
       toast({
         title: "Perfil creado",
@@ -124,7 +163,7 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
       
       // Actualizar el perfil activo si es necesario
       if (activeProfile?.id === id) {
-        setActiveProfile(updatedProfile);
+        setActiveProfileState(updatedProfile);
       }
       
       toast({
@@ -165,15 +204,15 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
       }
       
       // Actualizar la lista de perfiles
-      setProfiles(prev => prev.filter(profile => profile.id !== id));
+      const updatedProfiles = profiles.filter(profile => profile.id !== id);
+      setProfiles(updatedProfiles);
       
       // Si se elimina el perfil activo, seleccionar otro
       if (activeProfile?.id === id) {
-        const remainingProfiles = profiles.filter(profile => profile.id !== id);
-        if (remainingProfiles.length > 0) {
-          await setActiveProfile(remainingProfiles[0].id);
+        if (updatedProfiles.length > 0) {
+          await activateProfile(updatedProfiles[0].id);
         } else {
-          setActiveProfile(null);
+          setActiveProfileState(null);
         }
       }
       
@@ -196,44 +235,6 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setActiveProfile = async (id: number): Promise<ChildProfile | null> => {
-    if (!isAuthenticated) return null;
-    
-    setIsLoading(true);
-    
-    try {
-      const response = await apiRequest("POST", `/api/child-profiles/${id}/activate`);
-      
-      if (!response.ok) {
-        throw new Error("Failed to set active profile");
-      }
-      
-      const updatedProfile = await response.json();
-      
-      // Actualizar el perfil activo en el estado
-      setActiveProfile(updatedProfile);
-      
-      // Actualizar la lista de perfiles para reflejar el cambio en isActive
-      setProfiles(prev => prev.map(profile => 
-        profile.id === id 
-          ? { ...profile, isActive: true } 
-          : { ...profile, isActive: false }
-      ));
-      
-      return updatedProfile;
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to set active profile"));
-      toast({
-        title: "Error al cambiar perfil",
-        description: "No se pudo establecer el perfil activo",
-        variant: "destructive",
-      });
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Cargar perfiles cuando el usuario inicia sesión
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -241,7 +242,7 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
     } else {
       // Limpiar los perfiles cuando el usuario cierra sesión
       setProfiles([]);
-      setActiveProfile(null);
+      setActiveProfileState(null);
     }
   }, [isAuthenticated, user]);
 
@@ -256,7 +257,7 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
         createProfile,
         updateProfile,
         deleteProfile,
-        setActiveProfile,
+        setActiveProfile: activateProfile,
       }}
     >
       {children}

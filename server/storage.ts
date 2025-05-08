@@ -123,7 +123,7 @@ export async function insertOrUpdateExternalUser(
 
 export async function verifyUserPassword(username: string, password: string) {
   const user = await getUserByUsername(username);
-  if (!user) return false;
+  if (!user || !user.password) return false;
   
   return compare(password, user.password);
 }
