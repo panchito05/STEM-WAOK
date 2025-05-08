@@ -20,10 +20,8 @@ console.log("VITE_FIREBASE_APP_ID:", import.meta.env.VITE_FIREBASE_APP_ID || "No
 // Configuración de Firebase
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
-  // Permitir tanto el dominio de Firebase como el dominio actual
-  authDomain: window.location.hostname.includes("replit.dev") 
-    ? window.location.hostname 
-    : `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.firebaseapp.com`,
+  // Usar específicamente el dominio registrado en Firebase
+  authDomain: "78d216dd-74cf-4f61-abfa-7cb32982bbb6-00-zpf65darfkfs.riker.replit.dev",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo",
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.appspot.com`,
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
@@ -69,11 +67,15 @@ const initFirebase = () => {
     auth = getAuth();
     googleProvider = new GoogleAuthProvider();
     
+    // Agregar los ámbitos (scopes) que necesitamos explícitamente
+    googleProvider.addScope('email');
+    googleProvider.addScope('profile');
+    
     // Configuraciones adicionales del proveedor de Google
     googleProvider.setCustomParameters({
       prompt: 'select_account',
-      // Indicar el dominio actual como dominio de redirección
-      redirect_uri: window.location.origin
+      // Indicar el dominio actual y asegurarnos de que se use para la redirección
+      redirect_uri: `https://78d216dd-74cf-4f61-abfa-7cb32982bbb6-00-zpf65darfkfs.riker.replit.dev/google-login`
     });
 
     return true;
