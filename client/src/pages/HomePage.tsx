@@ -13,19 +13,26 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+            <h1 className="text-4xl font-bold gradient-text-blue mb-2">
               Math Modules
             </h1>
             <p className="text-gray-600 max-w-xl mx-auto mt-2">
               Improve your math skills with these interactive exercises
-              <span className="ml-2">✏️ 🔢 🧩</span>
+              <span className="ml-2 animate-float inline-block">✏️ 🔢 🧩</span>
             </p>
           </div>
           
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl shadow-sm">
-            <AccessibleDndContextProvider>
-              <ModuleList />
-            </AccessibleDndContextProvider>
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 md:p-8 rounded-xl shadow-md border border-blue-100">
+            <div className="relative">
+              {/* Decorative elements */}
+              <div className="absolute -top-12 -right-12 h-24 w-24 bg-yellow-400 opacity-10 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-8 -left-8 h-20 w-20 bg-blue-500 opacity-10 rounded-full blur-xl"></div>
+              
+              {/* Content */}
+              <AccessibleDndContextProvider>
+                <ModuleList />
+              </AccessibleDndContextProvider>
+            </div>
           </div>
         </div>
       </div>
