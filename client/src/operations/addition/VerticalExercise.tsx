@@ -310,45 +310,51 @@ export default function VerticalExercise({
   const handleSubmit = () => {
     if (waitingForContinue) return;
     
-    // Obtener la respuesta del usuario antes de validar
-    const { numberValue, stringValue } = getUserAnswer();
+    // ENFOQUE COMPLETAMENTE NUEVO BASADO EN EL FORMATO HORIZONTAL
     
-    console.log('[VERTICAL_EXERCISE] Preparando envío de respuesta:', {
-      integerInputs,
-      decimalInputs,
-      stringValue,
-      numberValue,
-      expectedStr: expectedAnswerStr,
-      expectedValue: expectedAnswer
+    // 1. Construir la respuesta completa del usuario en formato de texto
+    const integerPart = integerInputs.join('').replace(/\s/g, '');
+    const decimalPart = decimalInputs.join('').replace(/\s/g, '');
+    
+    // 2. Construir la respuesta como string, similar al formato horizontal
+    let userAnswerStr = integerPart;
+    if (useDecimalFormat && decimalPart.length > 0) {
+      userAnswerStr += '.' + decimalPart;
+    }
+    
+    // 3. Convertir a número como se hace en formato horizontal
+    const userNumericAnswer = userAnswerStr.includes('.') 
+      ? parseFloat(userAnswerStr) 
+      : parseInt(userAnswerStr) || 0;
+    
+    console.log('[VERTICAL_EXERCISE] VALIDACIÓN FINAL:', {
+      integerPart,
+      decimalPart,
+      userAnswerStr,
+      userNumericAnswer,
+      expectedAnswerStr,
+      expectedAnswer
     });
     
-    // Comprobar si tenemos suficientes dígitos para validar
-    const inputLength = stringValue.replace('.', '').length;
-    const expectedLength = expectedAnswerStr.replace('.', '').length;
-    
-    // Si el usuario no ha ingresado todos los dígitos, considerarlo como respuesta incompleta
-    if (inputLength < expectedLength && !waitingForContinue) {
-      console.log('[VERTICAL_EXERCISE] Respuesta incompleta - faltan dígitos');
-      
-      // Mostrar advertencia visual (opcional)
-      // ...
-      
-      // Devolvemos un número diferente de expectedAnswer para indicar respuesta incorrecta
-      onSubmit(isNaN(numberValue) ? 0 : numberValue);
+    // 4. Si no hay respuesta, marcar como incorrecta
+    if (!userAnswerStr || userAnswerStr.trim() === '') {
+      console.log('[VERTICAL_EXERCISE] Respuesta vacía - marcando como incorrecta');
+      onSubmit(0); // Un valor diferente del esperado para indicar respuesta incorrecta
       return;
     }
     
-    // Validar la respuesta completa
-    const isCorrect = validateAnswer();
+    // 5. Comparar exactamente como en el formato horizontal
+    const isCorrect = Math.abs(userNumericAnswer - expectedAnswer) < 0.001;
     
-    console.log('[VERTICAL_EXERCISE] Resultado final de validación:', { 
+    console.log('[VERTICAL_EXERCISE] Resultado de validación:', { 
       isCorrect, 
-      valorEnviado: isCorrect ? expectedAnswer : numberValue 
+      userNumericAnswer,
+      expectedAnswer,
+      diferencia: Math.abs(userNumericAnswer - expectedAnswer)
     });
     
-    // Si es correcto, devolver el valor exacto esperado
-    // Si es incorrecto, devolver el valor ingresado o 0 si no es un número válido
-    onSubmit(isCorrect ? expectedAnswer : (isNaN(numberValue) ? 0 : numberValue));
+    // 6. Exactamente igual que en el formato horizontal
+    onSubmit(isCorrect ? expectedAnswer : userNumericAnswer);
   };
   
   // -------- UTILIDADES DE UI --------
