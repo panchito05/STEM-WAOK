@@ -649,6 +649,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setFeedbackMessage(null);
     setFeedbackColor(null);
     
+    // Si el avance automático está bloqueado, lo desbloqueamos
+    // Esto es importante para poder avanzar manualmente después de subir de nivel
+    if (blockAutoAdvance) {
+      console.log("[EXERCISE] Desbloqueando avance automático - el usuario continuará manualmente");
+      setBlockAutoAdvance(false);
+    }
+    
     // Avanzamos al siguiente problema
     moveToNextProblem();
     
@@ -779,6 +786,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           // Reiniciar el contador
           setConsecutiveCorrectAnswers(0);
           localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+          
+          // Bloquear el avance automático al siguiente problema
+          setBlockAutoAdvance(true);
+          console.log("[EXERCISE] Bloqueando avance automático por subida de nivel");
           
           // EMITIR EVENTO DE NIVEL SUPERADO a través del bus de eventos
           // Esto activará el modal sin tener referencia directa a él
