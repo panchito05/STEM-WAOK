@@ -90,14 +90,29 @@ export default function VerticalExercise({
   // Inicializar los dígitos del usuario si están vacíos
   // Resetear los campos cuando cambia el problema o se inicia un nuevo problema
   useEffect(() => {
+    // Limpiar todos los dígitos cuando cambia el problema
     setUserDigits(Array(totalPositions).fill(''));
+    
+    // Limpiar también las referencias
+    inputRefs.current = Array(totalPositions).fill(null);
+    
+    // Registrar el problema para debug
+    console.log('[VERTICAL_EXERCISE] Problema actualizado:', {
+      num1: problem.num1,
+      num2: problem.num2,
+      correctAnswer: problem.correctAnswer,
+      totalPositions,
+      hasDecimals
+    });
     
     // Enfocar el último input (el de la derecha) cuando se activa,
     // ya que la suma se realiza de derecha a izquierda empezando por las unidades
     if (isActive && inputRefs.current[totalPositions - 1]) {
-      inputRefs.current[totalPositions - 1]?.focus();
+      setTimeout(() => {
+        inputRefs.current[totalPositions - 1]?.focus();
+      }, 100); // pequeño retraso para asegurar que el DOM se actualice
     }
-  }, [isActive, totalPositions, problem.num1, problem.num2]);
+  }, [isActive, totalPositions, problem.num1, problem.num2, hasDecimals]);
   
   // Manejar el cambio en un dígito específico
   const handleDigitChange = (index: number, value: string) => {
@@ -108,10 +123,28 @@ export default function VerticalExercise({
       return;
     }
     
-    // Si es un punto decimal, verificar que no haya otro ya presente
+    // Si es un punto decimal, manejarlo con cuidado
     if (value === '.') {
       // Si ya hay un punto decimal en la entrada, no permitir otro
       if (userDigits.includes('.')) {
+        return;
+      }
+      
+      // Especial: si se está ingresando un punto decimal, permitirlo solo si tiene sentido
+      // (debe haber dígitos válidos a la izquierda o a la derecha)
+      const hasDigitsLeft = userDigits.slice(0, index).some(d => /^[0-9]$/.test(d));
+      const hasDigitsRight = userDigits.slice(index + 1).some(d => /^[0-9]$/.test(d));
+      
+      if (!hasDigitsLeft && !hasDigitsRight) {
+        // Si no hay dígitos a la izquierda ni a la derecha, añadir un 0 a la izquierda automáticamente
+        const newDigits = [...userDigits];
+        if (index > 0) {
+          newDigits[index - 1] = '0';
+        }
+        newDigits[index] = '.';
+        setUserDigits(newDigits);
+        
+        // No movemos el foco aquí para permitir ingresar los decimales
         return;
       }
     }
@@ -130,17 +163,77 @@ export default function VerticalExercise({
   
   // Calcular la respuesta completa del usuario
   const calculateUserAnswer = (): number => {
-    // Eliminar espacios vacíos y filtrar elementos no válidos
-    const validDigits = userDigits.filter(digit => digit !== '');
+    // Convertir el array de dígitos a un formato más estructurado para debug
+    console.log('[VERTICAL_EXERCISE] Dígitos ingresados por el usuario:', 
+      userDigits.map((d, i) => `[${i}]: "${d}"`).join(', '));
+      
+    // Si no hay entrada o todos son espacios vacíos, devolver 0
+    if (userDigits.every(digit => digit === '' || digit === ' ')) {
+      console.log('[VERTICAL_EXERCISE] No hay respuesta del usuario, devolviendo 0');
+      return 0;
+    }
     
-    // Crear la cadena de dígitos y convertirla a número
-    const userAnswerStr = validDigits.join('');
-    console.log('Respuesta del usuario:', userAnswerStr, 'Respuesta esperada:', exactSum);
+    // Asegurarnos de que haya a lo sumo un punto decimal
+    const decimalPoints = userDigits.filter(digit => digit === '.').length;
+    if (decimalPoints > 1) {
+      console.log('[VERTICAL_EXERCISE] Formato incorrecto: múltiples puntos decimales');
+      return 0;
+    }
     
-    // Si no hay respuesta, devolver 0
-    if (!userAnswerStr) return 0;
+    // Crear la cadena de respuesta correctamente
+    let userAnswerStr = '';
     
-    return parseFloat(userAnswerStr) || 0;
+    // Primero, unimos todos los dígitos en una cadena, eliminando espacios vacíos
+    for (let i = 0; i < userDigits.length; i++) {
+      const digit = userDigits[i];
+      if (digit !== '' && digit !== ' ') {
+        userAnswerStr += digit;
+      }
+    }
+    
+    // Si no hay punto decimal pero el problema es decimal, podríamos asumir que el usuario
+    // ingresó un número entero y convertirlo a la precisión correcta
+    if (hasDecimals && !userAnswerStr.includes('.')) {
+      console.log('[VERTICAL_EXERCISE] Usuario ingresó un número entero para un problema decimal');
+      
+      // Intentar determinar si la respuesta es un entero válido
+      // y compararla con el entero más cercano a la respuesta correcta
+      const userInt = parseInt(userAnswerStr);
+      const correctInt = Math.round(exactSum);
+      
+      if (userInt === correctInt) {
+        console.log('[VERTICAL_EXERCISE] La respuesta entera coincide con el redondeo de la correcta');
+        return exactSum; // Devolver el valor exacto en lugar del redondeado
+      }
+    }
+    
+    // Manejar respuestas que comienzan con punto decimal (agregar 0 al inicio)
+    if (userAnswerStr.startsWith('.')) {
+      userAnswerStr = '0' + userAnswerStr;
+    }
+    
+    // Asegurarnos de que no hay ceros iniciales innecesarios
+    if (userAnswerStr.startsWith('0') && userAnswerStr.length > 1 && userAnswerStr[1] !== '.') {
+      userAnswerStr = userAnswerStr.replace(/^0+/, '');
+    }
+    
+    // Si la respuesta sigue siendo un string vacío después de procesar todo, devolver 0
+    if (!userAnswerStr) {
+      console.log('[VERTICAL_EXERCISE] Después de procesar, no hay respuesta válida');
+      return 0;
+    }
+    
+    // Convertir a número y registrar para depuración
+    const numericAnswer = parseFloat(userAnswerStr) || 0;
+    
+    console.log('[VERTICAL_EXERCISE] Respuesta procesada:', {
+      userAnswerStr,
+      numericAnswer,
+      exactSum,
+      diff: Math.abs(numericAnswer - exactSum)
+    });
+    
+    return numericAnswer;
   };
   
   // Enviar la respuesta
