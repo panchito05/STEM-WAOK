@@ -481,7 +481,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      return res.json({ moduleSettings });
+      // Obtener módulos favoritos si existen
+      const globalSettingsData = await storage.getModuleSettingsForChildProfile(profileId, "global");
+      let favoriteModules: string[] = [];
+      
+      if (globalSettingsData && 'favorites' in globalSettingsData.settings) {
+        favoriteModules = globalSettingsData.settings.favorites as string[];
+      }
+      
+      return res.json({ moduleSettings, favoriteModules });
     } catch (error) {
       console.error("Error fetching child profile settings:", error);
       return res.status(500).json({ error: "Internal server error" });
