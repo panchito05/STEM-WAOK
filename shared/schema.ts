@@ -18,6 +18,36 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Perfiles de niños
+export const childProfiles = pgTable("child_profiles", {
+  id: serial("id").primaryKey(),
+  parentId: integer("parent_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  avatar: text("avatar"),
+  age: integer("age"),
+  isActive: boolean("is_active").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Relaciones para los perfiles de niños
+export const childProfilesRelations = relations(childProfiles, ({ one, many }) => ({
+  parent: one(users, {
+    fields: [childProfiles.parentId],
+    references: [users.id],
+  }),
+  progress: many(progressEntries),
+  settings: many(moduleSettings),
+}));
+
+// Esquema para inserción de perfiles de niños
+export const insertChildProfileSchema = createInsertSchema(childProfiles).pick({
+  parentId: true,
+  name: true,
+  avatar: true,
+  age: true,
+});
+
 // Esquema para registro con contraseña
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -39,7 +69,8 @@ export const externalAuthUserSchema = createInsertSchema(users).pick({
 // Progress entries table
 export const progressEntries = pgTable("progress_entries", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  userId: integer("user_id").references(() => users.id),
+  childProfileId: integer("child_profile_id").references(() => childProfiles.id),
   operationId: text("operation_id").notNull(),
   score: integer("score").notNull(),
   totalProblems: integer("total_problems").notNull(),
@@ -53,12 +84,17 @@ export const progressEntriesRelations = relations(progressEntries, ({ one }) => 
     fields: [progressEntries.userId],
     references: [users.id],
   }),
+  childProfile: one(childProfiles, {
+    fields: [progressEntries.childProfileId],
+    references: [childProfiles.id],
+  }),
 }));
 
 // Module settings table
 export const moduleSettings = pgTable("module_settings", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull(),
+  userId: integer("user_id").references(() => users.id),
+  childProfileId: integer("child_profile_id").references(() => childProfiles.id),
   moduleId: text("module_id").notNull(),
   settings: jsonb("settings").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -70,12 +106,18 @@ export const moduleSettingsRelations = relations(moduleSettings, ({ one }) => ({
     fields: [moduleSettings.userId],
     references: [users.id],
   }),
+  childProfile: one(childProfiles, {
+    fields: [moduleSettings.childProfileId],
+    references: [childProfiles.id],
+  }),
 }));
 
 // Type definitions
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ExternalAuthUser = z.infer<typeof externalAuthUserSchema>;
+export type ChildProfile = typeof childProfiles.$inferSelect;
+export type InsertChildProfile = z.infer<typeof insertChildProfileSchema>;
 
 export interface ExerciseProgress {
   operationId: string;
