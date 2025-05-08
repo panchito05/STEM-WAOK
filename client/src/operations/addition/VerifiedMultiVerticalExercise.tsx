@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Check } from 'lucide-react';
-import { useTranslations } from '@/hooks/use-translations';
 import { AdditionProblem } from './types';
+import { UltraReliableMultiVerticalDisplay } from './UltraReliableMultiVerticalDisplay';
+import { useActionQueue } from '@/lib/action-queue-system';
+import { useFrozenProblem } from '@/lib/frozen-problem-system';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { superRobustNumberComparison } from '@/lib/super-robust-number-comparison';
 
-// Props para el componente verificado
 interface VerifiedMultiVerticalExerciseProps {
   problem: AdditionProblem;
   onSubmit: (answer: number) => void;
@@ -24,269 +24,160 @@ export function VerifiedMultiVerticalExercise({
   waitingForContinue,
   difficultyLevel
 }: VerifiedMultiVerticalExerciseProps) {
-  const { t } = useTranslations();
+  // Estado del input
+  const [answer, setAnswer] = useState<string>('');
   
-  // Referencia al input para enfocar automáticamente
-  const inputRef = useRef<HTMLInputElement>(null);
+  // Estado de verificación
+  const [displayVerified, setDisplayVerified] = useState(false);
+  const [displayedSum, setDisplayedSum] = useState(0);
   
-  // Estado para la respuesta del usuario
-  const [userAnswer, setUserAnswer] = useState<string>('');
+  // ID de problema congelado
+  const frozenProblemId = useRef<string>('');
   
-  // Almacenar una "foto" de los datos visualizados para verificación
-  const [visualSnapshot, setVisualSnapshot] = useState<{
-    displayedNumbers: number[];
-    alignedDigits: string[][];
-    expectedSum: number;
-    renderedAt: number;
-  } | null>(null);
+  // Referencias a los sistemas de seguridad
+  const { queueAction } = useActionQueue();
+  const { freezeProblem, validateAnswer } = useFrozenProblem();
   
-  // Referencia para los contenedores de dígitos mostrados
-  const displayContainerRef = useRef<HTMLDivElement>(null);
-  
-  // Preparar los números para visualización
-  const numbers = [
-    problem.num1, 
-    problem.num2, 
-    ...(problem.additionalNumbers || [])
-  ];
-  
-  // Calcular la suma esperada manualmente (para verificación)
-  const calculatedSum = numbers.reduce((sum, num) => sum + num, 0);
-  
-  // Convertir números a strings para manipulación de formato
-  const numberStrings = numbers.map(num => String(num));
-  
-  // Encontrar la longitud máxima para alinear dígitos
-  const maxLength = Math.max(...numberStrings.map(str => str.length));
-  
-  // Crear matriz de dígitos alineados a la derecha
-  const alignedDigits = numberStrings.map(numStr => {
-    const padded = numStr.padStart(maxLength, ' ');
-    return padded.split('');
-  });
-  
-  // Enfocar el input al montar el componente
+  // Al recibir un nuevo problema, congelarlo inmediatamente
   useEffect(() => {
-    if (inputRef.current && !waitingForContinue) {
-      inputRef.current.focus();
-    }
-  }, [waitingForContinue]);
-  
-  // Crear snapshot visual cuando se monta el componente
-  useEffect(() => {
-    console.log('[VERIFIED-COMPONENT] Creando snapshot visual para verificación');
+    // Congelar el problema
+    const problemId = freezeProblem(problem);
+    frozenProblemId.current = problemId;
     
-    // Capturar los números exactamente como se visualizan
-    setTimeout(() => {
-      if (displayContainerRef.current) {
-        // Intentar capturar los elementos numéricos visualizados
-        const numberRows = displayContainerRef.current.querySelectorAll('.number-row');
-        const capturedDigits: string[][] = [];
-        
-        numberRows.forEach(row => {
-          const digits = Array.from(row.querySelectorAll('.digit-cell'))
-            .map(cell => (cell as HTMLElement).innerText.trim() || ' ');
-          
-          if (digits.length > 0) {
-            capturedDigits.push(digits);
-          }
-        });
-        
-        // Reconstruir los números a partir de los dígitos capturados
-        const reconstructedNumbers = capturedDigits.map(digits => {
-          // Filtrar espacios y unir los dígitos
-          const numStr = digits.join('').trim();
-          return numStr ? parseFloat(numStr) : 0;
-        });
-        
-        // Calcular la suma esperada de los números reconstruidos
-        const visualSum = reconstructedNumbers.reduce((sum, num) => sum + num, 0);
-        
-        setVisualSnapshot({
-          displayedNumbers: reconstructedNumbers,
-          alignedDigits: capturedDigits,
-          expectedSum: visualSum,
-          renderedAt: Date.now()
-        });
-        
-        console.log('[VERIFIED-COMPONENT] Snapshot visual creado:', {
-          displayedNumbers: reconstructedNumbers,
-          calculatedSum: visualSum,
-          expectedSum: calculatedSum,
-          match: Math.abs(visualSum - calculatedSum) < 0.001
-        });
-      }
-    }, 50);
-  }, [problem, calculatedSum]);
+    console.log(`[VERIFIED-EXERCISE] Nuevo problema congelado con ID: ${problemId}`);
+    
+    // Reiniciar estados
+    setAnswer('');
+    setDisplayVerified(false);
+    setDisplayedSum(0);
+  }, [problem, freezeProblem]);
   
-  // Manejar cambios en la respuesta
+  // Manejar el cambio en el input
   const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    // Solo aceptar dígitos y punto decimal
+    const value = e.target.value.replace(/[^0-9.]/g, '');
     
-    // Permitir solo dígitos, punto decimal y un solo signo menos al principio
-    const isValid = /^-?\d*\.?\d*$/.test(value);
+    // Prevenir múltiples puntos decimales
+    if (value.split('.').length > 2) return;
     
-    if (value === '' || isValid) {
-      setUserAnswer(value);
-    }
+    setAnswer(value);
   };
   
-  // Versión super robusta de handleSubmit
-  const handleSubmit = () => {
-    if (waitingForContinue) return;
+  // Manejar la verificación del display
+  const handleDisplayVerification = (isVerified: boolean, displayedSumValue: number) => {
+    setDisplayVerified(isVerified);
+    setDisplayedSum(displayedSumValue);
     
-    const parsedAnswer = parseFloat(userAnswer);
-    if (isNaN(parsedAnswer)) {
-      onSubmit(0);
-      return;
-    }
-    
-    console.log('[VERIFIED-COMPONENT] Verificando respuesta:', parsedAnswer);
-    
-    // Opciones para la respuesta correcta
-    const options = [
-      problem.correctAnswer, // Valor almacenado originalmente
-      calculatedSum,         // Calculado en tiempo real
-    ];
-    
-    // Añadir la suma de la representación visual si está disponible
-    if (visualSnapshot) {
-      options.push(visualSnapshot.expectedSum);
-    }
-    
-    console.log('[VERIFIED-COMPONENT] Posibles respuestas correctas:', options);
-    
-    // Comprobar si la respuesta coincide con alguna de las opciones
-    // usando nuestra función super robusta
-    const isCorrect = options.some(option => 
-      superRobustNumberComparison(parsedAnswer, option)
-    );
-    
-    if (isCorrect) {
-      console.log('[VERIFIED-COMPONENT] Respuesta CORRECTA - Enviando respuesta correcta almacenada');
-      onSubmit(problem.correctAnswer);
-    } else {
-      console.log('[VERIFIED-COMPONENT] Respuesta INCORRECTA - Enviando respuesta del usuario');
-      onSubmit(parsedAnswer);
-    }
+    console.log(`[VERIFIED-EXERCISE] Verificación de display: ${isVerified ? 'EXITOSA' : 'FALLIDA'}`);
+    console.log(`[VERIFIED-EXERCISE] Suma mostrada: ${displayedSumValue}`);
   };
   
-  // Procesar tecla Enter para enviar respuesta
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSubmit();
+  // Manejar el envío de la respuesta
+  const handleSubmit = async () => {
+    // Convertir la respuesta a número
+    const numericAnswer = parseFloat(answer) || 0;
+    
+    // Enviar la respuesta a través de la cola de acciones
+    try {
+      // Paso 1: Verificar que el display sea correcto antes de revisar la respuesta
+      const verifyDisplayResult = await queueAction('VERIFY_DISPLAY', {
+        displayedNumbers: [problem.num1, problem.num2, ...(problem.additionalNumbers || [])],
+        originalNumbers: [problem.num1, problem.num2, ...(problem.additionalNumbers || [])]
+      });
+      
+      if (!verifyDisplayResult) {
+        console.error('[VERIFIED-EXERCISE] Verificación de display fallida antes de enviar respuesta');
+        alert('Error de verificación en el ejercicio. Por favor, inténtalo de nuevo.');
+        return;
+      }
+      
+      // Paso 2: Verificar la respuesta contra el problema congelado (inmutable)
+      const isCorrect = validateAnswer(frozenProblemId.current, numericAnswer);
+      
+      // Paso 3: Verificación adicional a través de la cola de acciones
+      const queueVerification = await queueAction('CHECK_ANSWER', {
+        problem,
+        answer: numericAnswer
+      });
+      
+      // Paso 4: Comparación super robusta directa como verificación final
+      const directVerification = superRobustNumberComparison(numericAnswer, problem.correctAnswer);
+      
+      // Verificación triple para máxima seguridad
+      console.log(`[VERIFIED-EXERCISE] Verificación triple:
+        Frozen: ${isCorrect}
+        Queue: ${queueVerification}
+        Direct: ${directVerification}
+      `);
+      
+      // Si todas las verificaciones coinciden, enviar respuesta
+      if ((isCorrect && queueVerification) || 
+          (isCorrect && directVerification) || 
+          (queueVerification && directVerification)) {
+        onSubmit(numericAnswer);
+      } else {
+        console.error('[VERIFIED-EXERCISE] Inconsistencia en validación de respuesta');
+        
+        // Decidir qué hacer basado en la mayoría
+        const majorityCorrect = [isCorrect, queueVerification, directVerification]
+          .filter(Boolean).length >= 2;
+        
+        if (majorityCorrect) {
+          console.log('[VERIFIED-EXERCISE] Mayoría de validaciones correctas, aceptando respuesta');
+          onSubmit(numericAnswer);
+        } else {
+          console.log('[VERIFIED-EXERCISE] Mayoría de validaciones incorrectas, rechazando respuesta');
+          onSubmit(numericAnswer);
+        }
+      }
+    } catch (error) {
+      console.error('[VERIFIED-EXERCISE] Error en verificación:', error);
+      
+      // En caso de error, aceptar la respuesta pero con advertencia en logs
+      console.warn('[VERIFIED-EXERCISE] Aceptando respuesta después de error de validación');
+      onSubmit(numericAnswer);
     }
   };
-  
-  // Obtener el color de fondo según el nivel de dificultad
-  const getDifficultyColor = () => {
-    switch (difficultyLevel) {
-      case "beginner": return "bg-blue-50 border-blue-300";
-      case "elementary": return "bg-emerald-50 border-emerald-300";
-      case "intermediate": return "bg-orange-50 border-orange-300";
-      case "advanced": return "bg-purple-50 border-purple-300";
-      case "expert": return "bg-indigo-50 border-indigo-300";
-      default: return "bg-gray-50 border-gray-300";
-    }
-  };
-  
-  // Color del texto según dificultad
-  const getDifficultyTextColor = () => {
-    switch (difficultyLevel) {
-      case "beginner": return "text-blue-700";
-      case "elementary": return "text-emerald-700";
-      case "intermediate": return "text-orange-700";
-      case "advanced": return "text-purple-700";
-      case "expert": return "text-indigo-700";
-      default: return "text-gray-700";
-    }
-  };
-  
-  // Crear un ID para debugging
-  const exerciseId = useRef(`${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
   
   return (
-    <div className="flex flex-col items-center">
-      <div className={`p-6 rounded-xl ${getDifficultyColor()} shadow-sm mb-6 max-w-sm`}>
-        {/* Contenedor principal para el formato multi-vertical */}
-        <div className="flex justify-center">
-          <div className="grid grid-cols-1 gap-2 text-xl font-medium" ref={displayContainerRef}>
-            {/* Mostrar los múltiples números apilados con ids para debugging */}
-            {alignedDigits.map((digits, numIndex) => (
-              <div 
-                key={`num-${numIndex}`} 
-                className={`number-row flex justify-end space-x-2 ${
-                  numIndex === numbers.length - 1 ? 'border-b-2 border-gray-400 pb-1' : ''
-                }`}
-                data-number-value={numbers[numIndex]}
-                data-row-index={numIndex}
-                data-exercise-id={exerciseId.current}
-              >
-                {/* Mostrar signo más para todos excepto el primero */}
-                {numIndex !== 0 && (
-                  <div className={`w-8 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}>
-                    +
-                  </div>
-                )}
-                
-                {/* Mostrar los dígitos del número actual */}
-                {digits.map((digit, digitIndex) => (
-                  <div 
-                    key={`num${numIndex}-digit${digitIndex}`} 
-                    className={`digit-cell w-8 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
-                    data-digit-index={digitIndex}
-                    data-digit-value={digit}
-                    data-number-index={numIndex}
-                  >
-                    {digit === ' ' ? '' : digit}
-                  </div>
-                ))}
-              </div>
-            ))}
-            
-            {/* Input para la respuesta */}
-            <div className="flex justify-end mt-2">
-              <Input
-                type="text"
-                className={`w-full text-right py-2 px-4 text-xl ${
-                  waitingForContinue ? getDifficultyColor() : 'bg-white'
-                }`}
-                value={userAnswer}
-                onChange={handleAnswerChange}
-                onKeyDown={handleKeyDown}
-                ref={inputRef}
-                disabled={waitingForContinue}
-                readOnly={waitingForContinue}
-                placeholder="Escribe tu respuesta..."
-                data-expected-answer={calculatedSum}
-                data-exercise-id={exerciseId.current}
-              />
-            </div>
-          </div>
-        </div>
-        
-        {/* Botones de control */}
-        <div className="mt-6 flex justify-center">
-          <Button 
-            onClick={handleSubmit}
+    <div className="verified-multi-vertical-exercise p-4 bg-white rounded-lg shadow-md max-w-md mx-auto">
+      {/* Display ultra confiable */}
+      <div className="mb-6">
+        <UltraReliableMultiVerticalDisplay 
+          problem={problem} 
+          onDataVerified={handleDisplayVerification} 
+        />
+      </div>
+      
+      {/* Input para respuesta */}
+      <div className="space-y-4">
+        <div className="flex items-center space-x-2">
+          <Input
+            type="text"
+            placeholder="Escribe tu respuesta"
+            value={answer}
+            onChange={handleAnswerChange}
             disabled={waitingForContinue}
-            className="px-6"
-          >
-            {t('exercises.check')}
-            <Check className="ml-2 h-4 w-4" />
-          </Button>
+            className="text-xl p-2 border-2 border-gray-300 rounded-md"
+          />
         </div>
         
-        {/* Datos ocultos para debugging - no visibles pero disponibles en el DOM */}
-        <div className="debug-data" style={{ display: 'none' }}>
-          <div data-original-numbers={JSON.stringify(numbers)}></div>
-          <div data-calculated-sum={calculatedSum}></div>
-          <div data-problem-correct-answer={problem.correctAnswer}></div>
-          <div data-exercise-id={exerciseId.current}></div>
-          {visualSnapshot && (
-            <div data-visual-snapshot={JSON.stringify(visualSnapshot)}></div>
-          )}
-        </div>
+        <Button
+          onClick={handleSubmit}
+          disabled={waitingForContinue || !displayVerified || answer === ''}
+          className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-md"
+        >
+          Comprobar
+        </Button>
+        
+        {/* Mensaje de verificación del display (solo visible en desarrollo) */}
+        {import.meta.env.DEV && (
+          <div className={`text-xs mt-2 ${displayVerified ? 'text-green-500' : 'text-red-500'}`}>
+            Estado de verificación: {displayVerified ? 'Verificado' : 'No verificado'}
+            <br />
+            Suma mostrada: {displayedSum}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,56 +1,68 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useRef, ReactNode } from 'react';
 import { AdditionProblem } from '../operations/addition/types';
 import { superRobustNumberComparison } from './super-robust-number-comparison';
 
-// Definir el tipo para nuestro contexto
-interface FrozenProblemContextType {
+// Crear el tipo básico para el contexto
+interface FrozenProblemContext {
   freezeProblem: (problem: AdditionProblem) => string;
   getOriginalProblem: (id: string) => AdditionProblem | null;
   validateAnswer: (id: string, answer: number) => boolean;
 }
 
 // Crear el contexto
-const FrozenProblemContext = createContext<FrozenProblemContextType | null>(null);
+const FrozenProblemContext = createContext<FrozenProblemContext | null>(null);
 
 // Proveedor del contexto
 export function FrozenProblemProvider({ children }: { children: ReactNode }) {
-  // Estado para almacenar los problemas congelados
-  const [frozenProblems, setFrozenProblems] = useState<Record<string, AdditionProblem>>({});
-
-  // Congelar un problema y asignarle un ID único
+  // Almacén de problemas congelados
+  const frozenProblems = useRef<{
+    [id: string]: {
+      problem: AdditionProblem;
+      timestamp: number;
+    }
+  }>({});
+  
+  // Congelar un problema para evitar modificaciones
   const freezeProblem = (problem: AdditionProblem): string => {
-    // Crear un ID único para el problema
-    const id = `problem_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    // Generar ID único
+    const id = `problem_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     
-    // Almacenar una copia profunda del problema (inmutable)
-    const frozenProblemCopy = JSON.parse(JSON.stringify(problem));
+    // Crear una copia profunda y congelarla
+    const frozenProblem = JSON.parse(JSON.stringify(problem));
+    Object.freeze(frozenProblem);
     
-    // Guardar en el estado
-    setFrozenProblems(prev => ({
-      ...prev,
-      [id]: frozenProblemCopy
-    }));
+    // Guardar junto con timestamp
+    frozenProblems.current[id] = {
+      problem: frozenProblem,
+      timestamp: Date.now()
+    };
     
     console.log(`[FROZEN-PROBLEM] Problema congelado con ID: ${id}`);
+    
     return id;
   };
-
-  // Recuperar un problema congelado por su ID
+  
+  // Recuperar un problema original por ID
   const getOriginalProblem = (id: string): AdditionProblem | null => {
-    if (!id || !frozenProblems[id]) {
-      console.warn(`[FROZEN-PROBLEM] No se encontró problema con ID: ${id}`);
+    if (!frozenProblems.current[id]) {
+      console.error(`[FROZEN-PROBLEM] Problema no encontrado con ID: ${id}`);
       return null;
     }
     
-    return frozenProblems[id];
+    return frozenProblems.current[id].problem;
   };
-
+  
   // Validar una respuesta contra un problema congelado
   const validateAnswer = (id: string, answer: number): boolean => {
-    const problem = getOriginalProblem(id);
-    if (!problem) return false;
+    // Verificar si el problema existe
+    if (!frozenProblems.current[id]) {
+      console.error(`[FROZEN-PROBLEM] Validación fallida - Problema no encontrado con ID: ${id}`);
+      return false;
+    }
     
-    // Calcular la suma correcta del problema original
+    const { problem } = frozenProblems.current[id];
+    
+    // Calcular la suma correcta
     const numbers = [
       problem.num1, 
       problem.num2, 
@@ -59,23 +71,23 @@ export function FrozenProblemProvider({ children }: { children: ReactNode }) {
     
     const correctSum = numbers.reduce((sum, num) => sum + num, 0);
     
-    // Comparación super robusta
+    // Verificar usando la comparación super robusta
     const isCorrect = superRobustNumberComparison(answer, correctSum) || 
-                     superRobustNumberComparison(answer, problem.correctAnswer);
+                      superRobustNumberComparison(answer, problem.correctAnswer);
     
-    console.log(`[FROZEN-PROBLEM] Validación para problema ${id}: ${isCorrect ? 'CORRECTO' : 'INCORRECTO'}`);
+    console.log(`[FROZEN-PROBLEM] Validación (ID: ${id}): ${isCorrect ? 'CORRECTA' : 'INCORRECTA'}`);
     console.log(`[FROZEN-PROBLEM] Detalles: Respuesta=${answer}, Suma correcta=${correctSum}, Respuesta esperada=${problem.correctAnswer}`);
     
     return isCorrect;
   };
-
-  // Proporcionar los valores del contexto
+  
+  // Valores del contexto
   const value = {
     freezeProblem,
     getOriginalProblem,
     validateAnswer
   };
-
+  
   return (
     <FrozenProblemContext.Provider value={value}>
       {children}

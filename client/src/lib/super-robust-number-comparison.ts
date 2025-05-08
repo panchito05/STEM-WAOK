@@ -1,100 +1,100 @@
 /**
- * Función ultra robusta para comparar números que tolera diferentes formatos,
- * errores de punto flotante, y discrepancias menores.
+ * Comparación super robusta de números
+ * 
+ * Esta función implementa múltiples estrategias para comparar números,
+ * teniendo en cuenta problemas de punto flotante, representación interna,
+ * errores de redondeo y otros problemas comunes en JavaScript.
  */
-export function superRobustNumberComparison(val1: any, val2: any): boolean {
-  console.log("[SUPER-COMPARATOR] Comparando valores:", { val1, val2, types: [typeof val1, typeof val2] });
-  
-  // Convertir a string y limpiar cualquier formato
-  const cleanNumber = (val: any): string => {
-    if (val === null || val === undefined) return "0";
-    
-    // Convertir a string
-    let strVal = String(val).trim();
-    
-    // Limpiar cualquier carácter no numérico, excepto punto decimal
-    strVal = strVal.replace(/[^\d.-]/g, '');
-    
-    // Manejar múltiples puntos decimales (quedarse con el primero)
-    if (strVal.indexOf('.') !== strVal.lastIndexOf('.')) {
-      const parts = strVal.split('.');
-      strVal = parts[0] + '.' + parts.slice(1).join('');
-    }
-    
-    return strVal;
-  };
-  
-  // Comparación exacta como strings después de limpiar
-  const str1 = cleanNumber(val1);
-  const str2 = cleanNumber(val2);
-  if (str1 === str2) {
-    console.log("[SUPER-COMPARATOR] EXACT STRING MATCH!");
-    return true;
-  }
-  
-  // Convertir a números y manejar NaN
-  let num1 = parseFloat(str1);
-  let num2 = parseFloat(str2);
-  
-  if (isNaN(num1) && isNaN(num2)) {
-    console.log("[SUPER-COMPARATOR] BOTH NaN - CONSIDERING EQUAL!");
-    return true;
-  }
-  
-  if (isNaN(num1) || isNaN(num2)) {
-    console.log("[SUPER-COMPARATOR] ONE IS NaN - NOT EQUAL!");
+export function superRobustNumberComparison(a: number, b: number): boolean {
+  // Caso especial: NaN
+  if (isNaN(a) || isNaN(b)) {
     return false;
   }
   
-  // Verificar igualdad exacta después de conversión
-  if (num1 === num2) {
-    console.log("[SUPER-COMPARATOR] EXACT NUMBER MATCH!");
+  // Caso especial: infinitos
+  if (!isFinite(a) || !isFinite(b)) {
+    return a === b;
+  }
+  
+  // Comprobación de igualdad exacta
+  if (a === b) {
     return true;
   }
   
-  // Verificar con tolerancia para errores de punto flotante
-  const epsilon = 0.0001;
-  const relativeEqual = Math.abs(num1 - num2) <= epsilon * Math.max(Math.abs(num1), Math.abs(num2));
-  
-  if (relativeEqual) {
-    console.log("[SUPER-COMPARATOR] RELATIVE TOLERANCE MATCH!");
+  // Estrategia 1: Comparación con tolerancia para valores flotantes
+  // Útil para errores de redondeo en cálculos con decimales
+  const epsilon = 0.00001; // Tolerancia muy pequeña
+  if (Math.abs(a - b) < epsilon) {
     return true;
   }
   
-  // Comparar después de redondear a 10 decimales
-  const rounded1 = Math.round(num1 * 1e10) / 1e10;
-  const rounded2 = Math.round(num2 * 1e10) / 1e10;
+  // Estrategia 2: Manejo especial para decimales
+  // Convertir a string y validar si tienen los mismos dígitos significativos
+  const aStr = a.toString();
+  const bStr = b.toString();
   
-  if (rounded1 === rounded2) {
-    console.log("[SUPER-COMPARATOR] ROUNDED DECIMAL MATCH!");
+  // Si tienen misma representación en string, son equivalentes
+  if (aStr === bStr) {
     return true;
   }
   
-  // Último intento: convertir a enteros si son muy cercanos a enteros
-  if (Math.abs(num1 - Math.round(num1)) < 1e-10 && 
-      Math.abs(num2 - Math.round(num2)) < 1e-10) {
-    const int1 = Math.round(num1);
-    const int2 = Math.round(num2);
-    if (int1 === int2) {
-      console.log("[SUPER-COMPARATOR] INTEGER APPROXIMATION MATCH!");
-      return true;
-    }
-  }
+  // Estrategia 3: Comparación de representación redondeada
+  // Útil para errores de representación de punto flotante
+  const precisionFactor = 1000000; // 6 decimales
+  const roundedA = Math.round(a * precisionFactor) / precisionFactor;
+  const roundedB = Math.round(b * precisionFactor) / precisionFactor;
   
-  // Si la diferencia absoluta es muy pequeña
-  if (Math.abs(num1 - num2) < 0.01) {
-    console.log("[SUPER-COMPARATOR] ABSOLUTE DIFFERENCE NEGLIGIBLE!");
+  if (roundedA === roundedB) {
     return true;
   }
   
-  // ¿Son múltiplos de 10 que difieren solo en ceros al final?
-  const str1WithoutZeros = str1.replace(/\.?0+$/, '');
-  const str2WithoutZeros = str2.replace(/\.?0+$/, '');
-  if (str1WithoutZeros === str2WithoutZeros) {
-    console.log("[SUPER-COMPARATOR] MATCH AFTER REMOVING TRAILING ZEROS!");
+  // Estrategia 4: Tolerancia proporcional
+  // Útil para números grandes donde epsilon fijo no es apropiado
+  const maxAbs = Math.max(Math.abs(a), Math.abs(b));
+  const relativeEpsilon = maxAbs * 0.0000001; // Tolerancia relativa
+  
+  if (Math.abs(a - b) < relativeEpsilon) {
     return true;
   }
   
-  console.log("[SUPER-COMPARATOR] NO MATCH FOUND!", { num1, num2, difference: Math.abs(num1 - num2) });
+  // Estrategia 5: Comparación de representación en una base fija
+  // Útil para valores que pueden tener representaciones numéricas diferentes
+  const toFixed = (num: number) => num.toFixed(6);
+  if (toFixed(a) === toFixed(b)) {
+    return true;
+  }
+  
+  // Estrategia 6: Truncamiento a precisión específica
+  // Elimina los "ruidos" en decimales irrelevantes
+  const truncate = (num: number, decimals: number) => {
+    const factor = Math.pow(10, decimals);
+    return Math.trunc(num * factor) / factor;
+  };
+  
+  if (truncate(a, 6) === truncate(b, 6)) {
+    return true;
+  }
+  
+  // Estrategia 7: Comparar partes enteras y decimales separadamente
+  const aInt = Math.floor(a);
+  const bInt = Math.floor(b);
+  const aFrac = a - aInt;
+  const bFrac = b - bInt;
+  
+  if (aInt === bInt && Math.abs(aFrac - bFrac) < 0.0001) {
+    return true;
+  }
+  
+  // Estrategia 8: Comparación de división para evitar problemas de punto flotante
+  // Convierte ambos números a enteros multiplicando y luego los compara
+  const multiplier = 1000000;
+  const aScaled = Math.round(a * multiplier);
+  const bScaled = Math.round(b * multiplier);
+  
+  if (aScaled === bScaled) {
+    return true;
+  }
+  
+  // Si todas las estrategias anteriores fallan, los números son diferentes
   return false;
 }
