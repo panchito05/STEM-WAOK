@@ -746,6 +746,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     }
   };
+  
+  // Manejar envío de respuesta desde los componentes externos (VerticalExercise, MultiVerticalExercise)
+  const handleExternalSubmit = (answer: number) => {
+    // Verificar si estamos esperando que el usuario presione "Continuar"
+    if (waitingForContinue || showingExplanation) {
+      return;
+    }
+    
+    // Convertir la respuesta a string para mantener consistencia con el estado actual
+    setUserAnswer(answer.toString());
+    
+    // Procesar la respuesta con la lógica existente
+    checkCurrentAnswer();
+  };
 
   const checkCurrentAnswer = () => {
     if (!exerciseStarted) {
