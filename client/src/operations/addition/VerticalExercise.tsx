@@ -125,16 +125,79 @@ export default function VerticalExercise({
   
   // Reconstruir la respuesta completa del usuario
   const getUserAnswer = (): { numberValue: number, stringValue: string } => {
-    // Filtrar campos vacíos y unir los dígitos
-    const intPart = integerInputs.filter(val => val !== '').join('');
-    const decPart = decimalInputs.filter(val => val !== '').join('');
+    // Verificar si hay algún valor en los inputs antes de continuar
+    const hasAnyValue = integerInputs.some(val => val !== '') || decimalInputs.some(val => val !== '');
+    
+    // Si no hay ningún valor en ningún input y estamos esperando por continue o no está activo, retornar 0
+    if (!hasAnyValue && (waitingForContinue || !isActive)) {
+      console.log('[VERTICAL_EXERCISE] No hay valores ingresados, devolviendo 0');
+      return { numberValue: 0, stringValue: '' };
+    }
+    
+    // Si hay algún valor, procesamos normalmente
+    // Importante: considera todos los dígitos, incluso si hay espacios entre ellos
+    let processedIntegerInputs = [...integerInputs];
+    let processedDecimalInputs = [...decimalInputs];
+    
+    // Los campos vacíos en medio deberían considerarse como '0'
+    for (let i = 0; i < processedIntegerInputs.length; i++) {
+      if (processedIntegerInputs[i] === '' && hasAnyValue) {
+        // Solo rellena con '0' si hay algún valor a su izquierda o derecha
+        const hasValueLeft = processedIntegerInputs.slice(0, i).some(v => v !== '');
+        const hasValueRight = processedIntegerInputs.slice(i + 1).some(v => v !== '');
+        
+        if (hasValueLeft || hasValueRight) {
+          processedIntegerInputs[i] = '0';
+        }
+      }
+    }
+    
+    // Lo mismo para los decimales
+    for (let i = 0; i < processedDecimalInputs.length; i++) {
+      if (processedDecimalInputs[i] === '' && hasAnyValue) {
+        const hasValueLeft = processedDecimalInputs.slice(0, i).some(v => v !== '');
+        const hasValueRight = processedDecimalInputs.slice(i + 1).some(v => v !== '');
+        
+        if (hasValueLeft || hasValueRight) {
+          processedDecimalInputs[i] = '0';
+        }
+      }
+    }
+    
+    // Unir los dígitos
+    const intPart = processedIntegerInputs.join('').replace(/^0+/, '') || '0'; // Eliminar ceros a la izquierda, pero mantener al menos un 0
+    const decPart = processedDecimalInputs.join('');
     
     // Crear string completo según formato
     const stringValue = useDecimalFormat && decPart.length > 0 ? 
       `${intPart}.${decPart}` : intPart;
     
-    // Parsear a número
-    const numberValue = stringValue.length > 0 ? parseFloat(stringValue) : 0;
+    // Comparar con la respuesta esperada
+    const expectedStr = expectedAnswerStr;
+    
+    console.log('[VERTICAL_EXERCISE] Procesando respuesta de usuario:', {
+      integerInputsOriginales: integerInputs,
+      decimalInputsOriginales: decimalInputs,
+      integerInputsProcesados: processedIntegerInputs,
+      decimalInputsProcesados: processedDecimalInputs,
+      intPart, 
+      decPart,
+      stringValue,
+      expectedStr
+    });
+    
+    // Parsear a número, asegurando que sea un valor válido
+    let numberValue: number;
+    try {
+      numberValue = parseFloat(stringValue);
+      if (isNaN(numberValue) || stringValue === '') {
+        console.log('[VERTICAL_EXERCISE] Valor numérico inválido, usando respuesta esperada');
+        numberValue = expectedAnswer; // Si no podemos obtener un valor válido, usamos la respuesta esperada
+      }
+    } catch (e) {
+      console.error('[VERTICAL_EXERCISE] Error al parsear valor:', e);
+      numberValue = expectedAnswer;
+    }
     
     return { numberValue, stringValue };
   };
@@ -247,12 +310,45 @@ export default function VerticalExercise({
   const handleSubmit = () => {
     if (waitingForContinue) return;
     
+    // Obtener la respuesta del usuario antes de validar
+    const { numberValue, stringValue } = getUserAnswer();
+    
+    console.log('[VERTICAL_EXERCISE] Preparando envío de respuesta:', {
+      integerInputs,
+      decimalInputs,
+      stringValue,
+      numberValue,
+      expectedStr: expectedAnswerStr,
+      expectedValue: expectedAnswer
+    });
+    
+    // Comprobar si tenemos suficientes dígitos para validar
+    const inputLength = stringValue.replace('.', '').length;
+    const expectedLength = expectedAnswerStr.replace('.', '').length;
+    
+    // Si el usuario no ha ingresado todos los dígitos, considerarlo como respuesta incompleta
+    if (inputLength < expectedLength && !waitingForContinue) {
+      console.log('[VERTICAL_EXERCISE] Respuesta incompleta - faltan dígitos');
+      
+      // Mostrar advertencia visual (opcional)
+      // ...
+      
+      // Devolvemos un número diferente de expectedAnswer para indicar respuesta incorrecta
+      onSubmit(isNaN(numberValue) ? 0 : numberValue);
+      return;
+    }
+    
+    // Validar la respuesta completa
     const isCorrect = validateAnswer();
-    const { numberValue } = getUserAnswer();
+    
+    console.log('[VERTICAL_EXERCISE] Resultado final de validación:', { 
+      isCorrect, 
+      valorEnviado: isCorrect ? expectedAnswer : numberValue 
+    });
     
     // Si es correcto, devolver el valor exacto esperado
-    // Si es incorrecto, devolver el valor ingresado
-    onSubmit(isCorrect ? expectedAnswer : numberValue);
+    // Si es incorrecto, devolver el valor ingresado o 0 si no es un número válido
+    onSubmit(isCorrect ? expectedAnswer : (isNaN(numberValue) ? 0 : numberValue));
   };
   
   // -------- UTILIDADES DE UI --------
