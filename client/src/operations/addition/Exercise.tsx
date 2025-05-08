@@ -16,6 +16,7 @@ import LevelUpHandler from "@/components/LevelUpHandler";
 import { useRewardsStore, awardReward, getRewardProbability, checkAndAwardRewards, RewardTheme } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
 import VerticalExercise from './VerticalExercise';
+import { DifficultyLabel } from './Labels';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -1534,6 +1535,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 adaptiveDifficulty === "elementary" ? "bg-emerald-200 text-emerald-800" :
                 adaptiveDifficulty === "intermediate" ? "bg-orange-200 text-orange-800" :
                 adaptiveDifficulty === "advanced" ? "bg-purple-200 text-purple-800" :
+                adaptiveDifficulty === "expert" ? "bg-gray-200 text-gray-800" :
                 "bg-indigo-200 text-indigo-800" :
                 
                 settings.difficulty === "beginner" ? "bg-blue-200 text-blue-800" :
@@ -1681,6 +1683,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                         adaptiveDifficulty === "elementary" ? "bg-emerald-300" :
                         adaptiveDifficulty === "intermediate" ? "bg-orange-300" :
                         adaptiveDifficulty === "advanced" ? "bg-purple-300" :
+                        adaptiveDifficulty === "expert" ? "bg-gray-400" :
                         "bg-indigo-300" :
                         
                         settings.difficulty === "beginner" ? "bg-blue-300" :
