@@ -1,6 +1,6 @@
 export type DifficultyLevel = "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
 
-export type ExerciseLayout = "horizontal" | "vertical";
+export type ExerciseLayout = "horizontal" | "vertical" | "multi-vertical";
 
 export interface Problem {
   num1: number;
@@ -11,6 +11,8 @@ export interface Problem {
 export interface AdditionProblem extends Problem {
   // Para posibles extensiones específicas de adición
   layout?: ExerciseLayout;
+  // Para el formato multi-vertical, números adicionales opcionales
+  additionalNumbers?: number[];
 }
 
 export interface UserAnswer {

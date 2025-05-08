@@ -84,30 +84,90 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
       // Ejemplo: 70960 + 11650 = ?, 28730 + 59436 = ?
       // Nota: los ejemplos son números muy grandes, ajustamos para que coincida
       
-      // 35% de probabilidad de usar decimales en nivel experto
-      useDecimals = Math.random() < 0.35;
+      // En nivel experto, tenemos tres formatos posibles: horizontal normal, vertical, o multi-vertical
+      // Elegir aleatoriamente uno de estos formatos
+      const formatMode = getRandomInt(1, 3);
       
-      if (useDecimals) {
-        // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
-        const decimalMode = getRandomInt(1, 3);
-        const decimalPlaces = Math.random() < 0.5 ? 1 : 2; // 50% chance for 1 decimal, 50% for 2
+      // Formato multi-vertical (números apilados)
+      if (formatMode === 3) {
+        layout = 'multi-vertical';
         
-        if (decimalMode === 1 || decimalMode === 3) { // Primer número o ambos
-          num1 = getRandomDecimal(1000, 10000, decimalPlaces as 1 | 2);
-        } else {
-          num1 = getRandomInt(1000, 10000);
+        // Determinar cuántos números apilar (de 2 a 5)
+        const numberCount = getRandomInt(2, 5);
+        
+        // Array para números adicionales (además de num1 y num2)
+        const additionalNums: number[] = [];
+        
+        // Generar números con diversos dígitos para apilar
+        num1 = getRandomInt(1, 99); // primer número (pequeño)
+        num2 = getRandomInt(10, 9999); // segundo número (más grande)
+        
+        // Generar números adicionales si se necesitan más de 2
+        if (numberCount > 2) {
+          for (let i = 0; i < numberCount - 2; i++) {
+            // Generar números de diferentes longitudes
+            let addNum: number;
+            
+            switch (getRandomInt(1, 4)) {
+              case 1: addNum = getRandomInt(1, 9); break; // 1 dígito
+              case 2: addNum = getRandomInt(10, 99); break; // 2 dígitos
+              case 3: addNum = getRandomInt(100, 999); break; // 3 dígitos
+              case 4: addNum = getRandomInt(1000, 9999); break; // 4 dígitos
+              default: addNum = getRandomInt(1, 99);
+            }
+            
+            additionalNums.push(addNum);
+          }
         }
         
-        if (decimalMode === 2 || decimalMode === 3) { // Segundo número o ambos
-          num2 = getRandomDecimal(1000, 10000, decimalPlaces as 1 | 2);
-        } else {
-          num2 = getRandomInt(1000, 10000);
+        // Calcular la suma total incluyendo todos los números
+        const allNumbers = [num1, num2, ...additionalNums];
+        const total = allNumbers.reduce((sum, num) => sum + num, 0);
+        
+        // Usar la suma total como la respuesta correcta
+        const totalAnswer = total;
+        
+        // Retornar problema multi-vertical especial
+        return {
+          num1,
+          num2, 
+          correctAnswer: totalAnswer,
+          layout,
+          additionalNumbers: additionalNums
+        };
+      }
+      // Para formatos tradicionales (horizontal o vertical)
+      else {
+        // 35% de probabilidad de usar decimales en nivel experto
+        useDecimals = Math.random() < 0.35;
+        
+        // 60% probabilidad de formato vertical en nivel experto (para formato tradicional)
+        if (formatMode === 2) {
+          layout = 'vertical';
         }
         
-        console.log(`[DECIMALS] Generando problema con decimales: ${num1} + ${num2}`);
-      } else {
-        num1 = getRandomInt(10000, 80000);
-        num2 = getRandomInt(10000, 60000);
+        if (useDecimals) {
+          // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
+          const decimalMode = getRandomInt(1, 3);
+          const decimalPlaces = Math.random() < 0.5 ? 1 : 2; // 50% chance for 1 decimal, 50% for 2
+          
+          if (decimalMode === 1 || decimalMode === 3) { // Primer número o ambos
+            num1 = getRandomDecimal(1000, 10000, decimalPlaces as 1 | 2);
+          } else {
+            num1 = getRandomInt(1000, 10000);
+          }
+          
+          if (decimalMode === 2 || decimalMode === 3) { // Segundo número o ambos
+            num2 = getRandomDecimal(1000, 10000, decimalPlaces as 1 | 2);
+          } else {
+            num2 = getRandomInt(1000, 10000);
+          }
+          
+          console.log(`[DECIMALS] Generando problema con decimales: ${num1} + ${num2}`);
+        } else {
+          num1 = getRandomInt(10000, 80000);
+          num2 = getRandomInt(10000, 60000);
+        }
       }
       break;
       
@@ -126,7 +186,8 @@ export function generateAdditionProblem(difficulty: string): AdditionProblem {
   return {
     num1,
     num2,
-    correctAnswer
+    correctAnswer,
+    layout
   };
 }
 
