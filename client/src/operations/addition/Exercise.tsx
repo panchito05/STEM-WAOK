@@ -689,9 +689,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       return;
     }
     
-    // Solo permitir dígitos para que coincida con el patrón establecido
-    const value = e.target.value.replace(/\D/g, '');
-    setUserAnswer(value);
+    // Permitir dígitos y un único punto decimal para manejar decimales
+    // Validar si el valor ya tiene un punto decimal
+    const value = e.target.value;
+    
+    // Validación para números decimales o enteros
+    // Solo permitimos dígitos y como máximo un punto decimal
+    const isValidInput = /^[0-9]*\.?[0-9]*$/.test(value);
+    
+    if (isValidInput) {
+      setUserAnswer(value);
+    }
   };
 
   const handleKeyboardInput = (value: string) => {
@@ -703,9 +711,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     if (value === "backspace") {
       setUserAnswer(prev => prev.slice(0, -1));
+    } else if (value === ".") {
+      // Permitir un único punto decimal
+      if (!userAnswer.includes('.')) {
+        setUserAnswer(prev => prev + value);
+      }
     } else {
-      // Limit input to 3 digits which should be enough for math problems at this level
-      if (userAnswer.length < 3) {
+      // Ampliamos el límite para permitir números decimales
+      // Esto podría ser necesario para números grandes con decimales
+      if (userAnswer.length < 8) {
         setUserAnswer(prev => prev + value);
       }
     }
@@ -722,14 +736,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setCurrentAttempts(newAttemptCount);
     
     const currentProblem = problems[currentProblemIndex];
-    const isCorrect = checkAnswer(currentProblem, parseInt(userAnswer) || 0);
+    
+    // Convertir la respuesta del usuario a número, manejando decimales
+    const userNumericAnswer = userAnswer.includes('.') 
+      ? parseFloat(userAnswer) 
+      : parseInt(userAnswer) || 0;
+      
+    // Comprobar si la respuesta es correcta
+    const isCorrect = checkAnswer(currentProblem, userNumericAnswer);
     
     // Si la respuesta es correcta, guardamos la respuesta y avanzamos al siguiente problema
     if (isCorrect) {
-      // Save the answer
+      // Save the answer with proper handling of decimal numbers
       const answer: UserAnswer = {
         problem: currentProblem,
-        userAnswer: parseInt(userAnswer) || 0,
+        userAnswer: userNumericAnswer,
         isCorrect: true
       };
       
