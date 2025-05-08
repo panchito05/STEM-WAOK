@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Check } from "lucide-react";
+// import { useTranslation } from "react-i18next";
 // Temporal mientras arreglamos el problema con i18n
 const useTranslation = () => ({ t: (key: string) => key.includes('.') ? key.split('.')[1] : key });
-import { DifficultyLevel, AdditionProblem, UserAnswer } from "./types";
+import { DifficultyLevel, AdditionProblem } from "./types";
 
 interface MultiVerticalExerciseProps {
   problem: AdditionProblem;
@@ -34,30 +35,63 @@ export default function MultiVerticalExercise({
   const [userAnswer, setUserAnswer] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   
-  // Acceder a todos los números que se deben sumar
-  const { num1, num2, additionalNumbers = [] } = problem;
+  // Asegurarse de que tengamos los datos que necesitamos
+  const numbers = [problem.num1, problem.num2, ...(problem.additionalNumbers || [])];
   
-  // Convertir todos los números a strings
-  const allNumbers = [num1, num2, ...additionalNumbers];
-  const allNumbersStr = allNumbers.map(num => num.toString());
+  // Convertir todos los números a strings para manipularlos
+  const numberStrings = numbers.map(num => num.toString());
   
-  // Encontrar el número con más dígitos para alinear correctamente
-  const maxLength = Math.max(...allNumbersStr.map(num => num.length));
+  // Determinar si hay números decimales
+  const hasDecimals = numberStrings.some(str => str.includes('.'));
   
-  // Enfocar el input cuando el ejercicio está activo
+  // Separar las partes enteras y decimales de cada número
+  const partsArray = numberStrings.map(str => {
+    const [intPart, decPart = ''] = str.split('.');
+    return { intPart, decPart };
+  });
+  
+  // Calcular la longitud máxima de las partes enteras y decimales
+  const maxIntLength = Math.max(...partsArray.map(parts => parts.intPart.length));
+  const maxDecLength = Math.max(...partsArray.map(parts => parts.decPart.length));
+  
+  // Crear arrays de dígitos para cada número, alineados correctamente
+  const alignedDigits = partsArray.map(parts => {
+    const digits: string[] = [];
+    
+    // Añadir dígitos enteros uno por uno (rellenando con espacios a la izquierda)
+    for (let i = 0; i < maxIntLength; i++) {
+      const paddedInt = parts.intPart.padStart(maxIntLength, ' ');
+      digits.push(i < paddedInt.length ? paddedInt[i] : ' ');
+    }
+    
+    // Añadir punto decimal y dígitos decimales si hay decimales
+    if (hasDecimals) {
+      digits.push('.');
+      
+      // Añadir dígitos decimales (rellenando con ceros a la derecha)
+      for (let i = 0; i < maxDecLength; i++) {
+        digits.push(i < parts.decPart.length ? parts.decPart[i] : '0');
+      }
+    }
+    
+    return digits;
+  });
+  
+  // Enfocar el input cuando el componente está activo
   useEffect(() => {
     if (isActive && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isActive]);
   
-  // Manejar cambios en el input de respuesta
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Manejar el cambio en el input de respuesta
+  const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (waitingForContinue) return;
     
-    // Solo permitir dígitos y un punto decimal
     const value = e.target.value;
-    if (/^[0-9]*\.?[0-9]*$/.test(value) || value === "") {
+    
+    // Permitir números, punto decimal y signo negativo
+    if (/^-?\d*\.?\d*$/.test(value) || value === '') {
       setUserAnswer(value);
     }
   };
@@ -66,9 +100,19 @@ export default function MultiVerticalExercise({
   const handleSubmit = () => {
     if (waitingForContinue) return;
     
-    // Convertir la respuesta del usuario a número
-    const numericAnswer = userAnswer === "" ? 0 : parseFloat(userAnswer);
-    onSubmit(numericAnswer);
+    const parsedAnswer = parseFloat(userAnswer);
+    if (!isNaN(parsedAnswer)) {
+      onSubmit(parsedAnswer);
+    } else {
+      onSubmit(0); // Si no hay una respuesta válida, enviar 0
+    }
+  };
+  
+  // Procesar tecla Enter para enviar respuesta
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
   };
   
   // Obtener el color de fondo según el nivel de dificultad
@@ -101,36 +145,47 @@ export default function MultiVerticalExercise({
         {/* Contenedor principal para el formato multi-vertical */}
         <div className="flex justify-center">
           <div className="grid grid-cols-1 gap-2 text-xl font-medium">
-            {/* Filas de números apilados */}
-            <div className="flex justify-end space-x-2 border-b-2 border-gray-400 pb-1">
-              {allNumbersStr.map((numStr, numIndex) => (
-                <div key={`number-${numIndex}`} className="flex justify-end items-center">
-                  {/* Alinear cada número a la derecha con padding */}
-                  <div className={`text-right ${getDifficultyTextColor()}`}>
-                    {numStr.padStart(maxLength, ' ')}
+            {/* Mostrar los múltiples números apilados */}
+            {alignedDigits.map((digits, numIndex) => (
+              <div 
+                key={`num-${numIndex}`} 
+                className={`flex justify-end space-x-2 ${
+                  numIndex === numbers.length - 1 ? 'border-b-2 border-gray-400 pb-1' : ''
+                }`}
+              >
+                {/* Mostrar signo más para todos excepto el primero */}
+                {numIndex !== 0 && (
+                  <div className={`w-8 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}>
+                    +
                   </div>
-                </div>
-              ))}
-            </div>
+                )}
+                
+                {/* Mostrar los dígitos del número actual */}
+                {digits.map((digit, digitIndex) => (
+                  <div 
+                    key={`num${numIndex}-digit${digitIndex}`} 
+                    className={`w-8 h-10 flex items-center justify-center ${getDifficultyTextColor()}`}
+                  >
+                    {digit === ' ' ? '' : digit}
+                  </div>
+                ))}
+              </div>
+            ))}
             
             {/* Input para la respuesta */}
-            <div className="flex justify-end space-x-2 pt-1">
+            <div className="flex justify-end mt-2">
               <Input
                 type="text"
-                className={`w-24 h-10 text-center font-bold text-xl p-2 ${
+                className={`w-full text-right py-2 px-4 text-xl ${
                   waitingForContinue ? getDifficultyColor() : 'bg-white'
                 }`}
                 value={userAnswer}
-                onChange={handleInputChange}
+                onChange={handleAnswerChange}
+                onKeyDown={handleKeyDown}
                 ref={inputRef}
                 disabled={waitingForContinue}
                 readOnly={waitingForContinue}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSubmit();
-                  }
-                }}
-                placeholder={t('exercises.enterAnswer')}
+                placeholder="Escribe tu respuesta..."
               />
             </div>
           </div>

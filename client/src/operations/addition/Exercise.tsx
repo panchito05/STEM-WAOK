@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { generateAdditionProblem, checkAnswer } from "./utils";
-import { Problem, UserAnswer } from "./types";
+import { Problem, UserAnswer, AdditionProblem } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +15,8 @@ import eventBus, { on, off } from '@/lib/eventBus';
 import LevelUpHandler from "@/components/LevelUpHandler";
 import { useRewardsStore, awardReward, getRewardProbability, checkAndAwardRewards, RewardTheme } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
+import VerticalExercise from './VerticalExercise';
+import MultiVerticalExercise from './MultiVerticalExercise';
 
 interface ExerciseProps {
   settings: ModuleSettings;
