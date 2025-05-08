@@ -131,7 +131,7 @@ export default function VerticalExercise({
       case "elementary": return "bg-emerald-50 border-emerald-300";
       case "intermediate": return "bg-orange-50 border-orange-300";
       case "advanced": return "bg-purple-50 border-purple-300";
-      case "expert": return "bg-indigo-50 border-indigo-300";
+      case "expert": return "bg-gray-50 border-gray-500";
       default: return "bg-gray-50 border-gray-300";
     }
   };
@@ -143,7 +143,7 @@ export default function VerticalExercise({
       case "elementary": return "text-emerald-700";
       case "intermediate": return "text-orange-700";
       case "advanced": return "text-purple-700";
-      case "expert": return "text-indigo-700";
+      case "expert": return "text-gray-900";
       default: return "text-gray-700";
     }
   };
