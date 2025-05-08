@@ -57,9 +57,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         setIsLoading(true);
         console.log("Intentando obtener el resultado de redirección de Google...");
-        const result = await getGoogleRedirectResult();
         
-        console.log("Resultado de redirección:", result ? "Obtenido" : "No hay resultado");
+        // Verificar dominio actual vs. dominio autorizado en Firebase
+        const currentDomain = window.location.hostname;
+        console.log("Dominio actual:", currentDomain);
+        console.log("Verificando redirección desde la URL:", window.location.href);
+        
+        // Intentar obtener el resultado de la redirección
+        const result = await getGoogleRedirectResult();
         
         if (result && result.user) {
           console.log("Usuario autenticado con Google:", result.user.email);
@@ -67,16 +72,45 @@ export function AuthProvider({ children }: AuthProviderProps) {
           
           // Enviar la información del usuario al backend para crear/sincronizar la cuenta
           await handleGoogleAuthSuccess(uid, email || '', displayName || '', photoURL || '');
+          
+          toast({
+            title: "Autenticación exitosa",
+            description: `Bienvenido, ${displayName || email}`,
+          });
         } else {
           console.log("No hay usuario en el resultado de redirección");
         }
       } catch (error) {
         console.error("Error handling redirect result:", error);
-        toast({
-          title: "Authentication Error",
-          description: "There was a problem authenticating with Google",
-          variant: "destructive",
-        });
+        
+        // Mostrar mensaje de error específico
+        if (error instanceof Error) {
+          let errorMessage = "There was a problem authenticating with Google";
+          
+          // Si es un error de Firebase, mostrar mensaje específico
+          if ('code' in error) {
+            const errorCode = (error as any).code;
+            
+            if (errorCode === 'auth/unauthorized-domain') {
+              errorMessage = "El dominio no está autorizado para autenticación. Contacta al administrador.";
+              console.error("ERROR DE DOMINIO NO AUTORIZADO. Verifica la configuración en Firebase Console.");
+            } else {
+              errorMessage = `Error: ${errorCode}`;
+            }
+          }
+          
+          toast({
+            title: "Authentication Error",
+            description: errorMessage,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Authentication Error",
+            description: "Unknown authentication error",
+            variant: "destructive",
+          });
+        }
       } finally {
         setIsLoading(false);
       }
@@ -152,16 +186,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const loginWithGoogle = async () => {
     try {
+      console.log("Iniciando login con Google...");
+      console.log("URL actual:", window.location.href);
+      console.log("Dominio:", window.location.hostname);
+      
       await signInWithGoogle();
       // No necesitamos hacer nada más aquí, ya que el resultado se manejará
       // a través del efecto handleRedirectResult
     } catch (error) {
       console.error("Error signing in with Google:", error);
-      toast({
-        title: "Google Login Failed",
-        description: "Could not sign in with Google",
-        variant: "destructive",
-      });
+      // Mostrar información más detallada del error
+      if (error && typeof error === 'object' && 'code' in error) {
+        console.error("Código de error específico:", (error as any).code);
+        
+        // Información específica para error de dominio no autorizado
+        if ((error as any).code === 'auth/unauthorized-domain') {
+          console.error("Dominio no autorizado. Verifica que el dominio actual esté en la lista de dominios autorizados en Firebase");
+          toast({
+            title: "Error de dominio",
+            description: "Este dominio no está autorizado para autenticación. Contacta al administrador.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Google Login Failed",
+            description: `Error: ${(error as any).code || "Unknown error"}`,
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Google Login Failed",
+          description: "Could not sign in with Google",
+          variant: "destructive",
+        });
+      }
       throw error;
     }
   };

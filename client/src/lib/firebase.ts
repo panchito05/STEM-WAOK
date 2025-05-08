@@ -20,61 +20,158 @@ console.log("VITE_FIREBASE_APP_ID:", import.meta.env.VITE_FIREBASE_APP_ID || "No
 // Configuración de Firebase
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.firebaseapp.com`,
+  // Permitir tanto el dominio de Firebase como el dominio actual
+  authDomain: window.location.hostname.includes("replit.dev") 
+    ? window.location.hostname 
+    : `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.firebaseapp.com`,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo",
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.appspot.com`,
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
 };
 
-// Inicializar Firebase
-let firebaseApp: ReturnType<typeof initializeApp> | undefined;
-let auth: ReturnType<typeof getAuth> | undefined;
-let googleProvider: GoogleAuthProvider | undefined;
+// Inicializar Firebase una sola vez
+let firebaseApp: ReturnType<typeof initializeApp>;
+let auth: ReturnType<typeof getAuth>;
+let googleProvider: GoogleAuthProvider;
 
-try {
-  firebaseApp = initializeApp(firebaseConfig);
-  auth = getAuth(firebaseApp);
-  googleProvider = new GoogleAuthProvider();
-  
-  // Configuraciones adicionales del proveedor de Google
-  googleProvider.setCustomParameters({
-    prompt: 'select_account'
-  });
-} catch (error) {
-  console.error("Error al inicializar Firebase:", error);
-}
+// Función para inicializar Firebase solo una vez
+const initFirebase = () => {
+  try {
+    // Verificar que la API key y otros valores necesarios estén presentes
+    if (!import.meta.env.VITE_FIREBASE_API_KEY || 
+        !import.meta.env.VITE_FIREBASE_PROJECT_ID || 
+        !import.meta.env.VITE_FIREBASE_APP_ID) {
+      console.error("Faltan variables de entorno para Firebase");
+      return false;
+    }
+
+    // Mostrar la configuración completa para depuración
+    console.log("Configuración de Firebase:", {
+      ...firebaseConfig,
+      currentDomain: window.location.hostname,
+      origin: window.location.origin
+    });
+
+    // Inicializar Firebase de manera segura para evitar duplicación
+    try {
+      firebaseApp = initializeApp(firebaseConfig);
+    } catch (initError: any) {
+      // Si el error es por duplicación, obtenemos la instancia existente
+      if (initError.code === 'app/duplicate-app') {
+        console.log("Usando instancia de Firebase existente");
+      } else {
+        console.error("Error al inicializar Firebase:", initError);
+        return false;
+      }
+    }
+
+    // Obtener auth y configurar el proveedor de Google
+    auth = getAuth();
+    googleProvider = new GoogleAuthProvider();
+    
+    // Configuraciones adicionales del proveedor de Google
+    googleProvider.setCustomParameters({
+      prompt: 'select_account',
+      // Indicar el dominio actual como dominio de redirección
+      redirect_uri: window.location.origin
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error durante la configuración de Firebase:", error);
+    return false;
+  }
+};
+
+// Inicializar Firebase al cargar el módulo
+const firebaseInitialized = initFirebase();
 
 // Funciones de autenticación
 export const signInWithGoogle = async () => {
   try {
-    if (!auth || !googleProvider) {
-      throw new Error("Firebase no está inicializado correctamente");
+    if (!firebaseInitialized || !auth || !googleProvider) {
+      console.error("Firebase no está inicializado correctamente");
+      throw new Error("Servicio de autenticación no disponible");
     }
     
-    // En mobile o tablets usamos redirect, en desktop podemos usar popup
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    console.log("Iniciando autenticación con Google...");
+    console.log("URL actual:", window.location.href);
+    console.log("Dominio registrado en Firebase:", firebaseConfig.authDomain);
     
-    if (isMobile) {
-      return signInWithRedirect(auth, googleProvider);
-    } else {
-      return await signInWithPopup(auth, googleProvider);
-    }
+    // Para mayor consistencia y evitar problemas, siempre usar redirect
+    // Esto funciona mejor con domains en Firebase Auth
+    return signInWithRedirect(auth, googleProvider);
+    
   } catch (error) {
     console.error("Error al iniciar sesión con Google:", error);
+    
+    // Mostrar específicamente el error para facilitar la depuración
+    if (error instanceof Error) {
+      console.error("Mensaje de error:", error.message);
+      console.error("Error completo:", JSON.stringify(error, null, 2));
+    }
+    
     throw error;
   }
 };
 
-// Función para obtener el resultado del redirect (para móviles)
+// Función para obtener el resultado del redirect después de la autenticación con Google
 export const getGoogleRedirectResult = async () => {
   try {
-    if (!auth) {
-      throw new Error("Firebase no está inicializado correctamente");
+    if (!firebaseInitialized || !auth) {
+      console.error("Firebase no está inicializado correctamente para obtener resultado de redirección");
+      throw new Error("Servicio de autenticación no disponible");
     }
     
-    return await getRedirectResult(auth);
+    console.log("Obteniendo resultado de redirección de Google Auth...");
+    
+    const result = await getRedirectResult(auth);
+    
+    if (result) {
+      console.log("Redirección exitosa:", {
+        providerId: result.providerId,
+        userId: result.user.uid,
+        email: result.user.email,
+        displayName: result.user.displayName,
+        metadata: result.user.metadata
+      });
+      
+      return result;
+    } else {
+      console.log("No hay resultado de redirección disponible");
+      return null;
+    }
   } catch (error) {
     console.error("Error al obtener resultado de redirección:", error);
+    
+    // Registrar detalles específicos del error para depuración
+    if (error instanceof Error) {
+      console.error("Tipo de error:", error.name);
+      console.error("Mensaje:", error.message);
+      
+      // Si es un error de Firebase, tendrá propiedades adicionales
+      if ('code' in error) {
+        console.error("Código de error Firebase:", (error as any).code);
+        
+        // Errores comunes de Firebase Auth y sus posibles soluciones
+        switch ((error as any).code) {
+          case 'auth/unauthorized-domain':
+            console.error("Dominio no autorizado en Firebase. Verifica las configuraciones de dominio en la consola de Firebase.");
+            break;
+          case 'auth/operation-not-allowed':
+            console.error("Operación no permitida. Verifica que el método de inicio de sesión esté habilitado en Firebase.");
+            break;
+          case 'auth/cancelled-popup-request':
+          case 'auth/popup-closed-by-user':
+            console.error("El usuario cerró la ventana de autenticación antes de completar el proceso.");
+            // No es realmente un error, solo el usuario canceló
+            return null;
+          default:
+            console.error("Error de Firebase no reconocido");
+        }
+      }
+    }
+    
     throw error;
   }
 };
