@@ -1906,22 +1906,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                           settings.difficulty === "beginner" ? "focus:ring-blue-400" :
                           settings.difficulty === "elementary" ? "focus:ring-emerald-400" :
                           settings.difficulty === "intermediate" ? "focus:ring-orange-400" :
-                      settings.difficulty === "advanced" ? "focus:ring-purple-400" :
-                      "focus:ring-indigo-400"
-                  } focus:border-transparent h-12 px-2 rounded-lg text-ellipsis text-right`}
-                  value={userAnswer}
-                  onChange={handleInputChange}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
-                      checkCurrentAnswer();
-                    }
-                  }}
-                  pattern="[0-9]*"
-                  inputMode="numeric"
-                  disabled={waitingForContinue || showingExplanation}
-                  readOnly={waitingForContinue || showingExplanation}
-                  aria-readonly={waitingForContinue || showingExplanation}
-                />
+                          settings.difficulty === "advanced" ? "focus:ring-purple-400" :
+                          "focus:ring-indigo-400"
+                      } focus:border-transparent h-12 px-2 rounded-lg text-ellipsis text-right`}
+                      value={userAnswer}
+                      onChange={handleInputChange}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
+                          checkCurrentAnswer();
+                        }
+                      }}
+                      pattern="[0-9]*"
+                      inputMode="numeric"
+                      disabled={waitingForContinue || showingExplanation}
+                      readOnly={waitingForContinue || showingExplanation}
+                      aria-readonly={waitingForContinue || showingExplanation}
+                    />
                   </div>
                 </div>
               )}
