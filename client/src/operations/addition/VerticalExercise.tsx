@@ -306,118 +306,46 @@ export default function VerticalExercise({
     }
   };
   
-  // Enviar respuesta
+  // Enviar respuesta - VERSIÓN COMPLETAMENTE REESCRITA Y SIMPLIFICADA
   const handleSubmit = () => {
     if (waitingForContinue) return;
     
-    // ENFOQUE ULTRA SIMPLIFICADO DIRECTAMENTE COMO TEXT Y LUEGO PARSEO
+    // SOLUCIÓN ULTRA SIMPLIFICADA QUE FUNCIONA Y ESTÁ BASADA EN EL PATRÓN DE VALIDACIÓN DEL FORMATO HORIZONTAL
+    console.log('[VERTICAL_EXERCISE] USANDO NUEVO MÉTODO DE VALIDACIÓN SIMPLIFICADO');
     
-    // 1. Recolectar todos los dígitos ingresados como texto plano
-    let userIntegerStr = '';
-    let userDecimalStr = '';
+    // 1. Recuperar los valores del usuario de forma directa
+    const { numberValue, stringValue } = getUserAnswer();
     
-    // Determinar si hay al menos un dígito ingresado
-    const hasAnyDigit = integerInputs.some(d => d !== '') || decimalInputs.some(d => d !== '');
+    // 2. Imprimir información de diagnóstico completa
+    console.log('[VERTICAL_EXERCISE] DIAGNÓSTICO DE RESPUESTA:', {
+      stringValue,
+      numberValue,
+      inputsEnteros: integerInputs, 
+      inputsDecimales: decimalInputs,
+      esperado: expectedAnswerStr,
+      esperadoNum: expectedAnswer
+    });
     
-    if (!hasAnyDigit) {
-      console.log('[VERTICAL_EXERCISE] No hay dígitos ingresados en absoluto');
-      // Si no hay ningún dígito ingresado, enviar 0 para indicar respuesta incorrecta
+    // 3. Verificar validez de la respuesta
+    if (stringValue === '') {
+      console.log('[VERTICAL_EXERCISE] Respuesta vacía, enviando 0');
       onSubmit(0);
       return;
     }
     
-    // Construir la parte entera de la respuesta
-    for (let i = 0; i < integerInputs.length; i++) {
-      // Si es un campo vacío, considerar como '0' solo si:
-      // 1. Hay algún dígito a la izquierda
-      // 2. Hay algún dígito a la derecha
-      const hasDigitLeft = integerInputs.slice(0, i).some(d => d !== '');
-      const hasDigitRight = integerInputs.slice(i + 1).some(d => d !== '');
-      
-      if (integerInputs[i] === '') {
-        if (hasDigitLeft || hasDigitRight) {
-          // Hay dígitos alrededor, reemplazar con '0'
-          userIntegerStr += '0';
-        }
-        // Si no hay dígitos alrededor, no añadir nada
-      } else {
-        // Si hay un dígito, añadirlo normalmente
-        userIntegerStr += integerInputs[i];
-      }
-    }
+    // 4. Comparar con respuesta esperada usando el mismo sistema del formato horizontal
+    // Añadimos tolerancia para manejar imprecisiones de punto flotante
+    const isCorrect = Math.abs(numberValue - expectedAnswer) < 0.0001;
     
-    // Si después de procesar no hay dígitos en la parte entera, usar '0'
-    if (userIntegerStr === '') {
-      userIntegerStr = '0';
-    }
-    
-    // Mismo proceso para la parte decimal si existe
-    if (useDecimalFormat) {
-      for (let i = 0; i < decimalInputs.length; i++) {
-        const hasDigitLeft = decimalInputs.slice(0, i).some(d => d !== '');
-        const hasDigitRight = decimalInputs.slice(i + 1).some(d => d !== '');
-        
-        if (decimalInputs[i] === '') {
-          if (hasDigitLeft || hasDigitRight) {
-            // Hay dígitos alrededor, reemplazar con '0'
-            userDecimalStr += '0';
-          }
-          // Si no hay dígitos alrededor, no añadir nada
-        } else {
-          // Si hay un dígito, añadirlo normalmente
-          userDecimalStr += decimalInputs[i];
-        }
-      }
-    }
-    
-    // 2. Construir el string de respuesta final
-    const userAnswerStr = userDecimalStr 
-      ? `${userIntegerStr}.${userDecimalStr}` 
-      : userIntegerStr;
-    
-    // 3. Convertir respuesta a número
-    let userAnswerNum: number;
-    try {
-      userAnswerNum = userDecimalStr
-        ? parseFloat(userAnswerStr)
-        : parseInt(userIntegerStr);
-        
-      // Si hay NaN, usar 0 como fallback
-      if (isNaN(userAnswerNum)) {
-        userAnswerNum = 0;
-        console.log('[VERTICAL_EXERCISE] Error al parsear respuesta, usando 0 como fallback');
-      }
-    } catch (error) {
-      userAnswerNum = 0;
-      console.error('[VERTICAL_EXERCISE] Error grave al parsear respuesta:', error);
-    }
-    
-    // 4. Diagnóstico
-    console.log('[VERTICAL_EXERCISE] DATOS FINALES:', {
-      inputsEnteros: integerInputs,
-      inputsDecimales: decimalInputs,
-      usuarioEnteroStr: userIntegerStr,
-      usuarioDecimalStr: userDecimalStr,
-      respuestaStr: userAnswerStr,
-      respuestaNum: userAnswerNum,
-      respuestaEsperadaStr: expectedAnswerStr,
-      respuestaEsperadaNum: expectedAnswer
-    });
-    
-    // 5. Validación final super simplificada
-    // Usar tolerancia para evitar problemas de punto flotante
-    const isCorrect = Math.abs(userAnswerNum - expectedAnswer) < 0.0001;
-    
-    console.log('[VERTICAL_EXERCISE] RESULTADO FINAL:', {
-      esCorrecta: isCorrect,
-      respuestaUsuario: userAnswerNum,
+    console.log('[VERTICAL_EXERCISE] RESULTADO DE VALIDACIÓN:', {
+      respuestaUsuario: numberValue,
       respuestaEsperada: expectedAnswer,
-      diferencia: Math.abs(userAnswerNum - expectedAnswer)
+      diferencia: Math.abs(numberValue - expectedAnswer),
+      esCorrecta: isCorrect
     });
     
-    // 6. Enviar resultado al componente padre
-    // Exactamente igual que en Exercise.tsx
-    onSubmit(isCorrect ? expectedAnswer : userAnswerNum);
+    // 5. Enviar resultado exactamente como lo hace el formato horizontal
+    onSubmit(isCorrect ? expectedAnswer : numberValue);
   };
   
   // -------- UTILIDADES DE UI --------
