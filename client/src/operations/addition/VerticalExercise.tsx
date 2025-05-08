@@ -108,6 +108,14 @@ export default function VerticalExercise({
       return;
     }
     
+    // Si es un punto decimal, verificar que no haya otro ya presente
+    if (value === '.') {
+      // Si ya hay un punto decimal en la entrada, no permitir otro
+      if (userDigits.includes('.')) {
+        return;
+      }
+    }
+    
     // Actualizar el dígito
     const newDigits = [...userDigits];
     newDigits[index] = value;
@@ -122,7 +130,16 @@ export default function VerticalExercise({
   
   // Calcular la respuesta completa del usuario
   const calculateUserAnswer = (): number => {
-    const userAnswerStr = userDigits.join('');
+    // Eliminar espacios vacíos y filtrar elementos no válidos
+    const validDigits = userDigits.filter(digit => digit !== '');
+    
+    // Crear la cadena de dígitos y convertirla a número
+    const userAnswerStr = validDigits.join('');
+    console.log('Respuesta del usuario:', userAnswerStr, 'Respuesta esperada:', exactSum);
+    
+    // Si no hay respuesta, devolver 0
+    if (!userAnswerStr) return 0;
+    
     return parseFloat(userAnswerStr) || 0;
   };
   
