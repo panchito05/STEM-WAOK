@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Check } from 'lucide-react';
-import { useTranslation } from '@/lib/translation';
+import { useTranslations } from '@/hooks/use-translations';
 import { AdditionProblem } from './types';
 import { superRobustNumberComparison } from '@/lib/super-robust-number-comparison';
 
@@ -24,7 +24,7 @@ export function VerifiedMultiVerticalExercise({
   waitingForContinue,
   difficultyLevel
 }: VerifiedMultiVerticalExerciseProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   
   // Referencia al input para enfocar automáticamente
   const inputRef = useRef<HTMLInputElement>(null);

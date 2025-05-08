@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Check } from 'lucide-react';
-import { useTranslation } from '@/lib/translation';
+import { useTranslations } from '@/hooks/use-translations';
 import { AdditionProblem } from './types';
 import { useFrozenProblem } from '@/lib/frozen-problem-system';
 import { superRobustNumberComparison } from '@/lib/super-robust-number-comparison';
@@ -27,7 +27,7 @@ export function UltraSecureMultiVerticalExercise({
   waitingForContinue,
   difficultyLevel
 }: UltraSecureMultiVerticalExerciseProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslations();
   
   // 1. Sistema de congelación de problemas
   const { freezeProblem, getOriginalProblem, validateAnswer } = useFrozenProblem();

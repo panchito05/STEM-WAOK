@@ -1,110 +1,93 @@
-import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { AdditionProblem } from '../operations/addition/types';
+import { superRobustNumberComparison } from './super-robust-number-comparison';
 
-// Contexto para el sistema de congelación de problemas
+// Definir el tipo para nuestro contexto
 interface FrozenProblemContextType {
   freezeProblem: (problem: AdditionProblem) => string;
   getOriginalProblem: (id: string) => AdditionProblem | null;
-  validateAnswer: (problemId: string, answer: number) => boolean;
+  validateAnswer: (id: string, answer: number) => boolean;
 }
 
-const FrozenProblemContext = createContext<FrozenProblemContextType>({
-  freezeProblem: () => "",
-  getOriginalProblem: () => null,
-  validateAnswer: () => false
-});
+// Crear el contexto
+const FrozenProblemContext = createContext<FrozenProblemContextType | null>(null);
 
-/**
- * Sistema de congelación de problemas - almacena copias inmutables
- * de los problemas para evitar referencias circulares y datos inconsistentes
- */
+// Proveedor del contexto
 export function FrozenProblemProvider({ children }: { children: ReactNode }) {
-  // Almacenamiento inmutable de problemas con sus datos originales
-  const [frozenProblems, setFrozenProblems] = useState<
-    Map<string, { problem: AdditionProblem; timestamp: number }>
-  >(new Map());
+  // Estado para almacenar los problemas congelados
+  const [frozenProblems, setFrozenProblems] = useState<Record<string, AdditionProblem>>({});
 
-  // Congelar un problema creando una copia profunda y asignando un ID único
-  const freezeProblem = useCallback((problem: AdditionProblem): string => {
-    const id = `problem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const frozenCopy = JSON.parse(JSON.stringify(problem)); // Copia profunda
+  // Congelar un problema y asignarle un ID único
+  const freezeProblem = (problem: AdditionProblem): string => {
+    // Crear un ID único para el problema
+    const id = `problem_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     
-    console.log(`[FROZEN-SYSTEM] Congelando problema con ID ${id}:`, frozenCopy);
+    // Almacenar una copia profunda del problema (inmutable)
+    const frozenProblemCopy = JSON.parse(JSON.stringify(problem));
     
-    setFrozenProblems(prev => {
-      const newMap = new Map(prev);
-      newMap.set(id, { 
-        problem: frozenCopy,
-        timestamp: Date.now()
-      });
-      return newMap;
-    });
+    // Guardar en el estado
+    setFrozenProblems(prev => ({
+      ...prev,
+      [id]: frozenProblemCopy
+    }));
     
+    console.log(`[FROZEN-PROBLEM] Problema congelado con ID: ${id}`);
     return id;
-  }, []);
+  };
 
-  // Obtener problema original por ID
-  const getOriginalProblem = useCallback((id: string): AdditionProblem | null => {
-    const frozen = frozenProblems.get(id);
-    console.log(`[FROZEN-SYSTEM] Recuperando problema con ID ${id}:`, frozen?.problem || null);
-    return frozen?.problem || null;
-  }, [frozenProblems]);
-
-  // Validación infalible con 3 capas de verificación
-  const validateAnswer = useCallback((problemId: string, answer: number): boolean => {
-    const frozenData = frozenProblems.get(problemId);
-    if (!frozenData) {
-      console.error(`[FROZEN-SYSTEM] Error: Problema con ID ${problemId} no encontrado`);
-      return false;
+  // Recuperar un problema congelado por su ID
+  const getOriginalProblem = (id: string): AdditionProblem | null => {
+    if (!id || !frozenProblems[id]) {
+      console.warn(`[FROZEN-PROBLEM] No se encontró problema con ID: ${id}`);
+      return null;
     }
     
-    const { problem } = frozenData;
-    
-    // Si es multi-vertical, recalcular
-    if (problem.layout === 'multi-vertical') {
-      const numbers = [problem.num1, problem.num2, ...(problem.additionalNumbers || [])];
-      const calculatedSum = numbers.reduce((sum, num) => sum + num, 0);
-      
-      console.log(`[FROZEN-SYSTEM] Validación para problema ${problemId}:`, {
-        numbers,
-        correctAnswer: problem.correctAnswer,
-        userAnswer: answer,
-        calculatedSum
-      });
-      
-      // Triple comprobación: exacta, calculada, y con tolerancia
-      return (
-        answer === problem.correctAnswer || 
-        answer === calculatedSum ||
-        Math.abs(calculatedSum - answer) < 0.001
-      );
-    }
-    
-    // Para otros formatos, comparación normal
-    return problem.correctAnswer === answer;
-  }, [frozenProblems]);
+    return frozenProblems[id];
+  };
 
-  // Crear el valor del contexto
-  const contextValue = useMemo(() => ({
+  // Validar una respuesta contra un problema congelado
+  const validateAnswer = (id: string, answer: number): boolean => {
+    const problem = getOriginalProblem(id);
+    if (!problem) return false;
+    
+    // Calcular la suma correcta del problema original
+    const numbers = [
+      problem.num1, 
+      problem.num2, 
+      ...(problem.additionalNumbers || [])
+    ];
+    
+    const correctSum = numbers.reduce((sum, num) => sum + num, 0);
+    
+    // Comparación super robusta
+    const isCorrect = superRobustNumberComparison(answer, correctSum) || 
+                     superRobustNumberComparison(answer, problem.correctAnswer);
+    
+    console.log(`[FROZEN-PROBLEM] Validación para problema ${id}: ${isCorrect ? 'CORRECTO' : 'INCORRECTO'}`);
+    console.log(`[FROZEN-PROBLEM] Detalles: Respuesta=${answer}, Suma correcta=${correctSum}, Respuesta esperada=${problem.correctAnswer}`);
+    
+    return isCorrect;
+  };
+
+  // Proporcionar los valores del contexto
+  const value = {
     freezeProblem,
     getOriginalProblem,
     validateAnswer
-  }), [freezeProblem, getOriginalProblem, validateAnswer]);
-
-  // Limpieza periódica se implementaría con useEffect, pero para simplificar no lo incluimos aquí
+  };
 
   return (
-    <FrozenProblemContext.Provider value={contextValue}>
+    <FrozenProblemContext.Provider value={value}>
       {children}
     </FrozenProblemContext.Provider>
   );
 }
 
-// Hook para acceder al sistema de congelación
+// Hook personalizado para usar el contexto
 export function useFrozenProblem() {
   const context = useContext(FrozenProblemContext);
   if (!context) {
-    throw new Error("useFrozenProblem debe usarse dentro de un FrozenProblemProvider");
+    throw new Error('useFrozenProblem debe usarse dentro de un FrozenProblemProvider');
   }
   return context;
 }
