@@ -1716,12 +1716,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           adaptiveDifficulty === "elementary" ? "bg-gradient-to-br from-white to-emerald-50 border-2 border-emerald-100" :
           adaptiveDifficulty === "intermediate" ? "bg-gradient-to-br from-white to-orange-50 border-2 border-orange-100" :
           adaptiveDifficulty === "advanced" ? "bg-gradient-to-br from-white to-purple-50 border-2 border-purple-100" :
+          adaptiveDifficulty === "expert" ? "bg-gradient-to-br from-white to-gray-50 border-2 border-gray-300" :
           "bg-gradient-to-br from-white to-indigo-50 border-2 border-indigo-100" :
           
           settings.difficulty === "beginner" ? "bg-gradient-to-br from-white to-blue-50 border-2 border-blue-100" :
           settings.difficulty === "elementary" ? "bg-gradient-to-br from-white to-emerald-50 border-2 border-emerald-100" :
           settings.difficulty === "intermediate" ? "bg-gradient-to-br from-white to-orange-50 border-2 border-orange-100" :
           settings.difficulty === "advanced" ? "bg-gradient-to-br from-white to-purple-50 border-2 border-purple-100" :
+          settings.difficulty === "expert" ? "bg-gradient-to-br from-white to-gray-50 border-2 border-gray-300" :
           "bg-gradient-to-br from-white to-indigo-50 border-2 border-indigo-100"
       }`}>
         <div className="text-center">
