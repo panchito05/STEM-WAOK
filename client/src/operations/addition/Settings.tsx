@@ -409,7 +409,12 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             </div>
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
               <Label htmlFor="enable-rewards" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">🏆</span>Activar sistema de recompensas
+                <span className="mr-2">🏆</span>Activar sistema de recompensas aleatorias
+                <div className="flex items-center ml-2 mt-1">
+                  <span className="mx-0.5 text-xl">🏅</span>
+                  <span className="mx-0.5 text-xl">🏆</span>
+                  <span className="mx-0.5 text-xl">⭐</span>
+                </div>
               </Label>
               <Switch
                 id="enable-rewards"
@@ -420,35 +425,26 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             </div>
             {localSettings.enableRewards && (
               <div className={`ml-6 mt-3 p-3 rounded-md bg-white/70 border ${theme.border}`}>
-                <Label htmlFor="reward-type" className={`block text-sm font-medium mb-2 ${theme.text}`}>
-                  <span className="mr-2">🎁</span>Tipo de recompensa
-                </Label>
-                <RadioGroup
-                  value={localSettings.rewardType}
-                  onValueChange={(value) => 
-                    handleUpdateSetting("rewardType", value as "medals" | "trophies" | "stars")
-                  }
-                  className="flex flex-col space-y-2 pl-2"
-                >
-                  <div className={`flex items-center p-1.5 rounded-md ${localSettings.rewardType === "medals" ? theme.bgLight : ""}`}>
-                    <RadioGroupItem value="medals" id="reward-medals" />
-                    <Label htmlFor="reward-medals" className={`ml-2 cursor-pointer text-sm ${theme.accent}`}>
-                      <span className="mr-1">🏅</span>Medallas
-                    </Label>
+                <p className={`text-sm ${theme.accent}`}>
+                  <span className="mr-2">🎲</span>Las recompensas aparecerán de forma aleatoria durante los ejercicios:
+                </p>
+                <div className="flex flex-wrap gap-3 mt-2 justify-center">
+                  <div className={`p-2 rounded-md bg-white/90 border ${theme.border} flex flex-col items-center`}>
+                    <span className="text-2xl">🏅</span>
+                    <span className={`text-xs font-medium ${theme.text}`}>Medallas</span>
                   </div>
-                  <div className={`flex items-center p-1.5 rounded-md ${localSettings.rewardType === "trophies" ? theme.bgLight : ""}`}>
-                    <RadioGroupItem value="trophies" id="reward-trophies" />
-                    <Label htmlFor="reward-trophies" className={`ml-2 cursor-pointer text-sm ${theme.accent}`}>
-                      <span className="mr-1">🏆</span>Trofeos
-                    </Label>
+                  <div className={`p-2 rounded-md bg-white/90 border ${theme.border} flex flex-col items-center`}>
+                    <span className="text-2xl">🏆</span>
+                    <span className={`text-xs font-medium ${theme.text}`}>Trofeos</span>
                   </div>
-                  <div className={`flex items-center p-1.5 rounded-md ${localSettings.rewardType === "stars" ? theme.bgLight : ""}`}>
-                    <RadioGroupItem value="stars" id="reward-stars" />
-                    <Label htmlFor="reward-stars" className={`ml-2 cursor-pointer text-sm ${theme.accent}`}>
-                      <span className="mr-1">⭐</span>Estrellas
-                    </Label>
+                  <div className={`p-2 rounded-md bg-white/90 border ${theme.border} flex flex-col items-center`}>
+                    <span className="text-2xl">⭐</span>
+                    <span className={`text-xs font-medium ${theme.text}`}>Estrellas</span>
                   </div>
-                </RadioGroup>
+                </div>
+                <p className={`text-xs mt-3 ${theme.textSecondary} text-center italic`}>
+                  El sistema elegirá automáticamente qué recompensa mostrar en cada ocasión
+                </p>
               </div>
             )}
           </div>
