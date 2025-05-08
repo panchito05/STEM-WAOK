@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check } from "lucide-react";
 // import { useTranslation } from "react-i18next";
 // Temporal mientras arreglamos el problema con i18n
 const useTranslation = () => ({ t: (key: string) => key.includes('.') ? key.split('.')[1] : key });
-import { DifficultyLevel, AdditionProblem, UserAnswer } from "./types";
+import { DifficultyLevel, AdditionProblem } from "./types";
 
 interface VerticalExerciseProps {
   problem: AdditionProblem;
@@ -49,14 +49,23 @@ export default function VerticalExercise({
   const maxIntLength = Math.max(num1Int.length, num2Int.length);
   const maxDecLength = Math.max(num1Dec.length, num2Dec.length);
   
+  // Calcular la suma exacta para determinar el número correcto de posiciones
+  const exactSum = problem.num1 + problem.num2;
+  const exactSumStr = exactSum.toString();
+  const [exactSumInt, exactSumDec = ''] = exactSumStr.split('.');
+  
+  // Determinar la longitud máxima de la parte entera considerando la suma
+  const resultIntLength = exactSumInt.length;
+  const displayIntLength = Math.max(resultIntLength, maxIntLength);
+  
   // Crear arrays con los dígitos alineados correctamente
   const num1Digits: string[] = [];
   const num2Digits: string[] = [];
   
-  // Añadir dígitos enteros uno por uno
-  for (let i = 0; i < maxIntLength; i++) {
-    num1Digits.push(i < num1Int.padStart(maxIntLength, ' ').length ? num1Int.padStart(maxIntLength, ' ')[i] : ' ');
-    num2Digits.push(i < num2Int.padStart(maxIntLength, ' ').length ? num2Int.padStart(maxIntLength, ' ')[i] : ' ');
+  // Añadir dígitos enteros uno por uno, garantizando espacio para la suma completa
+  for (let i = 0; i < displayIntLength; i++) {
+    num1Digits.push(i < num1Int.padStart(displayIntLength, ' ').length ? num1Int.padStart(displayIntLength, ' ')[i] : ' ');
+    num2Digits.push(i < num2Int.padStart(displayIntLength, ' ').length ? num2Int.padStart(displayIntLength, ' ')[i] : ' ');
   }
   
   // Añadir punto decimal y dígitos decimales si es necesario
@@ -71,10 +80,12 @@ export default function VerticalExercise({
     }
   }
   
-  // Calcular el número de posiciones que necesitamos para el resultado
-  const totalPositions = hasDecimals 
-    ? maxIntLength + maxDecLength + 1 // +1 para el punto decimal
-    : maxIntLength;
+  // Calcular el número de posiciones que necesitamos para el resultado basado en la suma real
+  // Asegurarnos de tener al menos una posición más que la longitud máxima de los operandos
+  // para manejar posibles acarreos
+  const totalPositions = hasDecimals
+    ? Math.max(exactSumInt.length, maxIntLength + 1) + Math.max(exactSumDec.length, maxDecLength) + 1 // +1 para el punto decimal
+    : Math.max(exactSumInt.length, maxIntLength + 1);
   
   // Inicializar los dígitos del usuario si están vacíos
   // Resetear los campos cuando cambia el problema o se inicia un nuevo problema
