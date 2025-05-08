@@ -1,20 +1,40 @@
-export type DifficultyLevel = "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
+import { Problem } from './utils';
 
-export type ExerciseLayout = "horizontal" | "vertical";
-
-export interface Problem {
-  num1: number;
-  num2: number;
-  correctAnswer: number;
+export interface AdditionExerciseProps {
+  totalProblems: number;
+  difficulty: "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
+  timeLimit?: string;
+  problemCount?: number;
+  onComplete: (result: {
+    score: number;
+    totalProblems: number;
+    timeSpent: number;
+    difficulty: string;
+  }) => void;
+  showFeedbackMessage?: boolean;
+  showImmediateFeedback?: boolean;
+  enableCompensation?: boolean;
+  showAnswerWithExplanation?: boolean;
+  maxAttempts?: number;
+  useTouchscreen?: boolean;
+  enableSoundEffects?: boolean;
+  enableAdaptiveDifficulty?: boolean;
+  enableRewards?: boolean;
 }
 
-export interface AdditionProblem extends Problem {
-  // Para posibles extensiones específicas de adición
-  layout?: ExerciseLayout;
+export interface VerticalProblem extends Problem {
+  // Propiedades específicas para formato vertical
+  maxIntLength: number;
+  maxDecLength?: number;
+  useDecimalFormat?: boolean;
 }
 
-export interface UserAnswer {
-  problem: Problem;
-  userAnswer: number;
-  isCorrect: boolean;
+export interface VerticalExerciseProps {
+  problem: VerticalProblem;
+  onSubmit: (userAnswer: number) => void;
+  isActive: boolean;
+  currentAttempts?: number;
+  maxAttempts?: number;
+  waitingForContinue: boolean;
+  difficultyLevel: string;
 }

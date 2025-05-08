@@ -62,36 +62,58 @@ export default function VerticalExercise({
   const handleSubmit = () => {
     if (waitingForContinue) return;
     
-    // Convertir la entrada del usuario a número
-    let userNumericAnswer: number;
-    
-    // Tratar valores vacíos como 0
-    if (!userAnswer.trim()) {
-      userNumericAnswer = 0;
-    } else {
-      // Convertir a número, manteniendo decimales si existen
-      userNumericAnswer = userAnswer.includes('.') 
-        ? parseFloat(userAnswer) 
-        : parseInt(userAnswer);
-        
-      // Si hay error de conversión, usar 0
-      if (isNaN(userNumericAnswer)) {
-        userNumericAnswer = 0;
-      }
-    }
-    
-    // Validar respuesta con tolerancia para decimales
-    const isCorrect = Math.abs(userNumericAnswer - expectedAnswer) < 0.001;
-    
-    console.log('[VERTICAL_SIMPLE] Validando respuesta:', {
-      userAnswerString: userAnswer,
-      userAnswerNumber: userNumericAnswer,
-      expectedAnswer,
-      isCorrect
+    // SUPER EXTRA DEBUGGING: mostrar información completa
+    console.log('🚨 VALIDACIÓN VERTICAL 🚨', {
+      valorInput: userAnswer,
+      valorEsperado: expectedAnswer,
+      problemaOriginal: problem
     });
     
-    // Devolver el valor correcto si es correcto, o la respuesta del usuario si es incorrecta
-    onSubmit(isCorrect ? expectedAnswer : userNumericAnswer);
+    // Si el campo está vacío, enviar cero como respuesta incorrecta
+    if (!userAnswer || userAnswer.trim() === '') {
+      console.log('🚨 CAMPO VACÍO - enviando 0');
+      onSubmit(0);
+      return;
+    }
+    
+    // Intenta convertir a número con extremo cuidado
+    let userNumericValue: number;
+    try {
+      // Para decimales, usar parseFloat, para enteros parseInt
+      if (userAnswer.includes('.')) {
+        userNumericValue = parseFloat(userAnswer);
+      } else {
+        userNumericValue = parseInt(userAnswer, 10);
+      }
+      
+      // Verificación de seguridad para NaN
+      if (isNaN(userNumericValue)) {
+        console.log('🚨 VALOR NaN DETECTADO - enviando userAnswer como string');
+        // Intento de último recurso: enviar el valor exacto como string convertido a número
+        const userAnswerAsNumber = Number(userAnswer);
+        onSubmit(userAnswerAsNumber); 
+        return;
+      }
+    } catch (error) {
+      console.error('🚨 ERROR PROCESANDO NÚMERO:', error);
+      onSubmit(0);
+      return;
+    }
+    
+    // VALIDACIÓN FINAL: comparar número con tolerancia para decimales
+    const difference = Math.abs(userNumericValue - expectedAnswer);
+    const isCorrect = difference < 0.001;
+    
+    console.log('🚨 RESULTADO VALIDACIÓN:', { 
+      userAnswer, 
+      userNumericValue, 
+      expectedAnswer,
+      difference,
+      isCorrect 
+    });
+    
+    // Retornamos exactamente el valor correcto (sin retoques)
+    onSubmit(userNumericValue);
   };
   
   // Manejar tecla Enter
