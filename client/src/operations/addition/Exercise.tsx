@@ -1762,7 +1762,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   settings.difficulty === "advanced" ? "text-purple-700" :
                   "text-indigo-700"
             }`}>
-              <span className={`text-right w-20 p-2 rounded-lg ${
+              <span className={`text-right p-2 rounded-lg ${
                 settings.enableAdaptiveDifficulty ?
                   adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
                   adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
@@ -1775,9 +1775,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
                   settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
                   "bg-indigo-100 text-indigo-800"
-              }`}>{currentProblem.num1}</span>
+              }`} style={{ minWidth: '8rem' }}>
+                {/* Detectar si es decimal para asegurar formato correcto */}
+                {Number.isInteger(currentProblem.num1) 
+                  ? currentProblem.num1 
+                  : currentProblem.num1.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
+                }
+              </span>
               <span className="mx-4 text-5xl">+</span>
-              <span className={`text-right w-20 p-2 rounded-lg ${
+              <span className={`text-right p-2 rounded-lg ${
                 settings.enableAdaptiveDifficulty ?
                   adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
                   adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
@@ -1790,7 +1796,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
                   settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
                   "bg-indigo-100 text-indigo-800"
-              }`}>{currentProblem.num2}</span>
+              }`} style={{ minWidth: '8rem' }}>
+                {/* Detectar si es decimal para asegurar formato correcto */}
+                {Number.isInteger(currentProblem.num2) 
+                  ? currentProblem.num2 
+                  : currentProblem.num2.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
+                }
+              </span>
               <span className="mx-4 text-5xl">=</span>
               <div className={`w-20 relative ${
                 settings.enableAdaptiveDifficulty ?
@@ -1881,6 +1893,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               {num}
             </button>
           ))}
+          
+          {/* Botón de punto decimal - solo visible en niveles avanzado y experto */}
+          {(settings.difficulty === "advanced" || settings.difficulty === "expert" || 
+           (settings.enableAdaptiveDifficulty && 
+            (adaptiveDifficulty === "advanced" || adaptiveDifficulty === "expert"))) && (
+            <button
+              className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
+              onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput(".")}
+              disabled={waitingForContinue || showingExplanation}
+              aria-disabled={waitingForContinue || showingExplanation}
+            >
+              .
+            </button>
+          )}
+          
           <button
             className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
             onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput("backspace")}
