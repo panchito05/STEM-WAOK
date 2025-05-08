@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { useMobile } from "@/hooks/use-mobile";
-import { Bell, Menu, X } from "lucide-react";
+import { Bell, Menu, X, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -12,12 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ChildProfileSelector from "@/components/ChildProfileSelector";
+import RewardsAlbum from "@/components/rewards/RewardsAlbum";
+import { useRewardsStore } from "@/lib/rewards-system";
 
 export default function Navbar() {
   const [location] = useLocation();
   const isMobile = useMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
+  const { newRewardsCount } = useRewardsStore();
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -71,6 +74,12 @@ export default function Navbar() {
                 </div>
               )}
 
+              {isAuthenticated && (
+                <div className="mr-3">
+                  <RewardsAlbum />
+                </div>
+              )}
+              
               <Button variant="ghost" size="icon" className="text-gray-400 hover:text-gray-500">
                 <Bell className="h-5 w-5" />
               </Button>
@@ -172,6 +181,11 @@ export default function Navbar() {
               {/* Selector de perfiles para móvil */}
               <div className="mt-3 mb-4 px-4">
                 <ChildProfileSelector />
+              </div>
+              
+              {/* Álbum de recompensas para móvil */}
+              <div className="mt-3 mb-2 px-4 flex justify-center">
+                <RewardsAlbum />
               </div>
               
               <div className="mt-1 space-y-1">
