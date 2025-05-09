@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { generateAdditionProblem, checkAnswer } from "./utils";
-import { Problem, UserAnswer, AdditionProblem } from "./types";
+import { Problem, UserAnswer } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
@@ -15,9 +15,6 @@ import eventBus, { on, off } from '@/lib/eventBus';
 import LevelUpHandler from "@/components/LevelUpHandler";
 import { useRewardsStore, awardReward, getRewardProbability, checkAndAwardRewards, RewardTheme } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
-import VerticalExercise from './VerticalExercise';
-import MultiVerticalExercise from './MultiVerticalExercise';
-import { UltraSecureMultiVerticalExercise } from './UltraSecureMultiVerticalExercise';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -746,20 +743,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setUserAnswer(prev => prev + value);
       }
     }
-  };
-  
-  // Manejar envío de respuesta desde los componentes externos (VerticalExercise, MultiVerticalExercise)
-  const handleExternalSubmit = (answer: number) => {
-    // Verificar si estamos esperando que el usuario presione "Continuar"
-    if (waitingForContinue || showingExplanation) {
-      return;
-    }
-    
-    // Convertir la respuesta a string para mantener consistencia con el estado actual
-    setUserAnswer(answer.toString());
-    
-    // Procesar la respuesta con la lógica existente
-    checkCurrentAnswer();
   };
 
   const checkCurrentAnswer = () => {
@@ -1782,148 +1765,126 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         
           {currentProblem ? (
-            <>
-              {/* Comprobar el tipo de layout del problema actual */}
-              {(currentProblem as AdditionProblem).layout === 'vertical' ? (
-                <VerticalExercise
-                  problem={currentProblem as AdditionProblem}
-                  onSubmit={handleExternalSubmit}
-                  isActive={!waitingForContinue && !showingExplanation}
-                  currentAttempts={currentAttempts}
-                  maxAttempts={settings.maxAttempts}
-                  waitingForContinue={waitingForContinue || showingExplanation}
-                  difficultyLevel={settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
-                />
-              ) : (currentProblem as AdditionProblem).layout === 'multi-vertical' ? (
-                <UltraSecureMultiVerticalExercise
-                  problem={currentProblem as AdditionProblem}
-                  onCorrect={() => handleExternalSubmit(currentProblem.correctAnswer)}
-                  onIncorrect={() => handleExternalSubmit(0)}
-                  difficultyLevel={settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
-                />
-              ) : (
-                <div className={`text-4xl font-bold mb-6 flex justify-center items-baseline ${
-                  feedbackMessage ? 
-                    (feedbackColor === "green" ? "text-green-600" : 
-                     feedbackColor === "blue" ? "text-blue-600" : 
-                     "text-red-600") : 
-                    settings.enableAdaptiveDifficulty ? 
-                      adaptiveDifficulty === "beginner" ? "text-blue-700" :
-                      adaptiveDifficulty === "elementary" ? "text-emerald-700" :
-                      adaptiveDifficulty === "intermediate" ? "text-orange-700" :
-                      adaptiveDifficulty === "advanced" ? "text-purple-700" :
-                      "text-indigo-700" :
-                      settings.difficulty === "beginner" ? "text-blue-700" :
-                      settings.difficulty === "elementary" ? "text-emerald-700" :
-                      settings.difficulty === "intermediate" ? "text-orange-700" :
-                      settings.difficulty === "advanced" ? "text-purple-700" :
-                      "text-indigo-700"
-                }`}>
-                  <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
+            <div className={`text-4xl font-bold mb-6 flex justify-center items-baseline ${
+              feedbackMessage ? 
+                (feedbackColor === "green" ? "text-green-600" : 
+                 feedbackColor === "blue" ? "text-blue-600" : 
+                 "text-red-600") : 
+                settings.enableAdaptiveDifficulty ? 
+                  adaptiveDifficulty === "beginner" ? "text-blue-700" :
+                  adaptiveDifficulty === "elementary" ? "text-emerald-700" :
+                  adaptiveDifficulty === "intermediate" ? "text-orange-700" :
+                  adaptiveDifficulty === "advanced" ? "text-purple-700" :
+                  "text-indigo-700" :
+                  settings.difficulty === "beginner" ? "text-blue-700" :
+                  settings.difficulty === "elementary" ? "text-emerald-700" :
+                  settings.difficulty === "intermediate" ? "text-orange-700" :
+                  settings.difficulty === "advanced" ? "text-purple-700" :
+                  "text-indigo-700"
+            }`}>
+              <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800" :
+                  
+                  settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800"
+              }`} style={{ minWidth: '10rem' }}>
+                {/* Detectar si es decimal para asegurar formato correcto */}
+                {Number.isInteger(currentProblem.num1) 
+                  ? currentProblem.num1 
+                  : currentProblem.num1.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
+                }
+              </span>
+              <span className="mx-4 text-5xl">+</span>
+              <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800" :
+                  
+                  settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800"
+              }`} style={{ minWidth: '10rem' }}>
+                {/* Detectar si es decimal para asegurar formato correcto */}
+                {Number.isInteger(currentProblem.num2) 
+                  ? currentProblem.num2 
+                  : currentProblem.num2.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
+                }
+              </span>
+              <span className="mx-4 text-5xl">=</span>
+              <div className={`relative ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "border-b-4 border-blue-400" :
+                  adaptiveDifficulty === "elementary" ? "border-b-4 border-emerald-400" :
+                  adaptiveDifficulty === "intermediate" ? "border-b-4 border-orange-400" :
+                  adaptiveDifficulty === "advanced" ? "border-b-4 border-purple-400" :
+                  "border-b-4 border-indigo-400" :
+                  
+                  settings.difficulty === "beginner" ? "border-b-4 border-blue-400" :
+                  settings.difficulty === "elementary" ? "border-b-4 border-emerald-400" :
+                  settings.difficulty === "intermediate" ? "border-b-4 border-orange-400" :
+                  settings.difficulty === "advanced" ? "border-b-4 border-purple-400" :
+                  "border-b-4 border-indigo-400"
+              }`} style={{ minWidth: '10rem' }}>
+                <Input
+                  type="text"
+                  ref={inputRef}
+                  className={`w-full text-center text-2xl font-bold ${
+                    waitingForContinue || showingExplanation ? 
+                      settings.enableAdaptiveDifficulty ?
+                        adaptiveDifficulty === "beginner" ? "bg-blue-50" :
+                        adaptiveDifficulty === "elementary" ? "bg-emerald-50" :
+                        adaptiveDifficulty === "intermediate" ? "bg-orange-50" :
+                        adaptiveDifficulty === "advanced" ? "bg-purple-50" :
+                        "bg-indigo-50" :
+                        
+                        settings.difficulty === "beginner" ? "bg-blue-50" :
+                        settings.difficulty === "elementary" ? "bg-emerald-50" :
+                        settings.difficulty === "intermediate" ? "bg-orange-50" :
+                        settings.difficulty === "advanced" ? "bg-purple-50" :
+                        "bg-indigo-50"
+                    : "bg-transparent"
+                  } focus:outline-none focus:ring-2 ${
                     settings.enableAdaptiveDifficulty ?
-                      adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                      adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                      adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                      adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                      "bg-indigo-100 text-indigo-800" :
+                      adaptiveDifficulty === "beginner" ? "focus:ring-blue-400" :
+                      adaptiveDifficulty === "elementary" ? "focus:ring-emerald-400" :
+                      adaptiveDifficulty === "intermediate" ? "focus:ring-orange-400" :
+                      adaptiveDifficulty === "advanced" ? "focus:ring-purple-400" :
+                      "focus:ring-indigo-400" :
                       
-                      settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                      settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                      settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                      settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                      "bg-indigo-100 text-indigo-800"
-                  }`} style={{ minWidth: '10rem' }}>
-                    {/* Detectar si es decimal para asegurar formato correcto */}
-                    {Number.isInteger(currentProblem.num1) 
-                      ? currentProblem.num1 
-                      : currentProblem.num1.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
+                      settings.difficulty === "beginner" ? "focus:ring-blue-400" :
+                      settings.difficulty === "elementary" ? "focus:ring-emerald-400" :
+                      settings.difficulty === "intermediate" ? "focus:ring-orange-400" :
+                      settings.difficulty === "advanced" ? "focus:ring-purple-400" :
+                      "focus:ring-indigo-400"
+                  } focus:border-transparent h-12 px-2 rounded-lg text-ellipsis text-right`}
+                  value={userAnswer}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
+                      checkCurrentAnswer();
                     }
-                  </span>
-                  <span className="mx-4 text-5xl">+</span>
-                  <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
-                    settings.enableAdaptiveDifficulty ?
-                      adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                      adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                      adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                      adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                      "bg-indigo-100 text-indigo-800" :
-                      
-                      settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                      settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                      settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                      settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                      "bg-indigo-100 text-indigo-800"
-                  }`} style={{ minWidth: '10rem' }}>
-                    {/* Detectar si es decimal para asegurar formato correcto */}
-                    {Number.isInteger(currentProblem.num2) 
-                      ? currentProblem.num2 
-                      : currentProblem.num2.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
-                    }
-                  </span>
-                  <span className="mx-4 text-5xl">=</span>
-                  <div className={`relative ${
-                    settings.enableAdaptiveDifficulty ?
-                      adaptiveDifficulty === "beginner" ? "border-b-4 border-blue-400" :
-                      adaptiveDifficulty === "elementary" ? "border-b-4 border-emerald-400" :
-                      adaptiveDifficulty === "intermediate" ? "border-b-4 border-orange-400" :
-                      adaptiveDifficulty === "advanced" ? "border-b-4 border-purple-400" :
-                      "border-b-4 border-indigo-400" :
-                      
-                      settings.difficulty === "beginner" ? "border-b-4 border-blue-400" :
-                      settings.difficulty === "elementary" ? "border-b-4 border-emerald-400" :
-                      settings.difficulty === "intermediate" ? "border-b-4 border-orange-400" :
-                      settings.difficulty === "advanced" ? "border-b-4 border-purple-400" :
-                      "border-b-4 border-indigo-400"
-                  }`} style={{ minWidth: '10rem' }}>
-                    <Input
-                      type="text"
-                      ref={inputRef}
-                      className={`w-full text-center text-2xl font-bold ${
-                        waitingForContinue || showingExplanation ? 
-                          settings.enableAdaptiveDifficulty ?
-                            adaptiveDifficulty === "beginner" ? "bg-blue-50" :
-                            adaptiveDifficulty === "elementary" ? "bg-emerald-50" :
-                            adaptiveDifficulty === "intermediate" ? "bg-orange-50" :
-                            adaptiveDifficulty === "advanced" ? "bg-purple-50" :
-                            "bg-indigo-50" :
-                            
-                            settings.difficulty === "beginner" ? "bg-blue-50" :
-                            settings.difficulty === "elementary" ? "bg-emerald-50" :
-                            settings.difficulty === "intermediate" ? "bg-orange-50" :
-                            settings.difficulty === "advanced" ? "bg-purple-50" :
-                            "bg-indigo-50"
-                        : "bg-transparent"
-                      } focus:outline-none focus:ring-2 ${
-                        settings.enableAdaptiveDifficulty ?
-                          adaptiveDifficulty === "beginner" ? "focus:ring-blue-400" :
-                          adaptiveDifficulty === "elementary" ? "focus:ring-emerald-400" :
-                          adaptiveDifficulty === "intermediate" ? "focus:ring-orange-400" :
-                          adaptiveDifficulty === "advanced" ? "focus:ring-purple-400" :
-                          "focus:ring-indigo-400" :
-                          
-                          settings.difficulty === "beginner" ? "focus:ring-blue-400" :
-                          settings.difficulty === "elementary" ? "focus:ring-emerald-400" :
-                          settings.difficulty === "intermediate" ? "focus:ring-orange-400" :
-                          settings.difficulty === "advanced" ? "focus:ring-purple-400" :
-                          "focus:ring-indigo-400"
-                      } focus:border-transparent h-12 px-2 rounded-lg text-ellipsis text-right`}
-                      value={userAnswer}
-                      onChange={handleInputChange}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
-                          checkCurrentAnswer();
-                        }
-                      }}
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                      disabled={waitingForContinue || showingExplanation}
-                      readOnly={waitingForContinue || showingExplanation}
-                      aria-readonly={waitingForContinue || showingExplanation}
-                    />
-                  </div>
-                </div>
-              )}
-            </>
+                  }}
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                  disabled={waitingForContinue || showingExplanation}
+                  readOnly={waitingForContinue || showingExplanation}
+                  aria-readonly={waitingForContinue || showingExplanation}
+                />
+              </div>
+            </div>
           ) : (
             <div className="text-center py-4">
               <p>Cargando el siguiente problema...</p>
