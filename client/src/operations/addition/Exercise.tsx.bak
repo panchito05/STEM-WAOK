@@ -1,27 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-
-// Simulación de funcionalidad de i18next para evitar dependencia externa
-const useTranslation = () => ({
-  t: (key: string) => {
-    const translations: Record<string, string> = {
-      'exercises.additionExercise': 'Ejercicio de Suma',
-      'exercises.settings': 'Configuración',
-      'exercises.problem': 'Problema',
-      'exercises.timeLeft': 'Tiempo restante',
-      'exercises.elapsedTime': 'Tiempo transcurrido',
-      'exercises.correctAnswer': '¡Respuesta correcta!',
-      'exercises.incorrectAnswer': 'Respuesta incorrecta.',
-      'exercises.correctAnswerIs': 'La respuesta correcta es',
-      'exercises.check': 'Comprobar',
-      'exercises.start': 'Comenzar',
-      'exercises.showAnswer': 'Mostrar respuesta',
-      'common.prev': 'Anterior',
-      'tooltips.activateShowAnswer': 'Activa esta opción en configuración'
-    };
-    return translations[key] || key;
-  }
-});
-import { Check, ChevronLeft, ChevronRight, Info, Settings as SettingsIcon, RotateCcw, ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Check, ChevronLeft, ChevronRight, Info, Settings as SettingsIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -32,7 +11,9 @@ import { getRandomInt, debounce } from "@/lib/utils";
 import { ModuleSettings } from "@/context/SettingsContext";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Slider } from "@/components/ui/slider";
+import { ArrowLeft, RotateCcw } from "lucide-react";
 import { defaultModuleSettings } from "@/utils/operationComponents";
 import DifficultyExamples from "@/components/DifficultyExamples";
 
@@ -48,146 +29,6 @@ interface UserAnswer {
   problem: Problem;
   userAnswer: number;
   isCorrect: boolean;
-}
-
-// ==================== UTILITY FUNCTIONS ====================
-
-// Función para generar un número decimal aleatorio con 1 o 2 decimales
-function getRandomDecimal(min: number, max: number, decimals: 1 | 2): number {
-  const base = getRandomInt(min, max);
-  const decimalPart = decimals === 1 
-    ? getRandomInt(1, 9) / 10  // Para 1 decimal: 0.1, 0.2, ..., 0.9
-    : getRandomInt(10, 99) / 100; // Para 2 decimales: 0.10, 0.11, ..., 0.99
-  
-  return base + decimalPart;
-}
-
-function generateAdditionProblem(difficulty: string): Problem {
-  let num1: number;
-  let num2: number;
-  let useDecimals = false;
-
-  switch (difficulty) {
-    case "beginner":
-      // Single-digit addition (1+1 to 9+9)
-      // Ejemplo: 1 + 8 = ?, 7 + 5 = ?
-      num1 = getRandomInt(1, 9);
-      num2 = getRandomInt(1, 9);
-      break;
-      
-    case "elementary":
-      // Two-digit + single-digit, no carrying (21+3, 45+4)
-      // Ejemplo: 12 + 15 = ?, 24 + 13 = ?
-      // Nota: los ejemplos no coinciden exactamente con la descripción, ajustamos para que coincida con los ejemplos
-      num1 = getRandomInt(10, 30);
-      num2 = getRandomInt(10, 20);
-      break;
-      
-    case "intermediate":
-      // Two-digit + two-digit, no carrying (21+34, 45+54)
-      // Ejemplo: 65 + 309 = ?, 392 + 132 = ?
-      // Nota: los ejemplos no coinciden exactamente con la descripción, ajustamos para que coincida con los ejemplos
-      num1 = getRandomInt(50, 400);
-      num2 = getRandomInt(100, 400);
-      break;
-      
-    case "advanced":
-      // Two-digit + two-digit with carrying (27+85, 38+67)
-      // Ejemplo: 1247 + 3568 = ?, 5934 + 8742 = ?
-      // Nota: los ejemplos son números grandes de 4 dígitos, ajustamos para que coincida
-      
-      // 20% de probabilidad de usar decimales en nivel avanzado
-      useDecimals = Math.random() < 0.2;
-      
-      if (useDecimals) {
-        // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
-        const decimalMode = getRandomInt(1, 3);
-        const decimalPlaces = Math.random() < 0.5 ? 1 : 2; // 50% chance for 1 decimal, 50% for 2
-        
-        if (decimalMode === 1 || decimalMode === 3) { // Primer número o ambos
-          num1 = getRandomDecimal(100, 1000, decimalPlaces as 1 | 2);
-        } else {
-          num1 = getRandomInt(100, 1000);
-        }
-        
-        if (decimalMode === 2 || decimalMode === 3) { // Segundo número o ambos
-          num2 = getRandomDecimal(100, 1000, decimalPlaces as 1 | 2);
-        } else {
-          num2 = getRandomInt(100, 1000);
-        }
-        
-        console.log(`[DECIMALS] Generando problema con decimales: ${num1} + ${num2}`);
-      } else {
-        num1 = getRandomInt(1000, 6000);
-        num2 = getRandomInt(1000, 9000);
-      }
-      break;
-      
-    case "expert":
-      // Three-digit addition with carrying (238+347, 581+629)
-      // Ejemplo: 70960 + 11650 = ?, 28730 + 59436 = ?
-      // Nota: los ejemplos son números muy grandes, ajustamos para que coincida
-      
-      // 35% de probabilidad de usar decimales en nivel experto
-      useDecimals = Math.random() < 0.35;
-      
-      if (useDecimals) {
-        // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
-        const decimalMode = getRandomInt(1, 3);
-        const decimalPlaces = Math.random() < 0.5 ? 1 : 2; // 50% chance for 1 decimal, 50% for 2
-        
-        if (decimalMode === 1 || decimalMode === 3) { // Primer número o ambos
-          num1 = getRandomDecimal(1000, 10000, decimalPlaces as 1 | 2);
-        } else {
-          num1 = getRandomInt(1000, 10000);
-        }
-        
-        if (decimalMode === 2 || decimalMode === 3) { // Segundo número o ambos
-          num2 = getRandomDecimal(1000, 10000, decimalPlaces as 1 | 2);
-        } else {
-          num2 = getRandomInt(1000, 10000);
-        }
-        
-        console.log(`[DECIMALS] Generando problema con decimales: ${num1} + ${num2}`);
-      } else {
-        num1 = getRandomInt(10000, 80000);
-        num2 = getRandomInt(10000, 60000);
-      }
-      break;
-      
-    default:
-      // Default to beginner level
-      num1 = getRandomInt(1, 9);
-      num2 = getRandomInt(1, 9);
-  }
-
-  // Si estamos usando decimales, asegurarse de que la respuesta se redondee a 2 decimales 
-  // para evitar errores de punto flotante
-  const correctAnswer = useDecimals 
-    ? parseFloat((num1 + num2).toFixed(2)) 
-    : num1 + num2;
-
-  return {
-    num1,
-    num2,
-    correctAnswer
-  };
-}
-
-function checkAnswer(problem: Problem, userAnswer: number): boolean {
-  // Para números enteros, comparación directa
-  if (Number.isInteger(problem.correctAnswer) && Number.isInteger(userAnswer)) {
-    return problem.correctAnswer === userAnswer;
-  } 
-  
-  // Para números decimales, permitir una pequeña tolerancia debido a errores de punto flotante
-  // Redondear ambos números a 2 decimales para la comparación
-  const correctRounded = parseFloat(problem.correctAnswer.toFixed(2));
-  const userRounded = parseFloat(userAnswer.toFixed(2));
-  
-  console.log(`[DECIMALS] Comparando respuestas: Correcta=${correctRounded}, Usuario=${userRounded}`);
-  
-  return correctRounded === userRounded;
 }
 
 // ==================== SETTINGS COMPONENT ====================
@@ -372,7 +213,7 @@ function Settings({ settings, onBack }: SettingsProps) {
               operation="addition" 
               activeDifficulty={localSettings.difficulty}
               onSelectDifficulty={(difficulty) => 
-                handleUpdateSetting("difficulty", difficulty as any)
+                handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
               }
             />
           </div>
@@ -404,7 +245,7 @@ function Settings({ settings, onBack }: SettingsProps) {
             <div className="flex items-center space-x-4">
               <div className="flex-1">
                 <Slider
-                  value={[localSettings.problemCount || 10]}
+                  value={[localSettings.problemCount]}
                   min={1}
                   max={50}
                   step={1}
@@ -447,7 +288,7 @@ function Settings({ settings, onBack }: SettingsProps) {
             <div className="flex items-center space-x-4">
               <div className="flex-1">
                 <Slider
-                  value={[localSettings.timeValue || 0]}
+                  value={[localSettings.timeValue]}
                   min={0}
                   max={300}
                   step={5}
@@ -490,7 +331,7 @@ function Settings({ settings, onBack }: SettingsProps) {
             <div className="flex items-center space-x-4">
               <div className="flex-1">
                 <Slider
-                  value={[localSettings.maxAttempts || 0]}
+                  value={[localSettings.maxAttempts]}
                   min={0}
                   max={10}
                   step={1}
@@ -603,7 +444,147 @@ function Settings({ settings, onBack }: SettingsProps) {
   );
 }
 
-// =================== MAIN EXERCISE COMPONENT ===================
+// ================== UTILITY FUNCTIONS ==================
+
+// Función para generar un número decimal aleatorio con 1 o 2 decimales
+function getRandomDecimal(min: number, max: number, decimals: 1 | 2): number {
+  const base = getRandomInt(min, max);
+  const decimalPart = decimals === 1 
+    ? getRandomInt(1, 9) / 10  // Para 1 decimal: 0.1, 0.2, ..., 0.9
+    : getRandomInt(10, 99) / 100; // Para 2 decimales: 0.10, 0.11, ..., 0.99
+  
+  return base + decimalPart;
+}
+
+function generateAdditionProblem(difficulty: string): Problem {
+  let num1: number;
+  let num2: number;
+  let useDecimals = false;
+
+  switch (difficulty) {
+    case "beginner":
+      // Single-digit addition (1+1 to 9+9)
+      // Ejemplo: 1 + 8 = ?, 7 + 5 = ?
+      num1 = getRandomInt(1, 9);
+      num2 = getRandomInt(1, 9);
+      break;
+      
+    case "elementary":
+      // Two-digit + single-digit, no carrying (21+3, 45+4)
+      // Ejemplo: 12 + 15 = ?, 24 + 13 = ?
+      // Nota: los ejemplos no coinciden exactamente con la descripción, ajustamos para que coincida con los ejemplos
+      num1 = getRandomInt(10, 30);
+      num2 = getRandomInt(10, 20);
+      break;
+      
+    case "intermediate":
+      // Two-digit + two-digit, no carrying (21+34, 45+54)
+      // Ejemplo: 65 + 309 = ?, 392 + 132 = ?
+      // Nota: los ejemplos no coinciden exactamente con la descripción, ajustamos para que coincida con los ejemplos
+      num1 = getRandomInt(50, 400);
+      num2 = getRandomInt(100, 400);
+      break;
+      
+    case "advanced":
+      // Two-digit + two-digit with carrying (27+85, 38+67)
+      // Ejemplo: 1247 + 3568 = ?, 5934 + 8742 = ?
+      // Nota: los ejemplos son números grandes de 4 dígitos, ajustamos para que coincida
+      
+      // 20% de probabilidad de usar decimales en nivel avanzado
+      useDecimals = Math.random() < 0.2;
+      
+      if (useDecimals) {
+        // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
+        const decimalMode = getRandomInt(1, 3);
+        const decimalPlaces = Math.random() < 0.5 ? 1 : 2; // 50% chance for 1 decimal, 50% for 2
+        
+        if (decimalMode === 1 || decimalMode === 3) { // Primer número o ambos
+          num1 = getRandomDecimal(100, 1000, decimalPlaces as 1 | 2);
+        } else {
+          num1 = getRandomInt(100, 1000);
+        }
+        
+        if (decimalMode === 2 || decimalMode === 3) { // Segundo número o ambos
+          num2 = getRandomDecimal(100, 1000, decimalPlaces as 1 | 2);
+        } else {
+          num2 = getRandomInt(100, 1000);
+        }
+        
+        console.log(`[DECIMALS] Generando problema con decimales: ${num1} + ${num2}`);
+      } else {
+        num1 = getRandomInt(1000, 6000);
+        num2 = getRandomInt(1000, 9000);
+      }
+      break;
+      
+    case "expert":
+      // Three-digit addition with carrying (238+347, 581+629)
+      // Ejemplo: 70960 + 11650 = ?, 28730 + 59436 = ?
+      // Nota: los ejemplos son números muy grandes, ajustamos para que coincida
+      
+      // 35% de probabilidad de usar decimales en nivel experto
+      useDecimals = Math.random() < 0.35;
+      
+      if (useDecimals) {
+        // Decisión aleatoria sobre qué número tendrá decimales (o ambos)
+        const decimalMode = getRandomInt(1, 3);
+        const decimalPlaces = Math.random() < 0.5 ? 1 : 2; // 50% chance for 1 decimal, 50% for 2
+        
+        if (decimalMode === 1 || decimalMode === 3) { // Primer número o ambos
+          num1 = getRandomDecimal(1000, 10000, decimalPlaces as 1 | 2);
+        } else {
+          num1 = getRandomInt(1000, 10000);
+        }
+        
+        if (decimalMode === 2 || decimalMode === 3) { // Segundo número o ambos
+          num2 = getRandomDecimal(1000, 10000, decimalPlaces as 1 | 2);
+        } else {
+          num2 = getRandomInt(1000, 10000);
+        }
+        
+        console.log(`[DECIMALS] Generando problema con decimales: ${num1} + ${num2}`);
+      } else {
+        num1 = getRandomInt(10000, 80000);
+        num2 = getRandomInt(10000, 60000);
+      }
+      break;
+      
+    default:
+      // Default to beginner level
+      num1 = getRandomInt(1, 9);
+      num2 = getRandomInt(1, 9);
+  }
+
+  // Si estamos usando decimales, asegurarse de que la respuesta se redondee a 2 decimales 
+  // para evitar errores de punto flotante
+  const correctAnswer = useDecimals 
+    ? parseFloat((num1 + num2).toFixed(2)) 
+    : num1 + num2;
+
+  return {
+    num1,
+    num2,
+    correctAnswer
+  };
+}
+
+function checkAnswer(problem: Problem, userAnswer: number): boolean {
+  // Para números enteros, comparación directa
+  if (Number.isInteger(problem.correctAnswer) && Number.isInteger(userAnswer)) {
+    return problem.correctAnswer === userAnswer;
+  } 
+  
+  // Para números decimales, permitir una pequeña tolerancia debido a errores de punto flotante
+  // Redondear ambos números a 2 decimales para la comparación
+  const correctRounded = parseFloat(problem.correctAnswer.toFixed(2));
+  const userRounded = parseFloat(userAnswer.toFixed(2));
+  
+  console.log(`[DECIMALS] Comparando respuestas: Correcta=${correctRounded}, Usuario=${userRounded}`);
+  
+  return correctRounded === userRounded;
+}
+
+// ================== MAIN EXERCISE COMPONENT ==================
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -659,8 +640,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     console.log(`[GENERATE PROBLEMS] Dificultad adaptativa: ${settings.enableAdaptiveDifficulty ? "ACTIVADA" : "DESACTIVADA"}`);
     
     const generatedProblems: Problem[] = [];
-    for (let i = 0; i < (settings.problemCount || 10); i++) {
-      generatedProblems.push(generateAdditionProblem(difficultyToUse || "beginner"));
+    for (let i = 0; i < settings.problemCount; i++) {
+      generatedProblems.push(generateAdditionProblem(difficultyToUse));
     }
     setProblems(generatedProblems);
     
@@ -736,7 +717,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             handleMaxAttemptsReached();
             return null;
           }
-          return prev ? prev - 1 : null;
+          return prev - 1;
         });
       }, 1000);
     }
@@ -758,7 +739,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
     
     // Si el ejercicio está iniciado y hay un valor de tiempo configurado, iniciar el temporizador
-    if (exerciseStarted && settings.timeValue && settings.timeValue > 0) {
+    if (exerciseStarted && settings.timeValue > 0) {
       setProblemTimer(settings.timeValue);
       
       problemTimerRef.current = setInterval(() => {
@@ -804,7 +785,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       console.log("[ADAPTIVE DIFFICULTY] - Respuestas incorrectas consecutivas:", consecutiveIncorrectAnswers);
       
       // Reiniciar el temporizador del problema si está configurado
-      if (settings.timeValue && settings.timeValue > 0) {
+      if (settings.timeValue > 0) {
         setProblemTimer(settings.timeValue);
       }
       
@@ -861,7 +842,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Calcular resultados
     const correctAnswers = answers.filter((a) => a.isCorrect).length;
-    const score = Math.round(((correctAnswers / answers.length) * 100) || 0);
+    const score = Math.round((correctAnswers / answers.length) * 100);
     
     // Determinar qué nivel de dificultad se utilizó para este ejercicio
     const difficultyUsed = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
@@ -873,8 +854,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         score,
         totalProblems: answers.length,
         timeSpent: elapsedTime,
-        difficulty: difficultyUsed || "beginner",
-        date: new Date().toISOString()
+        difficulty: difficultyUsed,
       });
       
       // Mostrar mensaje de finalización
@@ -884,6 +864,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         )}m ${elapsedTime % 60}s`
       );
       setFeedbackColor("green");
+      
+      // Reiniciar contadores si es necesario
+      // Por ahora los mantenemos para que pueda continuar con el progreso
+      // en la próxima sesión de ejercicios
       
     } catch (error) {
       console.error("Error al guardar resultados:", error);
@@ -959,7 +943,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (settings.enableCompensation) {
       // Añadir un problema adicional de compensación
       const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
-      const compensationProblem = generateAdditionProblem(difficultyToUse || "beginner");
+      const compensationProblem = generateAdditionProblem(difficultyToUse);
       
       // Añadimos el problema a la lista actual
       const updatedProblems = [...problems];
@@ -1047,7 +1031,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
     
     // Inicializar el temporizador del problema si está configurado
-    if (settings.timeValue && settings.timeValue > 0) {
+    if (settings.timeValue > 0) {
       setProblemTimer(settings.timeValue);
     }
     
@@ -1153,7 +1137,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // Lista de dificultades disponibles
         const difficulties: string[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
-        const currentIndex = difficulties.indexOf(currentDifficultyLevel || "beginner");
+        const currentIndex = difficulties.indexOf(currentDifficultyLevel);
         
         // Verificar si podemos subir de nivel (no estamos en el máximo)
         if (currentIndex < difficulties.length - 1) {
@@ -1245,7 +1229,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (newCorrectCount >= CORRECT_ANSWERS_TO_INCREASE_DIFFICULTY) {
           // Lista de dificultades disponibles
           const difficulties = ["beginner", "elementary", "intermediate", "advanced", "expert"];
-          const currentIndex = difficulties.indexOf(adaptiveDifficulty || "beginner");
+          const currentIndex = difficulties.indexOf(adaptiveDifficulty);
           
           // Verificar si podemos subir de nivel (no estamos en el máximo)
           if (currentIndex < difficulties.length - 1) {
@@ -1309,7 +1293,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (newIncorrectCount >= INCORRECT_ANSWERS_TO_DECREASE_DIFFICULTY) {
           // Lista de dificultades disponibles
           const difficulties = ["beginner", "elementary", "intermediate", "advanced", "expert"];
-          const currentIndex = difficulties.indexOf(adaptiveDifficulty || "beginner");
+          const currentIndex = difficulties.indexOf(adaptiveDifficulty);
           
           // Verificar si podemos bajar de nivel (no estamos en el mínimo)
           if (currentIndex > 0) {
@@ -1349,7 +1333,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
       
       // Verificar si se han alcanzado los intentos máximos
-      if (settings.maxAttempts && settings.maxAttempts > 0 && newAttemptCount >= settings.maxAttempts) {
+      if (settings.maxAttempts > 0 && newAttemptCount >= settings.maxAttempts) {
         // Si es así, mostrar la respuesta correcta y guardar como incorrecto
         const answer: UserAnswer = {
           problem: currentProblem,
@@ -1374,7 +1358,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (settings.enableCompensation) {
           // Añadir un problema adicional de compensación
           const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
-          const compensationProblem = generateAdditionProblem(difficultyToUse || "beginner");
+          const compensationProblem = generateAdditionProblem(difficultyToUse);
           
           // Añadimos el problema a la lista actual
           const updatedProblems = [...problems];
@@ -1411,290 +1395,287 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }
   
   // Calcular progreso actual
-  const progress = Math.round(((currentProblemIndex + 1) / problems.length) * 100) || 0;
+  const progress = Math.round(((currentProblemIndex + 1) / problems.length) * 100);
   
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div className="bg-white rounded-xl shadow-md overflow-hidden p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className={`text-2xl font-bold ${
-              settings.enableAdaptiveDifficulty ?
-                adaptiveDifficulty === "beginner" ? "text-blue-700" :
-                adaptiveDifficulty === "elementary" ? "text-emerald-700" :
-                adaptiveDifficulty === "intermediate" ? "text-orange-700" :
-                adaptiveDifficulty === "advanced" ? "text-purple-700" :
-                "text-indigo-700" : 
-                
-                settings.difficulty === "beginner" ? "text-blue-700" :
-                settings.difficulty === "elementary" ? "text-emerald-700" :
-                settings.difficulty === "intermediate" ? "text-orange-700" :
-                settings.difficulty === "advanced" ? "text-purple-700" :
-                "text-indigo-700"
-          }`}>
-            {t('exercises.additionExercise')}
-          </h1>
-          <Button variant="outline" size="sm" onClick={() => setShowSettings(true)}>
-            <SettingsIcon className="mr-2 h-4 w-4" />
-            {t('exercises.settings')}
-          </Button>
-        </div>
+    <div className="bg-white rounded-xl shadow-md overflow-hidden p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className={`text-2xl font-bold ${
+            settings.enableAdaptiveDifficulty ?
+              adaptiveDifficulty === "beginner" ? "text-blue-700" :
+              adaptiveDifficulty === "elementary" ? "text-emerald-700" :
+              adaptiveDifficulty === "intermediate" ? "text-orange-700" :
+              adaptiveDifficulty === "advanced" ? "text-purple-700" :
+              "text-indigo-700" : 
+              
+              settings.difficulty === "beginner" ? "text-blue-700" :
+              settings.difficulty === "elementary" ? "text-emerald-700" :
+              settings.difficulty === "intermediate" ? "text-orange-700" :
+              settings.difficulty === "advanced" ? "text-purple-700" :
+              "text-indigo-700"
+        }`}>
+          {t('exercises.additionExercise')}
+        </h1>
+        <Button variant="outline" size="sm" onClick={onOpenSettings}>
+          <SettingsIcon className="mr-2 h-4 w-4" />
+          {t('exercises.settings')}
+        </Button>
+      </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="text-sm font-medium text-gray-500 mr-2">
+              {t('exercises.problem')} {currentProblemIndex + 1}/{problems.length}
+            </span>
+            <Progress value={progress} className="w-32 h-2" />
+          </div>
+          {problemTimer !== null && (
             <div className="flex items-center">
               <span className="text-sm font-medium text-gray-500 mr-2">
-                {t('exercises.problem')} {currentProblemIndex + 1}/{problems.length}
+                {t('exercises.timeLeft')}:
               </span>
-              <Progress value={progress} className="w-32 h-2" />
-            </div>
-            {problemTimer !== null && (
-              <div className="flex items-center">
-                <span className="text-sm font-medium text-gray-500 mr-2">
-                  {t('exercises.timeLeft')}:
-                </span>
-                <span 
-                  className={`font-bold ${
-                    problemTimer < 10 ? "text-red-500" : "text-gray-700"
-                  }`}
-                >
-                  {problemTimer}s
-                </span>
-              </div>
-            )}
-            <div className="text-sm font-medium text-gray-500">
-              {t('exercises.elapsedTime')}: {Math.floor(elapsedTime / 60)}m {elapsedTime % 60}s
-            </div>
-          </div>
-
-          <div className="py-4 px-6 rounded-lg border border-gray-200 mb-4">
-            {problems.length > 0 && currentProblemIndex < problems.length ? (
-              <div className="flex flex-col items-center">
-                <div className="flex items-center justify-center mb-6 text-4xl font-bold space-x-2">
-                  <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
-                    settings.enableAdaptiveDifficulty ?
-                      adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                      adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                      adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                      adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                      "bg-indigo-100 text-indigo-800" :
-                      
-                      settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                      settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                      settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                      settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                      "bg-indigo-100 text-indigo-800"
-                  }`} style={{ minWidth: '10rem' }}>
-                    {/* Detectar si es decimal para asegurar formato correcto */}
-                    {Number.isInteger(problems[currentProblemIndex].num1) 
-                      ? problems[currentProblemIndex].num1 
-                      : problems[currentProblemIndex].num1.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
-                    }
-                  </span>
-                  <span className="mx-4 text-5xl">+</span>
-                  <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
-                    settings.enableAdaptiveDifficulty ?
-                      adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                      adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                      adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                      adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                      "bg-indigo-100 text-indigo-800" :
-                      
-                      settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                      settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                      settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                      settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                      "bg-indigo-100 text-indigo-800"
-                  }`} style={{ minWidth: '10rem' }}>
-                    {/* Detectar si es decimal para asegurar formato correcto */}
-                    {Number.isInteger(problems[currentProblemIndex].num2) 
-                      ? problems[currentProblemIndex].num2 
-                      : problems[currentProblemIndex].num2.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
-                    }
-                  </span>
-                  <span className="mx-4 text-5xl">=</span>
-                  <div className={`relative ${
-                    settings.enableAdaptiveDifficulty ?
-                      adaptiveDifficulty === "beginner" ? "border-b-4 border-blue-400" :
-                      adaptiveDifficulty === "elementary" ? "border-b-4 border-emerald-400" :
-                      adaptiveDifficulty === "intermediate" ? "border-b-4 border-orange-400" :
-                      adaptiveDifficulty === "advanced" ? "border-b-4 border-purple-400" :
-                      "border-b-4 border-indigo-400" :
-                      
-                      settings.difficulty === "beginner" ? "border-b-4 border-blue-400" :
-                      settings.difficulty === "elementary" ? "border-b-4 border-emerald-400" :
-                      settings.difficulty === "intermediate" ? "border-b-4 border-orange-400" :
-                      settings.difficulty === "advanced" ? "border-b-4 border-purple-400" :
-                      "border-b-4 border-indigo-400"
-                  }`} style={{ minWidth: '10rem' }}>
-                    <Input
-                      type="text"
-                      ref={inputRef}
-                      className={`w-full text-center text-2xl font-bold ${
-                        waitingForContinue || showingExplanation ? 
-                          settings.enableAdaptiveDifficulty ?
-                            adaptiveDifficulty === "beginner" ? "bg-blue-50" :
-                            adaptiveDifficulty === "elementary" ? "bg-emerald-50" :
-                            adaptiveDifficulty === "intermediate" ? "bg-orange-50" :
-                            adaptiveDifficulty === "advanced" ? "bg-purple-50" :
-                            "bg-indigo-50" :
-                            
-                            settings.difficulty === "beginner" ? "bg-blue-50" :
-                            settings.difficulty === "elementary" ? "bg-emerald-50" :
-                            settings.difficulty === "intermediate" ? "bg-orange-50" :
-                            settings.difficulty === "advanced" ? "bg-purple-50" :
-                            "bg-indigo-50"
-                        : "bg-transparent"
-                      } focus:outline-none focus:ring-2 ${
-                        settings.enableAdaptiveDifficulty ?
-                          adaptiveDifficulty === "beginner" ? "focus:ring-blue-400" :
-                          adaptiveDifficulty === "elementary" ? "focus:ring-emerald-400" :
-                          adaptiveDifficulty === "intermediate" ? "focus:ring-orange-400" :
-                          adaptiveDifficulty === "advanced" ? "focus:ring-purple-400" :
-                          "focus:ring-indigo-400" :
-                          
-                          settings.difficulty === "beginner" ? "focus:ring-blue-400" :
-                          settings.difficulty === "elementary" ? "focus:ring-emerald-400" :
-                          settings.difficulty === "intermediate" ? "focus:ring-orange-400" :
-                          settings.difficulty === "advanced" ? "focus:ring-purple-400" :
-                          "focus:ring-indigo-400"
-                      } focus:border-transparent h-12 px-2 rounded-lg text-ellipsis text-right`}
-                      value={userAnswer}
-                      onChange={handleInputChange}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
-                          checkCurrentAnswer();
-                        }
-                      }}
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                      disabled={waitingForContinue || showingExplanation}
-                      readOnly={waitingForContinue || showingExplanation}
-                      aria-readonly={waitingForContinue || showingExplanation}
-                    />
-                  </div>
-                </div>
-                {feedbackMessage && (
-                  <div className={`text-lg font-medium ${
-                    feedbackColor === "green" ? "text-green-600" : 
-                    feedbackColor === "blue" ? "text-blue-600" : 
-                    "text-red-600"
-                  }`}>
-                    {feedbackMessage}
-                  </div>
-                )}
-                
-                <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
-                  {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((num) => (
-                    <button
-                      key={num}
-                      className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
-                      onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput(num)}
-                      disabled={waitingForContinue || showingExplanation}
-                      aria-disabled={waitingForContinue || showingExplanation}
-                    >
-                      {num}
-                    </button>
-                  ))}
-                  
-                  {/* Botón de punto decimal - solo visible en niveles avanzado y experto */}
-                  {(settings.difficulty === "advanced" || settings.difficulty === "expert" || 
-                  (settings.enableAdaptiveDifficulty && 
-                    (adaptiveDifficulty === "advanced" || adaptiveDifficulty === "expert"))) && (
-                    <button
-                      className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
-                      onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput(".")}
-                      disabled={waitingForContinue || showingExplanation}
-                      aria-disabled={waitingForContinue || showingExplanation}
-                    >
-                      .
-                    </button>
-                  )}
-                  
-                  <button
-                    className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
-                    onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput("backspace")}
-                    disabled={waitingForContinue || showingExplanation}
-                    aria-disabled={waitingForContinue || showingExplanation}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 mx-auto"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <p>Cargando el siguiente problema...</p>
-              </div>
-            )}
-          </div>
-
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              disabled={currentProblemIndex === 0}
-              onClick={moveToPreviousProblem}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              {t('common.prev')}
-            </Button>
-            
-            {/* Si estamos esperando que el usuario presione "Continuar", mostrar ese botón */}
-            {waitingForContinue ? (
-              <Button 
-                onClick={handleContinue}
-                className="px-8 animate-pulse" // Hacemos el botón un poco más ancho y pulsante para llamar la atención
+              <span 
+                className={`font-bold ${
+                  problemTimer < 10 ? "text-red-500" : "text-gray-700"
+                }`}
               >
-                Continuar
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            ) : (
-              <>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        disabled={!settings.showAnswerWithExplanation}
-                        onClick={showAnswerWithExplanation}
-                      >
-                        <Info className="mr-2 h-4 w-4" />
-                        {t('exercises.showAnswer')}
-                      </Button>
-                    </TooltipTrigger>
-                    {!settings.showAnswerWithExplanation ? (
-                      <TooltipContent>
-                        <p>{t('tooltips.activateShowAnswer')}</p>
-                      </TooltipContent>
-                    ) : null}
-                  </Tooltip>
-                </TooltipProvider>
-                <Button onClick={checkCurrentAnswer}>
-                  {exerciseStarted ? (
-                    <>
-                      {t('exercises.check')}
-                      <Check className="ml-2 h-4 w-4" />
-                    </>
-                  ) : (
-                    t('exercises.start')
-                  )}
-                </Button>
-              </>
-            )}
+                {problemTimer}s
+              </span>
+            </div>
+          )}
+          <div className="text-sm font-medium text-gray-500">
+            {t('exercises.elapsedTime')}: {Math.floor(elapsedTime / 60)}m {elapsedTime % 60}s
           </div>
         </div>
+
+        <div className="py-4 px-6 rounded-lg border border-gray-200 mb-4">
+          {problems.length > 0 ? (
+            <div className="flex flex-col items-center">
+              <div className="flex items-center justify-center mb-6 text-4xl font-bold space-x-2">
+              <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800" :
+                  
+                  settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800"
+              }`} style={{ minWidth: '10rem' }}>
+                {/* Detectar si es decimal para asegurar formato correcto */}
+                {Number.isInteger(currentProblem.num1) 
+                  ? currentProblem.num1 
+                  : currentProblem.num1.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
+                }
+              </span>
+              <span className="mx-4 text-5xl">+</span>
+              <span className={`inline-block text-right px-4 py-2 rounded-lg text-3xl ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800" :
+                  
+                  settings.difficulty === "beginner" ? "bg-blue-100 text-blue-800" :
+                  settings.difficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  settings.difficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  settings.difficulty === "advanced" ? "bg-purple-100 text-purple-800" :
+                  "bg-indigo-100 text-indigo-800"
+              }`} style={{ minWidth: '10rem' }}>
+                {/* Detectar si es decimal para asegurar formato correcto */}
+                {Number.isInteger(currentProblem.num2) 
+                  ? currentProblem.num2 
+                  : currentProblem.num2.toFixed(2).replace(/\.?0+$/, '') // Eliminar ceros innecesarios
+                }
+              </span>
+              <span className="mx-4 text-5xl">=</span>
+              <div className={`relative ${
+                settings.enableAdaptiveDifficulty ?
+                  adaptiveDifficulty === "beginner" ? "border-b-4 border-blue-400" :
+                  adaptiveDifficulty === "elementary" ? "border-b-4 border-emerald-400" :
+                  adaptiveDifficulty === "intermediate" ? "border-b-4 border-orange-400" :
+                  adaptiveDifficulty === "advanced" ? "border-b-4 border-purple-400" :
+                  "border-b-4 border-indigo-400" :
+                  
+                  settings.difficulty === "beginner" ? "border-b-4 border-blue-400" :
+                  settings.difficulty === "elementary" ? "border-b-4 border-emerald-400" :
+                  settings.difficulty === "intermediate" ? "border-b-4 border-orange-400" :
+                  settings.difficulty === "advanced" ? "border-b-4 border-purple-400" :
+                  "border-b-4 border-indigo-400"
+              }`} style={{ minWidth: '10rem' }}>
+                <Input
+                  type="text"
+                  ref={inputRef}
+                  className={`w-full text-center text-2xl font-bold ${
+                    waitingForContinue || showingExplanation ? 
+                      settings.enableAdaptiveDifficulty ?
+                        adaptiveDifficulty === "beginner" ? "bg-blue-50" :
+                        adaptiveDifficulty === "elementary" ? "bg-emerald-50" :
+                        adaptiveDifficulty === "intermediate" ? "bg-orange-50" :
+                        adaptiveDifficulty === "advanced" ? "bg-purple-50" :
+                        "bg-indigo-50" :
+                        
+                        settings.difficulty === "beginner" ? "bg-blue-50" :
+                        settings.difficulty === "elementary" ? "bg-emerald-50" :
+                        settings.difficulty === "intermediate" ? "bg-orange-50" :
+                        settings.difficulty === "advanced" ? "bg-purple-50" :
+                        "bg-indigo-50"
+                    : "bg-transparent"
+                  } focus:outline-none focus:ring-2 ${
+                    settings.enableAdaptiveDifficulty ?
+                      adaptiveDifficulty === "beginner" ? "focus:ring-blue-400" :
+                      adaptiveDifficulty === "elementary" ? "focus:ring-emerald-400" :
+                      adaptiveDifficulty === "intermediate" ? "focus:ring-orange-400" :
+                      adaptiveDifficulty === "advanced" ? "focus:ring-purple-400" :
+                      "focus:ring-indigo-400" :
+                      
+                      settings.difficulty === "beginner" ? "focus:ring-blue-400" :
+                      settings.difficulty === "elementary" ? "focus:ring-emerald-400" :
+                      settings.difficulty === "intermediate" ? "focus:ring-orange-400" :
+                      settings.difficulty === "advanced" ? "focus:ring-purple-400" :
+                      "focus:ring-indigo-400"
+                  } focus:border-transparent h-12 px-2 rounded-lg text-ellipsis text-right`}
+                  value={userAnswer}
+                  onChange={handleInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !waitingForContinue && !showingExplanation) {
+                      checkCurrentAnswer();
+                    }
+                  }}
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                  disabled={waitingForContinue || showingExplanation}
+                  readOnly={waitingForContinue || showingExplanation}
+                  aria-readonly={waitingForContinue || showingExplanation}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p>Cargando el siguiente problema...</p>
+            </div>
+          )}
+          {feedbackMessage && (
+            <div className={`text-lg font-medium ${
+              feedbackColor === "green" ? "text-green-600" : 
+              feedbackColor === "blue" ? "text-blue-600" : 
+              "text-red-600"
+            }`}>
+              {feedbackMessage}
+            </div>
+          )}
+        
+          <div className="mt-8 flex flex-wrap justify-center gap-3 sm:gap-4">
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"].map((num) => (
+            <button
+              key={num}
+              className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
+              onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput(num)}
+              disabled={waitingForContinue || showingExplanation}
+              aria-disabled={waitingForContinue || showingExplanation}
+            >
+              {num}
+            </button>
+          ))}
+          
+          {/* Botón de punto decimal - solo visible en niveles avanzado y experto */}
+          {(settings.difficulty === "advanced" || settings.difficulty === "expert" || 
+           (settings.enableAdaptiveDifficulty && 
+            (adaptiveDifficulty === "advanced" || adaptiveDifficulty === "expert"))) && (
+            <button
+              className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
+              onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput(".")}
+              disabled={waitingForContinue || showingExplanation}
+              aria-disabled={waitingForContinue || showingExplanation}
+            >
+              .
+            </button>
+          )}
+          
+          <button
+            className={`w-12 h-12 ${waitingForContinue || showingExplanation ? "bg-gray-100 text-gray-500 cursor-not-allowed" : "bg-white hover:bg-gray-50"} rounded-lg shadow-sm border border-gray-300 text-xl font-medium focus:outline-none focus:ring-2 focus:ring-primary`}
+            onClick={() => !waitingForContinue && !showingExplanation && handleKeyboardInput("backspace")}
+            disabled={waitingForContinue || showingExplanation}
+            aria-disabled={waitingForContinue || showingExplanation}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 mx-auto"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+              />
+            </svg>
+          </button>
+        </div>
+      
+        <div className="flex justify-between">
+        <Button
+          variant="outline"
+          disabled={currentProblemIndex === 0}
+          onClick={moveToPreviousProblem}
+        >
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          {t('common.prev')}
+        </Button>
+        
+        {/* Si estamos esperando que el usuario presione "Continuar", mostrar ese botón */}
+        {waitingForContinue ? (
+          <Button 
+            onClick={handleContinue}
+            className="px-8 animate-pulse" // Hacemos el botón un poco más ancho y pulsante para llamar la atención
+          >
+            Continuar
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
+        ) : (
+          <>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    disabled={!settings.showAnswerWithExplanation}
+                    onClick={showAnswerWithExplanation}
+                  >
+                    <Info className="mr-2 h-4 w-4" />
+                    {t('exercises.showAnswer')}
+                  </Button>
+                </TooltipTrigger>
+                {!settings.showAnswerWithExplanation ? (
+                  <TooltipContent>
+                    <p>{t('tooltips.activateShowAnswer')}</p>
+                  </TooltipContent>
+                ) : null}
+              </Tooltip>
+            </TooltipProvider>
+            <Button onClick={checkCurrentAnswer}>
+              {exerciseStarted ? (
+                <>
+                  {t('exercises.check')}
+                  <Check className="ml-2 h-4 w-4" />
+                </>
+              ) : (
+                t('exercises.start')
+              )}
+            </Button>
+          </>
+        )}
       </div>
+    </div>
     </div>
   );
 }

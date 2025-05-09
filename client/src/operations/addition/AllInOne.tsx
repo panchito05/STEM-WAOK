@@ -1,26 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-
-// Simulación de funcionalidad de i18next para evitar dependencia externa
-const useTranslation = () => ({
-  t: (key: string) => {
-    const translations: Record<string, string> = {
-      'exercises.additionExercise': 'Ejercicio de Suma',
-      'exercises.settings': 'Configuración',
-      'exercises.problem': 'Problema',
-      'exercises.timeLeft': 'Tiempo restante',
-      'exercises.elapsedTime': 'Tiempo transcurrido',
-      'exercises.correctAnswer': '¡Respuesta correcta!',
-      'exercises.incorrectAnswer': 'Respuesta incorrecta.',
-      'exercises.correctAnswerIs': 'La respuesta correcta es',
-      'exercises.check': 'Comprobar',
-      'exercises.start': 'Comenzar',
-      'exercises.showAnswer': 'Mostrar respuesta',
-      'common.prev': 'Anterior',
-      'tooltips.activateShowAnswer': 'Activa esta opción en configuración'
-    };
-    return translations[key] || key;
-  }
-});
+import { useTranslation } from "react-i18next";
 import { Check, ChevronLeft, ChevronRight, Info, Settings as SettingsIcon, RotateCcw, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
