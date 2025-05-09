@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 
-// Simulación de funcionalidad de i18next para evitar dependencia externa
+// Simulación de funcionalidad i18next para evitar dependencia externa
 const useTranslation = () => ({
   t: (key: string) => {
     const translations: Record<string, string> = {
@@ -372,7 +372,7 @@ function Settings({ settings, onBack }: SettingsProps) {
               operation="addition" 
               activeDifficulty={localSettings.difficulty}
               onSelectDifficulty={(difficulty) => 
-                handleUpdateSetting("difficulty", difficulty as any)
+                handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
               }
             />
           </div>
@@ -635,7 +635,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [blockAutoAdvance, setBlockAutoAdvance] = useState(false);
   
   // Refactorización importante: dificultad adaptativa
-  const [adaptiveDifficulty, setAdaptiveDifficulty] = useState<string>(settings.difficulty || "beginner");
+  const [adaptiveDifficulty, setAdaptiveDifficulty] = useState<"beginner" | "elementary" | "intermediate" | "advanced" | "expert">(
+    (settings.difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert") || "beginner"
+  );
   const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(0);
   const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(0);
   
@@ -684,7 +686,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const storedDifficulty = localStorage.getItem('addition_currentDifficulty');
       if (storedDifficulty) {
         console.log("[ADAPTIVE DIFFICULTY] Cargando dificultad desde localStorage:", storedDifficulty);
-        setAdaptiveDifficulty(storedDifficulty);
+        if (storedDifficulty === "beginner" || 
+            storedDifficulty === "elementary" ||
+            storedDifficulty === "intermediate" ||
+            storedDifficulty === "advanced" ||
+            storedDifficulty === "expert") {
+          setAdaptiveDifficulty(storedDifficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert");
+        }
       }
     } catch (error) {
       console.error("Error al cargar datos de localStorage:", error);

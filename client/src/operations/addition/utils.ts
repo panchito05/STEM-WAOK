@@ -1,14 +1,24 @@
-import { Problem } from "./types";
 import { getRandomInt } from "@/lib/utils";
 
-// Función para generar un número decimal aleatorio con 1 o 2 decimales
-function getRandomDecimal(min: number, max: number, decimals: 1 | 2): number {
+export function getRandomDecimal(min: number, max: number, decimals: 1 | 2): number {
   const base = getRandomInt(min, max);
   const decimalPart = decimals === 1 
     ? getRandomInt(1, 9) / 10  // Para 1 decimal: 0.1, 0.2, ..., 0.9
     : getRandomInt(10, 99) / 100; // Para 2 decimales: 0.10, 0.11, ..., 0.99
   
   return base + decimalPart;
+}
+
+export interface Problem {
+  num1: number;
+  num2: number;
+  correctAnswer: number;
+}
+
+export interface UserAnswer {
+  problem: Problem;
+  userAnswer: number;
+  isCorrect: boolean;
 }
 
 export function generateAdditionProblem(difficulty: string): Problem {
