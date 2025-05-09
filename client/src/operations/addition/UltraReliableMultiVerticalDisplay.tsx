@@ -202,11 +202,9 @@ export function UltraReliableMultiVerticalDisplay({
     const initialTimeout = setTimeout(() => {
       verifyVisualRepresentation();
       
-      // Configurar verificación periódica
-      const verificationIntervalId = setInterval(verifyVisualRepresentation, 1000);
-      
-      // Limpiar intervalo cuando el componente se desmonte
-      return () => clearInterval(verificationIntervalId);
+      // Configurar verificación única después de renderizado inicial
+      // Eliminamos la verificación periódica que podría interferir con la entrada del usuario
+      return () => {};
     }, 100);
     
     // Limpiar timeout si el componente se desmonta antes

@@ -54,12 +54,15 @@ export function VerifiedMultiVerticalExercise({
   
   // Manejar el cambio en el input
   const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (waitingForContinue) return;
+    
     // Solo aceptar dígitos y punto decimal
     const value = e.target.value.replace(/[^0-9.]/g, '');
     
     // Prevenir múltiples puntos decimales
     if (value.split('.').length > 2) return;
     
+    console.log(`Cambio de respuesta: ${value}`);
     setAnswer(value);
   };
   
@@ -245,24 +248,19 @@ export function VerifiedMultiVerticalExercise({
           })()}
         </div>
         
-        {/* Input oculto para capturar la entrada del teclado */}
-        <div className="relative">
-          <Input
-            type="text"
-            value={answer}
-            onChange={handleAnswerChange}
-            disabled={waitingForContinue}
-            className="opacity-0 h-0 p-0 absolute -z-10"
-            autoFocus
-          />
-        </div>
-        
         {/* Área de teclado numérico - simplificado para hacer clic */}
         <div className="grid grid-cols-3 gap-2 mt-4">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(num => (
             <button
               key={`key-${num}`}
-              onClick={() => !waitingForContinue && setAnswer(prev => prev + num)}
+              onClick={() => {
+                if (waitingForContinue) return;
+                // Guardar el valor actual
+                const newAnswer = answer + num;
+                // Actualizar el estado
+                setAnswer(newAnswer);
+                console.log(`Añadido dígito ${num}, nueva respuesta: ${newAnswer}`);
+              }}
               className={`h-12 ${waitingForContinue ? "bg-gray-200" : "bg-white hover:bg-gray-50"} 
               rounded-lg border border-gray-300 flex items-center justify-center text-xl font-medium`}
               disabled={waitingForContinue}
@@ -273,7 +271,13 @@ export function VerifiedMultiVerticalExercise({
           
           {/* Tecla para punto decimal */}
           <button
-            onClick={() => !waitingForContinue && !answer.includes('.') && setAnswer(prev => prev + '.')}
+            onClick={() => {
+              if (waitingForContinue || answer.includes('.')) return;
+              // Añadir punto decimal solo si no existe ya
+              const newAnswer = answer + '.';
+              setAnswer(newAnswer);
+              console.log(`Añadido punto decimal, nueva respuesta: ${newAnswer}`);
+            }}
             className={`h-12 ${waitingForContinue ? "bg-gray-200" : "bg-white hover:bg-gray-50"} 
             rounded-lg border border-gray-300 flex items-center justify-center text-xl font-medium`}
             disabled={waitingForContinue || answer.includes('.')}
@@ -283,7 +287,12 @@ export function VerifiedMultiVerticalExercise({
           
           {/* Tecla de borrar */}
           <button
-            onClick={() => !waitingForContinue && setAnswer(prev => prev.slice(0, -1))}
+            onClick={() => {
+              if (waitingForContinue) return;
+              const newAnswer = answer.slice(0, -1);
+              setAnswer(newAnswer);
+              console.log(`Borrado último dígito, nueva respuesta: ${newAnswer}`);
+            }}
             className={`h-12 ${waitingForContinue ? "bg-gray-200" : "bg-white hover:bg-gray-50"} 
             rounded-lg border border-gray-300 flex items-center justify-center text-xl font-medium`}
             disabled={waitingForContinue}
@@ -294,7 +303,7 @@ export function VerifiedMultiVerticalExercise({
         
         <Button
           onClick={handleSubmit}
-          disabled={waitingForContinue || !displayVerified || answer === ''}
+          disabled={waitingForContinue || answer === ''}
           className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-md mt-4"
         >
           Comprobar
