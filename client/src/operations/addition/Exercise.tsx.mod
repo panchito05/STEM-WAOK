@@ -16,20 +16,12 @@ import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { defaultModuleSettings } from "@/utils/operationComponents";
 import DifficultyExamples from "@/components/DifficultyExamples";
-
-// ====================== TYPES ======================
-
-interface Problem {
-  num1: number;
-  num2: number;
-  correctAnswer: number;
-}
-
-interface UserAnswer {
-  problem: Problem;
-  userAnswer: number;
-  isCorrect: boolean;
-}
+import { 
+  generateAdditionProblem, 
+  checkAnswer, 
+  Problem, 
+  UserAnswer 
+} from "./utils";
 
 // ==================== SETTINGS COMPONENT ====================
 
@@ -1675,7 +1667,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </>
         )}
       </div>
-    </div>
     </div>
   );
 }
