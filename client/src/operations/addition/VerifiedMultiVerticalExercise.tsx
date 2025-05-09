@@ -149,23 +149,153 @@ export function VerifiedMultiVerticalExercise({
         />
       </div>
       
-      {/* Input para respuesta */}
+      {/* Input para respuesta - Grid de contenedores individuales */}
       <div className="space-y-4">
-        <div className="flex items-center space-x-2">
+        {/* Área de entrada con contenedores para dígitos */}
+        <div className="flex justify-end space-x-2 mt-4">
+          {/* Genera contenedores individuales basados en el número más largo */}
+          {(() => {
+            // Determinar el formato esperado para la respuesta
+            // Obtener los números originales para análisis
+            const numbers = [
+              problem.num1, 
+              problem.num2, 
+              ...(problem.additionalNumbers || [])
+            ];
+            
+            // Convertir todos los números a strings
+            const numberStrings = numbers.map(num => num.toString());
+            
+            // Determinar si hay números decimales
+            const hasDecimals = numberStrings.some(str => str.includes('.'));
+            
+            // Analizar las partes de los números
+            const partsArray = numberStrings.map(str => {
+              const [intPart, decPart = ''] = str.split('.');
+              return { intPart, decPart };
+            });
+            
+            // Calcular tamaños máximos para enteros y decimales
+            const maxIntLength = Math.max(...partsArray.map(p => p.intPart.length));
+            const maxDecLength = Math.max(...partsArray.map(p => p.decPart.length));
+            
+            // Calcular el número esperable de dígitos en la respuesta (respuesta puede tener un dígito más debido al acarreo)
+            // Para la parte entera esperamos máximo + 1 para el acarreo
+            const expectedIntDigits = maxIntLength + 1;
+            // Para la parte decimal, mantenemos el mismo número de dígitos
+            const expectedDecDigits = maxDecLength;
+            
+            // Calcular número total de contenedores
+            const totalContainers = hasDecimals 
+              ? expectedIntDigits + expectedDecDigits + 1 // +1 para el punto decimal
+              : expectedIntDigits;
+            
+            // Obtener el valor actual de la respuesta
+            const [answerInt, answerDec = ''] = answer.split('.');
+            
+            // Crear contenedores para mostrar la respuesta del usuario
+            const containers = [];
+            let containerIndex = 0;
+            
+            // Añadir contenedores para dígitos enteros
+            for (let i = 0; i < expectedIntDigits; i++) {
+              // Obtener el dígito de la respuesta del usuario (si existe)
+              const position = expectedIntDigits - i - 1;
+              const digit = position < answerInt.length 
+                ? answerInt[answerInt.length - position - 1] 
+                : '';
+              
+              containers.push(
+                <div 
+                  key={`answer-digit-${containerIndex++}`} 
+                  className="w-8 h-10 border-2 border-gray-300 rounded-md flex items-center justify-center"
+                >
+                  {digit}
+                </div>
+              );
+            }
+            
+            // Si hay números decimales, añadir punto decimal
+            if (hasDecimals) {
+              containers.push(
+                <div 
+                  key={`answer-decimal-point`}
+                  className="w-8 h-10 flex items-center justify-center font-bold"
+                >
+                  .
+                </div>
+              );
+              
+              // Añadir contenedores para dígitos decimales
+              for (let i = 0; i < expectedDecDigits; i++) {
+                const digit = i < answerDec.length ? answerDec[i] : '';
+                
+                containers.push(
+                  <div 
+                    key={`answer-decimal-${i}`} 
+                    className="w-8 h-10 border-2 border-gray-300 rounded-md flex items-center justify-center"
+                  >
+                    {digit}
+                  </div>
+                );
+              }
+            }
+            
+            return containers;
+          })()}
+        </div>
+        
+        {/* Input oculto para capturar la entrada del teclado */}
+        <div className="relative">
           <Input
             type="text"
-            placeholder="Escribe tu respuesta"
             value={answer}
             onChange={handleAnswerChange}
             disabled={waitingForContinue}
-            className="text-xl p-2 border-2 border-gray-300 rounded-md"
+            className="opacity-0 h-0 p-0 absolute -z-10"
+            autoFocus
           />
+        </div>
+        
+        {/* Área de teclado numérico - simplificado para hacer clic */}
+        <div className="grid grid-cols-3 gap-2 mt-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(num => (
+            <button
+              key={`key-${num}`}
+              onClick={() => !waitingForContinue && setAnswer(prev => prev + num)}
+              className={`h-12 ${waitingForContinue ? "bg-gray-200" : "bg-white hover:bg-gray-50"} 
+              rounded-lg border border-gray-300 flex items-center justify-center text-xl font-medium`}
+              disabled={waitingForContinue}
+            >
+              {num}
+            </button>
+          ))}
+          
+          {/* Tecla para punto decimal */}
+          <button
+            onClick={() => !waitingForContinue && !answer.includes('.') && setAnswer(prev => prev + '.')}
+            className={`h-12 ${waitingForContinue ? "bg-gray-200" : "bg-white hover:bg-gray-50"} 
+            rounded-lg border border-gray-300 flex items-center justify-center text-xl font-medium`}
+            disabled={waitingForContinue || answer.includes('.')}
+          >
+            .
+          </button>
+          
+          {/* Tecla de borrar */}
+          <button
+            onClick={() => !waitingForContinue && setAnswer(prev => prev.slice(0, -1))}
+            className={`h-12 ${waitingForContinue ? "bg-gray-200" : "bg-white hover:bg-gray-50"} 
+            rounded-lg border border-gray-300 flex items-center justify-center text-xl font-medium`}
+            disabled={waitingForContinue}
+          >
+            ←
+          </button>
         </div>
         
         <Button
           onClick={handleSubmit}
           disabled={waitingForContinue || !displayVerified || answer === ''}
-          className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-md"
+          className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-md mt-4"
         >
           Comprobar
         </Button>

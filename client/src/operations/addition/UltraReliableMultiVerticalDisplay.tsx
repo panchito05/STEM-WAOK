@@ -44,16 +44,43 @@ export function UltraReliableMultiVerticalDisplay({
   // Calcular la suma esperada para verificación
   const expectedSum = numbers.reduce((sum, num) => sum + num, 0);
   
-  // Convertir números a strings para manipulación de formato
-  const numberStrings = numbers.map(num => String(num));
+  // Convertir todos los números a strings para manipularlos
+  const numberStrings = numbers.map(num => num.toString());
   
-  // Encontrar la longitud máxima para alinear dígitos
-  const maxLength = Math.max(...numberStrings.map(str => str.length));
+  // Determinar si hay números decimales
+  const hasDecimals = numberStrings.some(str => str.includes('.'));
   
-  // Crear matriz de dígitos alineados a la derecha
-  const alignedDigits = numberStrings.map(numStr => {
-    const padded = numStr.padStart(maxLength, ' ');
-    return padded.split('');
+  // Separar las partes enteras y decimales de cada número
+  const partsArray = numberStrings.map(str => {
+    const [intPart, decPart = ''] = str.split('.');
+    return { intPart, decPart };
+  });
+  
+  // Calcular la longitud máxima de las partes enteras y decimales
+  const maxIntLength = Math.max(...partsArray.map(parts => parts.intPart.length));
+  const maxDecLength = Math.max(...partsArray.map(parts => parts.decPart.length));
+  
+  // Crear arrays de dígitos para cada número, alineados correctamente
+  const alignedDigits = partsArray.map(parts => {
+    const digits: string[] = [];
+    
+    // Añadir dígitos enteros uno por uno (rellenando con espacios a la izquierda)
+    for (let i = 0; i < maxIntLength; i++) {
+      const paddedInt = parts.intPart.padStart(maxIntLength, ' ');
+      digits.push(i < paddedInt.length ? paddedInt[i] : ' ');
+    }
+    
+    // Añadir punto decimal y dígitos decimales si hay decimales
+    if (hasDecimals) {
+      digits.push('.');
+      
+      // Añadir dígitos decimales (rellenando con ceros a la derecha)
+      for (let i = 0; i < maxDecLength; i++) {
+        digits.push(i < parts.decPart.length ? parts.decPart[i] : '0');
+      }
+    }
+    
+    return digits;
   });
   
   // Valor de backup para correctAnswer
