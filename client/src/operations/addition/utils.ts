@@ -1,6 +1,8 @@
+import { Problem, AdditionProblem, DifficultyLevel, ExerciseLayout } from "./types";
 import { getRandomInt } from "@/lib/utils";
 
-export function getRandomDecimal(min: number, max: number, decimals: 1 | 2): number {
+// Función para generar un número decimal aleatorio con 1 o 2 decimales
+function getRandomDecimal(min: number, max: number, decimals: 1 | 2): number {
   const base = getRandomInt(min, max);
   const decimalPart = decimals === 1 
     ? getRandomInt(1, 9) / 10  // Para 1 decimal: 0.1, 0.2, ..., 0.9
@@ -9,22 +11,11 @@ export function getRandomDecimal(min: number, max: number, decimals: 1 | 2): num
   return base + decimalPart;
 }
 
-export interface Problem {
-  num1: number;
-  num2: number;
-  correctAnswer: number;
-}
-
-export interface UserAnswer {
-  problem: Problem;
-  userAnswer: number;
-  isCorrect: boolean;
-}
-
-export function generateAdditionProblem(difficulty: string): Problem {
+export function generateAdditionProblem(difficulty: string): AdditionProblem {
   let num1: number;
   let num2: number;
   let useDecimals = false;
+  let layout: ExerciseLayout = 'horizontal'; // Por defecto
 
   switch (difficulty) {
     case "beginner":
@@ -32,6 +23,8 @@ export function generateAdditionProblem(difficulty: string): Problem {
       // Ejemplo: 1 + 8 = ?, 7 + 5 = ?
       num1 = getRandomInt(1, 9);
       num2 = getRandomInt(1, 9);
+      // Formato horizontal siempre para principiantes
+      layout = 'horizontal';
       break;
       
     case "elementary":
@@ -40,6 +33,8 @@ export function generateAdditionProblem(difficulty: string): Problem {
       // Nota: los ejemplos no coinciden exactamente con la descripción, ajustamos para que coincida con los ejemplos
       num1 = getRandomInt(10, 30);
       num2 = getRandomInt(10, 20);
+      // Formato horizontal siempre para nivel elemental
+      layout = 'horizontal';
       break;
       
     case "intermediate":
@@ -48,6 +43,8 @@ export function generateAdditionProblem(difficulty: string): Problem {
       // Nota: los ejemplos no coinciden exactamente con la descripción, ajustamos para que coincida con los ejemplos
       num1 = getRandomInt(50, 400);
       num2 = getRandomInt(100, 400);
+      // 50% de probabilidad de usar formato vertical desde nivel intermedio
+      layout = Math.random() < 0.5 ? 'vertical' : 'horizontal';
       break;
       
     case "advanced":
