@@ -221,7 +221,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
         <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
           <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">🔢</span>Número de Problemas
+            <span className="mr-2">🔢</span>Cantidad De Ejercicios Para Realizar 
           </h3>
           <div className="mt-3">
             <div className="flex items-center space-x-4">
@@ -264,7 +264,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
         <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
           <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">⏱️</span>Límite de Tiempo
+            <span className="mr-2">⏱️</span>Límite de Tiempo (Temporizador)
           </h3>
           <div className="mt-3">
             <div className="flex items-center space-x-4">
@@ -343,7 +343,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               </div>
             </div>
             <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
-              <span className="font-medium">Intentos máximos:</span> <span className={`font-bold ${theme.text}`}>{localSettings.maxAttempts}</span> <span className="text-xs">(0 para intentos ilimitados)</span>
+              <span className="font-medium">Intentos máximos:</span> <span className={`font-bold ${theme.text}`}>{localSettings.maxAttempts}</span> <span className="text-xs">(0 Para Intentos Ilimitados, Excepto Cuando El Temporizador Está Activado. En Ese Caso, El Límite Es 1)</span>
             </p>
           </div>
 
