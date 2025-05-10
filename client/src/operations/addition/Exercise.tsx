@@ -37,6 +37,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [digitAnswers, setDigitAnswers] = useState<string[]>([]);
   const [focusedDigitIndex, setFocusedDigitIndex] = useState<number | null>(null);
   const [inputDirection, setInputDirection] = useState<'ltr' | 'rtl'>('rtl');
+  // Cambiar el tipo a HTMLDivElement, que es lo que realmente estamos usando
   const digitBoxRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const [userAnswersHistory, setUserAnswersHistory] = useState<UserAnswerType[]>([]);
@@ -109,7 +110,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           currentProblemIndex !== actualActiveProblemIndexBeforeViewingPrevious) {
         setDigitAnswers(Array(numBoxes).fill(""));
       }
-      digitBoxRefs.current = Array(numBoxes).fill(null).map(() => React.createRef<HTMLInputElement>());
+      // Crear un array simple para las referencias
+      digitBoxRefs.current = Array(numBoxes).fill(null);
       if (currentProblem.layout === 'horizontal') {
         setInputDirection('ltr');
         setFocusedDigitIndex(0);
@@ -584,6 +586,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setInputDirection(index < Math.floor(currentProblem.answerMaxDigits / 2) ? 'ltr' : 'rtl');
     }
     setFocusedDigitIndex(index);
+    
+    // Intentar enfocar el elemento directamente
+    setTimeout(() => {
+      if (digitBoxRefs.current[index]) {
+        digitBoxRefs.current[index]?.focus();
+      }
+    }, 0);
   };
 
   const handleDigitInput = (value: string) => {
@@ -816,9 +825,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               return (
                 <React.Fragment key={`digit-box-frag-${index}-${currentProblem.id}`}>
                   <div
-                    ref={el => {
-                      if (el) digitBoxRefs.current[index] = el;
-                    }}
+                    ref={el => digitBoxRefs.current[index] = el}
                     tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
                     className={`${digitBoxBaseStyle} 
                                 ${viewingPrevious || exerciseCompleted || waitingRef.current ? digitBoxDisabledStyle : (focusedDigitIndex === index ? digitBoxFocusStyle : digitBoxBlurStyle)}
