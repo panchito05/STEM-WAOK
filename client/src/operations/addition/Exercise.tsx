@@ -162,36 +162,58 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Timer por problema individual
   useEffect(() => {
-    if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); // Limpiar timer anterior
-    if (exerciseStarted && !exerciseCompleted && settings.timeValue > 0 && currentProblem && !viewingPrevious) {
-      // No iniciar el temporizador en estos casos:
-      // 1. Si estamos esperando que el usuario continúe (waitingForContinue) Y
-      //    a. maxAttempts > 0 y ya se alcanzó el límite, O
-      //    b. maxAttempts es 0 (un solo intento automático) y ya se contabilizó un intento
-      if (waitingForContinue && (
-          (settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts) || 
-          (settings.maxAttempts === 0 && currentAttempts > 0)
-      )) {
-        return;
-      }
-      
+    // Siempre limpiar el timer anterior primero
+    if (singleProblemTimerRef.current) {
+      clearInterval(singleProblemTimerRef.current);
+      singleProblemTimerRef.current = null;
+    }
+    
+    // Condiciones para iniciar un nuevo temporizador
+    const shouldStartTimer = 
+      exerciseStarted && 
+      !exerciseCompleted && 
+      settings.timeValue > 0 && 
+      currentProblem && 
+      !viewingPrevious;
+    
+    // Verificar si debemos omitir el timer cuando:
+    // 1. maxAttempts = 0 y ya se ha contado un intento
+    // 2. Estamos esperando que el usuario continúe y se han agotado los intentos
+    const shouldSkipTimer = 
+      (settings.maxAttempts === 0 && currentAttempts > 0) || 
+      (waitingForContinue && currentAttempts >= Math.max(1, settings.maxAttempts));
+    
+    if (shouldStartTimer && !shouldSkipTimer) {
       // Solo reiniciar el valor del temporizador cuando cambia el problema o al iniciar el ejercicio
       if (problemTimerValue === 0 || problemTimerValue === settings.timeValue) {
         setProblemTimerValue(settings.timeValue);
       }
       
+      // Iniciar temporizador
       singleProblemTimerRef.current = window.setInterval(() => {
         setProblemTimerValue(prev => {
           if (prev <= 1) {
-            if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-            handleTimeOrAttemptsUp(); // Esta función ahora incrementa los intentos y reinicia el timer si es necesario
+            // Limpiar el timer antes de llamar a handleTimeOrAttemptsUp para evitar doble llamada
+            if (singleProblemTimerRef.current) {
+              clearInterval(singleProblemTimerRef.current);
+              singleProblemTimerRef.current = null;
+            }
+            // Esta función incrementa los intentos y muestra respuesta si es necesario
+            handleTimeOrAttemptsUp(); 
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
     }
-    return () => { if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); };
+    
+    // Función de limpieza
+    return () => { 
+      if (singleProblemTimerRef.current) {
+        clearInterval(singleProblemTimerRef.current);
+        singleProblemTimerRef.current = null;
+      }
+    };
   }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, waitingForContinue, currentAttempts, settings.maxAttempts]);
 
   // Guardar contadores de rachas en localStorage
@@ -226,6 +248,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const startExercise = () => {
     if (!exerciseStarted) {
       setExerciseStarted(true);
+      // Asegurarse de que el contador de intentos se reinicie al iniciar el ejercicio
+      setCurrentAttempts(0);
       // El foco inicial se maneja en el useEffect [currentProblem, viewingPrevious]
     }
   };
