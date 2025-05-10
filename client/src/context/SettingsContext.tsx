@@ -354,11 +354,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       
       console.log(`📤 Enviando configuración global al servidor (${endpoint})`);
       
-      // Obtener la configuración global más actualizada
-      const currentGlobalSettings = globalSettings;
+      // Obtener la configuración global más actualizada y guardarla para comparación posterior
+      const settingsSnapshot = { ...globalSettings };
       
       // Hacer la petición al servidor
-      const response = await apiRequest("PUT", endpoint, currentGlobalSettings);
+      const response = await apiRequest("PUT", endpoint, settingsSnapshot);
       
       if (response.ok) {
         console.log(`✅ Configuración global guardada exitosamente en el servidor`);
@@ -378,7 +378,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       setTimeout(() => {
         // Verificar si la configuración global sigue siendo la misma
         const currentState = globalSettings;
-        if (JSON.stringify(currentState) === JSON.stringify(currentState)) {
+        if (JSON.stringify(currentState) === JSON.stringify(settingsSnapshot)) {
           console.log(`🔄 Reintentando sincronización para configuración global`);
           updateGlobalSettings({}); // Reintento con los mismos ajustes
         }
@@ -469,11 +469,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       
       console.log(`📤 Enviando configuración al servidor (${endpoint})`);
       
-      // Obtener la configuración más actualizada desde el estado
-      const currentModuleSettings = moduleSettings[moduleId];
+      // Obtener y guardar una copia de la configuración actual para comparación posterior
+      const settingsSnapshot = { ...moduleSettings[moduleId] };
       
       // Hacer la petición al servidor
-      const response = await apiRequest("PUT", endpoint, currentModuleSettings);
+      const response = await apiRequest("PUT", endpoint, settingsSnapshot);
       
       if (response.ok) {
         console.log(`✅ Configuración guardada exitosamente en el servidor para ${moduleId}`);
@@ -495,7 +495,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         setTimeout(() => {
           // Verificar si la configuración sigue siendo la misma
           const currentState = moduleSettings[moduleId];
-          if (JSON.stringify(currentState) === JSON.stringify(currentModuleSettings)) {
+          if (JSON.stringify(currentState) === JSON.stringify(settingsSnapshot)) {
             console.log(`🔄 Reintentando sincronización para ${moduleId}`);
             updateModuleSettings(moduleId, {}); // Reintento con los mismos ajustes
           }
@@ -607,36 +607,102 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     let updatedFavorites: string[];
     if (isFavorited) {
       updatedFavorites = favoriteModules.filter(id => id !== moduleId);
+      console.log(`⭐ Quitando ${moduleId} de favoritos`);
     } else {
       updatedFavorites = [...favoriteModules, moduleId];
+      console.log(`⭐ Agregando ${moduleId} a favoritos`);
     }
     
+    // Actualizar inmediatamente el estado local
     setFavoriteModules(updatedFavorites);
+    
+    // Crear una referencia para esta operación de favoritos
+    const syncId = Date.now().toString();
+    pendingSyncs.current['favorites'] = syncId;
     
     // Guardar inmediatamente en localStorage para persistencia
     try {
       const { favoritesKey } = getStorageKeys();
       localStorage.setItem(favoritesKey, JSON.stringify(updatedFavorites));
-      console.log(`Favoritos actualizados en localStorage:`, updatedFavorites);
+      console.log(`💾 Favoritos actualizados en localStorage:`, updatedFavorites);
     } catch (e) {
-      console.error("Error guardando favoritos en localStorage:", e);
+      console.error("❌ Error guardando favoritos en localStorage:", e);
     }
     
-    // Save to server if authenticated
-    if (isAuthenticated) {
-      try {
-        const endpoint = activeProfile
-          ? `/api/child-profiles/${activeProfile.id}/favorites`
-          : "/api/favorites";
-          
-        await apiRequest("PUT", endpoint, { favorites: updatedFavorites });
-      } catch (error) {
-        console.error("Error saving favorites:", error);
-        toast({
-          title: "Error al guardar favoritos",
-          description: "Tus favoritos solo se han guardado localmente",
-          variant: "destructive",
-        });
+    // Si no está autenticado, no continuar
+    if (!isAuthenticated) {
+      console.log(`⚠️ Usuario no autenticado, favoritos guardados solo localmente`);
+      return;
+    }
+    
+    // Determinar el endpoint correcto
+    const endpoint = activeProfile
+      ? `/api/child-profiles/${activeProfile.id}/favorites`
+      : "/api/favorites";
+      
+    // Crear una clave única para evitar peticiones duplicadas
+    const requestKey = `${endpoint}-favorites`;
+    
+    // Evitar peticiones duplicadas
+    if (pendingRequests.current[requestKey]) {
+      console.log(`⏱️ Petición de favoritos ya en curso, evitando duplicado`);
+      return;
+    }
+    
+    // Marcar esta petición como en curso
+    pendingRequests.current[requestKey] = true;
+    
+    try {
+      // Pequeña pausa para permitir que cambios rápidos consecutivos se agrupen
+      await new Promise(resolve => setTimeout(resolve, 250));
+      
+      // Verificar si esta sincronización sigue siendo la más reciente
+      if (pendingSyncs.current['favorites'] !== syncId) {
+        console.log(`⏭️ Sincronización ${syncId} para favoritos ha sido reemplazada por una más reciente`);
+        pendingRequests.current[requestKey] = false;
+        return;
+      }
+      
+      console.log(`📤 Enviando favoritos al servidor (${endpoint})`);
+      
+      // Guardar una copia de la lista actual de favoritos
+      const favoritesSnapshot = [...favoriteModules];
+      
+      // Hacer la petición al servidor
+      const response = await apiRequest("PUT", endpoint, { favorites: favoritesSnapshot });
+      
+      if (response.ok) {
+        console.log(`✅ Favoritos guardados exitosamente en el servidor`);
+      } else {
+        throw new Error(`Error del servidor: ${response.status}`);
+      }
+    } catch (error) {
+      console.error(`❌ Error guardando favoritos:`, error);
+      
+      toast({
+        title: "Error al guardar favoritos",
+        description: "Tus favoritos solo se han guardado localmente. Se intentará sincronizar más tarde.",
+        variant: "destructive",
+      });
+      
+      // Programar un reintento después de un tiempo
+      setTimeout(() => {
+        // Verificar si la lista de favoritos sigue siendo la misma
+        const currentState = favoriteModules;
+        const favoritesSnapshot = [...favoriteModules]; // Captura el estado actual
+        
+        if (JSON.stringify(currentState) === JSON.stringify(favoritesSnapshot)) {
+          console.log(`🔄 Reintentando sincronización de favoritos`);
+          toggleFavoriteModule(moduleId); // Reintento con el mismo módulo
+        }
+      }, 10000); // Reintentar en 10 segundos
+    } finally {
+      // Liberar la petición una vez completada o fallida
+      pendingRequests.current[requestKey] = false;
+      
+      // Limpiar el ID de sincronización si sigue siendo el actual
+      if (pendingSyncs.current['favorites'] === syncId) {
+        delete pendingSyncs.current['favorites'];
       }
     }
   };
