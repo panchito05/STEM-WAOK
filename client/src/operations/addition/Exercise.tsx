@@ -152,7 +152,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Aplicar foco al cajón cuando focusedDigitIndex cambia
   useEffect(() => {
     if (focusedDigitIndex !== null && !viewingPrevious && digitBoxRefs.current[focusedDigitIndex]) {
-      setTimeout(() => digitBoxRefs.current[focusedDigitIndex]?.focus(), 0); // Timeout para asegurar que el DOM está listo
+      // Verificar explícitamente que el elemento tiene una función focus antes de llamarla
+      const element = digitBoxRefs.current[focusedDigitIndex];
+      if (element && typeof element.focus === 'function') {
+        setTimeout(() => element.focus(), 0); // Timeout para asegurar que el DOM está listo
+      }
     }
   }, [focusedDigitIndex, viewingPrevious]);
 
@@ -663,7 +667,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return (
       <div className="px-4 py-5 sm:p-6 text-center">
         <Trophy className="h-20 w-20 text-yellow-500 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900">{t('Congratulations, You Have Completed The Established Exercises')}</h2>
+        <h2 className="text-2xl font-bold text-gray-900">{t('exercises.exerciseCompletedExcl')}</h2>
         <p className="text-gray-700 mt-2">{t('exercises.yourScoreIs')} {finalScore}/{problemsList.length}</p>
         <p className="text-gray-600">{t('exercises.timeTaken')}: {formatTime(timer)}</p>
         <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-3">
