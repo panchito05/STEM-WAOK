@@ -196,6 +196,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setCurrentProblemIndex(0);
     setActualActiveProblemIndexBeforeViewingPrevious(0); // El problema activo es el primero
     setCurrentProblem(newProblemsArray[0]); // Esto dispara el useEffect para configurar cajones y foco
+    setCurrentAttempts(0); // Inicializar contador de intentos para el nuevo conjunto de problemas
 
     setUserAnswersHistory(Array(newProblemsArray.length).fill(null)); // Inicializar historial
     setTimer(0);
@@ -223,6 +224,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setCurrentProblem(problemsList[nextActiveIdx]);
       setActualActiveProblemIndexBeforeViewingPrevious(nextActiveIdx);
       setFeedbackMessage(null); // Limpiar feedback para el nuevo problema activo
+      setCurrentAttempts(0); // Reiniciar el contador de intentos para el nuevo problema
     } else {
       completeExercise();
     }
