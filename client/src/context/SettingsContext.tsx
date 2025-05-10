@@ -121,16 +121,86 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     };
   };
 
+  // Bandera para controlar si es la primera carga (no sobrescribir ajustes locales después)
+  const isFirstLoad = useRef(true);
+
   const fetchSettings = async () => {
     try {
       const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
       
-      // Variable para definir si debemos cargar desde localStorage o no
-      // Solo usaremos localStorage si no podemos obtener datos del servidor
-      let useLocalStorage = true;
-      let serverData = null;
+      // Cargar primero desde localStorage (siempre)
+      console.log("Cargando configuraciones desde localStorage...");
       
-      // Si está autenticado, intentar primero cargar desde el servidor
+      // Cargar configuraciones globales desde localStorage
+      const storedGlobalSettings = localStorage.getItem(globalSettingsKey);
+      const storedModuleSettings = localStorage.getItem(moduleSettingsKey);
+      const storedFavorites = localStorage.getItem(favoritesKey);
+
+      // Variable para controlar si hay configuraciones locales significativas para persistir
+      let hasSignificantLocalSettings = false;
+
+      // Cargar configuraciones globales de localStorage
+      if (storedGlobalSettings) {
+        try {
+          const parsedSettings = JSON.parse(storedGlobalSettings);
+          setGlobalSettings({...defaultGlobalSettings, ...parsedSettings});
+          console.log("Configuraciones globales cargadas de localStorage:", parsedSettings);
+          hasSignificantLocalSettings = true;
+        } catch (e) {
+          console.error("Error al parsear configuraciones globales:", e);
+          setGlobalSettings(defaultGlobalSettings);
+        }
+      } else {
+        setGlobalSettings(defaultGlobalSettings);
+      }
+
+      // Cargar configuraciones de módulos de localStorage
+      if (storedModuleSettings) {
+        try {
+          const parsedSettings = JSON.parse(storedModuleSettings);
+          // Asegurarse de que cada módulo tenga todos los campos por defecto
+          const enhancedSettings: Record<string, ModuleSettings> = {};
+          
+          Object.entries(parsedSettings).forEach(([moduleId, settings]) => {
+            enhancedSettings[moduleId] = {
+              ...defaultModuleSettings,
+              ...(settings as ModuleSettings)
+            };
+          });
+          
+          setModuleSettings(enhancedSettings);
+          console.log("Configuraciones de módulos cargadas de localStorage:", enhancedSettings);
+          hasSignificantLocalSettings = true;
+        } catch (e) {
+          console.error("Error al parsear configuraciones de módulos:", e);
+          setModuleSettings({});
+        }
+      } else {
+        setModuleSettings({});
+      }
+      
+      // Cargar favoritos de localStorage
+      if (storedFavorites) {
+        try {
+          const parsedFavorites = JSON.parse(storedFavorites);
+          setFavoriteModules(parsedFavorites);
+          console.log("Favoritos cargados de localStorage:", parsedFavorites);
+          hasSignificantLocalSettings = true;
+        } catch (e) {
+          console.error("Error al parsear favoritos:", e);
+          setFavoriteModules([]);
+        }
+      } else {
+        setFavoriteModules([]);
+      }
+      
+      // Si ya no es la primera carga y hay configuraciones locales significativas, no sobrescribir
+      if (!isFirstLoad.current && hasSignificantLocalSettings) {
+        console.log("No es primera carga y hay ajustes locales importantes - No sobrescribiendo con datos del servidor");
+        return;
+      }
+      
+      // Si está autenticado, intentar cargar configuraciones del servidor solo en la primera carga
       if (isAuthenticated) {
         try {
           const endpoint = activeProfile 
@@ -144,123 +214,57 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           });
           
           if (res.ok) {
-            serverData = await res.json();
+            const serverData = await res.json();
             console.log("✅ Datos recibidos exitosamente del servidor:", serverData);
             
-            // Si hemos obtenido datos del servidor, no necesitamos localStorage
-            useLocalStorage = false;
+            // ==== Solo aplicar datos del servidor en la primera carga ====
+            if (isFirstLoad.current) {
+              console.log("Primera carga - Aplicando datos del servidor");
+              
+              // Procesar configuraciones de módulos
+              if (serverData.moduleSettings) {
+                const enhancedModuleSettings: Record<string, ModuleSettings> = {};
+                
+                // Procesar cada módulo en los ajustes recibidos
+                Object.entries(serverData.moduleSettings).forEach(([moduleId, settings]) => {
+                  // Combinar con valores por defecto para asegurar que todas las propiedades existan
+                  enhancedModuleSettings[moduleId] = {
+                    ...defaultModuleSettings,
+                    ...settings as ModuleSettings
+                  };
+                });
+                
+                console.log("Configuraciones mejoradas de módulos:", enhancedModuleSettings);
+                setModuleSettings(enhancedModuleSettings);
+                localStorage.setItem(moduleSettingsKey, JSON.stringify(enhancedModuleSettings));
+              }
+              
+              // Procesar configuraciones globales
+              if (serverData.globalSettings) {
+                const enhancedGlobalSettings = {
+                  ...defaultGlobalSettings,
+                  ...serverData.globalSettings
+                };
+                setGlobalSettings(enhancedGlobalSettings);
+                localStorage.setItem(globalSettingsKey, JSON.stringify(enhancedGlobalSettings));
+              }
+              
+              // Procesar favoritos
+              if (serverData.favoriteModules) {
+                setFavoriteModules(serverData.favoriteModules);
+                localStorage.setItem(favoritesKey, JSON.stringify(serverData.favoriteModules));
+              }
+              
+              // Indicar que ya no es la primera carga
+              isFirstLoad.current = false;
+            } else {
+              console.log("No es primera carga - Preservando configuraciones locales");
+            }
           } else {
             console.warn(`⚠️ Error al obtener configuraciones del servidor: ${res.status}`);
           }
         } catch (serverError) {
           console.error("⚠️ Error al comunicarse con el servidor:", serverError);
-        }
-      }
-      
-      // Si debemos usar localStorage (porque no hay datos del servidor)
-      if (useLocalStorage) {
-        console.log("Usando datos de localStorage como respaldo");
-        
-        // Try to load from local storage
-        const storedGlobalSettings = localStorage.getItem(globalSettingsKey);
-        const storedModuleSettings = localStorage.getItem(moduleSettingsKey);
-        const storedFavorites = localStorage.getItem(favoritesKey);
-
-        // Cargar configuraciones globales
-        if (storedGlobalSettings) {
-          try {
-            const parsedSettings = JSON.parse(storedGlobalSettings);
-            setGlobalSettings({...defaultGlobalSettings, ...parsedSettings});
-            console.log("Configuraciones globales cargadas de localStorage:", parsedSettings);
-          } catch (e) {
-            console.error("Error al parsear configuraciones globales:", e);
-            setGlobalSettings(defaultGlobalSettings);
-          }
-        } else {
-          setGlobalSettings(defaultGlobalSettings);
-        }
-
-        // Cargar configuraciones de módulos
-        if (storedModuleSettings) {
-          try {
-            const parsedSettings = JSON.parse(storedModuleSettings);
-            // Nos aseguramos de que cada módulo tenga todos los campos por defecto
-            const enhancedSettings: Record<string, ModuleSettings> = {};
-            
-            Object.entries(parsedSettings).forEach(([moduleId, settings]) => {
-              enhancedSettings[moduleId] = {
-                ...defaultModuleSettings,
-                ...(settings as ModuleSettings)
-              };
-            });
-            
-            setModuleSettings(enhancedSettings);
-            console.log("Configuraciones de módulos cargadas de localStorage:", enhancedSettings);
-          } catch (e) {
-            console.error("Error al parsear configuraciones de módulos:", e);
-            setModuleSettings({});
-          }
-        } else {
-          setModuleSettings({});
-        }
-        
-        // Cargar favoritos
-        if (storedFavorites) {
-          try {
-            const parsedFavorites = JSON.parse(storedFavorites);
-            setFavoriteModules(parsedFavorites);
-            console.log("Favoritos cargados de localStorage:", parsedFavorites);
-          } catch (e) {
-            console.error("Error al parsear favoritos:", e);
-            setFavoriteModules([]);
-          }
-        } else {
-          setFavoriteModules([]);
-        }
-      } else {
-        // Usar datos del servidor (serverData ya está validado como no nulo aquí)
-        
-        // Procesar configuraciones de módulos
-        if (serverData.moduleSettings) {
-          const enhancedModuleSettings: Record<string, ModuleSettings> = {};
-          
-          // Procesar cada módulo en los ajustes recibidos
-          Object.entries(serverData.moduleSettings).forEach(([moduleId, settings]) => {
-            // Combinar con valores por defecto para asegurar que todas las propiedades existan
-            enhancedModuleSettings[moduleId] = {
-              ...defaultModuleSettings,
-              ...settings as ModuleSettings
-            };
-          });
-          
-          console.log("Configuraciones mejoradas de módulos:", enhancedModuleSettings);
-          setModuleSettings(enhancedModuleSettings);
-          localStorage.setItem(moduleSettingsKey, JSON.stringify(enhancedModuleSettings));
-        } else {
-          setModuleSettings({});
-          localStorage.removeItem(moduleSettingsKey);
-        }
-        
-        // Procesar configuraciones globales
-        if (serverData.globalSettings) {
-          const enhancedGlobalSettings = {
-            ...defaultGlobalSettings,
-            ...serverData.globalSettings
-          };
-          setGlobalSettings(enhancedGlobalSettings);
-          localStorage.setItem(globalSettingsKey, JSON.stringify(enhancedGlobalSettings));
-        } else {
-          setGlobalSettings(defaultGlobalSettings);
-          localStorage.removeItem(globalSettingsKey);
-        }
-        
-        // Procesar favoritos
-        if (serverData.favoriteModules) {
-          setFavoriteModules(serverData.favoriteModules);
-          localStorage.setItem(favoritesKey, JSON.stringify(serverData.favoriteModules));
-        } else {
-          setFavoriteModules([]);
-          localStorage.removeItem(favoritesKey);
         }
       }
     } catch (error) {
