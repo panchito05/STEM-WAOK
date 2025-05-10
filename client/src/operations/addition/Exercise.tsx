@@ -324,66 +324,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleTimeOrAttemptsUp = () => {
     if (!currentProblem || viewingPrevious) return;
     
-    // Antes de marcar como incorrecto, verificar si hay una respuesta escrita
-    // y si esa respuesta es correcta
-    let userAnswerString = "";
-    const decPosInAnswer = currentProblem.answerDecimalPosition;
-    const totalDigitBoxes = currentProblem.answerMaxDigits;
-    const integerBoxesCount = totalDigitBoxes - (decPosInAnswer || 0);
-    let isValidAnswer = false;
-    let isCorrectAnswer = false;
-    
-    // Solo verificar si existe al menos un dígito en la respuesta
-    if (digitAnswers.some(d => d !== "")) {
-      if (decPosInAnswer !== undefined && decPosInAnswer > 0) {
-        const integerPart = digitAnswers.slice(0, integerBoxesCount).join('');
-        const decimalPart = digitAnswers.slice(integerBoxesCount).join('');
-        userAnswerString = `${integerPart || '0'}.${decimalPart.padEnd(decPosInAnswer, '0')}`;
-      } else {
-        userAnswerString = digitAnswers.join('') || '0';
-      }
-      
-      const userNumericAnswer = parseFloat(userAnswerString);
-      isValidAnswer = !isNaN(userNumericAnswer);
-      
-      if (isValidAnswer) {
-        isCorrectAnswer = checkAnswer(currentProblem, userNumericAnswer);
-        
-        // Si la respuesta es correcta, manejarla igual que si el usuario hubiera presionado "Verificar"
-        if (isCorrectAnswer) {
-          // Detener el temporizador
-          if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-          
-          // Mostrar mensaje de respuesta correcta
-          setFeedbackMessage(t('exercises.correct')); 
-          setFeedbackColor("green");
-          
-          // Actualizar rachas y estadísticas
-          const newConsecutive = consecutiveCorrectAnswers + 1;
-          setConsecutiveCorrectAnswers(newConsecutive); 
-          setConsecutiveIncorrectAnswers(0);
-          
-          // Guardar en el historial
-          const problemIndexForHistory = currentProblemIndex;
-          const newHistoryEntry = { 
-            problemId: currentProblem.id, 
-            problem: currentProblem,
-            userAnswer: userNumericAnswer, 
-            isCorrect: true 
-          };
-          
-          setUserAnswersHistory(prev => {
-            const newHistory = [...prev];
-            newHistory[problemIndexForHistory] = newHistoryEntry;
-            return newHistory;
-          });
-          
-          setWaitingForContinue(true);
-          return;
-        }
-      }
-    }
-    
     // Verificar si realmente se agotaron todos los intentos
     const attemptsExhausted = settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts;
     
