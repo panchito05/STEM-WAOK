@@ -223,9 +223,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setCurrentProblem(problemsList[nextActiveIdx]);
       setActualActiveProblemIndexBeforeViewingPrevious(nextActiveIdx);
       setFeedbackMessage(null); // Limpiar feedback para el nuevo problema activo
-      
-      // Reiniciar el contador de intentos para el nuevo problema
-      setCurrentAttempts(0);
     } else {
       completeExercise();
     }
@@ -305,16 +302,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleTimeOrAttemptsUp = () => {
     if (!currentProblem || viewingPrevious) return;
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-    
-    // Incrementar el contador de intentos cuando se agota el tiempo
-    // Esto asegura que el contador de intentos siga aumentando incluso cuando el tiempo se agota
-    const newAttempts = currentAttempts + 1;
-    setCurrentAttempts(newAttempts);
-    
     // Mensaje más directo y simple que muestra la respuesta correcta
     setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
     setFeedbackColor("red");
-    
     const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious; // Usar el índice activo
     const currentAnswer = userAnswersHistory[currentActiveIndex];
     if (!currentAnswer || currentAnswer.status !== 'revealed') {
@@ -522,25 +512,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
         setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
-        setWaitingForContinue(true);
-        
-        // No llamamos a handleTimeOrAttemptsUp() aquí porque ya incrementamos los intentos arriba,
-        // y no queremos incrementarlos dos veces.
-        
-        // Actualizamos el historial de respuestas para mostrar que se agotaron los intentos
-        const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious;
-        const currentAnswer = userAnswersHistory[currentActiveIndex];
-        if (!currentAnswer || currentAnswer.status !== 'revealed') {
-            const newHistory = [...userAnswersHistory];
-            newHistory[currentActiveIndex] = { 
-                problemId: currentProblem.id, 
-                problem: currentProblem, 
-                userAnswer: userNumericAnswer, 
-                isCorrect: false, 
-                status: 'revealed' 
-            };
-            setUserAnswersHistory(newHistory);
-        }
+        handleTimeOrAttemptsUp();
       }
       // No limpiar cajones en error, permitir al usuario corregir.
     }
