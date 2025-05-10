@@ -253,8 +253,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setProblemsList(prev => [...prev, newProblem]);
     
     // Actualizar el historial de respuestas para incluir el nuevo problema (como null)
-    // El tipo UserAnswerType[] no permite elementos null, por lo que mantenemos la estructura
-    setUserAnswersHistory(prev => [...prev]);
+    setUserAnswersHistory(prev => [...prev, null]);
     
     // Incrementar el contador de problemas de compensación
     setCompensationProblemsCount(prev => prev + 1);
@@ -314,8 +313,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         setFeedbackMessage(
             prevAnswerEntry.isCorrect ? 
-            `${t('exercises.yourAnswerWas')}: ${prevAnswerEntry.userAnswer} (${t('exercises.correct')})` :
-            `${t('exercises.yourAnswerWas')}: ${prevAnswerEntry.userAnswer === undefined || isNaN(prevAnswerEntry.userAnswer) ? t('common.notAnswered') : prevAnswerEntry.userAnswer} (${t('exercises.incorrect')}). ${t('exercises.correctAnswerIs')} ${prevProblemToView.correctAnswer}`
+            `${t('')}: ${prevAnswerEntry.userAnswer} (${t('exercises.correct')})` :
+            `Your Answer Was (Incorrect!). The correct answer is = ${prevProblemToView.correctAnswer}`
         );
         setFeedbackColor(prevAnswerEntry.isCorrect ? "green" : "red");
     } else {
@@ -616,7 +615,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       // Si agotó todos los intentos, mostrar la respuesta y agregar un problema de compensación
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
-        setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
+        setFeedbackMessage(`Your Answer Was (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
         handleTimeOrAttemptsUp();
         
         // Agregar un problema de compensación si está habilitado
@@ -740,13 +739,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <span>Problem {currentProblemIndex + 1} of {problemsList.length} 
-              {compensationProblemsCount > 0 && (
-                <span className="text-orange-500 ml-1">
-                  ({originalProblemCount} + {compensationProblemsCount})
-                </span>
-              )}
-            </span>
+            <span>Problem {currentProblemIndex + 1} of {problemsList.length}</span>
             <span className="font-semibold">Score: {score}</span>
         </div>
 
@@ -879,7 +872,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     onClick={() => { 
                         if(currentProblem && !viewingPrevious && !exerciseCompleted) { 
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-                            setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${currentProblem.correctAnswer}`);
+                            setFeedbackMessage(`Your Answer Was (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
                             setFeedbackColor("blue");
                             setWaitingForContinue(true);
                             const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious; // Usar el activo
