@@ -589,8 +589,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <span>{t('common.problem')} {currentProblemIndex + 1} {t('common.of')} {problemsList.length}</span>
-            <span className="font-semibold">{t('common.score')}: {score}</span>
+            <span>Problem {currentProblemIndex + 1} of {problemsList.length}</span>
+            <span className="font-semibold">Score: {score}</span>
         </div>
 
         <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-center justify-center`}>
