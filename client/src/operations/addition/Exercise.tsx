@@ -584,7 +584,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                  <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold capitalize">
                     {settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
                 </span>
-                <Button variant="ghost" size="icon" onClick={onOpenSettings} className="h-7 w-7 sm:h-8 sm:w-8"><Cog className="h-4 w-4 sm:h-5 sm:w-5" /></Button>
+                <Button variant="ghost" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm">
+                  <Cog className="h-4 w-4" /> Settings
+                </Button>
             </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
