@@ -109,7 +109,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           currentProblemIndex !== actualActiveProblemIndexBeforeViewingPrevious) {
         setDigitAnswers(Array(numBoxes).fill(""));
       }
-      digitBoxRefs.current = Array(numBoxes).fill(null).map(() => React.createRef<HTMLDivElement>() as any);
+      digitBoxRefs.current = Array(numBoxes).fill(null).map(() => React.createRef<HTMLInputElement>());
       if (currentProblem.layout === 'horizontal') {
         setInputDirection('ltr');
         setFocusedDigitIndex(0);
@@ -816,7 +816,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               return (
                 <React.Fragment key={`digit-box-frag-${index}-${currentProblem.id}`}>
                   <div
-                    ref={el => digitBoxRefs.current[index] = el}
+                    ref={el => {
+                      if (el) digitBoxRefs.current[index] = el;
+                    }}
                     tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
                     className={`${digitBoxBaseStyle} 
                                 ${viewingPrevious || exerciseCompleted || waitingRef.current ? digitBoxDisabledStyle : (focusedDigitIndex === index ? digitBoxFocusStyle : digitBoxBlurStyle)}
