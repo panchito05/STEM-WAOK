@@ -489,7 +489,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             handleContinue();
             autoContinueTimerRef.current = null;
           }
-        }, 2200); // Tiempo ajustado a 2.2 segundos
+        }, 3000); // Tiempo ajustado a 3 segundos
       }
     } else { // Incorrecta
       setFeedbackMessage(t('exercises.incorrect')); 
