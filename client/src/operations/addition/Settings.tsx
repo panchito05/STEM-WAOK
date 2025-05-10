@@ -65,7 +65,15 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   };
   
   // Para poder navegar entre la configuración y el ejercicio sin perder cambios
-  // Eliminamos el efecto de guardar al desmontar para evitar doble guardado con debouncedSave
+  // Agregamos un efecto para guardar al desmontar y asegurar persistencia
+  useEffect(() => {
+    // Guardar configuración cuando se desmonta el componente
+    return () => {
+      // Llamada directa sin debounce para asegurar que se ejecute
+      updateModuleSettings("addition", localSettings);
+      console.log("[ADDITION] Guardando configuración al desmontar:", localSettings);
+    };
+  }, [localSettings, updateModuleSettings]);
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {

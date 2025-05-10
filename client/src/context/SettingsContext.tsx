@@ -125,15 +125,33 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       const storedFavorites = localStorage.getItem(favoritesKey);
 
       if (storedGlobalSettings) {
-        setGlobalSettings(JSON.parse(storedGlobalSettings));
+        try {
+          const parsedSettings = JSON.parse(storedGlobalSettings);
+          setGlobalSettings(parsedSettings);
+          console.log("Loaded global settings from localStorage:", parsedSettings);
+        } catch (e) {
+          console.error("Error parsing global settings from localStorage:", e);
+        }
       }
 
       if (storedModuleSettings) {
-        setModuleSettings(JSON.parse(storedModuleSettings));
+        try {
+          const parsedSettings = JSON.parse(storedModuleSettings);
+          setModuleSettings(parsedSettings);
+          console.log("Loaded module settings from localStorage:", parsedSettings);
+        } catch (e) {
+          console.error("Error parsing module settings from localStorage:", e);
+        }
       }
       
       if (storedFavorites) {
-        setFavoriteModules(JSON.parse(storedFavorites));
+        try {
+          const parsedFavorites = JSON.parse(storedFavorites);
+          setFavoriteModules(parsedFavorites);
+          console.log("Loaded favorites from localStorage:", parsedFavorites);
+        } catch (e) {
+          console.error("Error parsing favorites from localStorage:", e);
+        }
       }
 
       // If authenticated, fetch from server and override local
@@ -142,26 +160,49 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           ? `/api/child-profiles/${activeProfile.id}/settings` 
           : "/api/settings";
         
+        console.log(`Fetching settings from ${endpoint}`);
         const res = await fetch(endpoint, {
           credentials: "include",
         });
         
         if (res.ok) {
           const data = await res.json();
-          if (data.globalSettings) {
-            setGlobalSettings(data.globalSettings);
-            localStorage.setItem(globalSettingsKey, JSON.stringify(data.globalSettings));
-          }
+          console.log("Received settings from server:", data);
           
           if (data.moduleSettings) {
-            setModuleSettings(data.moduleSettings);
-            localStorage.setItem(moduleSettingsKey, JSON.stringify(data.moduleSettings));
+            // Asegurarnos de que se preserven los valores por defecto
+            // para aquellos ajustes que no estén definidos en el servidor
+            const enhancedModuleSettings: Record<string, ModuleSettings> = {};
+            
+            // Procesar cada módulo en los ajustes recibidos
+            Object.entries(data.moduleSettings).forEach(([moduleId, settings]) => {
+              // Combinar con valores por defecto para asegurar que todas las propiedades existan
+              enhancedModuleSettings[moduleId] = {
+                ...defaultModuleSettings,
+                ...settings as ModuleSettings
+              };
+            });
+            
+            console.log("Enhanced module settings:", enhancedModuleSettings);
+            setModuleSettings(enhancedModuleSettings);
+            localStorage.setItem(moduleSettingsKey, JSON.stringify(enhancedModuleSettings));
+          }
+          
+          if (data.globalSettings) {
+            const enhancedGlobalSettings = {
+              ...defaultGlobalSettings,
+              ...data.globalSettings
+            };
+            setGlobalSettings(enhancedGlobalSettings);
+            localStorage.setItem(globalSettingsKey, JSON.stringify(enhancedGlobalSettings));
           }
           
           if (data.favoriteModules) {
             setFavoriteModules(data.favoriteModules);
             localStorage.setItem(favoritesKey, JSON.stringify(data.favoriteModules));
           }
+        } else {
+          console.warn(`Failed to fetch settings from server: ${res.status}`);
         }
       }
     } catch (error) {
@@ -234,13 +275,30 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   };
 
   const updateModuleSettings = async (moduleId: string, settings: Partial<ModuleSettings>) => {
+    // Asegurarse de que siempre tenemos todos los valores por defecto
     const currentSettings = moduleSettings[moduleId] || { ...defaultModuleSettings };
     const updatedSettings = { ...currentSettings, ...settings };
     
-    setModuleSettings(prev => ({
-      ...prev,
-      [moduleId]: updatedSettings,
-    }));
+    console.log(`Actualizando configuración para ${moduleId}:`, updatedSettings);
+    
+    // Actualizar estado
+    setModuleSettings(prev => {
+      const newSettings = {
+        ...prev,
+        [moduleId]: updatedSettings,
+      };
+      
+      // Guardar inmediatamente en localStorage para persistencia
+      try {
+        const { moduleSettingsKey } = getStorageKeys();
+        localStorage.setItem(moduleSettingsKey, JSON.stringify(newSettings));
+        console.log(`Guardado en localStorage: ${moduleSettingsKey}`, newSettings);
+      } catch (e) {
+        console.error("Error guardando en localStorage:", e);
+      }
+      
+      return newSettings;
+    });
     
     // Sólo intentar guardar en el servidor si el usuario está autenticado
     if (isAuthenticated) {
@@ -249,7 +307,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
           : `/api/settings/module/${moduleId}`;
           
+        console.log(`Guardando en servidor (${endpoint}):`, updatedSettings);
         await apiRequest("PUT", endpoint, updatedSettings);
+        console.log(`Configuración guardada exitosamente en el servidor para ${moduleId}`);
       } catch (error) {
         // Solo mostrar una notificación si hay un error real (no error de autenticación)
         if (error instanceof Error && !error.message.includes("401")) {
@@ -263,18 +323,39 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       }
     } else {
       // Si no está autenticado, simplemente guardar en localStorage
-      console.log(`User not authenticated, saving settings for ${moduleId} locally only`);
+      console.log(`Usuario no autenticado, configuración de ${moduleId} guardada solo localmente`);
     }
   };
 
   const getModuleSettings = (moduleId: string): ModuleSettings => {
-    return moduleSettings[moduleId] || { ...defaultModuleSettings };
+    // Si tenemos configuraciones para este módulo, asegurarnos de que incluya todos los valores por defecto
+    if (moduleSettings[moduleId]) {
+      // Combinar con defaults para garantizar que tengamos todos los campos
+      return {
+        ...defaultModuleSettings,
+        ...moduleSettings[moduleId]
+      };
+    }
+    
+    // Si no hay configuraciones, devolver los valores por defecto
+    return { ...defaultModuleSettings };
   };
 
   const resetModuleSettings = async (moduleId: string) => {
+    // Eliminar configuraciones personalizadas
     setModuleSettings(prev => {
       const newSettings = { ...prev };
       delete newSettings[moduleId];
+      
+      // Actualizar localStorage también para mantener la sincronización
+      try {
+        const { moduleSettingsKey } = getStorageKeys();
+        localStorage.setItem(moduleSettingsKey, JSON.stringify(newSettings));
+        console.log(`Configuraciones eliminadas de localStorage para ${moduleId}`);
+      } catch (e) {
+        console.error(`Error al eliminar configuraciones de localStorage para ${moduleId}:`, e);
+      }
+      
       return newSettings;
     });
     
@@ -284,6 +365,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
           : `/api/settings/module/${moduleId}`;
           
+        console.log(`Eliminando configuraciones del servidor para ${moduleId}`);
         await apiRequest("DELETE", endpoint, {});
         toast({
           title: "Configuración restablecida",
@@ -300,12 +382,24 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     setModuleSettings({});
     setFavoriteModules([]);
     
+    // Actualizar también localStorage
+    try {
+      const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+      localStorage.setItem(globalSettingsKey, JSON.stringify(defaultGlobalSettings));
+      localStorage.setItem(moduleSettingsKey, JSON.stringify({}));
+      localStorage.setItem(favoritesKey, JSON.stringify([]));
+      console.log("Todas las configuraciones restablecidas en localStorage");
+    } catch (e) {
+      console.error("Error al restablecer todas las configuraciones en localStorage:", e);
+    }
+    
     if (isAuthenticated) {
       try {
         const endpoint = activeProfile
           ? `/api/child-profiles/${activeProfile.id}/settings`
           : "/api/settings";
           
+        console.log(`Restableciendo todas las configuraciones en el servidor (${endpoint})`);
         await apiRequest("DELETE", endpoint, {});
         toast({
           title: "Configuración restablecida",
@@ -331,6 +425,15 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     }
     
     setFavoriteModules(updatedFavorites);
+    
+    // Guardar inmediatamente en localStorage para persistencia
+    try {
+      const { favoritesKey } = getStorageKeys();
+      localStorage.setItem(favoritesKey, JSON.stringify(updatedFavorites));
+      console.log(`Favoritos actualizados en localStorage:`, updatedFavorites);
+    } catch (e) {
+      console.error("Error guardando favoritos en localStorage:", e);
+    }
     
     // Save to server if authenticated
     if (isAuthenticated) {
