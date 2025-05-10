@@ -1,17 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { ModuleSettings } from "@/context/SettingsContext";
 import { useSettings } from "@/context/SettingsContext";
-import { Switch } from "@/components/ui/switch"; 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { useToast } from "@/hooks/use-toast";
-import { debounce } from "lodash";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { defaultModuleSettings } from "@/utils/operationComponents";
 import DifficultyExamples from "@/components/DifficultyExamples";
+import { debounce } from "@/lib/utils";
 
 interface SettingsProps {
   settings: ModuleSettings;
@@ -20,52 +19,59 @@ interface SettingsProps {
 
 export default function Settings({ settings, onBack }: SettingsProps) {
   const { updateModuleSettings, resetModuleSettings } = useSettings();
-  const [localSettings, setLocalSettings] = useState<ModuleSettings>(settings);
+  const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    // Actualizar configuración local cuando cambian las props
-    setLocalSettings(settings);
-  }, [settings]);
-
-  const saveSettings = async (updatedSettings: ModuleSettings) => {
-    try {
-      await updateModuleSettings("addition", updatedSettings);
-    } catch (error) {
-      toast({
-        title: "Error al guardar configuración",
-        description: "No se pudieron guardar los cambios",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleUpdateSetting = <K extends keyof ModuleSettings>(
-    key: K,
-    value: ModuleSettings[K]
-  ) => {
+  
+  // Referencia a la función debounced para guardar la configuración
+  const debouncedSave = useMemo(
+    () =>
+      debounce((settings: ModuleSettings) => {
+        updateModuleSettings("addition", settings);
+        console.log(`[ADDITION] Guardando configuración (debounced):`, settings);
+      }, 2000), // 2 segundos de espera antes de guardar para reducir peticiones
+    [updateModuleSettings]
+  );
+  
+  // Guardar automáticamente cada vez que cambia un ajuste
+  const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
     const updatedSettings = { ...localSettings, [key]: value };
     setLocalSettings(updatedSettings);
-    saveSettings(updatedSettings);
+    
+    // Para cambios de dificultad, aplicar cambio inmediatamente
+    if (key === "difficulty") {
+      console.log("[ADDITION] Guardando configuración de dificultad inmediatamente:", value);
+      updateModuleSettings("addition", updatedSettings);
+      
+      // Actualizar también el localStorage para asegurar coherencia entre ambos perfiles
+      try {
+        const storedSettings = localStorage.getItem('moduleSettings');
+        const settingsObj = storedSettings ? JSON.parse(storedSettings) : {};
+        
+        if (settingsObj.addition) {
+          settingsObj.addition.difficulty = value;
+        } else {
+          settingsObj.addition = { difficulty: value };
+        }
+        
+        localStorage.setItem('moduleSettings', JSON.stringify(settingsObj));
+        console.log("[ADDITION] También actualizado localStorage con difficulty:", value);
+      } catch (error) {
+        console.error("[ADDITION] Error al actualizar localStorage:", error);
+      }
+    } else {
+      // Para otros ajustes, usar debounce para evitar múltiples llamadas de guardado
+      debouncedSave(updatedSettings);
+    }
   };
+  
+  // Para poder navegar entre la configuración y el ejercicio sin perder cambios
+  // Eliminamos el efecto de guardar al desmontar para evitar doble guardado con debouncedSave
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {
-      try {
-        await resetModuleSettings("addition");
-        setShowResetConfirm(false);
-        toast({
-          title: "Configuración restablecida",
-          description: "Se han restaurado los valores predeterminados",
-        });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "No se pudo restablecer la configuración",
-          variant: "destructive",
-        });
-      }
+      await resetModuleSettings("addition");
+      setLocalSettings({ ...defaultModuleSettings });
+      setShowResetConfirm(false);
     } else {
       setShowResetConfirm(true);
     }
