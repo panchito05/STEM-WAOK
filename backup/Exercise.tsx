@@ -234,6 +234,11 @@ setWaitingForContinue(false);
 setBlockAutoAdvance(false);
 setShowLevelUpReward(false);
 setViewingPrevious(false);
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
 
 };
 
@@ -264,6 +269,11 @@ setCompensationProblemsCount(prev => prev + 1);
 
 // Log para depuración
 console.log(`[COMPENSATION] Added problem: total=${problemsList.length + 1}, original=${originalProblemCount}, compensation=${compensationProblemsCount + 1}`);
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
 
 };
 
@@ -330,6 +340,11 @@ if (prevAnswerEntry && prevProblemToView) {
 }
 setWaitingForContinue(false); // No estamos esperando continuar el ejercicio activo
 setFocusedDigitIndex(null); // Quitar foco
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
 
 };
 
@@ -350,6 +365,11 @@ if(activeProblemHistory && !activeProblemHistory.isCorrect && activeProblemHisto
 } else {
     setFeedbackMessage(null);
 }
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
 
 };
 
@@ -416,6 +436,11 @@ if (allAttemptsNowConsideredExhausted || (timeJustExpired && !userAnswerWritten 
 }
 // Si no es timeJustExpired, la función pudo ser llamada por "Show Answer"
 // En ese caso, Show Answer ya pone waitingForContinue y detiene el timer.
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
 
 };
 
@@ -464,6 +489,11 @@ if (value === "backspace") {
   }
 }
 setDigitAnswers(newAnswers);
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
 
 };
 
@@ -507,6 +537,11 @@ const key = event.key;
 };
 document.addEventListener('keydown', handlePhysicalKeyDown);
 return () => document.removeEventListener('keydown', handlePhysicalKeyDown);
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
 
 }, [focusedDigitIndex, waitingForContinue, exerciseCompleted, currentProblem, digitAnswers, inputDirection, viewingPrevious, showLevelUpReward, actualActiveProblemIndexBeforeViewingPrevious]);
 
@@ -633,6 +668,11 @@ if (isCorrect) {
   }
   // No limpiar cajones en error, permitir al usuario corregir.
 }
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
 
 };
 
@@ -913,6 +953,11 @@ return (
     </div>
   </div>
 </div>
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
 
 );
 }
