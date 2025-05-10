@@ -6,7 +6,7 @@ import NotFound from "@/pages/not-found";
 import Layout from "@/components/Layout/Layout";
 import HomePage from "@/pages/HomePage";
 import OperationPage from "@/pages/OperationPage";
-import ProgressPage from "@/pages/ProgressPage";
+import ProgressPage from "@/pages/ProgressPage"; // Importamos la versión actualizada
 import SettingsPage from "@/pages/SettingsPage";
 import LoginPage from "@/pages/LoginPage";
 import SimpleLoginPage from "@/pages/SimpleLoginPage";

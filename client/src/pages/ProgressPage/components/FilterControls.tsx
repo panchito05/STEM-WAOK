@@ -7,6 +7,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
 interface FilterControlsProps {
   onDateRangeChange: (range: { from: Date | undefined; to: Date | undefined }) => void;
@@ -19,33 +20,26 @@ export function FilterControls({
   onTimeRangeChange,
   locale = "es"
 }: FilterControlsProps) {
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
-    from: undefined,
-    to: undefined,
-  });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const dateLocale = locale === "es" ? es : enUS;
 
   const handleDateRangeSelect = (date: Date | undefined) => {
-    const range = {
-      from: dateRange.from,
-      to: dateRange.to,
-    };
+    let newRange: DateRange | undefined;
 
-    if (!dateRange.from) {
-      range.from = date;
-    } else if (!dateRange.to && date && date > dateRange.from) {
-      range.to = date;
+    if (!dateRange?.from) {
+      newRange = date ? { from: date } : undefined;
+    } else if (dateRange.from && !dateRange.to && date && date > dateRange.from) {
+      newRange = { ...dateRange, to: date };
     } else {
-      range.from = date;
-      range.to = undefined;
+      newRange = date ? { from: date } : undefined;
     }
 
-    setDateRange(range);
-    onDateRangeChange(range);
+    setDateRange(newRange);
+    onDateRangeChange({
+      from: newRange?.from,
+      to: newRange?.to
+    });
   };
 
   return (
@@ -70,11 +64,11 @@ export function FilterControls({
             variant="outline"
             className={cn(
               "justify-start text-left font-normal",
-              !dateRange.from && "text-muted-foreground"
+              !dateRange?.from && "text-muted-foreground"
             )}
           >
             <Calendar className="mr-2 h-4 w-4" />
-            {dateRange.from ? (
+            {dateRange?.from ? (
               dateRange.to ? (
                 <>
                   {format(dateRange.from, "d MMM, yyyy", { locale: dateLocale })} -{" "}
@@ -92,14 +86,14 @@ export function FilterControls({
           <CalendarComponent
             initialFocus
             mode="range"
-            defaultMonth={dateRange.from}
-            selected={{
-              from: dateRange.from,
-              to: dateRange.to,
-            }}
+            defaultMonth={dateRange?.from}
+            selected={dateRange}
             onSelect={(range) => {
-              setDateRange(range || { from: undefined, to: undefined });
-              onDateRangeChange(range || { from: undefined, to: undefined });
+              setDateRange(range);
+              onDateRangeChange({
+                from: range?.from,
+                to: range?.to
+              });
             }}
             numberOfMonths={2}
             locale={dateLocale}
@@ -107,12 +101,12 @@ export function FilterControls({
         </PopoverContent>
       </Popover>
 
-      {(dateRange.from || dateRange.to) && (
+      {dateRange && (dateRange.from || dateRange.to) && (
         <Button
           variant="ghost"
           size="sm"
           onClick={() => {
-            setDateRange({ from: undefined, to: undefined });
+            setDateRange(undefined);
             onDateRangeChange({ from: undefined, to: undefined });
           }}
         >
