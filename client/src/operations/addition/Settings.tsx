@@ -21,7 +21,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   const { updateModuleSettings, resetModuleSettings } = useSettings();
   const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-
+  
   // Referencia a la función debounced para guardar la configuración
   const debouncedSave = useMemo(
     () =>
@@ -31,28 +31,28 @@ export default function Settings({ settings, onBack }: SettingsProps) {
       }, 2000), // 2 segundos de espera antes de guardar para reducir peticiones
     [updateModuleSettings]
   );
-
+  
   // Guardar automáticamente cada vez que cambia un ajuste
   const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
     const updatedSettings = { ...localSettings, [key]: value };
     setLocalSettings(updatedSettings);
-
+    
     // Para cambios de dificultad, aplicar cambio inmediatamente
     if (key === "difficulty") {
       console.log("[ADDITION] Guardando configuración de dificultad inmediatamente:", value);
       updateModuleSettings("addition", updatedSettings);
-
+      
       // Actualizar también el localStorage para asegurar coherencia entre ambos perfiles
       try {
         const storedSettings = localStorage.getItem('moduleSettings');
         const settingsObj = storedSettings ? JSON.parse(storedSettings) : {};
-
+        
         if (settingsObj.addition) {
           settingsObj.addition.difficulty = value;
         } else {
           settingsObj.addition = { difficulty: value };
         }
-
+        
         localStorage.setItem('moduleSettings', JSON.stringify(settingsObj));
         console.log("[ADDITION] También actualizado localStorage con difficulty:", value);
       } catch (error) {
@@ -63,7 +63,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
       debouncedSave(updatedSettings);
     }
   };
-
+  
   // Para poder navegar entre la configuración y el ejercicio sin perder cambios
   // Eliminamos el efecto de guardar al desmontar para evitar doble guardado con debouncedSave
 
@@ -189,7 +189,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             <span className="mr-2">🎯</span>Nivel de Dificultad
           </h3>
           <p className={`text-sm ${theme.textSecondary} mb-2`}>Haz clic en un ejemplo para cambiar el nivel de dificultad:</p>
-
+          
           <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
             <DifficultyExamples 
               operation="addition" 
@@ -199,7 +199,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               }
             />
           </div>
-
+          
           <div className="mt-3 mb-2 space-y-1.5">
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
               <span className="font-bold">Principiante:</span> Sumas con dígitos simples (1+8, 7+5)
