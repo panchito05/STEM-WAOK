@@ -406,7 +406,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const checkCurrentAnswer = () => {
     if (!currentProblem || waitingForContinue || exerciseCompleted || viewingPrevious) return;
-    if (!exerciseStarted) startExercise();
+    
+    // Si el ejercicio no ha comenzado, solo iniciarlo y no contar como intento
+    if (!exerciseStarted) {
+      startExercise();
+      return;
+    }
 
     let userAnswerString = "";
     const decPosInAnswer = currentProblem.answerDecimalPosition;
@@ -429,6 +434,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         return;
     }
 
+    // Solo incrementar los intentos si estamos verificando una respuesta real
     const newAttempts = currentAttempts + 1; 
     setCurrentAttempts(newAttempts);
     const isCorrect = checkAnswer(currentProblem, userNumericAnswer);
