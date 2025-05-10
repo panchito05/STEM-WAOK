@@ -54,6 +54,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | "blue" | null>(null);
   const [waitingForContinue, setWaitingForContinue] = useState(false); // Esperando clic en "Continuar"
   const [blockAutoAdvance, setBlockAutoAdvance] = useState(false); // Para bloquear avance después de subir de nivel, etc.
+  const [autoContinue, setAutoContinue] = useState(() => {
+    try {
+      const stored = localStorage.getItem('addition_autoContinue');
+      return stored === 'true';
+    } catch (e) {
+      return false;
+    }
+  }); // Estado para habilitar/deshabilitar auto-continuar
 
   // Estados para dificultad adaptativa y recompensas
   const [adaptiveDifficulty, setAdaptiveDifficulty] = useState<DifficultyLevel>(() => {
@@ -173,6 +181,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Guardar contadores de rachas en localStorage
   useEffect(() => localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
   useEffect(() => localStorage.setItem('addition_consecutiveIncorrectAnswers', consecutiveIncorrectAnswers.toString()), [consecutiveIncorrectAnswers]);
+  useEffect(() => localStorage.setItem('addition_autoContinue', autoContinue.toString()), [autoContinue]);
 
   // --- FUNCIONES MANEJADORAS DEL EJERCICIO ---
 
@@ -465,7 +474,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setShowRewardAnimation(true);
           }
       }
+      
       setWaitingForContinue(true);
+      
+      // Auto-continue si está habilitado y no hay bloqueo de avance (como subir de nivel)
+      if (autoContinue && !blockAutoAdvance) {
+        // Usar un temporizador para dar tiempo a que se muestre el feedback
+        setTimeout(() => {
+          if (!blockAutoAdvance) { // Comprobar de nuevo por seguridad
+            handleContinue();
+          }
+        }, 800); // Tiempo suficiente para mostrar el feedback pero no demasiado largo
+      }
     } else { // Incorrecta
       setFeedbackMessage(t('exercises.incorrect')); 
       setFeedbackColor("red");
@@ -687,12 +707,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           ) : waitingForContinue ? ( 
              <Button onClick={handleContinue} className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-between w-full max-w-xs mx-auto">
                 <span className="flex-grow text-center font-medium">Continue</span>
-                <div className="ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md">
-                  <div className="h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5">
-                    <div className="h-2 w-2 bg-white rounded-sm"></div>
-                  </div>
-                  <span className="text-xs font-medium">Auto</span>
-                </div>
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div 
+                        className="ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md cursor-pointer" 
+                        onClick={(e) => {
+                          e.stopPropagation(); // Evitar que active el botón principal
+                          setAutoContinue(prev => !prev);
+                        }}
+                      >
+                        <div className="h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5">
+                          {autoContinue && <div className="h-2 w-2 bg-white rounded-sm"></div>}
+                        </div>
+                        <span className="text-xs font-medium">Auto</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{t('tooltips.autoContinue')}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
             </Button>
           ) : (
             <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingForContinue} className="px-5 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white">
