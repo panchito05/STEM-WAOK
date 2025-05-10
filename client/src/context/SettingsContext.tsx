@@ -119,95 +119,150 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     try {
       const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
       
-      // Try to load from local storage first
-      const storedGlobalSettings = localStorage.getItem(globalSettingsKey);
-      const storedModuleSettings = localStorage.getItem(moduleSettingsKey);
-      const storedFavorites = localStorage.getItem(favoritesKey);
-
-      if (storedGlobalSettings) {
+      // Variable para definir si debemos cargar desde localStorage o no
+      // Solo usaremos localStorage si no podemos obtener datos del servidor
+      let useLocalStorage = true;
+      let serverData = null;
+      
+      // Si está autenticado, intentar primero cargar desde el servidor
+      if (isAuthenticated) {
         try {
-          const parsedSettings = JSON.parse(storedGlobalSettings);
-          setGlobalSettings(parsedSettings);
-          console.log("Loaded global settings from localStorage:", parsedSettings);
-        } catch (e) {
-          console.error("Error parsing global settings from localStorage:", e);
-        }
-      }
-
-      if (storedModuleSettings) {
-        try {
-          const parsedSettings = JSON.parse(storedModuleSettings);
-          setModuleSettings(parsedSettings);
-          console.log("Loaded module settings from localStorage:", parsedSettings);
-        } catch (e) {
-          console.error("Error parsing module settings from localStorage:", e);
+          const endpoint = activeProfile 
+            ? `/api/child-profiles/${activeProfile.id}/settings` 
+            : "/api/settings";
+          
+          console.log(`Intentando obtener configuraciones del servidor (${endpoint})`);
+          const res = await fetch(endpoint, {
+            credentials: "include",
+            headers: { 'Cache-Control': 'no-cache' } // Evitar caché
+          });
+          
+          if (res.ok) {
+            serverData = await res.json();
+            console.log("✅ Datos recibidos exitosamente del servidor:", serverData);
+            
+            // Si hemos obtenido datos del servidor, no necesitamos localStorage
+            useLocalStorage = false;
+          } else {
+            console.warn(`⚠️ Error al obtener configuraciones del servidor: ${res.status}`);
+          }
+        } catch (serverError) {
+          console.error("⚠️ Error al comunicarse con el servidor:", serverError);
         }
       }
       
-      if (storedFavorites) {
-        try {
-          const parsedFavorites = JSON.parse(storedFavorites);
-          setFavoriteModules(parsedFavorites);
-          console.log("Loaded favorites from localStorage:", parsedFavorites);
-        } catch (e) {
-          console.error("Error parsing favorites from localStorage:", e);
-        }
-      }
+      // Si debemos usar localStorage (porque no hay datos del servidor)
+      if (useLocalStorage) {
+        console.log("Usando datos de localStorage como respaldo");
+        
+        // Try to load from local storage
+        const storedGlobalSettings = localStorage.getItem(globalSettingsKey);
+        const storedModuleSettings = localStorage.getItem(moduleSettingsKey);
+        const storedFavorites = localStorage.getItem(favoritesKey);
 
-      // If authenticated, fetch from server and override local
-      if (isAuthenticated) {
-        const endpoint = activeProfile 
-          ? `/api/child-profiles/${activeProfile.id}/settings` 
-          : "/api/settings";
-        
-        console.log(`Fetching settings from ${endpoint}`);
-        const res = await fetch(endpoint, {
-          credentials: "include",
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          console.log("Received settings from server:", data);
-          
-          if (data.moduleSettings) {
-            // Asegurarnos de que se preserven los valores por defecto
-            // para aquellos ajustes que no estén definidos en el servidor
-            const enhancedModuleSettings: Record<string, ModuleSettings> = {};
+        // Cargar configuraciones globales
+        if (storedGlobalSettings) {
+          try {
+            const parsedSettings = JSON.parse(storedGlobalSettings);
+            setGlobalSettings({...defaultGlobalSettings, ...parsedSettings});
+            console.log("Configuraciones globales cargadas de localStorage:", parsedSettings);
+          } catch (e) {
+            console.error("Error al parsear configuraciones globales:", e);
+            setGlobalSettings(defaultGlobalSettings);
+          }
+        } else {
+          setGlobalSettings(defaultGlobalSettings);
+        }
+
+        // Cargar configuraciones de módulos
+        if (storedModuleSettings) {
+          try {
+            const parsedSettings = JSON.parse(storedModuleSettings);
+            // Nos aseguramos de que cada módulo tenga todos los campos por defecto
+            const enhancedSettings: Record<string, ModuleSettings> = {};
             
-            // Procesar cada módulo en los ajustes recibidos
-            Object.entries(data.moduleSettings).forEach(([moduleId, settings]) => {
-              // Combinar con valores por defecto para asegurar que todas las propiedades existan
-              enhancedModuleSettings[moduleId] = {
+            Object.entries(parsedSettings).forEach(([moduleId, settings]) => {
+              enhancedSettings[moduleId] = {
                 ...defaultModuleSettings,
-                ...settings as ModuleSettings
+                ...(settings as ModuleSettings)
               };
             });
             
-            console.log("Enhanced module settings:", enhancedModuleSettings);
-            setModuleSettings(enhancedModuleSettings);
-            localStorage.setItem(moduleSettingsKey, JSON.stringify(enhancedModuleSettings));
-          }
-          
-          if (data.globalSettings) {
-            const enhancedGlobalSettings = {
-              ...defaultGlobalSettings,
-              ...data.globalSettings
-            };
-            setGlobalSettings(enhancedGlobalSettings);
-            localStorage.setItem(globalSettingsKey, JSON.stringify(enhancedGlobalSettings));
-          }
-          
-          if (data.favoriteModules) {
-            setFavoriteModules(data.favoriteModules);
-            localStorage.setItem(favoritesKey, JSON.stringify(data.favoriteModules));
+            setModuleSettings(enhancedSettings);
+            console.log("Configuraciones de módulos cargadas de localStorage:", enhancedSettings);
+          } catch (e) {
+            console.error("Error al parsear configuraciones de módulos:", e);
+            setModuleSettings({});
           }
         } else {
-          console.warn(`Failed to fetch settings from server: ${res.status}`);
+          setModuleSettings({});
+        }
+        
+        // Cargar favoritos
+        if (storedFavorites) {
+          try {
+            const parsedFavorites = JSON.parse(storedFavorites);
+            setFavoriteModules(parsedFavorites);
+            console.log("Favoritos cargados de localStorage:", parsedFavorites);
+          } catch (e) {
+            console.error("Error al parsear favoritos:", e);
+            setFavoriteModules([]);
+          }
+        } else {
+          setFavoriteModules([]);
+        }
+      } else {
+        // Usar datos del servidor (serverData ya está validado como no nulo aquí)
+        
+        // Procesar configuraciones de módulos
+        if (serverData.moduleSettings) {
+          const enhancedModuleSettings: Record<string, ModuleSettings> = {};
+          
+          // Procesar cada módulo en los ajustes recibidos
+          Object.entries(serverData.moduleSettings).forEach(([moduleId, settings]) => {
+            // Combinar con valores por defecto para asegurar que todas las propiedades existan
+            enhancedModuleSettings[moduleId] = {
+              ...defaultModuleSettings,
+              ...settings as ModuleSettings
+            };
+          });
+          
+          console.log("Configuraciones mejoradas de módulos:", enhancedModuleSettings);
+          setModuleSettings(enhancedModuleSettings);
+          localStorage.setItem(moduleSettingsKey, JSON.stringify(enhancedModuleSettings));
+        } else {
+          setModuleSettings({});
+          localStorage.removeItem(moduleSettingsKey);
+        }
+        
+        // Procesar configuraciones globales
+        if (serverData.globalSettings) {
+          const enhancedGlobalSettings = {
+            ...defaultGlobalSettings,
+            ...serverData.globalSettings
+          };
+          setGlobalSettings(enhancedGlobalSettings);
+          localStorage.setItem(globalSettingsKey, JSON.stringify(enhancedGlobalSettings));
+        } else {
+          setGlobalSettings(defaultGlobalSettings);
+          localStorage.removeItem(globalSettingsKey);
+        }
+        
+        // Procesar favoritos
+        if (serverData.favoriteModules) {
+          setFavoriteModules(serverData.favoriteModules);
+          localStorage.setItem(favoritesKey, JSON.stringify(serverData.favoriteModules));
+        } else {
+          setFavoriteModules([]);
+          localStorage.removeItem(favoritesKey);
         }
       }
     } catch (error) {
-      console.error("Error fetching settings:", error);
-      // Keep using whatever was loaded from localStorage or the defaults
+      console.error("⚠️ Error al cargar configuraciones:", error);
+      // Usar valores por defecto como último recurso
+      setGlobalSettings(defaultGlobalSettings);
+      setModuleSettings({});
+      setFavoriteModules([]);
     }
   };
 
@@ -254,22 +309,87 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
 
   const updateGlobalSettings = async (settings: Partial<GlobalSettings>) => {
     const updatedSettings = { ...globalSettings, ...settings };
+    console.log(`🔄 Actualizando configuración global:`, updatedSettings);
+    
+    // Actualizar estado inmediatamente
     setGlobalSettings(updatedSettings);
     
-    if (isAuthenticated) {
-      try {
-        const endpoint = activeProfile
-          ? `/api/child-profiles/${activeProfile.id}/settings/global`
-          : "/api/settings/global";
-          
-        await apiRequest("PUT", endpoint, updatedSettings);
-      } catch (error) {
-        toast({
-          title: "Error al guardar configuración",
-          description: "Tus ajustes solo se han guardado localmente",
-          variant: "destructive",
-        });
-        console.error("Error saving global settings:", error);
+    // Crear clave para esta petición global
+    const syncId = Date.now().toString();
+    pendingSyncs.current['global'] = syncId;
+    
+    // Si no está autenticado, solo guardamos localmente
+    if (!isAuthenticated) {
+      console.log(`⚠️ Usuario no autenticado, configuración global guardada solo localmente`);
+      return;
+    }
+    
+    // Determinar la URL del endpoint correcto
+    const endpoint = activeProfile
+      ? `/api/child-profiles/${activeProfile.id}/settings/global`
+      : "/api/settings/global";
+    
+    // Crear una clave única para esta petición global
+    const requestKey = `${endpoint}-global`;
+    
+    // Evitar peticiones duplicadas
+    if (pendingRequests.current[requestKey]) {
+      console.log(`⏱️ Petición global ya en curso, evitando duplicado`);
+      return;
+    }
+    
+    // Marcar esta petición como en curso
+    pendingRequests.current[requestKey] = true;
+    
+    try {
+      // Pequeña pausa para permitir que cambios rápidos consecutivos se agrupen
+      await new Promise(resolve => setTimeout(resolve, 250));
+      
+      // Verificar si esta sincronización sigue siendo la más reciente
+      if (pendingSyncs.current['global'] !== syncId) {
+        console.log(`⏭️ Sincronización ${syncId} para configuración global ha sido reemplazada por una más reciente`);
+        pendingRequests.current[requestKey] = false;
+        return;
+      }
+      
+      console.log(`📤 Enviando configuración global al servidor (${endpoint})`);
+      
+      // Obtener la configuración global más actualizada
+      const currentGlobalSettings = globalSettings;
+      
+      // Hacer la petición al servidor
+      const response = await apiRequest("PUT", endpoint, currentGlobalSettings);
+      
+      if (response.ok) {
+        console.log(`✅ Configuración global guardada exitosamente en el servidor`);
+      } else {
+        throw new Error(`Error del servidor: ${response.status}`);
+      }
+    } catch (error) {
+      console.error(`❌ Error guardando configuración global:`, error);
+      
+      toast({
+        title: "Error al guardar configuración",
+        description: "Tus ajustes solo se han guardado localmente. Se intentará sincronizar más tarde.",
+        variant: "destructive",
+      });
+      
+      // Programar un reintento después de un tiempo
+      setTimeout(() => {
+        // Verificar si la configuración global sigue siendo la misma
+        const currentState = globalSettings;
+        if (JSON.stringify(currentState) === JSON.stringify(currentState)) {
+          console.log(`🔄 Reintentando sincronización para configuración global`);
+          updateGlobalSettings({}); // Reintento con los mismos ajustes
+        }
+      }, 10000); // Reintentar en 10 segundos
+    } finally {
+      // Liberar la petición una vez completada o fallida
+      pendingRequests.current[requestKey] = false;
+      
+      // Limpiar el ID de sincronización si sigue siendo el actual
+      if (pendingSyncs.current['global'] === syncId) {
+        delete pendingSyncs.current['global'];
       }
     }
   };
@@ -277,14 +397,21 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   // Control de peticiones HTTP para evitar múltiples llamadas simultáneas
   const pendingRequests = useRef<Record<string, boolean>>({});
   
+  // Control de sincronizaciones pendientes para saber cuál es la última
+  const pendingSyncs = useRef<Record<string, string>>({});
+  
   const updateModuleSettings = async (moduleId: string, settings: Partial<ModuleSettings>) => {
     // Asegurarse de que siempre tenemos todos los valores por defecto
     const currentSettings = moduleSettings[moduleId] || { ...defaultModuleSettings };
     const updatedSettings = { ...currentSettings, ...settings };
     
-    console.log(`Actualizando configuración para ${moduleId}:`, updatedSettings);
+    console.log(`🔄 Actualizando configuración para ${moduleId}:`, updatedSettings);
     
-    // Actualizar estado
+    // Crear referencia para el controlador de sincronización con servidor
+    const syncId = Date.now().toString();
+    pendingSyncs.current[moduleId] = syncId;
+    
+    // Actualizar estado local inmediatamente
     setModuleSettings(prev => {
       const newSettings = {
         ...prev,
@@ -295,53 +422,95 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       try {
         const { moduleSettingsKey } = getStorageKeys();
         localStorage.setItem(moduleSettingsKey, JSON.stringify(newSettings));
-        console.log(`Guardado en localStorage: ${moduleSettingsKey}`, newSettings);
+        console.log(`💾 Guardado en localStorage: ${moduleSettingsKey}`);
       } catch (e) {
-        console.error("Error guardando en localStorage:", e);
+        console.error("❌ Error guardando en localStorage:", e);
       }
       
       return newSettings;
     });
     
-    // Sólo intentar guardar en el servidor si el usuario está autenticado
-    if (isAuthenticated) {
-      const endpoint = activeProfile
-        ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
-        : `/api/settings/module/${moduleId}`;
+    // Si no está autenticado, terminar aquí (solo localStorage)
+    if (!isAuthenticated) {
+      console.log(`⚠️ Usuario no autenticado, configuración de ${moduleId} guardada solo localmente`);
+      return;
+    }
+    
+    // Determinar la URL del endpoint correcto
+    const endpoint = activeProfile
+      ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
+      : `/api/settings/module/${moduleId}`;
+    
+    // Crear una clave única para esta petición para evitar duplicados
+    const requestKey = `${endpoint}-${moduleId}`;
+    
+    // Control de peticiones duplicadas con un pequeño retraso para agrupar cambios rápidos
+    if (pendingRequests.current[requestKey]) {
+      console.log(`⏱️ Petición ya en curso para ${moduleId}, evitando duplicado`);
       
-      // Crear una clave única para esta petición
-      const requestKey = `${endpoint}-${JSON.stringify(updatedSettings)}`;
+      // No cancelamos inmediatamente - esperamos a que la sincronización actual termine
+      // y verificamos si es la última solicitud
+      return;
+    }
+    
+    // Marcar esta petición como en curso
+    pendingRequests.current[requestKey] = true;
+    
+    try {
+      // Pequeña pausa para permitir que cambios rápidos consecutivos se agrupen
+      await new Promise(resolve => setTimeout(resolve, 250));
       
-      // Evitar peticiones duplicadas
-      if (pendingRequests.current[requestKey]) {
-        console.log(`Petición ya en curso para ${moduleId}, evitando duplicado`);
+      // Verificar si esta sincronización sigue siendo la más reciente
+      if (pendingSyncs.current[moduleId] !== syncId) {
+        console.log(`⏭️ Sincronización ${syncId} para ${moduleId} ha sido reemplazada por una más reciente`);
+        pendingRequests.current[requestKey] = false;
         return;
       }
       
-      // Marcar esta petición como en curso
-      pendingRequests.current[requestKey] = true;
+      console.log(`📤 Enviando configuración al servidor (${endpoint})`);
       
-      try {
-        console.log(`Guardando en servidor (${endpoint}):`, updatedSettings);
-        await apiRequest("PUT", endpoint, updatedSettings);
-        console.log(`Configuración guardada exitosamente en el servidor para ${moduleId}`);
-      } catch (error) {
-        // Solo mostrar una notificación si hay un error real (no error de autenticación)
-        if (error instanceof Error && !error.message.includes("401")) {
-          toast({
-            title: "Error al guardar configuración",
-            description: "Tus ajustes solo se han guardado localmente",
-            variant: "destructive",
-          });
-        }
-        console.error(`Error saving settings for module ${moduleId}:`, error);
-      } finally {
-        // Liberar la petición una vez completada o fallida
-        pendingRequests.current[requestKey] = false;
+      // Obtener la configuración más actualizada desde el estado
+      const currentModuleSettings = moduleSettings[moduleId];
+      
+      // Hacer la petición al servidor
+      const response = await apiRequest("PUT", endpoint, currentModuleSettings);
+      
+      if (response.ok) {
+        console.log(`✅ Configuración guardada exitosamente en el servidor para ${moduleId}`);
+      } else {
+        throw new Error(`Error del servidor: ${response.status}`);
       }
-    } else {
-      // Si no está autenticado, simplemente guardar en localStorage
-      console.log(`Usuario no autenticado, configuración de ${moduleId} guardada solo localmente`);
+    } catch (error) {
+      // Solo mostrar una notificación si hay un error real (no error de autenticación)
+      if (error instanceof Error && !error.message.includes("401")) {
+        console.error(`❌ Error guardando configuración para ${moduleId}:`, error);
+        
+        toast({
+          title: "Error al guardar configuración",
+          description: "Tus ajustes solo se han guardado localmente. Se intentará sincronizar más tarde.",
+          variant: "destructive",
+        });
+        
+        // Programar un reintento después de un tiempo
+        setTimeout(() => {
+          // Verificar si la configuración sigue siendo la misma
+          const currentState = moduleSettings[moduleId];
+          if (JSON.stringify(currentState) === JSON.stringify(currentModuleSettings)) {
+            console.log(`🔄 Reintentando sincronización para ${moduleId}`);
+            updateModuleSettings(moduleId, {}); // Reintento con los mismos ajustes
+          }
+        }, 10000); // Reintentar en 10 segundos
+      } else {
+        console.warn(`⚠️ Error de autenticación al guardar configuración para ${moduleId}`);
+      }
+    } finally {
+      // Liberar la petición una vez completada o fallida
+      pendingRequests.current[requestKey] = false;
+      
+      // Limpiar el ID de sincronización si sigue siendo el actual
+      if (pendingSyncs.current[moduleId] === syncId) {
+        delete pendingSyncs.current[moduleId];
+      }
     }
   };
 
