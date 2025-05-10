@@ -751,7 +751,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </TooltipProvider>
             </Button>
           ) : (
-            <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingForContinue} className="px-5 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white">
+            <Button 
+              onClick={!exerciseStarted ? startExercise : checkCurrentAnswer} 
+              disabled={exerciseCompleted || waitingForContinue} 
+              className="px-5 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white">
               {!exerciseStarted ? t('exercises.start') : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
             </Button>
           )}
