@@ -685,10 +685,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')} 
             </Button>
           ) : waitingForContinue ? ( 
-             <Button onClick={handleContinue} className="px-5 sm:px-6 text-sm sm:text-base animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-between">
-                <span className="flex-grow text-center">Continue</span>
-                <div className="ml-2 h-4 w-4 border border-white rounded-sm flex items-center justify-center">
-                  <div className="h-2 w-2 bg-white rounded-sm"></div>
+             <Button onClick={handleContinue} className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-between w-full max-w-xs mx-auto">
+                <span className="flex-grow text-center font-medium">Continue</span>
+                <div className="ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md">
+                  <div className="h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5">
+                    <div className="h-2 w-2 bg-white rounded-sm"></div>
+                  </div>
+                  <span className="text-xs font-medium">Auto</span>
                 </div>
             </Button>
           ) : (
