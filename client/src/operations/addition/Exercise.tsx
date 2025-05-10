@@ -584,7 +584,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                  <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold capitalize">
                     {settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
                 </span>
-                <Button variant="ghost" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm">
+                <Button variant="default" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm bg-blue-500 hover:bg-blue-600 text-white">
                   <Cog className="h-4 w-4" /> Settings
                 </Button>
             </div>
