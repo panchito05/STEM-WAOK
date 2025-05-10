@@ -86,6 +86,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Refs para timers
   const generalTimerRef = useRef<number | null>(null);
   const singleProblemTimerRef = useRef<number | null>(null);
+  const autoContinueTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Hooks de contexto y utilidades
   const { saveExerciseResult } = useProgress();
@@ -480,11 +481,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Auto-continue si está habilitado y no hay bloqueo de avance (como subir de nivel)
       if (autoContinue && !blockAutoAdvance) {
         // Usar un temporizador para dar tiempo a que se muestre el feedback
-        setTimeout(() => {
+        if (autoContinueTimerRef.current) {
+          clearTimeout(autoContinueTimerRef.current);
+        }
+        autoContinueTimerRef.current = setTimeout(() => {
           if (!blockAutoAdvance) { // Comprobar de nuevo por seguridad
             handleContinue();
+            autoContinueTimerRef.current = null;
           }
-        }, 800); // Tiempo suficiente para mostrar el feedback pero no demasiado largo
+        }, 2200); // Tiempo ajustado a 2.2 segundos
       }
     } else { // Incorrecta
       setFeedbackMessage(t('exercises.incorrect')); 
