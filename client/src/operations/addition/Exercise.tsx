@@ -82,10 +82,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Estados para la funcionalidad "Previous"
   const [viewingPrevious, setViewingPrevious] = useState(false);
   const [actualActiveProblemIndexBeforeViewingPrevious, setActualActiveProblemIndexBeforeViewingPrevious] = useState<number>(0);
-  
-  // Estado para compensación (problemas adicionales)
-  const [compensationProblemsCount, setCompensationProblemsCount] = useState(0); // Contador de problemas por compensación
-  const [originalProblemCount, setOriginalProblemCount] = useState(settings.problemCount); // Guardar el conteo original
 
   // Refs para timers
   const generalTimerRef = useRef<number | null>(null);
@@ -209,11 +205,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const generateNewProblemSet = () => {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
     const newProblemsArray: AdditionProblem[] = [];
-    // Guardar el conteo original de problemas cuando se genera un nuevo conjunto
-    setOriginalProblemCount(settings.problemCount);
-    // Restablecer el contador de problemas de compensación
-    setCompensationProblemsCount(0);
-    
     for (let i = 0; i < settings.problemCount; i++) {
       newProblemsArray.push(generateAdditionProblem(difficultyToUse));
     }
@@ -238,28 +229,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setExerciseStarted(true);
       // El foco inicial se maneja en el useEffect [currentProblem, viewingPrevious]
     }
-  };
-
-  // Función para agregar un problema de compensación
-  const addCompensationProblem = () => {
-    // Solo agregar si la compensación está habilitada
-    if (!settings.enableCompensation) return;
-    
-    // Generar un nuevo problema con la dificultad actual
-    const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
-    const newProblem = generateAdditionProblem(difficultyToUse);
-    
-    // Actualizar la lista de problemas
-    setProblemsList(prev => [...prev, newProblem]);
-    
-    // Actualizar el historial de respuestas para incluir el nuevo problema (como null)
-    setUserAnswersHistory(prev => [...prev, null]);
-    
-    // Incrementar el contador de problemas de compensación
-    setCompensationProblemsCount(prev => prev + 1);
-    
-    // Log para depuración
-    console.log(`[COMPENSATION] Added problem: total=${problemsList.length + 1}, original=${originalProblemCount}, compensation=${compensationProblemsCount + 1}`);
   };
 
   const advanceToNextActiveProblem = () => {
@@ -313,8 +282,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         setFeedbackMessage(
             prevAnswerEntry.isCorrect ? 
-            `${t('')}: ${prevAnswerEntry.userAnswer} (${t('exercises.correct')})` :
-            `Your Answer Was (Incorrect!). The correct answer is = ${prevProblemToView.correctAnswer}`
+            `${t('exercises.yourAnswerWas')}: ${prevAnswerEntry.userAnswer} (${t('exercises.correct')})` :
+            `${t('exercises.yourAnswerWas')}: ${prevAnswerEntry.userAnswer === undefined || isNaN(prevAnswerEntry.userAnswer) ? t('common.notAnswered') : prevAnswerEntry.userAnswer} (${t('exercises.incorrect')}). ${t('exercises.correctAnswerIs')} ${prevProblemToView.correctAnswer}`
         );
         setFeedbackColor(prevAnswerEntry.isCorrect ? "green" : "red");
     } else {
@@ -612,14 +581,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setFeedbackMessage(`${t('adaptiveDifficulty.levelDecreased')} ${newLevel}. ${t('exercises.incorrect')}`); // Añadir feedback sobre el cambio
           }
       }
-      
-      // Si agotó todos los intentos, mostrar la respuesta y agregar un problema de compensación
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
-        setFeedbackMessage(`Your Answer Was (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
+        setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
         handleTimeOrAttemptsUp();
-        
-        // Agregar un problema de compensación si está habilitado
-        addCompensationProblem();
       }
       // No limpiar cajones en error, permitir al usuario corregir.
     }
@@ -872,7 +836,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     onClick={() => { 
                         if(currentProblem && !viewingPrevious && !exerciseCompleted) { 
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-                            setFeedbackMessage(`Your Answer Was (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
+                            setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${currentProblem.correctAnswer}`);
                             setFeedbackColor("blue");
                             setWaitingForContinue(true);
                             const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious; // Usar el activo
@@ -883,9 +847,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                     newHistory[problemIdxForHistory] = { problemId: currentProblem.id, problem: currentProblem, userAnswer: NaN, isCorrect: false, status: 'revealed' };
                                     return newHistory;
                                 });
-                                
-                                // Agregar un problema de compensación cuando se revela la respuesta
-                                addCompensationProblem();
                             }
                         }
                     }}
