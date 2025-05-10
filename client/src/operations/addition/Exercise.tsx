@@ -601,7 +601,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>P: {problemTimerValue}s</span>}
-                 <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold capitalize">
+                {settings.maxAttempts > 0 && !viewingPrevious && (
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className={`font-medium p-1 rounded ${currentAttempts > 0 ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-700"}`}>
+                          A: {currentAttempts}/{settings.maxAttempts}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('tooltips.maxAttemptsPerProblem')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold capitalize">
                     {settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
                 </span>
                 <Button variant="default" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm bg-blue-500 hover:bg-blue-600 text-white">

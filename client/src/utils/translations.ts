@@ -27,6 +27,8 @@ type TranslationKeys = {
   };
   tooltips: {
     activateShowAnswer: string;
+    maxAttemptsPerProblem: string;
+    autoContinue: string;
   };
   levelUp: {
     previousLevel: string;
@@ -86,6 +88,8 @@ export const enTranslations: TranslationKeys = {
   },
   tooltips: {
     activateShowAnswer: "To activate this option, go to Settings",
+    maxAttemptsPerProblem: "Maximum attempts allowed per problem",
+    autoContinue: "When checked, automatically advances to next problem after a correct answer",
   },
   levelUp: {
     previousLevel: "Previous Level",
@@ -145,6 +149,8 @@ export const esTranslations: TranslationKeys = {
   },
   tooltips: {
     activateShowAnswer: "Para activar esta opción, ve a Configuración",
+    maxAttemptsPerProblem: "Número máximo de intentos permitidos por problema",
+    autoContinue: "Cuando está marcado, avanza automáticamente al siguiente problema después de una respuesta correcta",
   },
   levelUp: {
     previousLevel: "Nivel Anterior",
