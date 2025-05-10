@@ -1,5 +1,5 @@
 // Exercise.tsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useProgress } from "@/context/ProgressContext"; // Asumiendo que existe y es correcto
 import { ModuleSettings, useSettings } from "@/context/SettingsContext"; // Asumiendo que existe y es correcto
 import { Button } from "@/components/ui/button";
@@ -162,22 +162,26 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Timer por problema individual
   useEffect(() => {
-    if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); // Limpiar timer anterior
+    // Si se cumplen las condiciones para iniciar un temporizador, llamamos a nuestra función
     if (exerciseStarted && !exerciseCompleted && settings.timeValue > 0 && currentProblem && !viewingPrevious) {
-      setProblemTimerValue(settings.timeValue); // Resetear al valor inicial para el nuevo problema
-      singleProblemTimerRef.current = window.setInterval(() => {
-        setProblemTimerValue(prev => {
-          if (prev <= 1) {
-            if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-            handleTimeOrAttemptsUp();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      startProblemTimer(); // Usar la función que hemos creado
+    } else {
+      // Si no se cumplen las condiciones, limpiamos cualquier temporizador existente
+      if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
     }
     return () => { if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); };
-  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious]);
+  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, startProblemTimer]);
+  
+  // Efecto para reiniciar el temporizador cuando cambia el contador de intentos
+  // Solo reinicia si no hemos agotado todos los intentos permitidos
+  useEffect(() => {
+    if (exerciseStarted && !exerciseCompleted && !viewingPrevious && 
+        settings.maxAttempts > 0 && currentAttempts > 0 && currentAttempts < settings.maxAttempts && 
+        settings.timeValue > 0) {
+      // Inicia un nuevo temporizador para el siguiente intento
+      startProblemTimer();
+    }
+  }, [currentAttempts, exerciseStarted, exerciseCompleted, viewingPrevious, settings.maxAttempts, settings.timeValue, startProblemTimer]);
 
   // Guardar contadores de rachas en localStorage
   useEffect(() => localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
@@ -301,10 +305,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
 
-  const handleTimeOrAttemptsUp = () => {
+  const handleTimeOrAttemptsUp = useCallback(() => {
     if (!currentProblem || viewingPrevious) return;
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-    // Mensaje más directo y simple que muestra la respuesta correcta
+    
+    // Incrementar el contador de intentos
+    const newAttempts = currentAttempts + 1;
+    setCurrentAttempts(newAttempts);
+    
+    // Si todavía tenemos intentos disponibles, reiniciar el temporizador para el siguiente intento
+    if (settings.maxAttempts > 0 && newAttempts < settings.maxAttempts) {
+      // Este startProblemTimer() será llamado en el próximo useEffect, debido a la dependencia de currentAttempts
+      return;
+    }
+    
+    // Mensaje más directo y simple que muestra la respuesta correcta cuando se agotan todos los intentos
     setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
     setFeedbackColor("red");
     const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious; // Usar el índice activo
@@ -315,7 +330,26 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setUserAnswersHistory(newHistory);
     }
     setWaitingForContinue(true);
-  };
+  }, [currentProblem, viewingPrevious, currentAttempts, settings.maxAttempts, actualActiveProblemIndexBeforeViewingPrevious, userAnswersHistory]);
+  
+  // Función para iniciar el temporizador del problema
+  const startProblemTimer = useCallback(() => {
+    if (!exerciseStarted || exerciseCompleted || viewingPrevious || settings.timeValue <= 0) return;
+    
+    if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+    
+    setProblemTimerValue(settings.timeValue); // Resetear al valor inicial
+    singleProblemTimerRef.current = window.setInterval(() => {
+      setProblemTimerValue(prev => {
+        if (prev <= 1) {
+          if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+          handleTimeOrAttemptsUp();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [exerciseStarted, exerciseCompleted, viewingPrevious, settings.timeValue, handleTimeOrAttemptsUp]);
 
   const completeExercise = () => {
     setExerciseCompleted(true);
