@@ -164,12 +164,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   useEffect(() => {
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); // Limpiar timer anterior
     if (exerciseStarted && !exerciseCompleted && settings.timeValue > 0 && currentProblem && !viewingPrevious) {
-      setProblemTimerValue(settings.timeValue); // Resetear al valor inicial para el nuevo problema
+      if (waitingForContinue && settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts) {
+        // No iniciar el temporizador si ya se agotaron todos los intentos
+        return;
+      }
+      
+      // Solo reiniciar el valor del temporizador cuando cambia el problema o al iniciar el ejercicio
+      if (problemTimerValue === 0 || problemTimerValue === settings.timeValue) {
+        setProblemTimerValue(settings.timeValue);
+      }
+      
       singleProblemTimerRef.current = window.setInterval(() => {
         setProblemTimerValue(prev => {
           if (prev <= 1) {
             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-            handleTimeOrAttemptsUp();
+            handleTimeOrAttemptsUp(); // Esta función ahora incrementa los intentos y reinicia el timer si es necesario
             return 0;
           }
           return prev - 1;
@@ -177,7 +186,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }, 1000);
     }
     return () => { if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); };
-  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious]);
+  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, waitingForContinue, currentAttempts]);
 
   // Guardar contadores de rachas en localStorage
   useEffect(() => localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
@@ -301,18 +310,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const handleTimeOrAttemptsUp = () => {
     if (!currentProblem || viewingPrevious) return;
-    if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-    // Mensaje más directo y simple que muestra la respuesta correcta
-    setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
-    setFeedbackColor("red");
-    const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious; // Usar el índice activo
-    const currentAnswer = userAnswersHistory[currentActiveIndex];
-    if (!currentAnswer || currentAnswer.status !== 'revealed') {
-        const newHistory = [...userAnswersHistory];
-        newHistory[currentActiveIndex] = { problemId: currentProblem.id, problem: currentProblem, userAnswer: NaN, isCorrect: false, status: 'revealed' };
-        setUserAnswersHistory(newHistory);
+    
+    // Incrementar el contador de intentos cuando se agota el tiempo
+    const newAttempts = currentAttempts + 1;
+    setCurrentAttempts(newAttempts);
+    
+    // Verificar si se han agotado todos los intentos permitidos
+    if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
+      // Detener el temporizador cuando se agoten todos los intentos
+      if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+      
+      // Mensaje más directo y simple que muestra la respuesta correcta
+      setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
+      setFeedbackColor("red");
+      
+      const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious; // Usar el índice activo
+      const currentAnswer = userAnswersHistory[currentActiveIndex];
+      if (!currentAnswer || currentAnswer.status !== 'revealed') {
+          const newHistory = [...userAnswersHistory];
+          newHistory[currentActiveIndex] = { problemId: currentProblem.id, problem: currentProblem, userAnswer: NaN, isCorrect: false, status: 'revealed' };
+          setUserAnswersHistory(newHistory);
+      }
+      setWaitingForContinue(true);
+    } else {
+      // Si aún quedan intentos, mostrar mensaje de tiempo agotado y reiniciar el temporizador
+      setFeedbackMessage(`Time's up! Attempts: ${newAttempts}/${settings.maxAttempts}`);
+      setFeedbackColor("red");
+      // Reiniciar el temporizador para el siguiente intento
+      setProblemTimerValue(settings.timeValue);
     }
-    setWaitingForContinue(true);
   };
 
   const completeExercise = () => {
