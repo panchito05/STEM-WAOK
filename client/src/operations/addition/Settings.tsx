@@ -53,21 +53,43 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   // Referencia para controlar si ya se ha guardado la configuración
   const hasSavedRef = useRef(false);
   
+  // Forzar el guardado de la configuración al componente cargarse
   useEffect(() => {
-    // Guardar configuración cuando se desmonta el componente
+    // Guardar configuración inmediatamente al montar el componente para persistir valores actuales
+    updateModuleSettings("addition", localSettings);
+    console.log("[ADDITION] Guardando configuración al cargar:", localSettings);
+    
+    // Al desmontar, volver a guardar
     return () => {
-      // Comentamos esto temporalmente hasta arreglar la función
-      // debouncedSave.cancel();
-      
-      // Evitar múltiples guardados en desmontajes rápidos
       if (!hasSavedRef.current) {
         hasSavedRef.current = true;
         // Llamada directa sin debounce para asegurar que se ejecute
         updateModuleSettings("addition", localSettings);
         console.log("[ADDITION] Guardando configuración al desmontar:", localSettings);
+        
+        // Forzar localStorage para asegurar persistencia
+        try {
+          const profileId = localStorage.getItem('activeProfileId');
+          const suffix = profileId ? `-profile-${profileId}` : '';
+          const key = `moduleSettings${suffix}`;
+          
+          // Obtener y actualizar configuraciones actuales en localStorage
+          const currentSettings = localStorage.getItem(key);
+          if (currentSettings) {
+            const parsed = JSON.parse(currentSettings);
+            const updated = {
+              ...parsed,
+              addition: localSettings
+            };
+            localStorage.setItem(key, JSON.stringify(updated));
+            console.log("[ADDITION] Forzando actualización en localStorage:", updated);
+          }
+        } catch (e) {
+          console.error("Error al forzar guardado en localStorage:", e);
+        }
       }
     };
-  }, [localSettings, updateModuleSettings, debouncedSave]);
+  }, [localSettings, updateModuleSettings]);
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {
