@@ -88,6 +88,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const { toast } = useToast();
   const { activeProfile } = useChildProfiles();
 
+  // Control de peticiones HTTP para evitar múltiples llamadas simultáneas
+  const pendingRequests = useRef<Record<string, boolean>>({});
+  
+  // Control de sincronizaciones pendientes para saber cuál es la última
+  const pendingSyncs = useRef<Record<string, string>>({});
+
   // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
@@ -394,12 +400,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     }
   };
 
-  // Control de peticiones HTTP para evitar múltiples llamadas simultáneas
-  const pendingRequests = useRef<Record<string, boolean>>({});
-  
-  // Control de sincronizaciones pendientes para saber cuál es la última
-  const pendingSyncs = useRef<Record<string, string>>({});
-  
   const updateModuleSettings = async (moduleId: string, settings: Partial<ModuleSettings>) => {
     // Asegurarse de que siempre tenemos todos los valores por defecto
     const currentSettings = moduleSettings[moduleId] || { ...defaultModuleSettings };
@@ -441,15 +441,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
       : `/api/settings/module/${moduleId}`;
     
-    // Crear una clave única para esta petición para evitar duplicados
+    // Crear una clave única para evitar peticiones duplicadas
     const requestKey = `${endpoint}-${moduleId}`;
     
-    // Control de peticiones duplicadas con un pequeño retraso para agrupar cambios rápidos
+    // Evitar peticiones duplicadas
     if (pendingRequests.current[requestKey]) {
-      console.log(`⏱️ Petición ya en curso para ${moduleId}, evitando duplicado`);
-      
-      // No cancelamos inmediatamente - esperamos a que la sincronización actual termine
-      // y verificamos si es la última solicitud
+      console.log(`⏱️ Petición para ${moduleId} ya en curso, evitando duplicado`);
       return;
     }
     
@@ -520,84 +517,86 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       // Combinar con defaults para garantizar que tengamos todos los campos
       return {
         ...defaultModuleSettings,
-        ...moduleSettings[moduleId]
+        ...moduleSettings[moduleId],
       };
     }
     
-    // Si no hay configuraciones, devolver los valores por defecto
+    // Si no tenemos configuraciones específicas para este módulo, usar los valores por defecto
     return { ...defaultModuleSettings };
   };
 
   const resetModuleSettings = async (moduleId: string) => {
-    // Eliminar configuraciones personalizadas
+    console.log(`Configuraciones eliminadas de localStorage para ${moduleId}`);
+    
+    // Actualizar estado local
     setModuleSettings(prev => {
       const newSettings = { ...prev };
       delete newSettings[moduleId];
       
-      // Actualizar localStorage también para mantener la sincronización
+      // Guardar en localStorage
       try {
         const { moduleSettingsKey } = getStorageKeys();
         localStorage.setItem(moduleSettingsKey, JSON.stringify(newSettings));
-        console.log(`Configuraciones eliminadas de localStorage para ${moduleId}`);
       } catch (e) {
-        console.error(`Error al eliminar configuraciones de localStorage para ${moduleId}:`, e);
+        console.error("Error guardando en localStorage:", e);
       }
       
       return newSettings;
     });
     
+    // Si está autenticado, también eliminar del servidor
     if (isAuthenticated) {
       try {
+        console.log(`Eliminando configuraciones del servidor para ${moduleId}`);
         const endpoint = activeProfile
           ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
           : `/api/settings/module/${moduleId}`;
-          
-        console.log(`Eliminando configuraciones del servidor para ${moduleId}`);
-        await apiRequest("DELETE", endpoint, {});
-        toast({
-          title: "Configuración restablecida",
-          description: `Configuración predeterminada restaurada para ${moduleId}`,
-        });
+        
+        const response = await apiRequest("DELETE", endpoint);
+        
+        if (response.ok) {
+          console.log(`Configuraciones eliminadas exitosamente del servidor para ${moduleId}`);
+        } else {
+          console.error(`Error eliminando configuraciones del servidor para ${moduleId}: ${response.status}`);
+        }
       } catch (error) {
-        console.error(`Error resetting settings for module ${moduleId}:`, error);
+        console.error(`Error al comunicarse con el servidor:`, error);
       }
     }
   };
 
   const resetAllSettings = async () => {
+    // Reset local state
     setGlobalSettings(defaultGlobalSettings);
     setModuleSettings({});
     setFavoriteModules([]);
     
-    // Actualizar también localStorage
-    try {
-      const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
-      localStorage.setItem(globalSettingsKey, JSON.stringify(defaultGlobalSettings));
-      localStorage.setItem(moduleSettingsKey, JSON.stringify({}));
-      localStorage.setItem(favoritesKey, JSON.stringify([]));
-      console.log("Todas las configuraciones restablecidas en localStorage");
-    } catch (e) {
-      console.error("Error al restablecer todas las configuraciones en localStorage:", e);
-    }
+    // Reset localStorage
+    const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+    localStorage.removeItem(globalSettingsKey);
+    localStorage.removeItem(moduleSettingsKey);
+    localStorage.removeItem(favoritesKey);
     
+    // If authenticated, also reset on server
     if (isAuthenticated) {
       try {
         const endpoint = activeProfile
           ? `/api/child-profiles/${activeProfile.id}/settings`
           : "/api/settings";
-          
-        console.log(`Restableciendo todas las configuraciones en el servidor (${endpoint})`);
-        await apiRequest("DELETE", endpoint, {});
-        toast({
-          title: "Configuración restablecida",
-          description: "Se ha restaurado la configuración predeterminada",
-        });
+        
+        const response = await apiRequest("DELETE", endpoint);
+        
+        if (response.ok) {
+          console.log("All settings reset successfully on the server");
+        } else {
+          console.error(`Error resetting settings on server: ${response.status}`);
+        }
       } catch (error) {
-        console.error("Error resetting all settings:", error);
+        console.error("Error communicating with server:", error);
       }
     }
   };
-  
+
   // Functions for managing favorite modules
   const toggleFavoriteModule = async (moduleId: string) => {
     // Check if the module is already a favorite
@@ -666,7 +665,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       console.log(`📤 Enviando favoritos al servidor (${endpoint})`);
       
       // Guardar una copia de la lista actual de favoritos
-      const favoritesSnapshot = [...favoriteModules];
+      const favoritesSnapshot = [...updatedFavorites];
       
       // Hacer la petición al servidor
       const response = await apiRequest("PUT", endpoint, { favorites: favoritesSnapshot });
@@ -689,7 +688,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       setTimeout(() => {
         // Verificar si la lista de favoritos sigue siendo la misma
         const currentState = favoriteModules;
-        const favoritesSnapshot = [...favoriteModules]; // Captura el estado actual
+        const favoritesSnapshot = [...updatedFavorites]; // Captura el estado actual
         
         if (JSON.stringify(currentState) === JSON.stringify(favoritesSnapshot)) {
           console.log(`🔄 Reintentando sincronización de favoritos`);
