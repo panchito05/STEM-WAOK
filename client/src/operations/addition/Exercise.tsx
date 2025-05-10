@@ -302,7 +302,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleTimeOrAttemptsUp = () => {
     if (!currentProblem || viewingPrevious) return;
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-    setFeedbackMessage(`${t('exercises.timeUpOrAttempts')} ${t('exercises.correctAnswerIs')} ${currentProblem.correctAnswer}`);
+    // Mensaje más directo y simple que muestra la respuesta correcta
+    setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
     setFeedbackColor("red");
     const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious; // Usar el índice activo
     const currentAnswer = userAnswersHistory[currentActiveIndex];
