@@ -685,8 +685,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')} 
             </Button>
           ) : waitingForContinue ? ( 
-             <Button onClick={handleContinue} className="px-5 sm:px-6 text-sm sm:text-base animate-pulse bg-green-500 hover:bg-green-600 text-white">
-                {t('common.continue')} <ChevronRight className="ml-1 h-4 w-4" />
+             <Button onClick={handleContinue} className="px-5 sm:px-6 text-sm sm:text-base animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-between">
+                <span className="flex-grow text-center">Continue</span>
+                <div className="ml-2 h-4 w-4 border border-white rounded-sm flex items-center justify-center">
+                  <div className="h-2 w-2 bg-white rounded-sm"></div>
+                </div>
             </Button>
           ) : (
             <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingForContinue} className="px-5 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white">
