@@ -505,6 +505,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           }
       }
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
+        setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
         handleTimeOrAttemptsUp();
       }
       // No limpiar cajones en error, permitir al usuario corregir.
