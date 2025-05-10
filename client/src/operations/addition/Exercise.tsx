@@ -522,7 +522,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
         setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
-        handleTimeOrAttemptsUp();
+        setWaitingForContinue(true);
+        
+        // No llamamos a handleTimeOrAttemptsUp() aquí porque ya incrementamos los intentos arriba,
+        // y no queremos incrementarlos dos veces.
+        
+        // Actualizamos el historial de respuestas para mostrar que se agotaron los intentos
+        const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious;
+        const currentAnswer = userAnswersHistory[currentActiveIndex];
+        if (!currentAnswer || currentAnswer.status !== 'revealed') {
+            const newHistory = [...userAnswersHistory];
+            newHistory[currentActiveIndex] = { 
+                problemId: currentProblem.id, 
+                problem: currentProblem, 
+                userAnswer: userNumericAnswer, 
+                isCorrect: false, 
+                status: 'revealed' 
+            };
+            setUserAnswersHistory(newHistory);
+        }
       }
       // No limpiar cajones en error, permitir al usuario corregir.
     }
