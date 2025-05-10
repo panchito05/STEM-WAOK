@@ -1036,9 +1036,68 @@ return (
               </TooltipProvider>
             )}
 
-            <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold capitalize">
-                Level: {settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}
-            </span>
+            {/* Usar el mismo estilo de badge que en DraggableModuleCard.tsx */}
+            {settings.enableAdaptiveDifficulty ? (
+              (() => {
+                const level = adaptiveDifficulty;
+                switch (level) {
+                  case "beginner":
+                    return <span className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  case "elementary":
+                    return <span className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  case "intermediate":
+                    return <span className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  case "advanced":
+                    return <span className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  case "expert":
+                    return <span className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  default:
+                    return <span className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                }
+              })()
+            ) : (
+              (() => {
+                const level = settings.difficulty;
+                switch (level) {
+                  case "beginner":
+                    return <span className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  case "elementary":
+                    return <span className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  case "intermediate":
+                    return <span className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  case "advanced":
+                    return <span className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  case "expert":
+                    return <span className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                  default:
+                    return <span className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full text-xs capitalize">
+                      {level}
+                    </span>;
+                }
+              })()
+            )}
             <Button variant="default" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm bg-blue-500 hover:bg-blue-600 text-white">
               <Cog className="h-4 w-4" /> Settings
             </Button>
