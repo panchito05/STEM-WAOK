@@ -162,59 +162,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Timer por problema individual
   useEffect(() => {
-    // Siempre limpiar el timer anterior primero
-    if (singleProblemTimerRef.current) {
-      clearInterval(singleProblemTimerRef.current);
-      singleProblemTimerRef.current = null;
-    }
-    
-    // Condiciones para iniciar un nuevo temporizador
-    const shouldStartTimer = 
-      exerciseStarted && 
-      !exerciseCompleted && 
-      settings.timeValue > 0 && 
-      currentProblem && 
-      !viewingPrevious;
-    
-    // Verificar si debemos omitir el timer cuando:
-    // 1. maxAttempts = 0 y ya se ha contado un intento
-    // 2. Estamos esperando que el usuario continúe y se han agotado los intentos
-    const shouldSkipTimer = 
-      (settings.maxAttempts === 0 && currentAttempts > 0) || 
-      (waitingForContinue && currentAttempts >= Math.max(1, settings.maxAttempts));
-    
-    if (shouldStartTimer && !shouldSkipTimer) {
+    if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); // Limpiar timer anterior
+    if (exerciseStarted && !exerciseCompleted && settings.timeValue > 0 && currentProblem && !viewingPrevious) {
+      if (waitingForContinue && settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts) {
+        // No iniciar el temporizador si ya se agotaron todos los intentos
+        return;
+      }
+      
       // Solo reiniciar el valor del temporizador cuando cambia el problema o al iniciar el ejercicio
       if (problemTimerValue === 0 || problemTimerValue === settings.timeValue) {
         setProblemTimerValue(settings.timeValue);
       }
       
-      // Iniciar temporizador
       singleProblemTimerRef.current = window.setInterval(() => {
         setProblemTimerValue(prev => {
           if (prev <= 1) {
-            // Limpiar el timer antes de llamar a handleTimeOrAttemptsUp para evitar doble llamada
-            if (singleProblemTimerRef.current) {
-              clearInterval(singleProblemTimerRef.current);
-              singleProblemTimerRef.current = null;
-            }
-            // Esta función incrementa los intentos y muestra respuesta si es necesario
-            handleTimeOrAttemptsUp(); 
+            if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+            handleTimeOrAttemptsUp(); // Esta función ahora incrementa los intentos y reinicia el timer si es necesario
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
     }
-    
-    // Función de limpieza
-    return () => { 
-      if (singleProblemTimerRef.current) {
-        clearInterval(singleProblemTimerRef.current);
-        singleProblemTimerRef.current = null;
-      }
-    };
-  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, waitingForContinue, currentAttempts, settings.maxAttempts]);
+    return () => { if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); };
+  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, waitingForContinue, currentAttempts]);
 
   // Guardar contadores de rachas en localStorage
   useEffect(() => localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
@@ -248,8 +220,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const startExercise = () => {
     if (!exerciseStarted) {
       setExerciseStarted(true);
-      // Asegurarse de que el contador de intentos se reinicie al iniciar el ejercicio
-      setCurrentAttempts(0);
       // El foco inicial se maneja en el useEffect [currentProblem, viewingPrevious]
     }
   };
@@ -345,13 +315,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const newAttempts = currentAttempts + 1;
     setCurrentAttempts(newAttempts);
     
-    // Caso especial: si maxAttempts es 0, se considera como "un solo intento" automático
-    const isMaxAttemptsZero = settings.maxAttempts === 0;
-    const hasReachedMaxAttempts = settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts;
-    
-    // Verificar si se debe finalizar (porque maxAttempts=0 o se alcanzó el límite)
-    if (isMaxAttemptsZero || hasReachedMaxAttempts) {
-      // Detener el temporizador
+    // Verificar si se han agotado todos los intentos permitidos
+    if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
+      // Detener el temporizador cuando se agoten todos los intentos
       if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
       
       // Mensaje más directo y simple que muestra la respuesta correcta
