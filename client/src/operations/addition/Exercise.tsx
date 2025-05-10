@@ -510,6 +510,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setFeedbackMessage(`${t('adaptiveDifficulty.levelDecreased')} ${newLevel}. ${t('exercises.incorrect')}`); // Añadir feedback sobre el cambio
           }
       }
+      // Solo si hay límite de intentos, verificar si se agotaron
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
         setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
         handleTimeOrAttemptsUp();
@@ -608,16 +609,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>P: {problemTimerValue}s</span>}
-                {settings.maxAttempts > 0 && !viewingPrevious && (
+                {!viewingPrevious && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className={`font-medium p-1 rounded ${currentAttempts > 0 ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-700"}`}>
-                          Attempts: {currentAttempts}/{settings.maxAttempts}
+                          Attempts: {currentAttempts}{settings.maxAttempts > 0 ? `/${settings.maxAttempts}` : ""}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>{t('tooltips.maxAttemptsPerProblem')}</p>
+                        <p>{settings.maxAttempts > 0 ? t('tooltips.maxAttemptsPerProblem') : "Number of attempts for this problem"}</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
