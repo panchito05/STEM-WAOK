@@ -1,5 +1,5 @@
 // Exercise.tsx
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useProgress } from "@/context/ProgressContext"; // Asumiendo que existe y es correcto
 import { ModuleSettings, useSettings } from "@/context/SettingsContext"; // Asumiendo que existe y es correcto
 import { Button } from "@/components/ui/button";
@@ -162,26 +162,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Timer por problema individual
   useEffect(() => {
-    // Si se cumplen las condiciones para iniciar un temporizador, llamamos a nuestra función
+    if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); // Limpiar timer anterior
     if (exerciseStarted && !exerciseCompleted && settings.timeValue > 0 && currentProblem && !viewingPrevious) {
-      startProblemTimer(); // Usar la función que hemos creado
-    } else {
-      // Si no se cumplen las condiciones, limpiamos cualquier temporizador existente
-      if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+      setProblemTimerValue(settings.timeValue); // Resetear al valor inicial para el nuevo problema
+      singleProblemTimerRef.current = window.setInterval(() => {
+        setProblemTimerValue(prev => {
+          if (prev <= 1) {
+            if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+            handleTimeOrAttemptsUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
     return () => { if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); };
-  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, startProblemTimer]);
-  
-  // Efecto para reiniciar el temporizador cuando cambia el contador de intentos
-  // Solo reinicia si no hemos agotado todos los intentos permitidos
-  useEffect(() => {
-    if (exerciseStarted && !exerciseCompleted && !viewingPrevious && 
-        settings.maxAttempts > 0 && currentAttempts > 0 && currentAttempts < settings.maxAttempts && 
-        settings.timeValue > 0) {
-      // Inicia un nuevo temporizador para el siguiente intento
-      startProblemTimer();
-    }
-  }, [currentAttempts, exerciseStarted, exerciseCompleted, viewingPrevious, settings.maxAttempts, settings.timeValue, startProblemTimer]);
+  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious]);
 
   // Guardar contadores de rachas en localStorage
   useEffect(() => localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
@@ -200,7 +196,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setCurrentProblemIndex(0);
     setActualActiveProblemIndexBeforeViewingPrevious(0); // El problema activo es el primero
     setCurrentProblem(newProblemsArray[0]); // Esto dispara el useEffect para configurar cajones y foco
-    setCurrentAttempts(0); // Inicializar contador de intentos para el nuevo conjunto de problemas
 
     setUserAnswersHistory(Array(newProblemsArray.length).fill(null)); // Inicializar historial
     setTimer(0);
@@ -228,7 +223,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setCurrentProblem(problemsList[nextActiveIdx]);
       setActualActiveProblemIndexBeforeViewingPrevious(nextActiveIdx);
       setFeedbackMessage(null); // Limpiar feedback para el nuevo problema activo
-      setCurrentAttempts(0); // Reiniciar el contador de intentos para el nuevo problema
     } else {
       completeExercise();
     }
@@ -305,21 +299,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
 
-  const handleTimeOrAttemptsUp = useCallback(() => {
+  const handleTimeOrAttemptsUp = () => {
     if (!currentProblem || viewingPrevious) return;
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-    
-    // Incrementar el contador de intentos
-    const newAttempts = currentAttempts + 1;
-    setCurrentAttempts(newAttempts);
-    
-    // Si todavía tenemos intentos disponibles, reiniciar el temporizador para el siguiente intento
-    if (settings.maxAttempts > 0 && newAttempts < settings.maxAttempts) {
-      // Este startProblemTimer() será llamado en el próximo useEffect, debido a la dependencia de currentAttempts
-      return;
-    }
-    
-    // Mensaje más directo y simple que muestra la respuesta correcta cuando se agotan todos los intentos
+    // Mensaje más directo y simple que muestra la respuesta correcta
     setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
     setFeedbackColor("red");
     const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious; // Usar el índice activo
@@ -330,26 +313,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setUserAnswersHistory(newHistory);
     }
     setWaitingForContinue(true);
-  }, [currentProblem, viewingPrevious, currentAttempts, settings.maxAttempts, actualActiveProblemIndexBeforeViewingPrevious, userAnswersHistory]);
-  
-  // Función para iniciar el temporizador del problema
-  const startProblemTimer = useCallback(() => {
-    if (!exerciseStarted || exerciseCompleted || viewingPrevious || settings.timeValue <= 0) return;
-    
-    if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-    
-    setProblemTimerValue(settings.timeValue); // Resetear al valor inicial
-    singleProblemTimerRef.current = window.setInterval(() => {
-      setProblemTimerValue(prev => {
-        if (prev <= 1) {
-          if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-          handleTimeOrAttemptsUp();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, [exerciseStarted, exerciseCompleted, viewingPrevious, settings.timeValue, handleTimeOrAttemptsUp]);
+  };
 
   const completeExercise = () => {
     setExerciseCompleted(true);
