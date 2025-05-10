@@ -164,8 +164,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   useEffect(() => {
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); // Limpiar timer anterior
     if (exerciseStarted && !exerciseCompleted && settings.timeValue > 0 && currentProblem && !viewingPrevious) {
-      if (waitingForContinue && settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts) {
-        // No iniciar el temporizador si ya se agotaron todos los intentos
+      // No iniciar el temporizador en estos casos:
+      // 1. Si estamos esperando que el usuario continúe (waitingForContinue) Y
+      //    a. maxAttempts > 0 y ya se alcanzó el límite, O
+      //    b. maxAttempts es 0 (un solo intento automático) y ya se contabilizó un intento
+      if (waitingForContinue && (
+          (settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts) || 
+          (settings.maxAttempts === 0 && currentAttempts > 0)
+      )) {
         return;
       }
       
@@ -186,7 +192,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }, 1000);
     }
     return () => { if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); };
-  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, waitingForContinue, currentAttempts]);
+  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, waitingForContinue, currentAttempts, settings.maxAttempts]);
 
   // Guardar contadores de rachas en localStorage
   useEffect(() => localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
@@ -315,9 +321,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const newAttempts = currentAttempts + 1;
     setCurrentAttempts(newAttempts);
     
-    // Verificar si se han agotado todos los intentos permitidos
-    if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
-      // Detener el temporizador cuando se agoten todos los intentos
+    // Caso especial: si maxAttempts es 0, se considera como "un solo intento" automático
+    const isMaxAttemptsZero = settings.maxAttempts === 0;
+    const hasReachedMaxAttempts = settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts;
+    
+    // Verificar si se debe finalizar (porque maxAttempts=0 o se alcanzó el límite)
+    if (isMaxAttemptsZero || hasReachedMaxAttempts) {
+      // Detener el temporizador
       if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
       
       // Mensaje más directo y simple que muestra la respuesta correcta
