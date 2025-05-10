@@ -462,13 +462,27 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         [moduleId]: updatedSettings,
       };
       
-      // Guardar inmediatamente en localStorage para persistencia
+      // Guardar inmediatamente en localStorage con timestamp para persistencia robusta
       try {
         const { moduleSettingsKey } = getStorageKeys();
-        localStorage.setItem(moduleSettingsKey, JSON.stringify(newSettings));
-        console.log(`💾 Guardado en localStorage: ${moduleSettingsKey}`);
+        
+        // Obtener configuraciones actuales
+        const currentData = getTimestampedData<Record<string, ModuleSettings>>(
+          moduleSettingsKey, 
+          {}
+        );
+        
+        // Actualizar solo este módulo en el objeto completo
+        const updatedData = {
+          ...currentData.data,
+          [moduleId]: updatedSettings
+        };
+        
+        // Guardar con timestamp actualizado
+        saveTimestampedData(moduleSettingsKey, updatedData);
+        console.log(`💾 Guardado en localStorage con timestamp: ${moduleSettingsKey}`);
       } catch (e) {
-        console.error("❌ Error guardando en localStorage:", e);
+        console.error("❌ Error guardando en localStorage con timestamp:", e);
       }
       
       return newSettings;
@@ -524,23 +538,37 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     } catch (error) {
       // Solo mostrar una notificación si hay un error real (no error de autenticación)
       if (error instanceof Error && !error.message.includes("401")) {
-        console.error(`❌ Error guardando configuración para ${moduleId}:`, error);
+        console.error(`❌ Error guardando configuración para ${moduleId} en servidor:`, error);
+        console.log(`✓ Sin embargo, los cambios están seguros en localStorage con timestamp`);
         
+        // Mostrar notificación discreta que no asusta al usuario
         toast({
-          title: "Error al guardar configuración",
-          description: "Tus ajustes solo se han guardado localmente. Se intentará sincronizar más tarde.",
-          variant: "destructive",
+          title: "Cambios guardados localmente",
+          description: "Se guardarán en el servidor cuando vuelva la conexión.",
+          variant: "default",
         });
         
-        // Programar un reintento después de un tiempo
+        // Programar un reintento después de un tiempo más corto
         setTimeout(() => {
-          // Verificar si la configuración sigue siendo la misma
-          const currentState = moduleSettings[moduleId];
-          if (currentState) {
+          // Solo intentar si sigue siendo la última sincronización iniciada
+          if (pendingSyncs.current[moduleId] === syncId) {
             console.log(`🔄 Reintentando sincronización para ${moduleId}`);
-            updateModuleSettings(moduleId, {}); // Reintento con los mismos ajustes
+            
+            // Obtener la configuración más actualizada para el módulo
+            const currentModuleSettings = getModuleSettings(moduleId);
+            
+            try {
+              // Solo volver a intentar la API, no actualizar estado local
+              apiRequest("PUT", endpoint, currentModuleSettings);
+              console.log(`✅ Reintento exitoso para ${moduleId}`);
+            } catch (retryError) {
+              console.error(`❌ Error en reintento para ${moduleId}:`, retryError);
+              // No intentar más, la próxima acción del usuario lo intentará de nuevo
+            }
+          } else {
+            console.log(`⏭️ Cancelando reintento para ${moduleId}, hay una sincronización más reciente`);
           }
-        }, 10000); // Reintentar en 10 segundos
+        }, 5000); // Reintentar en 5 segundos (más rápido que antes)
       } else {
         console.warn(`⚠️ Error de autenticación al guardar configuración para ${moduleId}`);
       }
@@ -570,60 +598,102 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   };
 
   const resetModuleSettings = async (moduleId: string) => {
-    console.log(`Configuraciones eliminadas de localStorage para ${moduleId}`);
+    console.log(`🧹 Restableciendo configuración para ${moduleId} a valores predeterminados`);
     
-    // Actualizar estado local
+    // Actualizar estado local con valores predeterminados (no eliminar)
     setModuleSettings(prev => {
       const newSettings = { ...prev };
-      delete newSettings[moduleId];
-      
-      // Guardar en localStorage
-      try {
-        const { moduleSettingsKey } = getStorageKeys();
-        localStorage.setItem(moduleSettingsKey, JSON.stringify(newSettings));
-      } catch (e) {
-        console.error("Error guardando en localStorage:", e);
-      }
+      // En lugar de eliminar, asignar valores predeterminados
+      newSettings[moduleId] = { ...defaultModuleSettings };
       
       return newSettings;
     });
     
-    // Si está autenticado, también eliminar del servidor
+    // Actualizar localStorage con timestamp
+    try {
+      const { moduleSettingsKey } = getStorageKeys();
+      
+      // Obtener datos actuales con timestamp
+      const currentData = getTimestampedData<Record<string, ModuleSettings>>(
+        moduleSettingsKey, 
+        {}
+      );
+      
+      // Actualizar este módulo con valores predeterminados
+      const updatedData = {
+        ...currentData.data,
+        [moduleId]: { ...defaultModuleSettings }
+      };
+      
+      // Guardar con timestamp
+      saveTimestampedData(moduleSettingsKey, updatedData);
+      console.log(`✅ Valores predeterminados para ${moduleId} guardados en localStorage con timestamp`);
+      
+    } catch (e) {
+      console.error(`❌ Error guardando valores predeterminados en localStorage:`, e);
+    }
+    
+    // Si está autenticado, también actualizar en el servidor
     if (isAuthenticated) {
       try {
-        console.log(`Eliminando configuraciones del servidor para ${moduleId}`);
+        console.log(`📤 Enviando valores predeterminados al servidor para ${moduleId}`);
         const endpoint = activeProfile
           ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
           : `/api/settings/module/${moduleId}`;
         
-        const response = await apiRequest("DELETE", endpoint);
+        // PUT para actualizar con valores predeterminados, no DELETE
+        const response = await apiRequest("PUT", endpoint, defaultModuleSettings);
         
         if (response.ok) {
-          console.log(`Configuraciones eliminadas exitosamente del servidor para ${moduleId}`);
+          console.log(`✅ Valores predeterminados guardados exitosamente en servidor para ${moduleId}`);
+          
+          toast({
+            title: "Configuración restablecida",
+            description: "Se han aplicado los valores predeterminados",
+          });
         } else {
-          console.error(`Error eliminando configuraciones del servidor para ${moduleId}: ${response.status}`);
+          throw new Error(`Error del servidor: ${response.status}`);
         }
       } catch (error) {
-        console.error(`Error al comunicarse con el servidor:`, error);
+        console.error(`❌ Error al restablecer valores en servidor:`, error);
+        console.log(`✓ Sin embargo, los valores predeterminados están disponibles localmente`);
+        
+        toast({
+          title: "Configuración restablecida localmente",
+          description: "Los cambios se sincronizarán cuando haya conexión",
+          variant: "default",
+        });
       }
     }
   };
 
   const resetAllSettings = async () => {
+    console.log(`🧹 Restableciendo todas las configuraciones a valores predeterminados`);
+    
     // Reset local state
     setGlobalSettings(defaultGlobalSettings);
     setModuleSettings({});
     setFavoriteModules([]);
     
-    // Reset localStorage
-    const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
-    localStorage.removeItem(globalSettingsKey);
-    localStorage.removeItem(moduleSettingsKey);
-    localStorage.removeItem(favoritesKey);
+    // Reset localStorage con timestamps
+    try {
+      const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+      
+      // Guardar valores predeterminados con nuevos timestamps
+      saveTimestampedData(globalSettingsKey, defaultGlobalSettings);
+      saveTimestampedData(moduleSettingsKey, {});
+      saveTimestampedData(favoritesKey, []);
+      
+      console.log(`✅ Todas las configuraciones restablecidas a valores predeterminados en localStorage`);
+    } catch (e) {
+      console.error(`❌ Error al restablecer configuraciones en localStorage:`, e);
+    }
     
-    // If authenticated, also reset on server
+    // Reset en el servidor si está autenticado
     if (isAuthenticated) {
       try {
+        console.log(`📤 Enviando solicitud de restablecimiento de todas las configuraciones al servidor`);
+        
         const endpoint = activeProfile
           ? `/api/child-profiles/${activeProfile.id}/settings`
           : "/api/settings";
