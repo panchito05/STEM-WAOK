@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { ModuleSettings } from "@/context/SettingsContext";
 import { useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
@@ -66,12 +66,19 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   
   // Para poder navegar entre la configuración y el ejercicio sin perder cambios
   // Agregamos un efecto para guardar al desmontar y asegurar persistencia
+  // Referencia para controlar si ya se ha guardado la configuración
+  const hasSavedRef = useRef(false);
+  
   useEffect(() => {
     // Guardar configuración cuando se desmonta el componente
     return () => {
-      // Llamada directa sin debounce para asegurar que se ejecute
-      updateModuleSettings("addition", localSettings);
-      console.log("[ADDITION] Guardando configuración al desmontar:", localSettings);
+      // Evitar múltiples guardados en desmontajes rápidos
+      if (!hasSavedRef.current) {
+        hasSavedRef.current = true;
+        // Llamada directa sin debounce para asegurar que se ejecute
+        updateModuleSettings("addition", localSettings);
+        console.log("[ADDITION] Guardando configuración al desmontar:", localSettings);
+      }
     };
   }, [localSettings, updateModuleSettings]);
 

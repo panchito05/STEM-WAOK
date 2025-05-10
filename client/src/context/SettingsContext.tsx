@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useChildProfiles } from "@/context/ChildProfilesContext";
@@ -274,6 +274,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     }
   };
 
+  // Control de peticiones HTTP para evitar múltiples llamadas simultáneas
+  const pendingRequests = useRef<Record<string, boolean>>({});
+  
   const updateModuleSettings = async (moduleId: string, settings: Partial<ModuleSettings>) => {
     // Asegurarse de que siempre tenemos todos los valores por defecto
     const currentSettings = moduleSettings[moduleId] || { ...defaultModuleSettings };
@@ -302,11 +305,23 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     
     // Sólo intentar guardar en el servidor si el usuario está autenticado
     if (isAuthenticated) {
+      const endpoint = activeProfile
+        ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
+        : `/api/settings/module/${moduleId}`;
+      
+      // Crear una clave única para esta petición
+      const requestKey = `${endpoint}-${JSON.stringify(updatedSettings)}`;
+      
+      // Evitar peticiones duplicadas
+      if (pendingRequests.current[requestKey]) {
+        console.log(`Petición ya en curso para ${moduleId}, evitando duplicado`);
+        return;
+      }
+      
+      // Marcar esta petición como en curso
+      pendingRequests.current[requestKey] = true;
+      
       try {
-        const endpoint = activeProfile
-          ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
-          : `/api/settings/module/${moduleId}`;
-          
         console.log(`Guardando en servidor (${endpoint}):`, updatedSettings);
         await apiRequest("PUT", endpoint, updatedSettings);
         console.log(`Configuración guardada exitosamente en el servidor para ${moduleId}`);
@@ -320,6 +335,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           });
         }
         console.error(`Error saving settings for module ${moduleId}:`, error);
+      } finally {
+        // Liberar la petición una vez completada o fallida
+        pendingRequests.current[requestKey] = false;
       }
     } else {
       // Si no está autenticado, simplemente guardar en localStorage
