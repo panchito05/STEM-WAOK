@@ -28,7 +28,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
       debounce((settings: ModuleSettings) => {
         updateModuleSettings("addition", settings);
         console.log(`[ADDITION] Guardando configuración (debounced):`, settings);
-      }, 2000), // 2 segundos de espera antes de guardar para reducir peticiones
+      }, 500), // Reducir el tiempo de espera a 500ms para asegurar que se guarde pronto
     [updateModuleSettings]
   );
   
@@ -40,24 +40,8 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     // Para cambios de dificultad, aplicar cambio inmediatamente
     if (key === "difficulty") {
       console.log("[ADDITION] Guardando configuración de dificultad inmediatamente:", value);
+      // Actualizamos directamente sin usar debounce para cambios de dificultad
       updateModuleSettings("addition", updatedSettings);
-      
-      // Actualizar también el localStorage para asegurar coherencia entre ambos perfiles
-      try {
-        const storedSettings = localStorage.getItem('moduleSettings');
-        const settingsObj = storedSettings ? JSON.parse(storedSettings) : {};
-        
-        if (settingsObj.addition) {
-          settingsObj.addition.difficulty = value;
-        } else {
-          settingsObj.addition = { difficulty: value };
-        }
-        
-        localStorage.setItem('moduleSettings', JSON.stringify(settingsObj));
-        console.log("[ADDITION] También actualizado localStorage con difficulty:", value);
-      } catch (error) {
-        console.error("[ADDITION] Error al actualizar localStorage:", error);
-      }
     } else {
       // Para otros ajustes, usar debounce para evitar múltiples llamadas de guardado
       debouncedSave(updatedSettings);
@@ -72,6 +56,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   useEffect(() => {
     // Guardar configuración cuando se desmonta el componente
     return () => {
+      // Cancelamos cualquier operación debounced pendiente para evitar conflictos
+      debouncedSave.cancel();
+      
       // Evitar múltiples guardados en desmontajes rápidos
       if (!hasSavedRef.current) {
         hasSavedRef.current = true;
@@ -80,7 +67,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
         console.log("[ADDITION] Guardando configuración al desmontar:", localSettings);
       }
     };
-  }, [localSettings, updateModuleSettings]);
+  }, [localSettings, updateModuleSettings, debouncedSave]);
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {

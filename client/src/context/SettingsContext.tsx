@@ -466,11 +466,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       
       console.log(`📤 Enviando configuración al servidor (${endpoint})`);
       
-      // Obtener y guardar una copia de la configuración actual para comparación posterior
-      const settingsSnapshot = { ...moduleSettings[moduleId] };
+      // Guardar una copia de la configuración actualizada para comparación posterior
+      const settingsSnapshot = { ...updatedSettings };
       
-      // Hacer la petición al servidor
-      const response = await apiRequest("PUT", endpoint, settingsSnapshot);
+      // Hacer la petición al servidor con la configuración actualizada
+      const response = await apiRequest("PUT", endpoint, updatedSettings);
       
       if (response.ok) {
         console.log(`✅ Configuración guardada exitosamente en el servidor para ${moduleId}`);
