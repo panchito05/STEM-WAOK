@@ -38,7 +38,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [focusedDigitIndex, setFocusedDigitIndex] = useState<number | null>(null);
   const [inputDirection, setInputDirection] = useState<'ltr' | 'rtl'>('rtl');
   // Cambiar el tipo a HTMLDivElement, que es lo que realmente estamos usando
-  const digitBoxRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const digitBoxRefs = useRef<HTMLDivElement[]>([]);
+  // Referencia para mantener el arreglo de referencias actualizadas
+  const boxRefsArrayRef = useRef<HTMLDivElement[]>([]);
 
   const [userAnswersHistory, setUserAnswersHistory] = useState<UserAnswerType[]>([]);
   const [timer, setTimer] = useState(0);
@@ -110,8 +112,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           currentProblemIndex !== actualActiveProblemIndexBeforeViewingPrevious) {
         setDigitAnswers(Array(numBoxes).fill(""));
       }
-      // Crear un array simple para las referencias
-      digitBoxRefs.current = Array(numBoxes).fill(null);
+      // Inicializar un nuevo array para las referencias
+      boxRefsArrayRef.current = Array(numBoxes).fill(null);
       if (currentProblem.layout === 'horizontal') {
         setInputDirection('ltr');
         setFocusedDigitIndex(0);
@@ -587,12 +589,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
     setFocusedDigitIndex(index);
     
-    // Intentar enfocar el elemento directamente
+    // Asegurar que actualizamos el estado primero y luego enfocamos
     setTimeout(() => {
-      if (digitBoxRefs.current[index]) {
-        digitBoxRefs.current[index]?.focus();
+      try {
+        const el = boxRefsArrayRef.current[index];
+        if (el) {
+          el.focus();
+          console.log("Enfocando elemento en índice:", index);
+        } else {
+          console.log("No se encontró elemento para enfocar en índice:", index);
+        }
+      } catch (err) {
+        console.error("Error al intentar enfocar:", err);
       }
-    }, 0);
+    }, 10);
   };
 
   const handleDigitInput = (value: string) => {
@@ -825,7 +835,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               return (
                 <React.Fragment key={`digit-box-frag-${index}-${currentProblem.id}`}>
                   <div
-                    ref={el => digitBoxRefs.current[index] = el}
+                    ref={el => {
+                      if (el) {
+                        // Guardar la referencia en el array auxiliar
+                        boxRefsArrayRef.current[index] = el;
+                        // Actualizar la referencia principal para acceder globalmente
+                        digitBoxRefs.current = boxRefsArrayRef.current;
+                      }
+                    }}
                     tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
                     className={`${digitBoxBaseStyle} 
                                 ${viewingPrevious || exerciseCompleted || waitingRef.current ? digitBoxDisabledStyle : (focusedDigitIndex === index ? digitBoxFocusStyle : digitBoxBlurStyle)}
