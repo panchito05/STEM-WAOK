@@ -83,6 +83,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [viewingPrevious, setViewingPrevious] = useState(false);
   const [actualActiveProblemIndexBeforeViewingPrevious, setActualActiveProblemIndexBeforeViewingPrevious] = useState<number>(0);
 
+  // Estado para compensación (problemas adicionales)
+  const [compensationProblemsCount, setCompensationProblemsCount] = useState(0); // Contador de problemas por compensación
+  const [originalProblemCount, setOriginalProblemCount] = useState(settings.problemCount); // Guardar el conteo original
+
   // Refs para timers
   const generalTimerRef = useRef<number | null>(null);
   const singleProblemTimerRef = useRef<number | null>(null);
@@ -148,7 +152,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Aplicar foco al cajón cuando focusedDigitIndex cambia
   useEffect(() => {
     if (focusedDigitIndex !== null && !viewingPrevious && digitBoxRefs.current[focusedDigitIndex]) {
-      setTimeout(() => digitBoxRefs.current[focusedDigitIndex]?.focus(), 0); // Timeout para asegurar que el DOM está listo
+      // Verificar explícitamente que el elemento tiene una función focus antes de llamarla
+      const element = digitBoxRefs.current[focusedDigitIndex];
+      if (element && typeof element.focus === 'function') {
+        setTimeout(() => element.focus(), 0); // Timeout para asegurar que el DOM está listo
+      }
     }
   }, [focusedDigitIndex, viewingPrevious]);
 
@@ -163,17 +171,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Timer por problema individual
   useEffect(() => {
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); 
-    
+
     if (exerciseStarted && !exerciseCompleted && currentProblem && !viewingPrevious && settings.timeValue > 0) {
       const attemptsExhausted = settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts;
-      
+
       if (!attemptsExhausted && !waitingForContinue) {
         // Reiniciar el valor del temporizador solo si es un nuevo problema o se ha continuado
         // La lógica de reinicio para nuevos intentos ahora está más controlada en handleTimeOrAttemptsUp y checkCurrentAnswer
         if(problemTimerValue === 0 || problemTimerValue === settings.timeValue) { // Condición para reinicio (nuevo problema o después de continuar)
             setProblemTimerValue(settings.timeValue);
         }
-        
+
         singleProblemTimerRef.current = window.setInterval(() => {
           setProblemTimerValue(prevValue => {
             if (prevValue <= 1) { // Cuando el tiempo está en 1 segundo y va a pasar a 0
@@ -187,7 +195,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }, 1000);
       }
     }
-    
+
     return () => { 
       if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); 
     };
@@ -205,6 +213,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const generateNewProblemSet = () => {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
     const newProblemsArray: AdditionProblem[] = [];
+    // Guardar el conteo original de problemas cuando se genera un nuevo conjunto
+    setOriginalProblemCount(settings.problemCount);
+    // Restablecer el contador de problemas de compensación
+    setCompensationProblemsCount(0);
+
     for (let i = 0; i < settings.problemCount; i++) {
       newProblemsArray.push(generateAdditionProblem(difficultyToUse));
     }
@@ -229,6 +242,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setExerciseStarted(true);
       // El foco inicial se maneja en el useEffect [currentProblem, viewingPrevious]
     }
+  };
+
+  // Función para agregar un problema de compensación
+  const addCompensationProblem = () => {
+    // Solo agregar si la compensación está habilitada
+    if (!settings.enableCompensation) return;
+
+    // Generar un nuevo problema con la dificultad actual
+    const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
+    const newProblem = generateAdditionProblem(difficultyToUse);
+
+    // Actualizar la lista de problemas
+    setProblemsList(prev => [...prev, newProblem]);
+
+    // Actualizar el historial de respuestas para incluir el nuevo problema (como null)
+    setUserAnswersHistory(prev => [...prev, null]);
+
+    // Incrementar el contador de problemas de compensación
+    setCompensationProblemsCount(prev => prev + 1);
+
+    // Log para depuración
+    console.log(`[COMPENSATION] Added problem: total=${problemsList.length + 1}, original=${originalProblemCount}, compensation=${compensationProblemsCount + 1}`);
   };
 
   const advanceToNextActiveProblem = () => {
@@ -282,8 +317,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         setFeedbackMessage(
             prevAnswerEntry.isCorrect ? 
-            `${t('exercises.yourAnswerWas')}: ${prevAnswerEntry.userAnswer} (${t('exercises.correct')})` :
-            `${t('exercises.yourAnswerWas')}: ${prevAnswerEntry.userAnswer === undefined || isNaN(prevAnswerEntry.userAnswer) ? t('common.notAnswered') : prevAnswerEntry.userAnswer} (${t('exercises.incorrect')}). ${t('exercises.correctAnswerIs')} ${prevProblemToView.correctAnswer}`
+            `${t('')}: ${prevAnswerEntry.userAnswer} (${t('exercises.correct')})` :
+            `Your Answer Was (Incorrect!). The correct answer is = ${prevProblemToView.correctAnswer}`
         );
         setFeedbackColor(prevAnswerEntry.isCorrect ? "green" : "red");
     } else {
@@ -339,16 +374,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         effectiveAttempts = currentAttempts + 1;
         // No llamar a setCurrentAttempts aquí directamente, se hará más abajo o por checkCurrentAnswer
     }
-    
+
     const allAttemptsNowConsideredExhausted = settings.maxAttempts > 0 && effectiveAttempts >= settings.maxAttempts;
 
     if (allAttemptsNowConsideredExhausted || (timeJustExpired && !userAnswerWritten && settings.maxAttempts === 0) ) {
         // Todos los intentos agotados, O tiempo expiró sin respuesta y sin límite de intentos
         if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-        
+
         setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
         setFeedbackColor("red");
-        
+
         const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious;
         const currentAnswerEntry = userAnswersHistory[currentActiveIndex];
         if (!currentAnswerEntry || currentAnswerEntry.status !== 'revealed') {
@@ -356,7 +391,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newHistory[currentActiveIndex] = { problemId: currentProblem.id, problem: currentProblem, userAnswer: NaN, isCorrect: false, status: 'revealed' };
             setUserAnswersHistory(newHistory);
         }
-        
+
         // Actualizar currentAttempts solo si se consumió un intento por tiempo aquí
         if (timeJustExpired && !userAnswerWritten && effectiveAttempts > currentAttempts) {
              setCurrentAttempts(effectiveAttempts);
@@ -366,13 +401,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     } else if (timeJustExpired && !userAnswerWritten && settings.timeValue > 0) {
         // Tiempo expiró, sin respuesta, pero aún quedan intentos
         setCurrentAttempts(effectiveAttempts); // Actualizar intentos
-        
+
         if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
         setProblemTimerValue(settings.timeValue); // Reiniciar el contador para el próximo intento
-        
+
         setFeedbackMessage(`Time's up for this attempt. Attempts: ${effectiveAttempts}/${settings.maxAttempts}`);
         setFeedbackColor("red");
-        
+
         // El useEffect del timer se reactivará debido al cambio en `currentAttempts`
         // y porque `waitingForContinue` es `false`, iniciando un nuevo timer.
     }
@@ -471,7 +506,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const checkCurrentAnswer = () => {
     if (!currentProblem || waitingForContinue || exerciseCompleted || viewingPrevious) return;
-    
+
     // Si el ejercicio no ha comenzado, solo iniciarlo y no contar como intento
     if (!exerciseStarted) {
       startExercise();
@@ -547,9 +582,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setShowRewardAnimation(true);
           }
       }
-      
+
       setWaitingForContinue(true);
-      
+
       // Auto-continue si está habilitado y no hay bloqueo de avance (como subir de nivel)
       if (autoContinue && !blockAutoAdvance) {
         // Usar un temporizador para dar tiempo a que se muestre el feedback
@@ -581,9 +616,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setFeedbackMessage(`${t('adaptiveDifficulty.levelDecreased')} ${newLevel}. ${t('exercises.incorrect')}`); // Añadir feedback sobre el cambio
           }
       }
+
+      // Si agotó todos los intentos, mostrar la respuesta y agregar un problema de compensación
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
-        setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
+        setFeedbackMessage(`Your Answer Was (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
         handleTimeOrAttemptsUp();
+
+        // Agregar un problema de compensación si está habilitado
+        addCompensationProblem();
       }
       // No limpiar cajones en error, permitir al usuario corregir.
     }
@@ -794,7 +834,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
           {viewingPrevious ? (
             <Button onClick={returnToActiveProblem} className="px-4 sm:px-5 text-sm sm:text-base bg-orange-500 hover:bg-orange-600 text-white">
-                <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')} 
+                <RotateCcw className="mr-1 h-4 w-4" /> {t('Return To Active Exercises')} 
             </Button>
           ) : waitingForContinue ? ( 
              <Button onClick={handleContinue} className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-between w-full max-w-xs mx-auto">
@@ -836,7 +876,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     onClick={() => { 
                         if(currentProblem && !viewingPrevious && !exerciseCompleted) { 
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-                            setFeedbackMessage(`${t('exercises.correctAnswerIs')} ${currentProblem.correctAnswer}`);
+                            setFeedbackMessage(`Your Answer Was (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
                             setFeedbackColor("blue");
                             setWaitingForContinue(true);
                             const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious; // Usar el activo
@@ -847,6 +887,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                     newHistory[problemIdxForHistory] = { problemId: currentProblem.id, problem: currentProblem, userAnswer: NaN, isCorrect: false, status: 'revealed' };
                                     return newHistory;
                                 });
+
+                                // Agregar un problema de compensación cuando se revela la respuesta
+                                addCompensationProblem();
                             }
                         }
                     }}
