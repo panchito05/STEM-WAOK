@@ -26,15 +26,15 @@ export interface ModuleComponent {
 
 export const defaultModuleSettings: ModuleSettings = {
   difficulty: "beginner",
-  problemCount: 10,
+  problemCount: 12,
   timeLimit: "per-problem",
-  timeValue: 30, // 0 para sin límite
-  maxAttempts: 3, // Por defecto, 3 intentos por problema
+  timeValue: 0, // 0 para sin límite
+  maxAttempts: 2, // Por defecto, 3 intentos por problema
   showImmediateFeedback: true,
   enableSoundEffects: true,
   showAnswerWithExplanation: true, // Botón de ayuda que muestra respuesta con explicación
-  enableAdaptiveDifficulty: false, // Ajusta automáticamente la dificultad según desempeño
-  enableCompensation: false, // Añade problemas adicionales por respuestas incorrectas/reveladas
+  enableAdaptiveDifficulty: true, // Ajusta automáticamente la dificultad según desempeño
+  enableCompensation: true, // Añade problemas adicionales por respuestas incorrectas/reveladas
   enableRewards: true, // Activar sistema de recompensas/premios
   rewardType: "stars", // Tipo de premio a mostrar (medals, trophies, stars)
 };

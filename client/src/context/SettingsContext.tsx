@@ -67,8 +67,8 @@ const defaultModuleSettings: ModuleSettings = {
   showImmediateFeedback: true,
   enableSoundEffects: true,
   showAnswerWithExplanation: true, // Botón de ayuda que muestra respuesta con explicación
-  enableAdaptiveDifficulty: false, // Desactivado por defecto
-  enableCompensation: false, // Desactivado por defecto
+  enableAdaptiveDifficulty: true, // Activado por defecto
+  enableCompensation: true, // Activado por defecto
   enableRewards: true, // Sistema de recompensas activado por defecto
   rewardType: "stars", // Por defecto, usar estrellas como recompensa
   language: "english", // Idioma por defecto: inglés
