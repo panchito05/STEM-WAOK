@@ -606,7 +606,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className={`font-medium p-1 rounded ${currentAttempts > 0 ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-700"}`}>
-                          A: {currentAttempts}/{settings.maxAttempts}
+                          Attempts: {currentAttempts}/{settings.maxAttempts}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
