@@ -324,6 +324,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleTimeOrAttemptsUp = () => {
     if (!currentProblem || viewingPrevious) return;
     
+    // Verificar si hay una respuesta ingresada antes de manejar el tiempo agotado
+    // Esto nos permite evaluar una respuesta existente antes de marcarla como incorrecta
+    const hasEnteredAnswer = digitAnswers.some(d => d && d.trim() !== "");
+    
+    if (hasEnteredAnswer) {
+      // Si hay una respuesta, evaluar primero esa respuesta antes de considerar el tiempo agotado
+      // Parar el temporizador momentáneamente para evaluar
+      if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+      
+      // Validar la respuesta ingresada
+      let userAnswerString = "";
+      const decPosInAnswer = currentProblem.answerDecimalPosition;
+      const totalDigitBoxes = currentProblem.answerMaxDigits;
+      const integerBoxesCount = totalDigitBoxes - (decPosInAnswer || 0);
+
+      if (decPosInAnswer !== undefined && decPosInAnswer > 0) {
+          const integerPart = digitAnswers.slice(0, integerBoxesCount).join('');
+          const decimalPart = digitAnswers.slice(integerBoxesCount).join('');
+          userAnswerString = `${integerPart || '0'}.${decimalPart.padEnd(decPosInAnswer, '0')}`;
+      } else {
+          userAnswerString = digitAnswers.join('') || '0';
+      }
+
+      const userNumericAnswer = parseFloat(userAnswerString);
+      
+      // Si la respuesta es válida y correcta, la procesamos como correcta a pesar de que el tiempo se agotó
+      if (!isNaN(userNumericAnswer) && checkAnswer(currentProblem, userNumericAnswer)) {
+        // Simular una verificación manual como si el usuario hubiera presionado Enter justo a tiempo
+        checkCurrentAnswer();
+        return;
+      }
+    }
+    
+    // Si no hay respuesta o la respuesta no es correcta, continuamos con la lógica normal de tiempo agotado
     // Verificar si realmente se agotaron todos los intentos
     const attemptsExhausted = settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts;
     
