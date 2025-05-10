@@ -162,44 +162,38 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Timer por problema individual
   useEffect(() => {
-    if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); // Limpiar timer anterior
-    
-    // Iniciar un nuevo temporizador solo si:
-    // 1. El ejercicio ha comenzado y no ha terminado
-    // 2. Existe un problema actual y no estamos viendo uno anterior
-    // 3. El tiempo está configurado (settings.timeValue > 0)
-    // 4. No se han agotado todos los intentos
+    if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); 
     
     if (exerciseStarted && !exerciseCompleted && currentProblem && !viewingPrevious && settings.timeValue > 0) {
-      // Verificar si se han agotado todos los intentos
       const attemptsExhausted = settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts;
       
-      // Solo configurar el temporizador si quedan intentos disponibles
       if (!attemptsExhausted && !waitingForContinue) {
-        // Reiniciar el valor del temporizador al inicio de cada problema o intento
-        setProblemTimerValue(settings.timeValue);
+        // Reiniciar el valor del temporizador solo si es un nuevo problema o se ha continuado
+        // La lógica de reinicio para nuevos intentos ahora está más controlada en handleTimeOrAttemptsUp y checkCurrentAnswer
+        if(problemTimerValue === 0 || problemTimerValue === settings.timeValue) { // Condición para reinicio (nuevo problema o después de continuar)
+            setProblemTimerValue(settings.timeValue);
+        }
         
-        // Iniciar el temporizador
         singleProblemTimerRef.current = window.setInterval(() => {
-          setProblemTimerValue(prev => {
-            // Si el temporizador llega a 0, manejar el tiempo agotado
-            if (prev <= 1) {
+          setProblemTimerValue(prevValue => {
+            if (prevValue <= 1) { // Cuando el tiempo está en 1 segundo y va a pasar a 0
               if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-              // Solo llamar a handleTimeOrAttemptsUp si no estamos esperando continuar
-              handleTimeOrAttemptsUp();
-              return 0;
+              // MODIFICACIÓN CLAVE: Pasar true para indicar que el tiempo expiró ahora
+              handleTimeOrAttemptsUp(true); 
+              return 0; 
             }
-            return prev - 1;
+            return prevValue - 1;
           });
         }, 1000);
       }
     }
     
-    // Limpiar el temporizador cuando el componente se desmonte o las dependencias cambien
     return () => { 
       if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); 
     };
-  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, currentAttempts, settings.maxAttempts, waitingForContinue]);
+  // Se remueve problemTimerValue de las dependencias para evitar reinicios indeseados del timer.
+  // El reinicio del valor del timer se maneja explícitamente.
+  }, [exerciseStarted, exerciseCompleted, settings.timeValue, currentProblem, viewingPrevious, currentAttempts, settings.maxAttempts, waitingForContinue, settings.difficulty, adaptiveDifficulty]);
 
   // Guardar contadores de rachas en localStorage
   useEffect(() => localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
@@ -321,60 +315,69 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   };
 
-  const handleTimeOrAttemptsUp = () => {
-    if (!currentProblem || viewingPrevious) return;
-    
-    // Verificar si realmente se agotaron todos los intentos
-    const attemptsExhausted = settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts;
-    
-    if (attemptsExhausted) {
-      // Si se agotaron los intentos, mostrar la respuesta correcta y detener el temporizador
-      if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-      
-      // Mensaje más directo y simple que muestra la respuesta correcta
-      setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
-      setFeedbackColor("red");
-      
-      const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious; // Usar el índice activo
-      const currentAnswer = userAnswersHistory[currentActiveIndex];
-      if (!currentAnswer || currentAnswer.status !== 'revealed') {
-          const newHistory = [...userAnswersHistory];
-          newHistory[currentActiveIndex] = { problemId: currentProblem.id, problem: currentProblem, userAnswer: NaN, isCorrect: false, status: 'revealed' };
-          setUserAnswersHistory(newHistory);
-      }
-      
-      setWaitingForContinue(true);
-    } else if (settings.timeValue > 0) {
-      // Si se agotó el tiempo pero quedan intentos, incrementar intentos y reiniciar temporizador
-      const newAttempts = currentAttempts + 1;
-      setCurrentAttempts(newAttempts);
-      
-      // Reiniciar el temporizador para el próximo intento
-      if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-      setProblemTimerValue(settings.timeValue);
-      
-      // Solo mostrar mensaje de tiempo agotado, pero no revelar la respuesta
-      setFeedbackMessage(`Time's up for this attempt. Attempts: ${newAttempts}/${settings.maxAttempts}`);
-      setFeedbackColor("red");
-      
-      // Iniciar nuevo temporizador si aún no se agotaron todos los intentos
-      if (newAttempts < settings.maxAttempts) {
-        singleProblemTimerRef.current = window.setInterval(() => {
-          setProblemTimerValue(prev => {
-            if (prev <= 1) {
-              if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-              handleTimeOrAttemptsUp(); // Llamada recursiva que manejará el siguiente intento
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      } else {
-        // Si este era el último intento, mostrar la respuesta correcta
-        setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
-        setWaitingForContinue(true);
-      }
+  // MODIFICACIÓN CLAVE: Nueva firma para handleTimeOrAttemptsUp
+  const handleTimeOrAttemptsUp = (timeJustExpired?: boolean) => {
+    // Evitar múltiples ejecuciones si ya se está esperando o no es el momento adecuado
+    if (viewingPrevious || !currentProblem || (waitingForContinue && !timeJustExpired) ) {
+        // Si ya estamos esperando para continuar (y no es porque el tiempo acaba de expirar con respuesta), no hacer nada.
+        return;
     }
+
+    const userAnswerWritten = digitAnswers.some(d => d && d.trim() !== "");
+
+    // MODIFICACIÓN CLAVE: Validar respuesta si el tiempo expiró y hay algo escrito
+    if (timeJustExpired && userAnswerWritten) {
+        if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); // Detener timer explícitamente
+        checkCurrentAnswer(); // Validar la respuesta. checkCurrentAnswer maneja intentos y estado.
+        return; // Salir para no ejecutar lógica de tiempo agotado sin respuesta.
+    }
+
+    // Lógica original para tiempo agotado sin respuesta o intentos agotados por otras vías
+    let effectiveAttempts = currentAttempts;
+    if (timeJustExpired && !userAnswerWritten && settings.maxAttempts > 0) {
+        // Consumir un intento si el tiempo expira y no hay respuesta, y hay límite de intentos.
+        effectiveAttempts = currentAttempts + 1;
+        // No llamar a setCurrentAttempts aquí directamente, se hará más abajo o por checkCurrentAnswer
+    }
+    
+    const allAttemptsNowConsideredExhausted = settings.maxAttempts > 0 && effectiveAttempts >= settings.maxAttempts;
+
+    if (allAttemptsNowConsideredExhausted || (timeJustExpired && !userAnswerWritten && settings.maxAttempts === 0) ) {
+        // Todos los intentos agotados, O tiempo expiró sin respuesta y sin límite de intentos
+        if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+        
+        setFeedbackMessage(`Incorrect. No attempts left. The answer was: ${currentProblem.correctAnswer}.`);
+        setFeedbackColor("red");
+        
+        const currentActiveIndex = actualActiveProblemIndexBeforeViewingPrevious;
+        const currentAnswerEntry = userAnswersHistory[currentActiveIndex];
+        if (!currentAnswerEntry || currentAnswerEntry.status !== 'revealed') {
+            const newHistory = [...userAnswersHistory];
+            newHistory[currentActiveIndex] = { problemId: currentProblem.id, problem: currentProblem, userAnswer: NaN, isCorrect: false, status: 'revealed' };
+            setUserAnswersHistory(newHistory);
+        }
+        
+        // Actualizar currentAttempts solo si se consumió un intento por tiempo aquí
+        if (timeJustExpired && !userAnswerWritten && effectiveAttempts > currentAttempts) {
+             setCurrentAttempts(effectiveAttempts);
+        }
+        setWaitingForContinue(true);
+
+    } else if (timeJustExpired && !userAnswerWritten && settings.timeValue > 0) {
+        // Tiempo expiró, sin respuesta, pero aún quedan intentos
+        setCurrentAttempts(effectiveAttempts); // Actualizar intentos
+        
+        if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+        setProblemTimerValue(settings.timeValue); // Reiniciar el contador para el próximo intento
+        
+        setFeedbackMessage(`Time's up for this attempt. Attempts: ${effectiveAttempts}/${settings.maxAttempts}`);
+        setFeedbackColor("red");
+        
+        // El useEffect del timer se reactivará debido al cambio en `currentAttempts`
+        // y porque `waitingForContinue` es `false`, iniciando un nuevo timer.
+    }
+    // Si no es timeJustExpired, la función pudo ser llamada por "Show Answer"
+    // En ese caso, Show Answer ya pone waitingForContinue y detiene el timer.
   };
 
   const completeExercise = () => {
