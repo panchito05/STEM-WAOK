@@ -26,13 +26,18 @@ export function shuffleArray<T>(array: T[]): T[] {
   return newArray;
 }
 
+export interface DebouncedFunction<T extends (...args: any[]) => any> {
+  (...args: Parameters<T>): void;
+  cancel: () => void;
+}
+
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
-): (...args: Parameters<T>) => void {
+): DebouncedFunction<T> {
   let timeout: ReturnType<typeof setTimeout> | null = null;
   
-  return function(...args: Parameters<T>) {
+  const debouncedFunction = function(...args: Parameters<T>) {
     const later = () => {
       timeout = null;
       func(...args);
@@ -40,5 +45,14 @@ export function debounce<T extends (...args: any[]) => any>(
     
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
+  } as DebouncedFunction<T>;
+  
+  debouncedFunction.cancel = function() {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
   };
+  
+  return debouncedFunction;
 }

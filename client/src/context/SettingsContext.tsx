@@ -361,10 +361,10 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       console.log(`📤 Enviando configuración global al servidor (${endpoint})`);
       
       // Obtener la configuración global más actualizada y guardarla para comparación posterior
-      const settingsSnapshot = { ...globalSettings };
+      const currentSettings = { ...updatedSettings };
       
       // Hacer la petición al servidor
-      const response = await apiRequest("PUT", endpoint, settingsSnapshot);
+      const response = await apiRequest("PUT", endpoint, currentSettings);
       
       if (response.ok) {
         console.log(`✅ Configuración global guardada exitosamente en el servidor`);
@@ -382,9 +382,8 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       
       // Programar un reintento después de un tiempo
       setTimeout(() => {
-        // Verificar si la configuración global sigue siendo la misma
-        const currentState = globalSettings;
-        if (JSON.stringify(currentState) === JSON.stringify(settingsSnapshot)) {
+        // Verificar si aún necesitamos sincronizar (puede que el usuario haya cerrado sesión)
+        if (isAuthenticated) {
           console.log(`🔄 Reintentando sincronización para configuración global`);
           updateGlobalSettings({}); // Reintento con los mismos ajustes
         }
@@ -492,7 +491,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         setTimeout(() => {
           // Verificar si la configuración sigue siendo la misma
           const currentState = moduleSettings[moduleId];
-          if (JSON.stringify(currentState) === JSON.stringify(settingsSnapshot)) {
+          if (currentState) {
             console.log(`🔄 Reintentando sincronización para ${moduleId}`);
             updateModuleSettings(moduleId, {}); // Reintento con los mismos ajustes
           }

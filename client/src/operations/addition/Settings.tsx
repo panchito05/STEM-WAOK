@@ -56,8 +56,8 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   useEffect(() => {
     // Guardar configuración cuando se desmonta el componente
     return () => {
-      // Cancelamos cualquier operación debounced pendiente para evitar conflictos
-      debouncedSave.cancel();
+      // Comentamos esto temporalmente hasta arreglar la función
+      // debouncedSave.cancel();
       
       // Evitar múltiples guardados en desmontajes rápidos
       if (!hasSavedRef.current) {
