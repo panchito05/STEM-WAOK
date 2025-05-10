@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useSettings } from "@/context/SettingsContext";
 
 interface DraggableModuleCardProps {
   module: Module;
@@ -35,9 +36,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   
   // Obtenemos los favoritos del perfil activo desde SettingsContext
   const { toggleFavorite, isFavorite } = useModuleFavorites();
+  
+  // Obtenemos la configuración personalizada del módulo
+  const { moduleSettings } = useSettings();
 
   const isModuleFavorite = isFavorite(module.id);
   const isHidden = hiddenModules.includes(module.id);
+  
+  // Obtener la configuración específica para este módulo (si existe)
+  const moduleConfig = moduleSettings[module.id];
 
   const [{ isDragging }, drag] = useDragItem(() => ({
     type: "MODULE_CARD",
@@ -93,14 +100,21 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   
   drag(drop(ref));
   
-  const getDifficultyBadge = (difficulty: string) => {
+  const getDifficultyBadge = (defaultDifficulty: string) => {
+    // Si el módulo tiene configuración personalizada, mostrar esa dificultad en lugar de la predeterminada
+    const difficulty = moduleConfig?.difficulty || defaultDifficulty;
+    
     switch (difficulty) {
       case "beginner":
         return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">Beginner</Badge>;
+      case "elementary":
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">Elementary</Badge>;
       case "intermediate":
         return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">Intermediate</Badge>;
       case "advanced":
         return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">Advanced</Badge>;
+      case "expert":
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">Expert</Badge>;
       default:
         return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">Coming Soon</Badge>;
     }
