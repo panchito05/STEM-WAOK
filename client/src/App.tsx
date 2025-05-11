@@ -13,6 +13,7 @@ import SimpleLoginPage from "@/pages/SimpleLoginPage";
 import GoogleLoginPage from "@/pages/GoogleLoginPage";
 import RegisterPage from "@/pages/RegisterPage";
 import ProfilePage from "@/pages/ProfilePage";
+import LogoutPage from "@/pages/LogoutPage";
 import SoonPage from "@/pages/SoonPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext"; 
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/login" component={LoginPage} />
       <Route path="/quick-login" component={SimpleLoginPage} />
       <Route path="/google-login" component={GoogleLoginPage} />
+      <Route path="/logout" component={LogoutPage} />
       <Route path="/register" component={RegisterPage} />
       <Route path="/coming-soon" component={SoonPage} />
       <Route component={NotFound} />

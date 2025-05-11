@@ -105,8 +105,8 @@ export default function Navbar() {
                       <DropdownMenuItem asChild>
                         <Link href="/profile">Your Profile</Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={logout}>
-                        Sign out
+                      <DropdownMenuItem asChild>
+                        <Link href="/logout">Sign out</Link>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
