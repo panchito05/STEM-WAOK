@@ -94,10 +94,19 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   // Control de sincronizaciones pendientes para saber cuál es la última
   const pendingSyncs = useRef<Record<string, string>>({});
 
+  // Status del último intento de autenticación
+  const lastAuthCheck = useRef<{time: number, status: boolean}>({time: 0, status: false});
+
   // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Evitar verificaciones demasiado frecuentes (máximo una cada 2 segundos)
+        const now = Date.now();
+        if (now - lastAuthCheck.current.time < 2000) {
+          return;
+        }
+        
         const res = await fetch("/api/auth/me", {
           credentials: "include",
           // Avoid caching the authentication status
@@ -107,6 +116,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         // Actualizar el estado de autenticación
         const newAuthStatus = res.ok;
         
+        // Registrar este intento
+        lastAuthCheck.current = {
+          time: now,
+          status: newAuthStatus
+        };
+        
         if (newAuthStatus !== isAuthenticated) {
           console.log(`🔐 Estado de autenticación cambiado: ${isAuthenticated} -> ${newAuthStatus}`);
           
@@ -114,6 +129,13 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           if (isAuthenticated && !newAuthStatus) {
             console.log("⚠️ Usuario desautenticado detectado, guardando estado actual en localStorage");
             persistCurrentStateToLocalStorage();
+            
+            // Mostrar un toast informativo
+            toast({
+              title: "Sesión finalizada",
+              description: "Tu sesión ha finalizado. Los datos se guardarán localmente.",
+              variant: "default",
+            });
           }
           
           // Actualizar estado después de posibles operaciones
@@ -125,6 +147,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           console.log("❌ Error de conexión, considerando usuario como no autenticado");
           persistCurrentStateToLocalStorage();
           setIsAuthenticated(false);
+          
+          toast({
+            title: "Error de conexión",
+            description: "No se pudo verificar tu sesión. Los datos se guardarán localmente.",
+            variant: "default",
+          });
         }
       }
     };
@@ -132,10 +160,21 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     // Verificar al inicio
     checkAuth();
     
-    // Verificar periódicamente cada 10 segundos
-    const intervalId = setInterval(checkAuth, 10000);
+    // Verificar periódicamente cada 5 segundos (más frecuente para detectar cambios rápido)
+    const intervalId = setInterval(checkAuth, 5000);
     
-    return () => clearInterval(intervalId);
+    // También verificar cuando la ventana recupera el foco
+    const handleFocus = () => {
+      console.log("🔍 Ventana recuperó el foco, verificando autenticación");
+      checkAuth();
+    };
+    
+    window.addEventListener("focus", handleFocus);
+    
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener("focus", handleFocus);
+    };
   }, []);
 
   // Crear claves de almacenamiento basadas en el perfil activo
@@ -482,11 +521,71 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       return newSettings;
     });
     
-    // ESTRATEGIA SIMPLIFICADA:
-    // - Usuario autenticado: Solo guardar en servidor
-    // - Usuario no autenticado: Solo guardar en localStorage
+    // Guardar en localStorage siempre como respaldo (aunque el usuario esté autenticado)
+    const { moduleSettingsKey } = getStorageKeys();
     
-    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
+    // Obtener la configuración actual con su timestamp
+    const currentTimestampedSettings = getTimestampedData<Record<string, ModuleSettings>>(
+      moduleSettingsKey, {}
+    );
+    
+    // Actualizar solo este módulo
+    const updatedTimestampedSettings = {
+      data: {
+        ...currentTimestampedSettings.data,
+        [moduleId]: updatedSettings
+      },
+      lastModified: Date.now()
+    };
+    
+    // Guardar en localStorage
+    saveTimestampedData(moduleSettingsKey, updatedTimestampedSettings.data);
+    console.log(`💾 Configuración guardada en localStorage para ${moduleId} (respaldo)`);
+    
+    // ESTRATEGIA DUAL:
+    // - Siempre guardar en localStorage como respaldo
+    // - Si está autenticado, TAMBIÉN guardar en servidor
+    
+    // Verificar rápidamente el estado de autenticación actual (sin actualizar estado)
+    try {
+      // Si todavía no ha pasado suficiente tiempo desde la última verificación, usar ese resultado
+      const now = Date.now();
+      if (now - lastAuthCheck.current.time < 2000) {
+        // Usar el último resultado de verificación 
+        if (!lastAuthCheck.current.status) {
+          if (isAuthenticated) {
+            console.log("⚠️ Estado de autenticación desactualizado, actualizando...");
+            setIsAuthenticated(false);
+          }
+          return; // No intentar guardar en servidor
+        }
+      } else {
+        // Ha pasado suficiente tiempo, verificar directamente
+        const authCheckRes = await fetch("/api/auth/me", { 
+          credentials: "include",
+          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+        });
+        
+        // Actualizar el registro de verificación
+        lastAuthCheck.current = {
+          time: now,
+          status: authCheckRes.ok
+        };
+        
+        if (!authCheckRes.ok) {
+          if (isAuthenticated) {
+            console.log("⚠️ Estado de autenticación incorrecto, actualizando a no autenticado");
+            setIsAuthenticated(false);
+          }
+          return; // No intentar guardar en servidor
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar autenticación:", error);
+      return; // No intentar guardar en servidor en caso de error
+    }
+    
+    // Si el estado de autenticación es falso, no intentar guardar en servidor
     if (!isAuthenticated) {
       console.log(`🔓 Usuario no autenticado: configuración de ${moduleId} guardada solo en localStorage`);
       return;
@@ -529,11 +628,14 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     } catch (error) {
       console.error(`❌ Error al guardar configuración de ${moduleId} en servidor:`, error);
       
-      toast({
-        title: "Error de conexión",
-        description: "No se pudieron guardar los cambios en el servidor",
-        variant: "destructive",
-      });
+      // Mostrar una notificación solo si realmente estamos autenticados
+      if (isAuthenticated) {
+        toast({
+          title: "Error de conexión",
+          description: "No se pudieron guardar los cambios en el servidor, pero están guardados localmente",
+          variant: "default",
+        });
+      }
     } finally {
       // Liberar la petición una vez completada
       pendingRequests.current[requestKey] = false;
@@ -675,11 +777,57 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     // Actualizar inmediatamente el estado local
     setFavoriteModules(updatedFavorites);
     
-    // ESTRATEGIA SIMPLIFICADA:
-    // - Usuario autenticado: Solo guardar en servidor
-    // - Usuario no autenticado: Solo guardar en localStorage (a través del useEffect)
+    // Guardar en localStorage siempre como respaldo (aunque el usuario esté autenticado)
+    const { favoritesKey } = getStorageKeys();
     
-    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
+    // Guardar en localStorage
+    saveTimestampedData(favoritesKey, updatedFavorites);
+    console.log(`💾 Favoritos guardados en localStorage (respaldo)`);
+    
+    // ESTRATEGIA DUAL:
+    // - Siempre guardar en localStorage como respaldo
+    // - Si está autenticado, TAMBIÉN guardar en servidor
+    
+    // Verificar rápidamente el estado de autenticación actual (sin actualizar estado)
+    try {
+      // Si todavía no ha pasado suficiente tiempo desde la última verificación, usar ese resultado
+      const now = Date.now();
+      if (now - lastAuthCheck.current.time < 2000) {
+        // Usar el último resultado de verificación 
+        if (!lastAuthCheck.current.status) {
+          if (isAuthenticated) {
+            console.log("⚠️ Estado de autenticación desactualizado, actualizando...");
+            setIsAuthenticated(false);
+          }
+          return; // No intentar guardar en servidor
+        }
+      } else {
+        // Ha pasado suficiente tiempo, verificar directamente
+        const authCheckRes = await fetch("/api/auth/me", { 
+          credentials: "include",
+          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+        });
+        
+        // Actualizar el registro de verificación
+        lastAuthCheck.current = {
+          time: now,
+          status: authCheckRes.ok
+        };
+        
+        if (!authCheckRes.ok) {
+          if (isAuthenticated) {
+            console.log("⚠️ Estado de autenticación incorrecto, actualizando a no autenticado");
+            setIsAuthenticated(false);
+          }
+          return; // No intentar guardar en servidor
+        }
+      }
+    } catch (error) {
+      console.error("Error al verificar autenticación:", error);
+      return; // No intentar guardar en servidor en caso de error
+    }
+    
+    // Si el estado de autenticación es falso, no intentar guardar en servidor
     if (!isAuthenticated) {
       console.log(`🔓 Usuario no autenticado: favoritos guardados solo en localStorage`);
       return;
