@@ -94,19 +94,30 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   // Control de sincronizaciones pendientes para saber cuál es la última
   const pendingSyncs = useRef<Record<string, string>>({});
 
-  // Check authentication status
+  // Check authentication status - esta función se encarga de verificar si el usuario está autenticado
   useEffect(() => {
+    // Variable para controlar si el componente está montado
+    let isMounted = true;
+    
+    // Función para verificar el estado de autenticación
     const checkAuth = async () => {
+      // Si el componente ya no está montado, no hacer nada
+      if (!isMounted) return;
+      
       try {
         const res = await fetch("/api/auth/me", {
           credentials: "include",
-          // Avoid caching the authentication status
+          // Evitar caché para obtener siempre el estado actual
           headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
         });
         
-        // Actualizar el estado de autenticación
+        // Solo procesar si el componente sigue montado
+        if (!isMounted) return;
+        
+        // Obtener el nuevo estado
         const newAuthStatus = res.ok;
         
+        // Si hay un cambio en el estado
         if (newAuthStatus !== isAuthenticated) {
           console.log(`🔐 Estado de autenticación cambiado: ${isAuthenticated} -> ${newAuthStatus}`);
           
@@ -116,11 +127,16 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
             persistCurrentStateToLocalStorage();
           }
           
-          // Actualizar estado después de posibles operaciones
+          // Actualizar estado después de las operaciones
           setIsAuthenticated(newAuthStatus);
         }
       } catch (error) {
+        // Solo procesar error si el componente sigue montado
+        if (!isMounted) return;
+        
         console.error("Error al verificar autenticación:", error);
+        
+        // Si estaba autenticado, guardar en localStorage y cambiar estado
         if (isAuthenticated) {
           console.log("❌ Error de conexión, considerando usuario como no autenticado");
           persistCurrentStateToLocalStorage();
@@ -129,14 +145,18 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       }
     };
     
-    // Verificar al inicio
+    // Verificar al inicio (una sola vez)
     checkAuth();
     
-    // Verificar periódicamente cada 10 segundos
+    // Verificar periódicamente cada 10 segundos (más espaciado)
     const intervalId = setInterval(checkAuth, 10000);
     
-    return () => clearInterval(intervalId);
-  }, []);
+    // Limpieza al desmontar
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, [isAuthenticated]); // Añadir dependencia para que se actualice cuando cambia
 
   // Crear claves de almacenamiento basadas en el perfil activo
   const getStorageKeys = () => {
@@ -190,15 +210,36 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   };
   
   // Guardar el estado actual inmediatamente en localStorage con timestamp
+  // Esta función se llama cuando se detecta que el usuario ha dejado de estar autenticado
   const persistCurrentStateToLocalStorage = () => {
     const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
     
-    // Guardar cada tipo de configuración con su timestamp
+    // Guardar configuraciones globales
+    console.log("💾 Guardando configuraciones globales en localStorage (respaldo):", globalSettings);
     saveTimestampedData(globalSettingsKey, globalSettings);
+    
+    // Guardar configuraciones de módulos
+    if (Object.keys(moduleSettings).length > 0) {
+      console.log("💾 Guardando configuraciones de módulos en localStorage (respaldo):", moduleSettings);
+      
+      // Guardar cada módulo individualmente para depuración
+      Object.entries(moduleSettings).forEach(([moduleId, settings]) => {
+        console.log(`💾 Configuración guardada en localStorage para ${moduleId} (respaldo)`);
+      });
+    } else {
+      console.log("ℹ️ No hay configuraciones de módulos para guardar en respaldo");
+    }
     saveTimestampedData(moduleSettingsKey, moduleSettings);
+    
+    // Guardar favoritos
+    if (favoriteModules.length > 0) {
+      console.log("💾 Guardando favoritos en localStorage (respaldo):", favoriteModules);
+    } else {
+      console.log("ℹ️ No hay favoritos para guardar en respaldo");
+    }
     saveTimestampedData(favoritesKey, favoriteModules);
     
-    console.log("🔄 Estado actual persistido forzosamente en localStorage con timestamps");
+    console.log("✅ Estado actual persistido forzosamente en localStorage (respaldo completo)");
   };
   
   // Bandera para controlar operaciones secuenciales
@@ -364,9 +405,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       if (!isAuthenticated) {
         // Usuario NO autenticado: guardamos en localStorage
         const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+        
+        // Guardar cada tipo de configuración con su timestamp
         saveTimestampedData(globalSettingsKey, globalSettings);
         saveTimestampedData(moduleSettingsKey, moduleSettings);
         saveTimestampedData(favoritesKey, favoriteModules);
+        
         console.log("🔄 Usuario no autenticado: cambios guardados en localStorage");
       } else {
         console.log("🔐 Usuario autenticado: cambios solo se guardan en servidor, no en localStorage");
