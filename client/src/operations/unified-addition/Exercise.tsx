@@ -174,7 +174,7 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
 }
 
 // --- Validación de la Respuesta ---
-export function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
+function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
   if (isNaN(userAnswer)) return false;
 
   const precisionForComparison = problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0

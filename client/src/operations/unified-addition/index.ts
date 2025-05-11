@@ -7,8 +7,7 @@ import Exercise, {
   Problem, 
   AdditionProblem, 
   UserAnswer,
-  generateAdditionProblem,
-  checkAnswer 
+  generateAdditionProblem
 } from './Exercise';
 
 // Exportar componentes principales
@@ -27,12 +26,9 @@ export type {
 };
 
 // Exportar funciones auxiliares que no son componentes
-const helperFunctions = {
-  generateAdditionProblem,
-  checkAnswer
+export const helperFunctions = {
+  generateAdditionProblem
 };
-
-export { helperFunctions };
 
 // Exportación por defecto del componente Exercise
 export default Exercise;
