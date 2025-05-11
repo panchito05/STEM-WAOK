@@ -752,12 +752,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         )}
 
       <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg ${
-        adaptiveDifficulty === "beginner" ? "bg-sky-50 border-sky-200" : 
-        adaptiveDifficulty === "elementary" ? "bg-lime-50 border-lime-200" : 
-        adaptiveDifficulty === "intermediate" ? "bg-blue-50 border-blue-200" :
+        adaptiveDifficulty === "beginner" ? "bg-blue-50 border-blue-200" : 
+        adaptiveDifficulty === "elementary" ? "bg-emerald-50 border-emerald-200" : 
+        adaptiveDifficulty === "intermediate" ? "bg-orange-50 border-orange-200" :
         adaptiveDifficulty === "advanced" ? "bg-purple-50 border-purple-200" :
-        adaptiveDifficulty === "expert" ? "bg-violet-50 border-violet-200" :
-        "bg-green-50 border-green-200"
+        adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
+        "bg-indigo-50 border-indigo-200"
       } border-2`}>
         <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-gray-800">{t('Addition')}</h2>
@@ -783,12 +783,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   </TooltipProvider>
                 )}
                 <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-sky-100 text-sky-800" : 
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-lime-100 text-lime-800" : 
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-blue-100 text-blue-800" :
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" : 
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" : 
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-violet-100 text-violet-800" :
-                  "bg-blue-100 text-blue-800"
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
+                  "bg-indigo-100 text-indigo-800"
                 }`}>
                     {t('Level')}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                 </span>
