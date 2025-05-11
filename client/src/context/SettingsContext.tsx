@@ -669,9 +669,21 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           console.log("All settings reset successfully on the server");
         } else {
           console.error(`Error resetting settings on server: ${response.status}`);
+          
+          // Si el error es de autenticación
+          if (response.status === 401) {
+            console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+            setIsAuthenticated(false);
+          }
         }
       } catch (error) {
         console.error("Error communicating with server:", error);
+        
+        // Verificar si el error es por falta de autenticación (401)
+        if (error instanceof Error && error.message.includes('401')) {
+          console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+          setIsAuthenticated(false);
+        }
       }
     }
   };

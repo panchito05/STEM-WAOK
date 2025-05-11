@@ -2,6 +2,12 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
+    // Para errores 401, capturar con un mensaje específico que podamos detectar fácilmente
+    if (res.status === 401) {
+      throw new Error(`401: Unauthorized - No authentication`);
+    }
+    
+    // Para otros tipos de errores
     const text = (await res.text()) || res.statusText;
     throw new Error(`${res.status}: ${text}`);
   }
