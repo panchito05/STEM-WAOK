@@ -95,12 +95,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   useEffect(() => {
     generateNewProblemSet();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.problemCount, settings.difficulty, settings.enableAdaptiveDifficulty]);
+  }, [settings.problemCount, settings.difficulty, settings.enableAdaptiveDifficulty, adaptiveDifficulty]);
 
   useEffect(() => {
     if (settings.enableAdaptiveDifficulty && settings.difficulty !== adaptiveDifficulty) {
       setAdaptiveDifficulty(settings.difficulty as DifficultyLevel);
+      // Regenerar problemas inmediatamente cuando cambia el nivel
+      generateNewProblemSet();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.difficulty, settings.enableAdaptiveDifficulty, adaptiveDifficulty]);
 
   useEffect(() => {
