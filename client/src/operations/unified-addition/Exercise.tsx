@@ -118,7 +118,7 @@ interface ExerciseProps {
 // Componente para el ejercicio de Adición
 function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { t } = useTranslations();
-  const { saveModuleSettings } = useSettings();
+  const { updateModuleSettings } = useSettings();
   const { recordProgress } = useProgress();
   const { showReward } = useRewardsStore();
   
@@ -361,8 +361,8 @@ function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         };
         
         // Guardar la configuración actualizada
-        if (saveModuleSettings) {
-          saveModuleSettings(moduleId, updatedSettings);
+        if (updateModuleSettings) {
+          updateModuleSettings(moduleId, updatedSettings);
         }
         
         // Notificar al usuario de la subida de nivel
@@ -373,7 +373,7 @@ function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         });
       }
     }
-  }, [moduleId, settings, userAnswers, problems.length, recordProgress, showReward, t, saveModuleSettings]);
+  }, [moduleId, settings, userAnswers, problems.length, recordProgress, showReward, t, updateModuleSettings]);
   
   // Función para verificar la respuesta del usuario
   const checkAnswer = useCallback(() => {
