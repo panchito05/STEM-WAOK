@@ -95,35 +95,45 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const pendingSyncs = useRef<Record<string, string>>({});
 
   // Check authentication status
-  const checkAuth = async () => {
-    try {
-      const res = await fetch("/api/auth/me", {
-        credentials: "include",
-        // Avoid caching the authentication status
-        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
-      });
-      
-      const newAuthStatus = res.ok;
-      if (newAuthStatus !== isAuthenticated) {
-        console.log(`🔐 Estado de autenticación cambiado: ${isAuthenticated} -> ${newAuthStatus}`);
-        setIsAuthenticated(newAuthStatus);
-      }
-    } catch (error) {
-      console.error("Error al verificar autenticación:", error);
-      if (isAuthenticated) {
-        console.log("❌ Error de conexión, considerando usuario como no autenticado");
-        setIsAuthenticated(false);
-      }
-    }
-  };
-  
-  // Verificar estado de autenticación al cargar y cada 30 segundos
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
+          // Avoid caching the authentication status
+          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+        });
+        
+        // Actualizar el estado de autenticación
+        const newAuthStatus = res.ok;
+        
+        if (newAuthStatus !== isAuthenticated) {
+          console.log(`🔐 Estado de autenticación cambiado: ${isAuthenticated} -> ${newAuthStatus}`);
+          
+          // Si el usuario ha dejado de estar autenticado, guardar el estado actual en localStorage
+          if (isAuthenticated && !newAuthStatus) {
+            console.log("⚠️ Usuario desautenticado detectado, guardando estado actual en localStorage");
+            persistCurrentStateToLocalStorage();
+          }
+          
+          // Actualizar estado después de posibles operaciones
+          setIsAuthenticated(newAuthStatus);
+        }
+      } catch (error) {
+        console.error("Error al verificar autenticación:", error);
+        if (isAuthenticated) {
+          console.log("❌ Error de conexión, considerando usuario como no autenticado");
+          persistCurrentStateToLocalStorage();
+          setIsAuthenticated(false);
+        }
+      }
+    };
+    
     // Verificar al inicio
     checkAuth();
     
-    // Verificar periódicamente
-    const intervalId = setInterval(checkAuth, 30000);
+    // Verificar periódicamente cada 10 segundos
+    const intervalId = setInterval(checkAuth, 10000);
     
     return () => clearInterval(intervalId);
   }, []);
@@ -472,6 +482,30 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       return newSettings;
     });
     
+    // Verificar autenticación nuevamente antes de guardar en servidor
+    // para evitar intentos fallidos después de cerrar sesión
+    try {
+      const authCheckRes = await fetch("/api/auth/me", { 
+        credentials: "include",
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+      });
+      
+      // Si no está autenticado según la verificación actual
+      if (!authCheckRes.ok) {
+        if (isAuthenticated) {
+          // Estado local indica autenticado pero la verificación dice que no
+          console.log(`⚠️ Estado de autenticación incorrecto, actualizando a no autenticado`);
+          setIsAuthenticated(false);
+        }
+        console.log(`🔓 Usuario no autenticado: configuración de ${moduleId} guardada solo en localStorage`);
+        return;
+      }
+    } catch (error) {
+      console.error("Error al verificar autenticación:", error);
+      console.log(`🔓 Error al verificar autenticación: guardando solo en localStorage`);
+      return;
+    }
+    
     // ESTRATEGIA SIMPLIFICADA:
     // - Usuario autenticado: Solo guardar en servidor
     // - Usuario no autenticado: Solo guardar en localStorage
@@ -668,6 +702,30 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     // ESTRATEGIA SIMPLIFICADA:
     // - Usuario autenticado: Solo guardar en servidor
     // - Usuario no autenticado: Solo guardar en localStorage (a través del useEffect)
+    
+    // Verificar autenticación nuevamente antes de guardar en servidor
+    // para evitar intentos fallidos después de cerrar sesión
+    try {
+      const authCheckRes = await fetch("/api/auth/me", { 
+        credentials: "include",
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+      });
+      
+      // Si no está autenticado según la verificación actual
+      if (!authCheckRes.ok) {
+        if (isAuthenticated) {
+          // Estado local indica autenticado pero la verificación dice que no
+          console.log(`⚠️ Estado de autenticación incorrecto, actualizando a no autenticado`);
+          setIsAuthenticated(false);
+        }
+        console.log(`🔓 Usuario no autenticado: favoritos guardados solo en localStorage`);
+        return;
+      }
+    } catch (error) {
+      console.error("Error al verificar autenticación:", error);
+      console.log(`🔓 Error al verificar autenticación: guardando solo en localStorage`);
+      return;
+    }
     
     // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
     if (!isAuthenticated) {
