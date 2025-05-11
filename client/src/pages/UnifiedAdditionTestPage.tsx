@@ -25,14 +25,7 @@ export default function UnifiedAdditionTestPage() {
         </p>
       </div>
       
-      <div className="flex justify-end mb-4">
-        <Button
-          onClick={() => setShowSettings(!showSettings)}
-          variant="outline"
-        >
-          {showSettings ? 'Volver al Ejercicio' : 'Configuración'}
-        </Button>
-      </div>
+      {/* Eliminado botón superior de configuración para evitar duplicidad */}
       
       <div className="bg-white rounded-xl shadow-md p-6">
         {showSettings ? (
