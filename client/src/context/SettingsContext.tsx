@@ -582,37 +582,70 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       return newSettings;
     });
     
-    // Verificación de autenticación en tiempo real
+    // Verificación de autenticación en tiempo real - MEJORADA
     // Esto evita intentar guardar en el servidor si estamos desconectados
     try {
+      // Primero verificar con el estado actual si estamos autenticados
+      if (!isAuthenticated) {
+        console.log(`ℹ️ No intentando guardar en servidor para ${moduleId} porque no estamos autenticados`);
+        return;
+      }
+      
+      // Verificar con el servidor si realmente estamos autenticados
       const res = await fetch("/api/auth/me", {
         credentials: "include",
         headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
       });
       
-      if (!res.ok) {
-        // No estamos autenticados según la verificación en tiempo real
-        console.log(`🔓 Verificación en tiempo real: usuario no autenticado para ${moduleId}`);
-        if (isAuthenticated) {
-          console.log("⚠️ Estado de autenticación desactualizado, actualizando...");
-          
-          // Guardar todo en localStorage primero
-          const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
-          saveTimestampedData(globalSettingsKey, globalSettings);
-          saveTimestampedData(moduleSettingsKey, {
-            ...moduleSettings,
-            [moduleId]: updatedSettings // incluir cambio actual
-          });
-          saveTimestampedData(favoritesKey, favoriteModules);
-          
-          // Actualizar el estado
-          setIsAuthenticated(false);
+      // Intentar extraer datos de usuario para verificación adicional
+      let userData = null;
+      let validUserData = false;
+      
+      if (res.ok) {
+        try {
+          userData = await res.json();
+          validUserData = !!(userData && userData.id);
+        } catch {
+          validUserData = false;
         }
+      }
+      
+      // Si no estamos autenticados o los datos no son válidos
+      if (!res.ok || !validUserData) {
+        console.log(`🔓 Verificación en tiempo real: usuario no autenticado para ${moduleId}`);
+        console.log("⚠️ Estado de autenticación desactualizado, actualizando...");
+        
+        // Guardar todo en localStorage primero, incluyendo este cambio específico
+        const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+        saveTimestampedData(globalSettingsKey, globalSettings);
+        saveTimestampedData(moduleSettingsKey, {
+          ...moduleSettings,
+          [moduleId]: updatedSettings // incluir cambio actual explícitamente
+        });
+        saveTimestampedData(favoritesKey, favoriteModules);
+        
+        // Actualizar el estado DESPUÉS de guardar
+        setIsAuthenticated(false);
         return;
       }
     } catch (error) {
       console.error("Error al verificar autenticación:", error);
       console.log(`🔓 Error al verificar: usuario considerado no autenticado para ${moduleId}`);
+      
+      // Al fallar la verificación, también guardamos y cambiamos estado para seguridad
+      const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+      saveTimestampedData(globalSettingsKey, globalSettings);
+      saveTimestampedData(moduleSettingsKey, {
+        ...moduleSettings,
+        [moduleId]: updatedSettings
+      });
+      saveTimestampedData(favoritesKey, favoriteModules);
+      
+      // Si estábamos autenticados, actualizar estado
+      if (isAuthenticated) {
+        setIsAuthenticated(false);
+      }
+      
       return;
     }
     
@@ -648,30 +681,65 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       // Pequeña pausa para permitir que cambios rápidos se agrupen
       await new Promise(resolve => setTimeout(resolve, 250));
       
-      // Verificar una vez más si aún estamos autenticados antes de enviar la petición
+      // VERIFICACIÓN MÁS ESTRICTA - Obtener la respuesta completa para verificar tokens
       const authCheck = await fetch("/api/auth/me", {
         credentials: "include",
         headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
       });
       
+      // Si no hay token válido, cancelar todo y cambiar estado
       if (!authCheck.ok) {
         console.log(`⚠️ Verificación final: usuario ya no está autenticado, abortando petición al servidor`);
         
         // También actualizar estado para consistencia
         if (isAuthenticated) {
-          setIsAuthenticated(false);
-          
-          // Guardar en localStorage
+          // Guardar en localStorage antes de cambiar estado
           const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
           saveTimestampedData(globalSettingsKey, globalSettings);
           saveTimestampedData(moduleSettingsKey, moduleSettings);
           saveTimestampedData(favoritesKey, favoriteModules);
+          
+          // Cambiar estado de autenticación
+          setIsAuthenticated(false);
         }
         
         // No mostrar toast de error, simplemente salir
         return;
       }
       
+      // VERIFICACIÓN ADICIONAL - Intentar obtener datos del usuario
+      try {
+        const authData = await authCheck.json();
+        if (!authData || !authData.id) {
+          console.log(`⚠️ Verificación de datos: no hay datos válidos de usuario, abortando petición`);
+          
+          // Guardar configuración y cambiar estado
+          if (isAuthenticated) {
+            const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+            saveTimestampedData(globalSettingsKey, globalSettings);
+            saveTimestampedData(moduleSettingsKey, moduleSettings);
+            saveTimestampedData(favoritesKey, favoriteModules);
+            
+            setIsAuthenticated(false);
+          }
+          return;
+        }
+      } catch (error) {
+        // Si hay error al parsear la respuesta, asumir que no estamos autenticados
+        console.log(`⚠️ Error al validar datos de usuario, abortando petición`);
+        
+        if (isAuthenticated) {
+          const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+          saveTimestampedData(globalSettingsKey, globalSettings);
+          saveTimestampedData(moduleSettingsKey, moduleSettings);
+          saveTimestampedData(favoritesKey, favoriteModules);
+          
+          setIsAuthenticated(false);
+        }
+        return;
+      }
+      
+      // Si llegamos aquí, realmente deberíamos estar autenticados
       console.log(`📤 Enviando configuración al servidor (${endpoint})`);
       
       // Hacer la petición al servidor con la configuración actualizada
@@ -685,12 +753,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           console.log(`⚠️ Sesión expirada detectada durante guardado de ${moduleId}`);
           
           // Actualizar estado y guardar en localStorage
-          setIsAuthenticated(false);
-          
           const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
           saveTimestampedData(globalSettingsKey, globalSettings);
           saveTimestampedData(moduleSettingsKey, moduleSettings);
           saveTimestampedData(favoritesKey, favoriteModules);
+          
+          setIsAuthenticated(false);
           
           // No mostrar mensaje de error en este caso
           return;
@@ -701,7 +769,13 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     } catch (error) {
       console.error(`❌ Error al guardar configuración de ${moduleId} en servidor:`, error);
       
-      // Verificar estado de autenticación al fallar
+      // Ignorar errores si ya no estamos autenticados
+      if (!isAuthenticated) {
+        console.log(`ℹ️ Error ignorado porque ya no estamos autenticados`);
+        return;
+      }
+      
+      // Verificar si el error está relacionado con la autenticación
       try {
         const authCheckAfterError = await fetch("/api/auth/me", {
           credentials: "include",
@@ -709,24 +783,20 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         });
         
         // Si ya no estamos autenticados, actualizar estado
-        if (!authCheckAfterError.ok && isAuthenticated) {
+        if (!authCheckAfterError.ok) {
           console.log(`⚠️ Detección post-error: sesión finalizada`);
-          setIsAuthenticated(false);
           
-          // No mostrar mensaje de error en este caso
+          // Guardar en localStorage antes de cambiar estado
+          const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+          saveTimestampedData(globalSettingsKey, globalSettings);
+          saveTimestampedData(moduleSettingsKey, moduleSettings);
+          saveTimestampedData(favoritesKey, favoriteModules);
+          
+          setIsAuthenticated(false);
           return;
         }
       } catch {
         // Ignorar errores en la verificación de autenticación
-      }
-      
-      // Solo mostrar el toast si seguimos autenticados (problemas de red, no de autenticación)
-      if (isAuthenticated) {
-        toast({
-          title: "Error de conexión",
-          description: "No se pudieron guardar los cambios en el servidor",
-          variant: "destructive",
-        });
       }
     } finally {
       // Liberar la petición una vez completada
