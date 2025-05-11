@@ -10,7 +10,6 @@ neonConfig.webSocketConstructor = ws;
 const DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable';
 
 console.log("Using database connection:", DATABASE_URL.replace(/:[^:]*@/, ':****@')); // Log connection string with password hidden
-}
 
 // Ensure we're using the correct connection string format
 const connectionString = DATABASE_URL.startsWith('postgresql://') 
