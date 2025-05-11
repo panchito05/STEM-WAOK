@@ -228,7 +228,7 @@ function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
     
     // Configurar temporizador para problema individual si está habilitado
-    if (settings.timeLimit === 'perProblem' && settings.timeValue) {
+    if (settings.timeLimit === 'per-problem' && settings.timeValue) {
       const problemTimeLimit = settings.timeValue * 1000;
       setDisplayTimer(problemTimeLimit);
       
@@ -247,7 +247,7 @@ function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           return newValue;
         });
       }, 1000);
-    } else if (settings.timeLimit === 'none') {
+    } else if (settings.timeLimit === 'no-limit') {
       setDisplayTimer(null);
     }
     
@@ -399,7 +399,7 @@ function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     });
     
     // Mostrar explicación o pasar al siguiente problema
-    if (moduleSettings2?.showAnswerWithExplanation && !isCorrect) {
+    if (settings?.showAnswerWithExplanation && !isCorrect) {
       setShowingExplanation(true);
     } else {
       // Esperar un momento para mostrar la retroalimentación antes de continuar
@@ -419,7 +419,7 @@ function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       clearInterval(singleProblemTimerRef.current);
       singleProblemTimerRef.current = null;
     }
-  }, [userInput, problems, currentProblemIndex, exerciseCompleted, problemStartTime, completeExercise, moduleSettings2?.showAnswerWithExplanation]);
+  }, [userInput, problems, currentProblemIndex, exerciseCompleted, problemStartTime, completeExercise, settings?.showAnswerWithExplanation]);
   
   // Manejar la entrada del usuario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -483,8 +483,8 @@ function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setShowingExplanation(false);
     
     // Configurar temporizador para todo el ejercicio si está habilitado
-    if (moduleSettings2?.timeLimit === 'total' && moduleSettings2?.timeValue) {
-      const totalTimeLimit = moduleSettings2.timeValue * 1000;
+    if (settings?.timeLimit === 'exercise' && settings?.timeValue) {
+      const totalTimeLimit = settings.timeValue * 1000;
       setDisplayTimer(totalTimeLimit);
       
       timerRef.current = setInterval(() => {

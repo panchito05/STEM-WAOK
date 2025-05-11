@@ -96,25 +96,25 @@ export function Settings({ settings, onBack }: SettingsProps) {
         <Label htmlFor="timeLimit">{t('settings.timeLimit')}</Label>
         <RadioGroup 
           id="timeLimit"
-          value={settings.timeLimit || 'none'} 
+          value={settings.timeLimit || 'no-limit'} 
           onValueChange={(value) => handleUpdateSetting('timeLimit', value)}
           className="flex flex-col space-y-2"
         >
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="none" id="none" />
-            <Label htmlFor="none">{t('settings.timeLimitNone')}</Label>
+            <RadioGroupItem value="no-limit" id="no-limit" />
+            <Label htmlFor="no-limit">{t('settings.timeLimitNone')}</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="perProblem" id="perProblem" />
-            <Label htmlFor="perProblem">{t('settings.timeLimitPerProblem')}</Label>
+            <RadioGroupItem value="per-problem" id="per-problem" />
+            <Label htmlFor="per-problem">{t('settings.timeLimitPerProblem')}</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="total" id="total" />
-            <Label htmlFor="total">{t('settings.timeLimitTotal')}</Label>
+            <RadioGroupItem value="exercise" id="exercise" />
+            <Label htmlFor="exercise">{t('settings.timeLimitTotal')}</Label>
           </div>
         </RadioGroup>
 
-        {settings.timeLimit !== 'none' && (
+        {settings.timeLimit !== 'no-limit' && (
           <div className="mt-2 pl-6">
             <div className="flex items-center">
               <Input
