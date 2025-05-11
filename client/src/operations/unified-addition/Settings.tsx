@@ -17,9 +17,10 @@ import DifficultyExamples from '@/components/DifficultyExamples';
 interface SettingsProps {
   settings: ModuleSettings;
   onBack: () => void;
+  onUpdate: (settings: ModuleSettings) => void;
 }
 
-export function Settings({ settings, onBack }: SettingsProps) {
+export function Settings({ settings, onBack, onUpdate }: SettingsProps) {
   const { t } = useTranslations();
   
   // Crear una función debounced para actualizar configuraciones
@@ -35,12 +36,9 @@ export function Settings({ settings, onBack }: SettingsProps) {
   const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
     const updatedSettings = { ...settings, [key]: value };
     
-    // En el contexto actual, la función updateSettings no es parte del objeto settings
-    // pero se pasa como parte de las props desde el componente padre
-    if (typeof settings.onUpdate === 'function') {
-      settings.onUpdate(updatedSettings);
-      debouncedUpdateSettings(updatedSettings);
-    }
+    // Llamar a la función onUpdate proporcionada a través de las props
+    onUpdate(updatedSettings);
+    debouncedUpdateSettings(updatedSettings);
   };
 
   // Ejemplos por nivel de dificultad
@@ -71,7 +69,7 @@ export function Settings({ settings, onBack }: SettingsProps) {
         <DifficultyExamples 
           operation="addition"
           activeDifficulty={settings.difficulty || 'beginner'}
-          onSelectDifficulty={(difficulty) => handleUpdateSetting('difficulty', difficulty)}
+          onSelectDifficulty={(difficulty) => handleUpdateSetting('difficulty', difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")}
         />
       </div>
 
@@ -97,7 +95,7 @@ export function Settings({ settings, onBack }: SettingsProps) {
         <RadioGroup 
           id="timeLimit"
           value={settings.timeLimit || 'no-limit'} 
-          onValueChange={(value) => handleUpdateSetting('timeLimit', value)}
+          onValueChange={(value) => handleUpdateSetting('timeLimit', value as "per-problem" | "exercise" | "no-limit")}
           className="flex flex-col space-y-2"
         >
           <div className="flex items-center space-x-2">
