@@ -22,13 +22,14 @@ export interface ModuleComponent {
   Settings: React.ComponentType<{
     settings: ModuleSettings;
     onBack: () => void;
+    onUpdate: (settings: ModuleSettings) => void;
   }>;
 }
 
 export const defaultModuleSettings: ModuleSettings = {
   difficulty: "beginner",
   problemCount: 12,
-  timeLimit: "per-problem",
+  timeLimit: "no-limit",
   timeValue: 0, // 0 para sin límite
   maxAttempts: 2, // Por defecto, 3 intentos por problema
   showImmediateFeedback: true,
