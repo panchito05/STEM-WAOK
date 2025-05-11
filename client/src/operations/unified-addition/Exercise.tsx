@@ -8,7 +8,7 @@ import { awardReward, getRewardProbability } from '@/lib/rewards-system';
 import { Button } from '@/components/ui/button';
 import { Progress as ProgressBarUI } from '@/components/ui/progress';
 import { formatTime } from '@/lib/utils';
-import { Settings as SettingsIcon, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw } from 'lucide-react';
+import { Settings as SettingsIcon, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, ArrowLeft } from 'lucide-react';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus from '@/lib/eventBus';
@@ -1165,8 +1165,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 console.error("Error saving autoContinue to localStorage:", e);
               }
             }}
-            size="sm"
-            className="data-[state=checked]:bg-green-500"
+            className="data-[state=checked]:bg-green-500 h-4 w-7"
           />
         </div>
       </div>
