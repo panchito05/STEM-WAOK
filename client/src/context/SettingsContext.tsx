@@ -648,24 +648,18 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     // Actualizar inmediatamente el estado local
     setFavoriteModules(updatedFavorites);
     
-    // Crear una referencia para esta operación de favoritos
-    const syncId = Date.now().toString();
-    pendingSyncs.current['favorites'] = syncId;
+    // ESTRATEGIA SIMPLIFICADA:
+    // - Usuario autenticado: Solo guardar en servidor
+    // - Usuario no autenticado: Solo guardar en localStorage (a través del useEffect)
     
-    // Guardar inmediatamente en localStorage para persistencia
-    try {
-      const { favoritesKey } = getStorageKeys();
-      localStorage.setItem(favoritesKey, JSON.stringify(updatedFavorites));
-      console.log(`💾 Favoritos actualizados en localStorage:`, updatedFavorites);
-    } catch (e) {
-      console.error("❌ Error guardando favoritos en localStorage:", e);
-    }
-    
-    // Si no está autenticado, no continuar
+    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
     if (!isAuthenticated) {
-      console.log(`⚠️ Usuario no autenticado, favoritos guardados solo localmente`);
+      console.log(`🔓 Usuario no autenticado: favoritos guardados solo en localStorage`);
       return;
     }
+    
+    // A partir de aquí solo ejecuta si está autenticado
+    console.log(`🔐 Usuario autenticado: guardando favoritos en servidor`);
     
     // Determinar el endpoint correcto
     const endpoint = activeProfile
@@ -685,23 +679,13 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     pendingRequests.current[requestKey] = true;
     
     try {
-      // Pequeña pausa para permitir que cambios rápidos consecutivos se agrupen
+      // Pequeña pausa para permitir que cambios rápidos se agrupen
       await new Promise(resolve => setTimeout(resolve, 250));
-      
-      // Verificar si esta sincronización sigue siendo la más reciente
-      if (pendingSyncs.current['favorites'] !== syncId) {
-        console.log(`⏭️ Sincronización ${syncId} para favoritos ha sido reemplazada por una más reciente`);
-        pendingRequests.current[requestKey] = false;
-        return;
-      }
       
       console.log(`📤 Enviando favoritos al servidor (${endpoint})`);
       
-      // Guardar una copia de la lista actual de favoritos
-      const favoritesSnapshot = [...updatedFavorites];
-      
       // Hacer la petición al servidor
-      const response = await apiRequest("PUT", endpoint, { favorites: favoritesSnapshot });
+      const response = await apiRequest("PUT", endpoint, { favorites: updatedFavorites });
       
       if (response.ok) {
         console.log(`✅ Favoritos guardados exitosamente en el servidor`);
@@ -709,33 +693,16 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         throw new Error(`Error del servidor: ${response.status}`);
       }
     } catch (error) {
-      console.error(`❌ Error guardando favoritos:`, error);
+      console.error(`❌ Error al guardar favoritos en servidor:`, error);
       
       toast({
-        title: "Error al guardar favoritos",
-        description: "Tus favoritos solo se han guardado localmente. Se intentará sincronizar más tarde.",
+        title: "Error de conexión",
+        description: "No se pudieron guardar los cambios en el servidor",
         variant: "destructive",
       });
-      
-      // Programar un reintento después de un tiempo
-      setTimeout(() => {
-        // Verificar si la lista de favoritos sigue siendo la misma
-        const currentState = favoriteModules;
-        const favoritesSnapshot = [...updatedFavorites]; // Captura el estado actual
-        
-        if (JSON.stringify(currentState) === JSON.stringify(favoritesSnapshot)) {
-          console.log(`🔄 Reintentando sincronización de favoritos`);
-          toggleFavoriteModule(moduleId); // Reintento con el mismo módulo
-        }
-      }, 10000); // Reintentar en 10 segundos
     } finally {
-      // Liberar la petición una vez completada o fallida
+      // Liberar la petición una vez completada
       pendingRequests.current[requestKey] = false;
-      
-      // Limpiar el ID de sincronización si sigue siendo el actual
-      if (pendingSyncs.current['favorites'] === syncId) {
-        delete pendingSyncs.current['favorites'];
-      }
     }
   };
   
