@@ -1,7 +1,14 @@
 // Archivo de exportación para el módulo unificado de adición
 
-import Exercise from './Exercise';
-import Settings from './Settings';
+import Exercise, { 
+  Settings,
+  DifficultyLevel, 
+  ExerciseLayout, 
+  Problem, 
+  AdditionProblem, 
+  UserAnswer,
+  generateAdditionProblem
+} from './Exercise';
 
 // Exportar componentes principales
 export { 
@@ -9,20 +16,16 @@ export {
   Settings 
 };
 
-// Re-exportar tipos y funciones de Exercise.tsx
+// Exportar tipos y funciones utilitarias
 export type {
   DifficultyLevel,
   ExerciseLayout,
   Problem,
   AdditionProblem,
   UserAnswer
-} from './Exercise';
+};
 
 // Exportar funciones auxiliares que no son componentes
-import { generateAdditionProblem } from './Exercise';
-
-export { generateAdditionProblem };
-
 export const helperFunctions = {
   generateAdditionProblem
 };

@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export default function OperationPage() {
   const params = useParams<{ operation: string }>();
   const [, setLocation] = useLocation();
-  const { getModuleSettings, updateModuleSettings } = useSettings();
+  const { getModuleSettings } = useSettings();
   const { setExerciseActive } = useExercise();
   const [showSettings, setShowSettings] = useState(false);
   const [settingsUpdated, setSettingsUpdated] = useState(0); // Contador para forzar recarga
@@ -65,7 +65,6 @@ export default function OperationPage() {
               <Settings 
                 settings={moduleSettings} 
                 onBack={handleBackFromSettings} 
-                onUpdate={(newSettings) => updateModuleSettings(operationId, newSettings)}
               />
             ) : (
               <Exercise 

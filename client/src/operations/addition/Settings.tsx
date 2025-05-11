@@ -15,7 +15,6 @@ import { debounce } from "@/lib/utils";
 interface SettingsProps {
   settings: ModuleSettings;
   onBack: () => void;
-  onUpdate?: (settings: ModuleSettings) => void; // Hacemos esta propiedad opcional para compatibilidad
 }
 
 export default function Settings({ settings, onBack }: SettingsProps) {

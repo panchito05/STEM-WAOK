@@ -8,7 +8,7 @@ import { defaultModuleSettings } from '@/utils/operationComponents';
 import { Button } from '@/components/ui/button';
 
 export default function UnifiedAdditionTestPage() {
-  const { moduleSettings, updateModuleSettings } = useSettings();
+  const { moduleSettings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
   
   // Usa los ajustes del módulo si existen, sino los del módulo original, o los valores por defecto
@@ -39,7 +39,6 @@ export default function UnifiedAdditionTestPage() {
           <Settings 
             settings={settings} 
             onBack={() => setShowSettings(false)} 
-            onUpdate={(newSettings) => updateModuleSettings('unifiedAddition', newSettings)}
           />
         ) : (
           <Exercise 
