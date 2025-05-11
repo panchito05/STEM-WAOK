@@ -257,7 +257,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const [userAnswersHistory, setUserAnswersHistory] = useState<UserAnswer[]>([]);
   const [timer, setTimer] = useState(0);
-  const [problemTimerValue, setProblemTimerValue] = useState(settings.timeValue);
+  const [problemTimerValue, setProblemTimerValue] = useState(settings?.timeValue || 0);
   const [exerciseStarted, setExerciseStarted] = useState(false);
   const [exerciseCompleted, setExerciseCompleted] = useState(false);
 
@@ -282,7 +282,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (parsedSettings.addition && parsedSettings.addition.difficulty) return parsedSettings.addition.difficulty;
       }
     } catch (e) { console.error('Error loading adaptive difficulty from localStorage:', e); }
-    return settings.difficulty as DifficultyLevel;
+    // Usar defaultModuleSettings si settings no está definido
+    return (settings?.difficulty as DifficultyLevel) || defaultModuleSettings.difficulty as DifficultyLevel;
   });
   const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveCorrectAnswers') || '0', 10));
   const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveIncorrectAnswers') || '0', 10));
@@ -311,16 +312,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   useEffect(() => {
     generateNewProblemSet();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.problemCount, settings.difficulty, settings.enableAdaptiveDifficulty, adaptiveDifficulty]);
+  }, [settings?.problemCount, settings?.difficulty, settings?.enableAdaptiveDifficulty, adaptiveDifficulty]);
 
   useEffect(() => {
-    if (settings.enableAdaptiveDifficulty && settings.difficulty !== adaptiveDifficulty) {
+    if (settings?.enableAdaptiveDifficulty && settings?.difficulty !== adaptiveDifficulty) {
       setAdaptiveDifficulty(settings.difficulty as DifficultyLevel);
       // Regenerar problemas inmediatamente cuando cambia el nivel
       generateNewProblemSet();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.difficulty, settings.enableAdaptiveDifficulty, adaptiveDifficulty]);
+  }, [settings?.difficulty, settings?.enableAdaptiveDifficulty, adaptiveDifficulty]);
 
   useEffect(() => {
     if (currentProblem && !viewingPrevious && !exerciseCompleted) {
