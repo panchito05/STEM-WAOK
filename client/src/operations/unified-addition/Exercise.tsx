@@ -22,6 +22,10 @@ import { defaultModuleSettings } from '@/utils/operationComponents';
 import DifficultyExamples from '@/components/DifficultyExamples';
 import { debounce } from '@/lib/utils';
 
+// Exportamos también la configuración desde este archivo
+import { Settings as SettingsComponent } from './Settings';
+export { SettingsComponent as Settings };
+
 // ==========================================
 // SECCIÓN 1: TIPOS Y INTERFACES
 // ==========================================
@@ -1262,7 +1266,7 @@ interface SettingsProps {
   onBack: () => void;
 }
 
-export function Settings({ settings, onBack }: SettingsProps) {
+export function SettingsPanel({ settings, onBack }: SettingsProps) {
   const { updateModuleSettings, resetModuleSettings } = useSettings();
   const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
   const [showResetConfirm, setShowResetConfirm] = useState(false);

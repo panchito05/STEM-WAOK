@@ -1,7 +1,8 @@
 import * as Addition from "../operations/addition";
-import * as UnifiedAddition from "../operations/unified-addition";
 import * as Fractions from "../operations/fractions";
 import * as Counting from "../operations/counting";
+// Importamos directamente desde Exercise para el módulo unificado
+import Exercise, { Settings as UnifiedSettings } from "../operations/unified-addition/Exercise";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -145,7 +146,11 @@ export const operationModules: Module[] = [
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // Mantenemos el módulo original por compatibilidad
-  unifiedAddition: UnifiedAddition, // Nuevo módulo unificado
+  // Nuevo módulo unificado, definimos manualmente con los componentes importados
+  unifiedAddition: {
+    Exercise: Exercise,
+    Settings: UnifiedSettings
+  },
   fractions: Fractions,
   counting: Counting,
 };
