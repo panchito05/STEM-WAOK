@@ -139,7 +139,7 @@ export const esTranslations: TranslationKeys = {
     showAnswer: "Mostrar Respuesta",
     correct: "¡Correcto!",
     incorrect: "¡Incorrecto!",
-    correctAnswerIs: "La respuesta correcta es = ",
+    correctAnswerIs: "La respuesta correcta es = {correctAnswer}",
     loading: "Cargando problemas...",
     completed: "¡Ejercicio Completado!",
     score: "Tu puntuación",
