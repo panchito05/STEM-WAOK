@@ -1,5 +1,4 @@
 // Archivo de exportación para el módulo unificado de adición
-// Este archivo simplifica la exportación de componentes para su uso en la aplicación
 
 import Exercise, { 
   Settings,
@@ -7,7 +6,8 @@ import Exercise, {
   ExerciseLayout, 
   Problem, 
   AdditionProblem, 
-  UserAnswer
+  UserAnswer,
+  generateAdditionProblem
 } from './Exercise';
 
 // Exportar componentes principales
@@ -16,13 +16,18 @@ export {
   Settings 
 };
 
-// Exportar tipos para uso en otros componentes
+// Exportar tipos y funciones utilitarias
 export type {
   DifficultyLevel,
   ExerciseLayout,
   Problem,
   AdditionProblem,
   UserAnswer
+};
+
+// Exportar funciones auxiliares que no son componentes
+export const helperFunctions = {
+  generateAdditionProblem
 };
 
 // Exportación por defecto del componente Exercise

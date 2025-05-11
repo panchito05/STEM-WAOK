@@ -1,7 +1,4 @@
-// Exercise.tsx - Módulo completamente unificado de Addition
-// Este archivo contiene tanto el componente Exercise como el componente Settings
-// No requiere un archivo index.ts separado para la exportación
-
+// Exercise.tsx - Módulo autocontenido de Addition
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSettings, ModuleSettings } from '@/context/SettingsContext';
 import { useProgress } from '@/context/ProgressContext';
@@ -85,7 +82,7 @@ function generateUniqueId(): string {
 }
 
 // --- Generación del Problema ---
-function generateAdditionProblem(difficulty: DifficultyLevel): AdditionProblem {
+export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionProblem {
   const id = generateUniqueId();
   let operands: number[] = [];
   let layout: ExerciseLayout = 'horizontal';
@@ -192,7 +189,7 @@ function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
 }
 
 // --- Funciones auxiliares para formatear números para la vista vertical ---
-function getVerticalAlignmentInfo(
+export function getVerticalAlignmentInfo(
     operands: number[],
     problemOverallDecimalPrecision?: number
 ): {
