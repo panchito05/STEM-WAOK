@@ -15,6 +15,7 @@ import RegisterPage from "@/pages/RegisterPage";
 import ProfilePage from "@/pages/ProfilePage";
 import LogoutPage from "@/pages/LogoutPage";
 import SoonPage from "@/pages/SoonPage";
+import UnifiedAdditionTestPage from "@/pages/UnifiedAdditionTestPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext"; 
 import { SettingsProvider } from "@/context/SettingsContext";
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/logout" component={LogoutPage} />
       <Route path="/register" component={RegisterPage} />
       <Route path="/coming-soon" component={SoonPage} />
+      <Route path="/test-unified-addition" component={UnifiedAdditionTestPage} />
       <Route component={NotFound} />
     </Switch>
   );

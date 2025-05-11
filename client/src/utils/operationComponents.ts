@@ -1,4 +1,5 @@
 import * as Addition from "../operations/addition";
+import * as UnifiedAddition from "../operations/unified-addition";
 import * as Fractions from "../operations/fractions";
 import * as Counting from "../operations/counting";
 import { ModuleSettings } from "@/context/SettingsContext";
@@ -48,6 +49,14 @@ export const operationModules: Module[] = [
     difficulty: "beginner",
     color: "#4287f5", // Azul vivo como en la imagen
     icon: "Plus",
+  },
+  {
+    id: "unifiedAddition",
+    displayName: "Addition (New)",
+    description: "Practice addition with our improved unified module",
+    difficulty: "beginner",
+    color: "#3b82f6", // Un azul diferente
+    icon: "PlusCircle",
   },
   {
     id: "fractions",
@@ -135,7 +144,8 @@ export const operationModules: Module[] = [
 
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
-  addition: Addition,
+  addition: Addition, // Mantenemos el módulo original por compatibilidad
+  unifiedAddition: UnifiedAddition, // Nuevo módulo unificado
   fractions: Fractions,
   counting: Counting,
 };
