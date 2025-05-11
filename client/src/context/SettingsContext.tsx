@@ -482,30 +482,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       return newSettings;
     });
     
-    // Verificar autenticación nuevamente antes de guardar en servidor
-    // para evitar intentos fallidos después de cerrar sesión
-    try {
-      const authCheckRes = await fetch("/api/auth/me", { 
-        credentials: "include",
-        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
-      });
-      
-      // Si no está autenticado según la verificación actual
-      if (!authCheckRes.ok) {
-        if (isAuthenticated) {
-          // Estado local indica autenticado pero la verificación dice que no
-          console.log(`⚠️ Estado de autenticación incorrecto, actualizando a no autenticado`);
-          setIsAuthenticated(false);
-        }
-        console.log(`🔓 Usuario no autenticado: configuración de ${moduleId} guardada solo en localStorage`);
-        return;
-      }
-    } catch (error) {
-      console.error("Error al verificar autenticación:", error);
-      console.log(`🔓 Error al verificar autenticación: guardando solo en localStorage`);
-      return;
-    }
-    
     // ESTRATEGIA SIMPLIFICADA:
     // - Usuario autenticado: Solo guardar en servidor
     // - Usuario no autenticado: Solo guardar en localStorage
