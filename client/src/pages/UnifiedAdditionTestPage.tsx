@@ -4,13 +4,17 @@
 import React, { useState } from 'react';
 import { Exercise, Settings } from '@/operations/unified-addition';
 import { useSettings } from '@/context/SettingsContext';
+import { defaultModuleSettings } from '@/utils/operationComponents';
 import { Button } from '@/components/ui/button';
 
 export default function UnifiedAdditionTestPage() {
   const { moduleSettings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
   
-  const settings = moduleSettings.unifiedAddition || moduleSettings.addition;
+  // Usa los ajustes del módulo si existen, sino los del módulo original, o los valores por defecto
+  const settings = moduleSettings.unifiedAddition || 
+                  moduleSettings.addition || 
+                  defaultModuleSettings;
   
   return (
     <div className="container mx-auto px-4 py-6">

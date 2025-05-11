@@ -3,8 +3,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSettings, ModuleSettings } from '@/context/SettingsContext';
 import { useProgress } from '@/context/ProgressContext';
 import { useTranslations } from '@/hooks/use-translations';
-import { useRewardsStore } from '@/stores/RewardsStore';
-import { awardReward, getRewardProbability } from '@/lib/rewards-system';
+import { useRewardsStore, awardReward, getRewardProbability } from '@/lib/rewards-system';
 import { Button } from '@/components/ui/button';
 import { Progress as ProgressBarUI } from '@/components/ui/progress';
 import { formatTime } from '@/lib/utils';
