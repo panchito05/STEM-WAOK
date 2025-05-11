@@ -1,8 +1,14 @@
-import { createContext, useContext, useState, ReactNode, useEffect, useRef } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useRef, useCallback } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useChildProfiles } from "@/context/ChildProfilesContext";
+import {
+  getFromLocalStorage,
+  saveToLocalStorage,
+  TimestampedData
+} from "@/lib/localStorage";
 
+// Interfaces de datos
 export interface ModuleSettings {
   difficulty: "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
   problemCount: number;
@@ -47,6 +53,7 @@ interface SettingsContextType {
   isFavorite: (moduleId: string) => boolean;
 }
 
+// Valores predeterminados
 const defaultGlobalSettings: GlobalSettings = {
   darkMode: false,
   fontSize: "medium",
@@ -55,25 +62,31 @@ const defaultGlobalSettings: GlobalSettings = {
   soundEffects: true,
   immediateFeedback: true,
   showSolutions: true,
-  extendedTime: false,
+  extendedTime: false
 };
 
 const defaultModuleSettings: ModuleSettings = {
   difficulty: "beginner",
-  problemCount: 12,
+  problemCount: 10,
   timeLimit: "per-problem",
-  timeValue: 0, // 0 para sin límite
-  maxAttempts: 2, // Por defecto, 3 intentos por problema
+  timeValue: 0, // Sin límite por defecto
+  maxAttempts: 2,
   showImmediateFeedback: true,
   enableSoundEffects: true,
-  showAnswerWithExplanation: true, // Botón de ayuda que muestra respuesta con explicación
-  enableAdaptiveDifficulty: true, // Activado por defecto
-  enableCompensation: true, // Activado por defecto
-  enableRewards: true, // Sistema de recompensas activado por defecto
-  rewardType: "stars", // Por defecto, usar estrellas como recompensa
-  language: "english", // Idioma por defecto: inglés
+  showAnswerWithExplanation: true,
+  enableAdaptiveDifficulty: true,
+  enableCompensation: true,
+  enableRewards: true,
+  rewardType: "stars",
+  language: "english"
 };
 
+// Claves constantes para localStorage
+const GLOBAL_SETTINGS_KEY = 'globalSettings';
+const MODULE_SETTINGS_KEY = 'moduleSettings';
+const FAVORITES_KEY = 'favoriteModules';
+
+// Contexto
 const SettingsContext = createContext<SettingsContextType | null>(null);
 
 interface SettingsProviderProps {
@@ -81,270 +94,178 @@ interface SettingsProviderProps {
 }
 
 export function SettingsProvider({ children }: SettingsProviderProps) {
+  // Estado
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>(defaultGlobalSettings);
   const [moduleSettings, setModuleSettings] = useState<Record<string, ModuleSettings>>({});
   const [favoriteModules, setFavoriteModules] = useState<string[]>([]);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  
+  // Referencias
+  const initialLoadComplete = useRef(false);
+  
+  // Hooks externos
   const { toast } = useToast();
   const { activeProfile } = useChildProfiles();
-
-  // Control de peticiones HTTP para evitar múltiples llamadas simultáneas
-  const pendingRequests = useRef<Record<string, boolean>>({});
   
-  // Control de sincronizaciones pendientes para saber cuál es la última
-  const pendingSyncs = useRef<Record<string, string>>({});
-
-  // Check authentication status
-  const checkAuth = async () => {
-    try {
-      const res = await fetch("/api/auth/me", {
-        credentials: "include",
-        // Avoid caching the authentication status
-        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
-      });
-      
-      const newAuthStatus = res.ok;
-      if (newAuthStatus !== isAuthenticated) {
-        console.log(`🔐 Estado de autenticación cambiado: ${isAuthenticated} -> ${newAuthStatus}`);
-        setIsAuthenticated(newAuthStatus);
-      }
-    } catch (error) {
-      console.error("Error al verificar autenticación:", error);
-      if (isAuthenticated) {
-        console.log("❌ Error de conexión, considerando usuario como no autenticado");
-        setIsAuthenticated(false);
-      }
-    }
-  };
-  
-  // Verificar estado de autenticación al cargar y cada 30 segundos
+  // Comprobar estado de autenticación
   useEffect(() => {
-    // Verificar al inicio
-    checkAuth();
-    
-    // Verificar periódicamente
-    const intervalId = setInterval(checkAuth, 30000);
-    
-    return () => clearInterval(intervalId);
-  }, []);
-
-  // Crear claves de almacenamiento basadas en el perfil activo
-  const getStorageKeys = () => {
-    const profileSuffix = activeProfile ? `-profile-${activeProfile.id}` : '';
-    return {
-      globalSettingsKey: `globalSettings${profileSuffix}`,
-      moduleSettingsKey: `moduleSettings${profileSuffix}`,
-      favoritesKey: `favoriteModules${profileSuffix}`
-    };
-  };
-
-  // ====== Sistema mejorado de gestión de configuraciones ======
-  
-  // Estructura para mantener timestamps de última modificación
-  interface TimestampedData<T> {
-    data: T;
-    lastModified: number;
-  }
-  
-  // Función para guardar en localStorage con timestamp
-  const saveTimestampedData = (key: string, data: any) => {
-    try {
-      const timestampedData: TimestampedData<any> = {
-        data,
-        lastModified: Date.now()
-      };
-      localStorage.setItem(key, JSON.stringify(timestampedData));
-      console.log(`✅ Datos guardados con timestamp en ${key}:`, timestampedData);
-    } catch (e) {
-      console.error(`❌ Error al guardar datos con timestamp en ${key}:`, e);
-    }
-  };
-  
-  // Función para obtener datos con timestamp de localStorage
-  const getTimestampedData = <T,>(key: string, defaultValue: T): TimestampedData<T> => {
-    try {
-      const storedData = localStorage.getItem(key);
-      if (storedData) {
-        const parsed = JSON.parse(storedData) as TimestampedData<T>;
-        return parsed;
-      }
-    } catch (e) {
-      console.error(`❌ Error al cargar datos con timestamp de ${key}:`, e);
-    }
-    
-    // Si no hay datos o hay un error, usar valores por defecto con timestamp actual
-    return {
-      data: defaultValue,
-      lastModified: Date.now()
-    };
-  };
-  
-  // Guardar el estado actual inmediatamente en localStorage con timestamp
-  const persistCurrentStateToLocalStorage = () => {
-    const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
-    
-    // Guardar cada tipo de configuración con su timestamp
-    saveTimestampedData(globalSettingsKey, globalSettings);
-    saveTimestampedData(moduleSettingsKey, moduleSettings);
-    saveTimestampedData(favoritesKey, favoriteModules);
-    
-    console.log("🔄 Estado actual persistido forzosamente en localStorage con timestamps");
-  };
-  
-  // Bandera para controlar operaciones secuenciales
-  const initialLoadComplete = useRef(false);
-
-  const fetchSettings = async () => {
-    try {
-      const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
-      
-      console.log(`📥 Cargando configuraciones para perfil ${activeProfile?.id || "usuario principal"}...`);
-      
-      // Estrategia simplificada:
-      // 1. Si el usuario está autenticado -> Usar SOLO datos del servidor
-      // 2. Si el usuario NO está autenticado -> Usar SOLO datos locales
-      
-      if (isAuthenticated) {
-        // USUARIO AUTENTICADO - Usar solo datos del servidor
-        console.log(`🔐 Usuario autenticado: prioridad a datos del servidor`);
-        
-        // Determinar el endpoint correcto
-        const endpoint = activeProfile 
-          ? `/api/child-profiles/${activeProfile.id}/settings` 
-          : "/api/settings";
-        
-        console.log(`📡 Consultando datos del servidor (${endpoint})...`);
-        
-        try {
-          const res = await fetch(endpoint, {
-            credentials: "include",
-            headers: { 'Cache-Control': 'no-cache' }
-          });
-          
-          if (res.ok) {
-            const serverData = await res.json();
-            console.log("📦 Datos recibidos del servidor:", serverData);
-            
-            // Aplicar configuraciones globales del servidor
-            if (serverData.globalSettings) {
-              const enhancedGlobalSettings = {
-                ...defaultGlobalSettings,
-                ...serverData.globalSettings
-              };
-              
-              setGlobalSettings(enhancedGlobalSettings);
-              console.log("✅ Configuraciones globales cargadas desde servidor");
-            } else {
-              // Si no hay datos en el servidor, usar valores predeterminados
-              setGlobalSettings(defaultGlobalSettings);
-              console.log("ℹ️ Sin datos globales en servidor, usando valores predeterminados");
-            }
-            
-            // Aplicar configuraciones de módulos del servidor
-            if (serverData.moduleSettings) {
-              const enhancedModuleSettings: Record<string, ModuleSettings> = {};
-              
-              // Procesar cada módulo asegurando valores predeterminados
-              Object.entries(serverData.moduleSettings).forEach(([moduleId, serverModuleSettings]) => {
-                enhancedModuleSettings[moduleId] = {
-                  ...defaultModuleSettings,
-                  ...serverModuleSettings as ModuleSettings
-                };
-              });
-              
-              setModuleSettings(enhancedModuleSettings);
-              console.log("✅ Configuraciones de módulos cargadas desde servidor");
-            } else {
-              // Si no hay datos en el servidor, usar objeto vacío
-              setModuleSettings({});
-              console.log("ℹ️ Sin datos de módulos en servidor");
-            }
-            
-            // Aplicar lista de favoritos del servidor
-            if (serverData.favoriteModules) {
-              setFavoriteModules(serverData.favoriteModules);
-              console.log("✅ Lista de favoritos cargada desde servidor");
-            } else {
-              // Si no hay favoritos en el servidor, usar array vacío
-              setFavoriteModules([]);
-              console.log("ℹ️ Sin favoritos en servidor");
-            }
-            
-            // Marcar como completada la carga inicial
-            initialLoadComplete.current = true;
-            
-          } else {
-            console.warn(`⚠️ Error del servidor ${res.status}. Usando valores predeterminados.`);
-            // En caso de error, cargar valores predeterminados
-            setGlobalSettings(defaultGlobalSettings);
-            setModuleSettings({});
-            setFavoriteModules([]);
-          }
-        } catch (serverError) {
-          console.error("⚠️ Error al comunicarse con el servidor:", serverError);
-          console.log("⚠️ Usuario autenticado pero sin acceso al servidor, usando valores predeterminados");
-          
-          // En caso de error de conexión, cargar valores predeterminados
-          setGlobalSettings(defaultGlobalSettings);
-          setModuleSettings({});
-          setFavoriteModules([]);
-        }
-        
-      } else {
-        // USUARIO NO AUTENTICADO - Usar solo datos locales
-        console.log(`🔓 Usuario no autenticado: usando datos locales`);
-        
-        // Cargar desde localStorage
-        const localGlobalSettings = getTimestampedData<GlobalSettings>(
-          globalSettingsKey, defaultGlobalSettings
-        );
-        
-        const localModuleSettings = getTimestampedData<Record<string, ModuleSettings>>(
-          moduleSettingsKey, {}
-        );
-        
-        const localFavorites = getTimestampedData<string[]>(
-          favoritesKey, []
-        );
-        
-        // Aplicar configuraciones globales locales
-        setGlobalSettings({...defaultGlobalSettings, ...localGlobalSettings.data});
-        console.log("✅ Configuraciones globales cargadas desde localStorage");
-        
-        // Aplicar configuraciones de módulos locales
-        const enhancedModuleSettings: Record<string, ModuleSettings> = {};
-        
-        Object.entries(localModuleSettings.data).forEach(([moduleId, settings]) => {
-          enhancedModuleSettings[moduleId] = {
-            ...defaultModuleSettings,
-            ...(settings as ModuleSettings)
-          };
+    const checkAuth = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          credentials: "include"
         });
         
-        setModuleSettings(enhancedModuleSettings);
-        console.log("✅ Configuraciones de módulos cargadas desde localStorage");
+        const wasAuthenticated = isAuthenticated;
+        const nowAuthenticated = res.ok;
         
-        // Aplicar favoritos locales
-        setFavoriteModules(localFavorites.data);
-        console.log("✅ Lista de favoritos cargada desde localStorage");
-        
-        // Marcar como completada la carga inicial
-        initialLoadComplete.current = true;
+        if (wasAuthenticated !== nowAuthenticated) {
+          console.log(`🔐 Estado de autenticación cambiado: ${wasAuthenticated} -> ${nowAuthenticated}`);
+          setIsAuthenticated(nowAuthenticated);
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        setIsAuthenticated(false);
       }
-      
-    } catch (error) {
-      console.error("❌ Error general al cargar configuraciones:", error);
-      // En caso de error catastrófico, usar valores predeterminados
-      setGlobalSettings(defaultGlobalSettings);
-      setModuleSettings({});
-      setFavoriteModules([]);
-    }
-  };
+    };
+    
+    // Comprobar al inicio
+    checkAuth();
+    
+    // Comprobar periódicamente (cada 30 segundos)
+    const interval = setInterval(checkAuth, 30000);
+    
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
-  // Load settings initially and when auth state or active profile changes
+  // Cargar datos iniciales (desde localStorage o servidor según autenticación)
   useEffect(() => {
-    fetchSettings();
+    const loadSettings = async () => {
+      try {
+        console.log(`📥 Cargando configuraciones ${activeProfile ? `para perfil ${activeProfile.name}` : 'para perfil usuario principal'}...`);
+        
+        const profileId = activeProfile?.id;
+        
+        if (isAuthenticated) {
+          console.log("🔐 Usuario autenticado: intentando cargar datos del servidor");
+          
+          try {
+            // Determinar endpoint basado en si hay un perfil activo
+            const endpoint = activeProfile
+              ? `/api/child-profiles/${activeProfile.id}/settings`
+              : "/api/settings";
+            
+            console.log(`📡 Consultando datos del servidor (${endpoint})...`);
+            
+            const response = await fetch(endpoint, {
+              credentials: "include",
+            });
+            
+            if (response.ok) {
+              const serverData = await response.json();
+              
+              // Aplicar configuración global
+              if (serverData.globalSettings) {
+                setGlobalSettings({
+                  ...defaultGlobalSettings,
+                  ...serverData.globalSettings
+                });
+                console.log("✅ Configuraciones globales cargadas desde servidor");
+              }
+              
+              // Aplicar configuración de módulos
+              if (serverData.moduleSettings) {
+                const enhancedModuleSettings: Record<string, ModuleSettings> = {};
+                
+                Object.entries(serverData.moduleSettings).forEach(([moduleId, settings]) => {
+                  enhancedModuleSettings[moduleId] = {
+                    ...defaultModuleSettings,
+                    ...(settings as Partial<ModuleSettings>)
+                  };
+                });
+                
+                setModuleSettings(enhancedModuleSettings);
+                console.log("✅ Configuraciones de módulos cargadas desde servidor");
+              }
+              
+              // Aplicar favoritos
+              if (serverData.favorites && Array.isArray(serverData.favorites)) {
+                setFavoriteModules(serverData.favorites);
+                console.log("✅ Lista de favoritos cargada desde servidor");
+              }
+            } else {
+              console.warn(`⚠️ Error del servidor ${response.status}. Cargando valores de localStorage.`);
+              loadFromLocalStorage(profileId);
+            }
+          } catch (error) {
+            console.error("❌ Error al cargar datos del servidor:", error);
+            loadFromLocalStorage(profileId);
+          }
+        } else {
+          console.log("🔓 Usuario no autenticado: usando datos locales");
+          loadFromLocalStorage(profileId);
+        }
+        
+        // Marcar como inicializado
+        initialLoadComplete.current = true;
+        setIsInitialized(true);
+      } catch (error) {
+        console.error("❌ Error general al cargar configuraciones:", error);
+        // En caso de error catastrófico, usar valores predeterminados
+        setGlobalSettings(defaultGlobalSettings);
+        setModuleSettings({});
+        setFavoriteModules([]);
+        setIsInitialized(true);
+      }
+    };
+    
+    loadSettings();
   }, [isAuthenticated, activeProfile]);
+  
+  // Función para cargar desde localStorage
+  const loadFromLocalStorage = useCallback((profileId?: number | null) => {
+    // Cargar configuración global
+    const globalData = getFromLocalStorage<GlobalSettings>(
+      GLOBAL_SETTINGS_KEY, 
+      defaultGlobalSettings,
+      profileId
+    );
+    
+    // Cargar configuraciones de módulos
+    const moduleData = getFromLocalStorage<Record<string, ModuleSettings>>(
+      MODULE_SETTINGS_KEY,
+      {},
+      profileId
+    );
+    
+    // Cargar favoritos
+    const favoritesData = getFromLocalStorage<string[]>(
+      FAVORITES_KEY,
+      [],
+      profileId
+    );
+    
+    // Aplicar configuraciones globales
+    setGlobalSettings({...defaultGlobalSettings, ...globalData.data});
+    console.log("✅ Configuraciones globales cargadas desde localStorage");
+    
+    // Aplicar configuraciones de módulos con valores predeterminados
+    const enhancedModuleSettings: Record<string, ModuleSettings> = {};
+    
+    Object.entries(moduleData.data).forEach(([moduleId, settings]) => {
+      enhancedModuleSettings[moduleId] = {
+        ...defaultModuleSettings,
+        ...settings
+      };
+    });
+    
+    setModuleSettings(enhancedModuleSettings);
+    console.log("✅ Configuraciones de módulos cargadas desde localStorage");
+    
+    // Aplicar favoritos
+    setFavoriteModules(favoritesData.data);
+    console.log("✅ Lista de favoritos cargada desde localStorage");
+  }, []);
   
   // Escuchar eventos de cierre de sesión desde AuthContext
   useEffect(() => {
@@ -353,8 +274,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       setIsAuthenticated(false);
       
       // Recargar las configuraciones desde localStorage inmediatamente
-      // para evitar intentos de guardar en el servidor después de cerrar sesión
-      fetchSettings();
+      loadFromLocalStorage(activeProfile?.id);
     };
     
     window.addEventListener("user-logout", handleUserLogout);
@@ -363,294 +283,240 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     return () => {
       window.removeEventListener("user-logout", handleUserLogout);
     };
-  }, []);
-
-  // Al cambiar las configuraciones, guardarlas de forma diferente según si está autenticado o no
-  useEffect(() => {
-    if (initialLoadComplete.current) {
-      // Si NO está autenticado -> guardar en localStorage
-      // Si está autenticado -> NO guardar en localStorage (el servidor es la única fuente de verdad)
-      if (!isAuthenticated) {
-        // Usuario NO autenticado: guardamos en localStorage
-        const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
-        saveTimestampedData(globalSettingsKey, globalSettings);
-        saveTimestampedData(moduleSettingsKey, moduleSettings);
-        saveTimestampedData(favoritesKey, favoriteModules);
-        console.log("🔄 Usuario no autenticado: cambios guardados en localStorage");
-      } else {
-        console.log("🔐 Usuario autenticado: cambios solo se guardan en servidor, no en localStorage");
-      }
-    }
-  }, [globalSettings, moduleSettings, favoriteModules, activeProfile, isAuthenticated]);
+  }, [activeProfile, loadFromLocalStorage]);
   
-  // Verificar si hay cambios en almacenamiento local (otro tab o ventana)
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
-      
-      if (e.key === globalSettingsKey && e.newValue) {
-        setGlobalSettings(JSON.parse(e.newValue));
-      }
-      
-      if (e.key === moduleSettingsKey && e.newValue) {
-        setModuleSettings(JSON.parse(e.newValue));
-      }
-      
-      if (e.key === favoritesKey && e.newValue) {
-        setFavoriteModules(JSON.parse(e.newValue));
-      }
-    };
-    
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [activeProfile]);
-
-  const updateGlobalSettings = async (settings: Partial<GlobalSettings>) => {
-    const updatedSettings = { ...globalSettings, ...settings };
-    console.log(`🔄 Actualizando configuración global:`, updatedSettings);
-    
-    // Actualizar estado inmediatamente
+  // Guardar cambios de configuración global
+  const updateGlobalSettings = async (newSettings: Partial<GlobalSettings>) => {
+    // Actualizar estado local
+    const updatedSettings = { ...globalSettings, ...newSettings };
     setGlobalSettings(updatedSettings);
     
-    // ESTRATEGIA SIMPLIFICADA:
-    // - Usuario autenticado: Solo guardar en servidor
-    // - Usuario no autenticado: Solo guardar en localStorage
-    
-    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
-    if (!isAuthenticated) {
-      console.log(`🔓 Usuario no autenticado: configuraciones solo se guardan en localStorage`);
-      return;
-    }
-    
-    // A partir de aquí solo ejecuta si el usuario está autenticado
-    console.log(`🔐 Usuario autenticado: enviando configuración global al servidor`);
-    
-    // Determinar la URL del endpoint correcto
-    const endpoint = activeProfile
-      ? `/api/child-profiles/${activeProfile.id}/settings/global`
-      : "/api/settings/global";
-    
-    // Crear una clave única para esta petición
-    const requestKey = `${endpoint}-global`;
-    
-    // Evitar peticiones duplicadas
-    if (pendingRequests.current[requestKey]) {
-      console.log(`⏱️ Petición para global ya en curso, evitando duplicado`);
-      return;
-    }
-    
-    // Marcar esta petición como en curso
-    pendingRequests.current[requestKey] = true;
+    if (!initialLoadComplete.current) return;
     
     try {
-      // Pequeña pausa para permitir que cambios rápidos se agrupen
-      await new Promise(resolve => setTimeout(resolve, 250));
-      
-      console.log(`📤 Enviando configuración global al servidor (${endpoint})`);
-      
-      // Obtener la configuración más actualizada
-      const currentSettings = { ...updatedSettings };
-      
-      // Hacer la petición al servidor
-      const response = await apiRequest("PUT", endpoint, currentSettings);
-      
-      if (response.ok) {
-        console.log(`✅ Configuración global guardada exitosamente en el servidor`);
+      if (isAuthenticated) {
+        console.log("🔐 Usuario autenticado: guardando configuración global en servidor");
+        
+        // Determinar endpoint basado en si hay un perfil activo
+        const endpoint = activeProfile
+          ? `/api/child-profiles/${activeProfile.id}/settings/global`
+          : "/api/settings/global";
+        
+        await apiRequest("PUT", endpoint, updatedSettings);
       } else {
-        throw new Error(`Error del servidor: ${response.status}`);
+        console.log("🔓 Usuario no autenticado: guardando configuración global en localStorage");
+        
+        // Guardar en localStorage
+        saveToLocalStorage(
+          GLOBAL_SETTINGS_KEY,
+          updatedSettings,
+          activeProfile?.id
+        );
       }
     } catch (error) {
-      console.error(`❌ Error al guardar configuración global:`, error);
+      console.error("❌ Error al guardar configuración global:", error);
       
-      // Verificar si el error es por falta de autenticación (401)
+      // Manejar error 401 (no autenticado)
       if (error instanceof Error && error.message.includes('401')) {
-        console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+        console.log("⚠️ Error 401: Usuario ya no está autenticado, cambiando a almacenamiento local");
         setIsAuthenticated(false);
-        // No mostrar error al usuario ya que probablemente acaba de cerrar sesión
+        
+        // Guardar en localStorage como fallback
+        saveToLocalStorage(
+          GLOBAL_SETTINGS_KEY,
+          updatedSettings,
+          activeProfile?.id
+        );
       } else {
-        // Solo mostrar el toast para otros tipos de errores
         toast({
-          title: "Error de conexión",
-          description: "No se pudieron guardar los cambios en el servidor",
+          title: "Error al guardar configuración",
+          description: "No se pudo guardar la configuración global",
           variant: "destructive",
         });
       }
-    } finally {
-      // Liberar la petición una vez completada
-      pendingRequests.current[requestKey] = false;
     }
   };
-
-  const updateModuleSettings = async (moduleId: string, settings: Partial<ModuleSettings>) => {
-    // Asegurarse de que siempre tenemos todos los valores por defecto
+  
+  // Guardar cambios de configuración de módulo
+  const updateModuleSettings = async (moduleId: string, newSettings: Partial<ModuleSettings>) => {
+    console.log(`🔄 Actualizando configuración para ${moduleId}:`, newSettings);
+    
+    // Obtener configuración actual del módulo o usar valores predeterminados
     const currentSettings = moduleSettings[moduleId] || { ...defaultModuleSettings };
-    const updatedSettings = { ...currentSettings, ...settings };
     
-    console.log(`🔄 Actualizando configuración para ${moduleId}:`, updatedSettings);
+    // Crear configuración actualizada
+    const updatedSettings = { ...currentSettings, ...newSettings };
     
-    // Actualizar estado local inmediatamente
-    setModuleSettings(prev => {
-      const newSettings = {
-        ...prev,
-        [moduleId]: updatedSettings,
-      };
-      return newSettings;
-    });
+    // Actualizar estado local
+    setModuleSettings(prevSettings => ({
+      ...prevSettings,
+      [moduleId]: updatedSettings
+    }));
     
-    // ESTRATEGIA SIMPLIFICADA:
-    // - Usuario autenticado: Solo guardar en servidor
-    // - Usuario no autenticado: Solo guardar en localStorage
-    
-    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
-    if (!isAuthenticated) {
-      console.log(`🔓 Usuario no autenticado: configuración de ${moduleId} guardada solo en localStorage`);
-      return;
-    }
-    
-    // A partir de aquí solo ejecuta si el usuario está autenticado
-    console.log(`🔐 Usuario autenticado: enviando configuración de ${moduleId} al servidor`);
-    
-    // Determinar la URL del endpoint correcto
-    const endpoint = activeProfile
-      ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
-      : `/api/settings/module/${moduleId}`;
-    
-    // Crear una clave única para evitar peticiones duplicadas
-    const requestKey = `${endpoint}-${moduleId}`;
-    
-    // Evitar peticiones duplicadas
-    if (pendingRequests.current[requestKey]) {
-      console.log(`⏱️ Petición para ${moduleId} ya en curso, evitando duplicado`);
-      return;
-    }
-    
-    // Marcar esta petición como en curso
-    pendingRequests.current[requestKey] = true;
+    if (!initialLoadComplete.current) return;
     
     try {
-      // Pequeña pausa para permitir que cambios rápidos se agrupen
-      await new Promise(resolve => setTimeout(resolve, 250));
-      
-      console.log(`📤 Enviando configuración al servidor (${endpoint})`);
-      
-      // Hacer la petición al servidor con la configuración actualizada
-      const response = await apiRequest("PUT", endpoint, updatedSettings);
-      
-      if (response.ok) {
-        console.log(`✅ Configuración guardada exitosamente en el servidor para ${moduleId}`);
+      if (isAuthenticated) {
+        console.log(`🔐 Usuario autenticado: guardando configuración de ${moduleId} en servidor`);
+        
+        // Determinar endpoint basado en si hay un perfil activo
+        const endpoint = activeProfile
+          ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
+          : `/api/settings/module/${moduleId}`;
+        
+        await apiRequest("PUT", endpoint, updatedSettings);
       } else {
-        throw new Error(`Error del servidor: ${response.status}`);
+        console.log(`🔓 Usuario no autenticado: configuración de ${moduleId} guardada solo en localStorage`);
+        
+        // Obtener configuraciones de módulos actuales
+        const moduleData = getFromLocalStorage<Record<string, ModuleSettings>>(
+          MODULE_SETTINGS_KEY,
+          {},
+          activeProfile?.id
+        );
+        
+        // Actualizar configuración para este módulo
+        const updatedModuleSettings = {
+          ...moduleData.data,
+          [moduleId]: updatedSettings
+        };
+        
+        // Guardar en localStorage
+        saveToLocalStorage(
+          MODULE_SETTINGS_KEY,
+          updatedModuleSettings,
+          activeProfile?.id
+        );
       }
     } catch (error) {
-      console.error(`❌ Error al guardar configuración de ${moduleId} en servidor:`, error);
+      console.error(`❌ Error al guardar configuración de ${moduleId}:`, error);
       
-      // Verificar si el error es por falta de autenticación (401)
+      // Manejar error 401 (no autenticado)
       if (error instanceof Error && error.message.includes('401')) {
-        console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+        console.log("⚠️ Error 401: Usuario ya no está autenticado, cambiando a almacenamiento local");
         setIsAuthenticated(false);
-        // No mostrar error al usuario ya que probablemente acaba de cerrar sesión
+        
+        // Guardar en localStorage como fallback
+        const moduleData = getFromLocalStorage<Record<string, ModuleSettings>>(
+          MODULE_SETTINGS_KEY,
+          {},
+          activeProfile?.id
+        );
+        
+        const updatedModuleSettings = {
+          ...moduleData.data,
+          [moduleId]: updatedSettings
+        };
+        
+        saveToLocalStorage(
+          MODULE_SETTINGS_KEY,
+          updatedModuleSettings,
+          activeProfile?.id
+        );
       } else {
-        // Solo mostrar el toast para otros tipos de errores
         toast({
-          title: "Error de conexión",
-          description: "No se pudieron guardar los cambios en el servidor",
+          title: "Error al guardar configuración",
+          description: `No se pudo guardar la configuración de ${moduleId}`,
           variant: "destructive",
         });
       }
-    } finally {
-      // Liberar la petición una vez completada
-      pendingRequests.current[requestKey] = false;
     }
   };
-
+  
+  // Obtener configuración para un módulo específico
   const getModuleSettings = (moduleId: string): ModuleSettings => {
-    // Si tenemos configuraciones para este módulo, asegurarnos de que incluya todos los valores por defecto
+    // Si existe configuración específica para este módulo, usarla
     if (moduleSettings[moduleId]) {
-      // Combinar con defaults para garantizar que tengamos todos los campos
-      return {
-        ...defaultModuleSettings,
-        ...moduleSettings[moduleId],
-      };
+      return moduleSettings[moduleId];
     }
     
-    // Si no tenemos configuraciones específicas para este módulo, usar los valores por defecto
+    // Si no, devolver valores predeterminados
     return { ...defaultModuleSettings };
   };
-
+  
+  // Restablecer configuración para un módulo específico
   const resetModuleSettings = async (moduleId: string) => {
     console.log(`🧹 Restableciendo configuración para ${moduleId} a valores predeterminados`);
     
-    // Actualizar estado local con valores predeterminados (no eliminar)
-    setModuleSettings(prev => {
-      const newSettings = { ...prev };
-      // En lugar de eliminar, asignar valores predeterminados
-      newSettings[moduleId] = { ...defaultModuleSettings };
-      
+    // Actualizar estado local
+    setModuleSettings(prevSettings => {
+      const newSettings = { ...prevSettings };
+      delete newSettings[moduleId];
       return newSettings;
     });
     
-    // ESTRATEGIA SIMPLIFICADA:
-    // - Usuario autenticado: Solo guardar en servidor
-    // - Usuario no autenticado: Solo guardar en localStorage (a través del useEffect)
-    
-    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
-    if (!isAuthenticated) {
-      console.log(`🔓 Usuario no autenticado: restablecimiento guardado solo en localStorage`);
-      
-      toast({
-        title: "Configuración restablecida",
-        description: "Se han aplicado los valores predeterminados",
-      });
-      return;
-    }
-    
-    // A partir de aquí solo ejecuta si está autenticado
-    console.log(`🔐 Usuario autenticado: enviando restablecimiento de ${moduleId} al servidor`);
-    
     try {
-      const endpoint = activeProfile
-        ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
-        : `/api/settings/module/${moduleId}`;
-      
-      // PUT para actualizar con valores predeterminados
-      const response = await apiRequest("PUT", endpoint, defaultModuleSettings);
-      
-      if (response.ok) {
-        console.log(`✅ Valores predeterminados guardados exitosamente en servidor para ${moduleId}`);
+      if (isAuthenticated) {
+        console.log(`🔐 Usuario autenticado: eliminando configuración de ${moduleId} del servidor`);
         
-        toast({
-          title: "Configuración restablecida",
-          description: "Se han aplicado los valores predeterminados",
-        });
+        // Determinar endpoint basado en si hay un perfil activo
+        const endpoint = activeProfile
+          ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
+          : `/api/settings/module/${moduleId}`;
+        
+        const response = await apiRequest("DELETE", endpoint);
+        
+        if (!response.ok && response.status === 401) {
+          console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+          setIsAuthenticated(false);
+        }
       } else {
-        throw new Error(`Error del servidor: ${response.status}`);
+        console.log(`🔓 Usuario no autenticado: eliminando configuración de ${moduleId} de localStorage`);
+        
+        // Obtener configuraciones de módulos actuales
+        const moduleData = getFromLocalStorage<Record<string, ModuleSettings>>(
+          MODULE_SETTINGS_KEY,
+          {},
+          activeProfile?.id
+        );
+        
+        // Eliminar configuración para este módulo
+        const updatedModuleSettings = { ...moduleData.data };
+        delete updatedModuleSettings[moduleId];
+        
+        // Guardar en localStorage
+        saveToLocalStorage(
+          MODULE_SETTINGS_KEY,
+          updatedModuleSettings,
+          activeProfile?.id
+        );
       }
     } catch (error) {
-      console.error(`❌ Error al restablecer valores en servidor:`, error);
+      console.error(`❌ Error al restablecer configuración de ${moduleId}:`, error);
       
-      // Verificar si el error es por falta de autenticación (401)
+      // Manejar error 401 (no autenticado)
       if (error instanceof Error && error.message.includes('401')) {
         console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
         setIsAuthenticated(false);
         
-        // Mostrar notificación de éxito local aunque el servidor falló
-        toast({
-          title: "Configuración restablecida",
-          description: "Se han aplicado los valores predeterminados localmente",
-        });
+        // Obtener configuraciones de módulos actuales
+        const moduleData = getFromLocalStorage<Record<string, ModuleSettings>>(
+          MODULE_SETTINGS_KEY,
+          {},
+          activeProfile?.id
+        );
+        
+        // Eliminar configuración para este módulo
+        const updatedModuleSettings = { ...moduleData.data };
+        delete updatedModuleSettings[moduleId];
+        
+        // Guardar en localStorage
+        saveToLocalStorage(
+          MODULE_SETTINGS_KEY,
+          updatedModuleSettings,
+          activeProfile?.id
+        );
       } else {
-        // Solo mostrar el toast para otros tipos de errores
         toast({
-          title: "Error de conexión",
-          description: "No se pudieron guardar los cambios en el servidor",
+          title: "Error al restablecer configuración",
+          description: `No se pudo restablecer la configuración de ${moduleId}`,
           variant: "destructive",
         });
       }
     }
   };
-
+  
+  // Restablecer todas las configuraciones
   const resetAllSettings = async () => {
     console.log(`🧹 Restableciendo todas las configuraciones a valores predeterminados`);
     
@@ -659,142 +525,162 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     setModuleSettings({});
     setFavoriteModules([]);
     
-    // Reset localStorage con timestamps
     try {
-      const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
-      
-      // Guardar valores predeterminados con nuevos timestamps
-      saveTimestampedData(globalSettingsKey, defaultGlobalSettings);
-      saveTimestampedData(moduleSettingsKey, {});
-      saveTimestampedData(favoritesKey, []);
-      
-      console.log(`✅ Todas las configuraciones restablecidas a valores predeterminados en localStorage`);
-    } catch (e) {
-      console.error(`❌ Error al restablecer configuraciones en localStorage:`, e);
-    }
-    
-    // Reset en el servidor si está autenticado
-    if (isAuthenticated) {
-      try {
-        console.log(`📤 Enviando solicitud de restablecimiento de todas las configuraciones al servidor`);
+      if (isAuthenticated) {
+        console.log(`🔐 Usuario autenticado: eliminando todas las configuraciones del servidor`);
         
+        // Determinar endpoint basado en si hay un perfil activo
         const endpoint = activeProfile
           ? `/api/child-profiles/${activeProfile.id}/settings`
           : "/api/settings";
         
         const response = await apiRequest("DELETE", endpoint);
         
-        if (response.ok) {
-          console.log("All settings reset successfully on the server");
-        } else {
-          console.error(`Error resetting settings on server: ${response.status}`);
-          
-          // Si el error es de autenticación
-          if (response.status === 401) {
-            console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
-            setIsAuthenticated(false);
-          }
-        }
-      } catch (error) {
-        console.error("Error communicating with server:", error);
-        
-        // Verificar si el error es por falta de autenticación (401)
-        if (error instanceof Error && error.message.includes('401')) {
+        if (!response.ok && response.status === 401) {
           console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
           setIsAuthenticated(false);
         }
       }
-    }
-  };
-
-  // Functions for managing favorite modules
-  const toggleFavoriteModule = async (moduleId: string) => {
-    // Check if the module is already a favorite
-    const isFavorited = favoriteModules.includes(moduleId);
-    
-    // Update favorites list
-    let updatedFavorites: string[];
-    if (isFavorited) {
-      updatedFavorites = favoriteModules.filter(id => id !== moduleId);
-      console.log(`⭐ Quitando ${moduleId} de favoritos`);
-    } else {
-      updatedFavorites = [...favoriteModules, moduleId];
-      console.log(`⭐ Agregando ${moduleId} a favoritos`);
-    }
-    
-    // Actualizar inmediatamente el estado local
-    setFavoriteModules(updatedFavorites);
-    
-    // ESTRATEGIA SIMPLIFICADA:
-    // - Usuario autenticado: Solo guardar en servidor
-    // - Usuario no autenticado: Solo guardar en localStorage (a través del useEffect)
-    
-    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
-    if (!isAuthenticated) {
-      console.log(`🔓 Usuario no autenticado: favoritos guardados solo en localStorage`);
-      return;
-    }
-    
-    // A partir de aquí solo ejecuta si está autenticado
-    console.log(`🔐 Usuario autenticado: guardando favoritos en servidor`);
-    
-    // Determinar el endpoint correcto
-    const endpoint = activeProfile
-      ? `/api/child-profiles/${activeProfile.id}/favorites`
-      : "/api/favorites";
       
-    // Crear una clave única para evitar peticiones duplicadas
-    const requestKey = `${endpoint}-favorites`;
-    
-    // Evitar peticiones duplicadas
-    if (pendingRequests.current[requestKey]) {
-      console.log(`⏱️ Petición de favoritos ya en curso, evitando duplicado`);
-      return;
-    }
-    
-    // Marcar esta petición como en curso
-    pendingRequests.current[requestKey] = true;
-    
-    try {
-      // Pequeña pausa para permitir que cambios rápidos se agrupen
-      await new Promise(resolve => setTimeout(resolve, 250));
+      // En todos los casos, restablecer valores en localStorage
+      console.log(`🔓 Restableciendo configuraciones en localStorage`);
       
-      console.log(`📤 Enviando favoritos al servidor (${endpoint})`);
+      // Guardar valores predeterminados
+      saveToLocalStorage(
+        GLOBAL_SETTINGS_KEY,
+        defaultGlobalSettings,
+        activeProfile?.id
+      );
       
-      // Hacer la petición al servidor
-      const response = await apiRequest("PUT", endpoint, { favorites: updatedFavorites });
+      saveToLocalStorage(
+        MODULE_SETTINGS_KEY,
+        {},
+        activeProfile?.id
+      );
       
-      if (response.ok) {
-        console.log(`✅ Favoritos guardados exitosamente en el servidor`);
-      } else {
-        throw new Error(`Error del servidor: ${response.status}`);
-      }
+      saveToLocalStorage(
+        FAVORITES_KEY,
+        [],
+        activeProfile?.id
+      );
+      
+      console.log(`✅ Todas las configuraciones restablecidas a valores predeterminados`);
+      
+      // Mostrar notificación de éxito
+      toast({
+        title: "Configuración restablecida",
+        description: "Se han aplicado los valores predeterminados",
+      });
     } catch (error) {
-      console.error(`❌ Error al guardar favoritos en servidor:`, error);
+      console.error("❌ Error al restablecer todas las configuraciones:", error);
       
-      // Verificar si el error es por falta de autenticación (401)
+      // Manejar error 401 (no autenticado)
       if (error instanceof Error && error.message.includes('401')) {
         console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
         setIsAuthenticated(false);
-        // No mostrar error al usuario ya que probablemente acaba de cerrar sesión
+        
+        // Aplicar valores predeterminados a localStorage
+        saveToLocalStorage(
+          GLOBAL_SETTINGS_KEY,
+          defaultGlobalSettings,
+          activeProfile?.id
+        );
+        
+        saveToLocalStorage(
+          MODULE_SETTINGS_KEY,
+          {},
+          activeProfile?.id
+        );
+        
+        saveToLocalStorage(
+          FAVORITES_KEY,
+          [],
+          activeProfile?.id
+        );
+        
+        toast({
+          title: "Configuraciones restablecidas",
+          description: "Se han aplicado los valores predeterminados localmente",
+        });
       } else {
-        // Solo mostrar el toast para otros tipos de errores
         toast({
           title: "Error de conexión",
           description: "No se pudieron guardar los cambios en el servidor",
           variant: "destructive",
         });
       }
-    } finally {
-      // Liberar la petición una vez completada
-      pendingRequests.current[requestKey] = false;
     }
   };
   
+  // Alternar un módulo como favorito
+  const toggleFavoriteModule = async (moduleId: string) => {
+    // Crear nueva lista de favoritos
+    const newFavorites = favoriteModules.includes(moduleId)
+      ? favoriteModules.filter(id => id !== moduleId)
+      : [...favoriteModules, moduleId];
+    
+    // Actualizar estado local
+    setFavoriteModules(newFavorites);
+    
+    if (!initialLoadComplete.current) return;
+    
+    try {
+      if (isAuthenticated) {
+        console.log(`🔐 Usuario autenticado: guardando lista de favoritos en servidor`);
+        
+        // Determinar endpoint basado en si hay un perfil activo
+        const endpoint = activeProfile
+          ? `/api/child-profiles/${activeProfile.id}/settings/favorites`
+          : "/api/settings/favorites";
+        
+        await apiRequest("PUT", endpoint, { favorites: newFavorites });
+      } else {
+        console.log(`🔓 Usuario no autenticado: guardando lista de favoritos en localStorage`);
+        
+        // Guardar en localStorage
+        saveToLocalStorage(
+          FAVORITES_KEY,
+          newFavorites,
+          activeProfile?.id
+        );
+      }
+    } catch (error) {
+      console.error("❌ Error al guardar lista de favoritos:", error);
+      
+      // Manejar error 401 (no autenticado)
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+        setIsAuthenticated(false);
+        
+        // Guardar en localStorage como fallback
+        saveToLocalStorage(
+          FAVORITES_KEY,
+          newFavorites,
+          activeProfile?.id
+        );
+      } else {
+        // Restaurar estado anterior si hay error
+        setFavoriteModules(favoriteModules);
+        
+        toast({
+          title: "Error al guardar favoritos",
+          description: "No se pudo actualizar la lista de favoritos",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+  
+  // Verificar si un módulo es favorito
   const isFavorite = (moduleId: string): boolean => {
     return favoriteModules.includes(moduleId);
   };
-
+  
+  // Mientras se inicializa, mostrar un valor nulo para evitar renderizados parciales
+  if (!isInitialized) {
+    return null;
+  }
+  
   return (
     <SettingsContext.Provider
       value={{
