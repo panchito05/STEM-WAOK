@@ -183,43 +183,14 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       
       console.log(`📥 Cargando configuraciones para perfil ${activeProfile?.id || "usuario principal"}...`);
       
-      // 1. Cargar desde localStorage con timestamps
-      const localGlobalSettings = getTimestampedData<GlobalSettings>(
-        globalSettingsKey, defaultGlobalSettings
-      );
+      // Estrategia simplificada:
+      // 1. Si el usuario está autenticado -> Usar SOLO datos del servidor
+      // 2. Si el usuario NO está autenticado -> Usar SOLO datos locales
       
-      const localModuleSettings = getTimestampedData<Record<string, ModuleSettings>>(
-        moduleSettingsKey, {}
-      );
-      
-      const localFavorites = getTimestampedData<string[]>(
-        favoritesKey, []
-      );
-      
-      // Aplicar configuraciones locales inmediatamente
-      setGlobalSettings({...defaultGlobalSettings, ...localGlobalSettings.data});
-      
-      // Asegurarse de que los module settings tengan todos los campos por defecto
-      const enhancedModuleSettings: Record<string, ModuleSettings> = {};
-      
-      Object.entries(localModuleSettings.data).forEach(([moduleId, settings]) => {
-        enhancedModuleSettings[moduleId] = {
-          ...defaultModuleSettings,
-          ...(settings as ModuleSettings)
-        };
-      });
-      
-      setModuleSettings(enhancedModuleSettings);
-      setFavoriteModules(localFavorites.data);
-      
-      console.log("✅ Estado local cargado con timestamps:", {
-        globalSettings: localGlobalSettings,
-        moduleSettings: localModuleSettings,
-        favorites: localFavorites
-      });
-      
-      // 2. Si está autenticado, intentar obtener datos del servidor
       if (isAuthenticated) {
+        // USUARIO AUTENTICADO - Usar solo datos del servidor
+        console.log(`🔐 Usuario autenticado: prioridad a datos del servidor`);
+        
         // Determinar el endpoint correcto
         const endpoint = activeProfile 
           ? `/api/child-profiles/${activeProfile.id}/settings` 
@@ -237,81 +208,116 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
             const serverData = await res.json();
             console.log("📦 Datos recibidos del servidor:", serverData);
             
-            // Utilizar fecha actual como timestamp para datos del servidor
-            const serverTimestamp = Date.now();
-            
-            // 3. Comparar y fusionar datos (primero para configuraciones globales)
+            // Aplicar configuraciones globales del servidor
             if (serverData.globalSettings) {
-              // Solo aplicar si los datos del servidor son más recientes o es la primera carga
-              if (!initialLoadComplete.current || serverTimestamp > localGlobalSettings.lastModified) {
-                console.log("🔄 Actualizando configuraciones globales desde servidor (más recientes)");
-                
-                const enhancedGlobalSettings = {
-                  ...defaultGlobalSettings,
-                  ...serverData.globalSettings
-                };
-                
-                setGlobalSettings(enhancedGlobalSettings);
-                saveTimestampedData(globalSettingsKey, enhancedGlobalSettings);
-              } else {
-                console.log("⏭️ Manteniendo configuraciones globales locales (más recientes)");
-              }
+              const enhancedGlobalSettings = {
+                ...defaultGlobalSettings,
+                ...serverData.globalSettings
+              };
+              
+              setGlobalSettings(enhancedGlobalSettings);
+              console.log("✅ Configuraciones globales cargadas desde servidor");
+            } else {
+              // Si no hay datos en el servidor, usar valores predeterminados
+              setGlobalSettings(defaultGlobalSettings);
+              console.log("ℹ️ Sin datos globales en servidor, usando valores predeterminados");
             }
             
-            // 4. Comparar y fusionar datos para configuraciones de módulos
+            // Aplicar configuraciones de módulos del servidor
             if (serverData.moduleSettings) {
-              let updatedModuleSettings = {...enhancedModuleSettings};
-              let requiresUpdate = false;
+              const enhancedModuleSettings: Record<string, ModuleSettings> = {};
               
-              // Revisar cada módulo del servidor
+              // Procesar cada módulo asegurando valores predeterminados
               Object.entries(serverData.moduleSettings).forEach(([moduleId, serverModuleSettings]) => {
-                // Si el módulo no existe localmente o los datos del servidor son más recientes
-                if (!initialLoadComplete.current || 
-                    !enhancedModuleSettings[moduleId] || 
-                    serverTimestamp > (localModuleSettings.lastModified)) {
-                  console.log(`🔄 Actualizando configuración para ${moduleId} desde servidor (más reciente)`);
-                  
-                  updatedModuleSettings[moduleId] = {
-                    ...defaultModuleSettings,
-                    ...serverModuleSettings as ModuleSettings
-                  };
-                  
-                  requiresUpdate = true;
-                }
+                enhancedModuleSettings[moduleId] = {
+                  ...defaultModuleSettings,
+                  ...serverModuleSettings as ModuleSettings
+                };
               });
               
-              // Actualizar estado si es necesario
-              if (requiresUpdate) {
-                setModuleSettings(updatedModuleSettings);
-                saveTimestampedData(moduleSettingsKey, updatedModuleSettings);
-              }
+              setModuleSettings(enhancedModuleSettings);
+              console.log("✅ Configuraciones de módulos cargadas desde servidor");
+            } else {
+              // Si no hay datos en el servidor, usar objeto vacío
+              setModuleSettings({});
+              console.log("ℹ️ Sin datos de módulos en servidor");
             }
             
-            // 5. Comparar y fusionar datos para favoritos
+            // Aplicar lista de favoritos del servidor
             if (serverData.favoriteModules) {
-              if (!initialLoadComplete.current || serverTimestamp > localFavorites.lastModified) {
-                console.log("🔄 Actualizando favoritos desde servidor (más recientes)");
-                setFavoriteModules(serverData.favoriteModules);
-                saveTimestampedData(favoritesKey, serverData.favoriteModules);
-              } else {
-                console.log("⏭️ Manteniendo favoritos locales (más recientes)");
-              }
+              setFavoriteModules(serverData.favoriteModules);
+              console.log("✅ Lista de favoritos cargada desde servidor");
+            } else {
+              // Si no hay favoritos en el servidor, usar array vacío
+              setFavoriteModules([]);
+              console.log("ℹ️ Sin favoritos en servidor");
             }
+            
+            // Marcar como completada la carga inicial
+            initialLoadComplete.current = true;
+            
           } else {
-            console.warn(`⚠️ El servidor respondió con error ${res.status}. Usando datos locales.`);
+            console.warn(`⚠️ Error del servidor ${res.status}. Usando valores predeterminados.`);
+            // En caso de error, cargar valores predeterminados
+            setGlobalSettings(defaultGlobalSettings);
+            setModuleSettings({});
+            setFavoriteModules([]);
           }
         } catch (serverError) {
           console.error("⚠️ Error al comunicarse con el servidor:", serverError);
-          console.log("🛡️ Usando datos locales como respaldo");
+          console.log("⚠️ Usuario autenticado pero sin acceso al servidor, usando valores predeterminados");
+          
+          // En caso de error de conexión, cargar valores predeterminados
+          setGlobalSettings(defaultGlobalSettings);
+          setModuleSettings({});
+          setFavoriteModules([]);
         }
+        
+      } else {
+        // USUARIO NO AUTENTICADO - Usar solo datos locales
+        console.log(`🔓 Usuario no autenticado: usando datos locales`);
+        
+        // Cargar desde localStorage
+        const localGlobalSettings = getTimestampedData<GlobalSettings>(
+          globalSettingsKey, defaultGlobalSettings
+        );
+        
+        const localModuleSettings = getTimestampedData<Record<string, ModuleSettings>>(
+          moduleSettingsKey, {}
+        );
+        
+        const localFavorites = getTimestampedData<string[]>(
+          favoritesKey, []
+        );
+        
+        // Aplicar configuraciones globales locales
+        setGlobalSettings({...defaultGlobalSettings, ...localGlobalSettings.data});
+        console.log("✅ Configuraciones globales cargadas desde localStorage");
+        
+        // Aplicar configuraciones de módulos locales
+        const enhancedModuleSettings: Record<string, ModuleSettings> = {};
+        
+        Object.entries(localModuleSettings.data).forEach(([moduleId, settings]) => {
+          enhancedModuleSettings[moduleId] = {
+            ...defaultModuleSettings,
+            ...(settings as ModuleSettings)
+          };
+        });
+        
+        setModuleSettings(enhancedModuleSettings);
+        console.log("✅ Configuraciones de módulos cargadas desde localStorage");
+        
+        // Aplicar favoritos locales
+        setFavoriteModules(localFavorites.data);
+        console.log("✅ Lista de favoritos cargada desde localStorage");
+        
+        // Marcar como completada la carga inicial
+        initialLoadComplete.current = true;
       }
-      
-      // Marcar como completada la carga inicial
-      initialLoadComplete.current = true;
       
     } catch (error) {
       console.error("❌ Error general al cargar configuraciones:", error);
-      // En caso de error, usar valores por defecto
+      // En caso de error catastrófico, usar valores predeterminados
       setGlobalSettings(defaultGlobalSettings);
       setModuleSettings({});
       setFavoriteModules([]);
@@ -323,16 +329,23 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     fetchSettings();
   }, [isAuthenticated, activeProfile]);
 
-  // Al cambiar las configuraciones, guardarlas con timestamp
+  // Al cambiar las configuraciones, guardarlas de forma diferente según si está autenticado o no
   useEffect(() => {
     if (initialLoadComplete.current) {
-      const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
-      saveTimestampedData(globalSettingsKey, globalSettings);
-      saveTimestampedData(moduleSettingsKey, moduleSettings);
-      saveTimestampedData(favoritesKey, favoriteModules);
-      console.log("🔄 Cambios en configuraciones detectados y guardados con timestamp");
+      // Si NO está autenticado -> guardar en localStorage
+      // Si está autenticado -> NO guardar en localStorage (el servidor es la única fuente de verdad)
+      if (!isAuthenticated) {
+        // Usuario NO autenticado: guardamos en localStorage
+        const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+        saveTimestampedData(globalSettingsKey, globalSettings);
+        saveTimestampedData(moduleSettingsKey, moduleSettings);
+        saveTimestampedData(favoritesKey, favoriteModules);
+        console.log("🔄 Usuario no autenticado: cambios guardados en localStorage");
+      } else {
+        console.log("🔐 Usuario autenticado: cambios solo se guardan en servidor, no en localStorage");
+      }
     }
-  }, [globalSettings, moduleSettings, favoriteModules, activeProfile]);
+  }, [globalSettings, moduleSettings, favoriteModules, activeProfile, isAuthenticated]);
   
   // Verificar si hay cambios en almacenamiento local (otro tab o ventana)
   useEffect(() => {
@@ -365,27 +378,30 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     // Actualizar estado inmediatamente
     setGlobalSettings(updatedSettings);
     
-    // Crear clave para esta petición global
-    const syncId = Date.now().toString();
-    pendingSyncs.current['global'] = syncId;
+    // ESTRATEGIA SIMPLIFICADA:
+    // - Usuario autenticado: Solo guardar en servidor
+    // - Usuario no autenticado: Solo guardar en localStorage
     
-    // Si no está autenticado, solo guardamos localmente
+    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
     if (!isAuthenticated) {
-      console.log(`⚠️ Usuario no autenticado, configuración global guardada solo localmente`);
+      console.log(`🔓 Usuario no autenticado: configuraciones solo se guardan en localStorage`);
       return;
     }
+    
+    // A partir de aquí solo ejecuta si el usuario está autenticado
+    console.log(`🔐 Usuario autenticado: enviando configuración global al servidor`);
     
     // Determinar la URL del endpoint correcto
     const endpoint = activeProfile
       ? `/api/child-profiles/${activeProfile.id}/settings/global`
       : "/api/settings/global";
     
-    // Crear una clave única para esta petición global
+    // Crear una clave única para esta petición
     const requestKey = `${endpoint}-global`;
     
     // Evitar peticiones duplicadas
     if (pendingRequests.current[requestKey]) {
-      console.log(`⏱️ Petición global ya en curso, evitando duplicado`);
+      console.log(`⏱️ Petición para global ya en curso, evitando duplicado`);
       return;
     }
     
@@ -393,19 +409,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     pendingRequests.current[requestKey] = true;
     
     try {
-      // Pequeña pausa para permitir que cambios rápidos consecutivos se agrupen
+      // Pequeña pausa para permitir que cambios rápidos se agrupen
       await new Promise(resolve => setTimeout(resolve, 250));
-      
-      // Verificar si esta sincronización sigue siendo la más reciente
-      if (pendingSyncs.current['global'] !== syncId) {
-        console.log(`⏭️ Sincronización ${syncId} para configuración global ha sido reemplazada por una más reciente`);
-        pendingRequests.current[requestKey] = false;
-        return;
-      }
       
       console.log(`📤 Enviando configuración global al servidor (${endpoint})`);
       
-      // Obtener la configuración global más actualizada y guardarla para comparación posterior
+      // Obtener la configuración más actualizada
       const currentSettings = { ...updatedSettings };
       
       // Hacer la petición al servidor
@@ -417,30 +426,16 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         throw new Error(`Error del servidor: ${response.status}`);
       }
     } catch (error) {
-      console.error(`❌ Error guardando configuración global:`, error);
+      console.error(`❌ Error al guardar configuración global:`, error);
       
       toast({
-        title: "Error al guardar configuración",
-        description: "Tus ajustes solo se han guardado localmente. Se intentará sincronizar más tarde.",
+        title: "Error de conexión",
+        description: "No se pudieron guardar los cambios en el servidor",
         variant: "destructive",
       });
-      
-      // Programar un reintento después de un tiempo
-      setTimeout(() => {
-        // Verificar si aún necesitamos sincronizar (puede que el usuario haya cerrado sesión)
-        if (isAuthenticated) {
-          console.log(`🔄 Reintentando sincronización para configuración global`);
-          updateGlobalSettings({}); // Reintento con los mismos ajustes
-        }
-      }, 10000); // Reintentar en 10 segundos
     } finally {
-      // Liberar la petición una vez completada o fallida
+      // Liberar la petición una vez completada
       pendingRequests.current[requestKey] = false;
-      
-      // Limpiar el ID de sincronización si sigue siendo el actual
-      if (pendingSyncs.current['global'] === syncId) {
-        delete pendingSyncs.current['global'];
-      }
     }
   };
 
