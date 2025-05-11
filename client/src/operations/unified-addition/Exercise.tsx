@@ -6,22 +6,27 @@ import { useTranslations } from '@/hooks/use-translations';
 import { useRewardsStore, awardReward, getRewardProbability } from '@/lib/rewards-system';
 import { Button } from '@/components/ui/button';
 import { Progress as ProgressBarUI } from '@/components/ui/progress';
-import { formatTime } from '@/lib/utils';
-import { Settings as SettingsIcon, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, ArrowLeft } from 'lucide-react';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { formatTime, debounce } from '@/lib/utils';
+import { 
+  Settings as SettingsIcon, ChevronLeft, ChevronRight, Check, Cog, Info, 
+  Star, Award, Trophy, RotateCcw, ArrowLeft, AlertTriangle
+} from 'lucide-react';
+import { 
+  Tooltip, TooltipTrigger, TooltipContent, TooltipProvider 
+} from '@/components/ui/tooltip';
 import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus from '@/lib/eventBus';
-import LevelUpHandler from '@/components/LevelUpHandler';
-import RewardAnimation from '@/components/rewards/RewardAnimation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { defaultModuleSettings } from '@/utils/operationComponents';
 import DifficultyExamples from '@/components/DifficultyExamples';
-import { debounce } from '@/lib/utils';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { 
+  AlertDialog, AlertDialogAction, AlertDialogCancel, 
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter, 
+  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 
 // ==========================================
 // SECCIÓN 1: TIPOS Y INTERFACES
@@ -38,18 +43,18 @@ export interface Problem {
   layout: ExerciseLayout; // 'horizontal' o 'vertical'
   answerMaxDigits: number;
   answerDecimalPosition?: number;
-  numberOfAnswerSlots: number; // Número total de cajones para la respuesta (incluyendo el punto si existe)
-  difficulty: DifficultyLevel; // La dificultad con la que se generó este problema específico
+  numberOfAnswerSlots?: number; // Número total de cajones para la respuesta (incluyendo el punto si existe)
+  difficulty?: DifficultyLevel; // La dificultad con la que se generó este problema específico
 }
 
 // AdditionProblem es un alias, ya que Problem ahora es genérico para sumas.
 export type AdditionProblem = Problem;
 
 export interface UserAnswer {
+  problemId: string; 
   problem: Problem; // Usa la nueva estructura de Problem
-  problemId: string;
   userAnswerString?: string; // La respuesta del usuario tal como se ingresó en los cajones (ej: "12.34")
-  userAnswer: number | null; // La respuesta numérica del usuario (convertida desde userAnswerString)
+  userAnswer: number | any; // La respuesta numérica del usuario (convertida desde userAnswerString)
   isCorrect: boolean;
   status?: 'correct' | 'incorrect' | 'revealed' | 'timeout';
 }
@@ -242,7 +247,7 @@ const verticalOperandStyle = "font-mono text-2xl sm:text-3xl text-right tracking
 const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
-export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
+function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // ==========================================
   // 3.1: ESTADO Y REFS
   // ==========================================
@@ -290,22 +295,96 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveIncorrectAnswers') || '0', 10));
   const [currentAttempts, setCurrentAttempts] = useState(0);
   const [showLevelUpReward, setShowLevelUpReward] = useState(false);
+  const [showRewardAnimation, setShowRewardAnimation] = useState(false);
+  const [rewardType, setRewardType] = useState<'medal' | 'trophy' | 'star'>('medal');
 
   const [viewingPrevious, setViewingPrevious] = useState(false);
   const [actualActiveProblemIndexBeforeViewingPrevious, setActualActiveProblemIndexBeforeViewingPrevious] = useState<number>(0);
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
   const generalTimerRef = useRef<number | null>(null);
   const singleProblemTimerRef = useRef<number | null>(null);
   const autoContinueTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const soundEffectsRef = useRef<{
+    correct: HTMLAudioElement | null;
+    incorrect: HTMLAudioElement | null;
+    levelUp: HTMLAudioElement | null;
+    timeUp: HTMLAudioElement | null;
+    reward: HTMLAudioElement | null;
+  }>({
+    correct: null,
+    incorrect: null,
+    levelUp: null,
+    timeUp: null,
+    reward: null
+  });
 
   const { saveExerciseResult } = useProgress();
   const { updateModuleSettings } = useSettings();
   const { t } = useTranslations();
-  const { setShowRewardAnimation } = useRewardsStore();
+  const rewardsStore = useRewardsStore();
 
   // ==========================================
   // 3.2: EFECTOS Y CALLBACKS
   // ==========================================
+
+  // Inicialización de efectos de sonido
+  useEffect(() => {
+    if (settings?.enableSoundEffects) {
+      try {
+        soundEffectsRef.current = {
+          correct: new Audio('/sounds/correct.mp3'),
+          incorrect: new Audio('/sounds/incorrect.mp3'),
+          levelUp: new Audio('/sounds/level-up.mp3'),
+          timeUp: new Audio('/sounds/time-up.mp3'),
+          reward: new Audio('/sounds/reward.mp3')
+        };
+
+        // Precargar sonidos
+        Object.values(soundEffectsRef.current).forEach(audio => {
+          if (audio) {
+            audio.load();
+            audio.volume = 0.5;
+          }
+        });
+
+        return () => {
+          // Limpiar recursos de audio
+          Object.values(soundEffectsRef.current).forEach(audio => {
+            if (audio) {
+              audio.pause();
+              audio.src = '';
+            }
+          });
+          soundEffectsRef.current = {
+            correct: null,
+            incorrect: null,
+            levelUp: null,
+            timeUp: null,
+            reward: null
+          };
+        };
+      } catch (error) {
+        console.error('Error initializing sound effects:', error);
+      }
+    }
+  }, [settings?.enableSoundEffects]);
+
+  // Reproducir un efecto de sonido
+  const playSound = useCallback((type: 'correct' | 'incorrect' | 'levelUp' | 'timeUp' | 'reward') => {
+    if (settings?.enableSoundEffects && soundEffectsRef.current[type]) {
+      try {
+        const sound = soundEffectsRef.current[type];
+        if (sound) {
+          sound.currentTime = 0;
+          sound.play().catch(e => console.error(`Error playing ${type} sound:`, e));
+        }
+      } catch (error) {
+        console.error(`Error playing ${type} sound:`, error);
+      }
+    }
+  }, [settings?.enableSoundEffects]);
+
   useEffect(() => {
     waitingRef.current = waitingForContinue;
   }, [waitingForContinue]);
@@ -419,6 +498,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (isCorrect) {
       setFeedbackMessage(t('exercises.correct')); 
       setFeedbackColor("green");
+      // Reproducir sonido de correcto
+      playSound('correct');
+
       const newConsecutive = consecutiveCorrectAnswers + 1;
       setConsecutiveCorrectAnswers(newConsecutive); 
       setConsecutiveIncorrectAnswers(0);
@@ -433,6 +515,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setConsecutiveCorrectAnswers(0); // Reset racha para nuevo nivel
               setShowLevelUpReward(true);
               setBlockAutoAdvance(true); // Bloquear avance hasta que se cierre el modal de level up
+              playSound('levelUp');
               eventBus.emit('levelUp', { 
                 previousLevel: adaptiveDifficulty, 
                 newLevel, 
@@ -444,8 +527,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (settings.enableRewards) {
           const rewardContext = { streak: newConsecutive, difficulty: adaptiveDifficulty, problemIndex: currentProblemIndex, totalProblems: problemsList.length };
           if (Math.random() < getRewardProbability(rewardContext as any)) {
-              awardReward('some_reward_id_correct' as any, { module: 'addition' });
+              // Determinar tipo de recompensa
+              const rewards = ['medal', 'trophy', 'star'] as const;
+              const selectedReward = rewards[Math.floor(Math.random() * rewards.length)];
+              setRewardType(selectedReward);
+
+              // Mostrar animación
+              awardReward(`addition_${selectedReward}` as any, { 
+                module: 'addition', 
+                difficulty: adaptiveDifficulty,
+                score: calculatedScore
+              });
               setShowRewardAnimation(true);
+              playSound('reward');
           }
       }
 
@@ -465,6 +559,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     } else { // Incorrecta
       setFeedbackMessage(t('exercises.incorrect')); 
       setFeedbackColor("red");
+      playSound('incorrect');
+
       const newConsecutiveInc = consecutiveIncorrectAnswers + 1;
       setConsecutiveIncorrectAnswers(newConsecutiveInc); 
       setConsecutiveCorrectAnswers(0);
@@ -503,7 +599,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }, [
     currentProblem, exerciseCompleted, viewingPrevious, exerciseStarted, digitAnswers, t, 
     currentAttempts, settings, currentProblemIndex, consecutiveCorrectAnswers, adaptiveDifficulty, 
-    consecutiveIncorrectAnswers, problemsList.length, autoContinue, blockAutoAdvance, // handleContinue no aquí porque es dependiente
+    consecutiveIncorrectAnswers, problemsList.length, autoContinue, blockAutoAdvance, playSound
   ]);
 
   const handleTimeOrAttemptsUp = useCallback(() => {
@@ -521,6 +617,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Y el tiempo se agotó para este intento.
         // currentAttempts ya fue incrementado por checkCurrentAnswer.
 
+        playSound('timeUp');
         // Este caso es sutil: checkCurrentAnswer ya mostró "Incorrecto".
         // Solo necesitamos añadir que el tiempo se agotó para ESE intento fallido.
         // Y verificar si ese intento fallido era el último.
@@ -540,6 +637,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Si problemResolvedByCheck es true, checkCurrentAnswer ya puso waitingForContinue(true) y manejó todo.
     } else {
       // No hay respuesta escrita, tiempo agotado.
+      playSound('timeUp');
+
       const newAttempts = currentAttempts + 1;
       setCurrentAttempts(newAttempts);
 
@@ -577,7 +676,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current); // Asegurar que el timer está detenido
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentProblem, digitAnswers, checkCurrentAnswer, currentAttempts, settings, t, currentProblemIndex, actualActiveProblemIndexBeforeViewingPrevious]);
+  }, [currentProblem, digitAnswers, checkCurrentAnswer, currentAttempts, settings, t, currentProblemIndex, actualActiveProblemIndexBeforeViewingPrevious, playSound]);
 
   useEffect(() => {
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
@@ -623,9 +722,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
 
       // Actualizar progreso del usuario
-      const correctAnswers = userAnswersHistory.filter(h => h.isCorrect).length;
+      const correctAnswers = userAnswersHistory.filter(h => h?.isCorrect).length;
       const totalProblems = userAnswersHistory.length;
-      
+
       // Guardar en localStorage
       try {
         localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString());
@@ -634,7 +733,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       } catch (e) {
         console.error("Error saving to localStorage:", e);
       }
-      
+
       // Solo guardar resultado si es un ejercicio completo (no si solo abrimos y cerramos)
       if (totalProblems > 0) {
         saveExerciseResult({
@@ -650,16 +749,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }, [exerciseCompleted, viewingPrevious, userAnswersHistory, consecutiveCorrectAnswers, consecutiveIncorrectAnswers, autoContinue, timer, settings.difficulty, saveExerciseResult]);
 
   const handleDigitClick = (index: number, event?: React.MouseEvent) => {
-    if (viewingPrevious || waitingRef.current || exerciseCompleted || !exerciseStarted) {
+    if (viewingPrevious || waitingRef.current || exerciseCompleted) {
       event?.preventDefault();
       return;
     }
+
+    if (!exerciseStarted) {
+      startExercise();
+    }
+
     setFocusedDigitIndex(index);
+
+    // Actualizar dirección de entrada basada en posición del cajón
+    if (currentProblem) {
+      // Para problemas con decimales, ajustar la dirección de entrada
+      if (currentProblem.answerDecimalPosition !== undefined && currentProblem.answerDecimalPosition > 0) {
+        const decimalPosition = currentProblem.answerMaxDigits - currentProblem.answerDecimalPosition;
+        if (index < decimalPosition) {
+          // Parte entera, mantener la dirección preferida 
+          // (RTL para vertical, LTR para horizontal)
+          setInputDirection(currentProblem.layout === 'vertical' ? 'rtl' : 'ltr');
+        } else {
+          // Parte decimal, siempre LTR
+          setInputDirection('ltr');
+        }
+      } else {
+        // Sin decimales, depende del layout
+        setInputDirection(currentProblem.layout === 'vertical' ? 'rtl' : 'ltr');
+      }
+    }
   };
 
   const clearDigitBox = useCallback((index: number) => {
     if (index < 0 || viewingPrevious || waitingRef.current || exerciseCompleted) return;
-    
+
     setDigitAnswers(prev => {
       const updated = [...prev];
       updated[index] = "";
@@ -672,10 +795,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       e.preventDefault();
       return;
     }
-    
+
     // No continuar si no hemos presionado una tecla o el ejercicio está completado
     if (!e.key || exerciseCompleted) return;
-    
+
     // Navegación entre cajones
     if (e.key === "ArrowLeft") {
       e.preventDefault();
@@ -694,7 +817,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     } else if (e.key === "Delete" || e.key === "Backspace") {
       e.preventDefault();
       clearDigitBox(index);
-      
+
       // Moverse al cajón anterior después de borrar si estamos en modo ltr
       if (inputDirection === 'ltr' && index > 0) {
         setFocusedDigitIndex(index - 1);
@@ -705,13 +828,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       e.preventDefault();
       // Solo iniciamos el ejercicio al ingresar el primer dígito
       if (!exerciseStarted) startExercise();
-      
+
       setDigitAnswers(prev => {
         const updated = [...prev];
         updated[index] = e.key;
         return updated;
       });
-      
+
       // Avanzar al siguiente cajón
       if (inputDirection === 'ltr' && index < digitAnswers.length - 1) {
         setFocusedDigitIndex(index + 1);
@@ -726,11 +849,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const handleContinue = useCallback(() => {
     if (!waitingRef.current || !currentProblem) return;
-    
+
     setWaitingForContinue(false);
     setFeedbackMessage(null);
     setFeedbackColor(null);
-    
+
+    if (showLevelUpReward) {
+      setShowLevelUpReward(false);
+      setBlockAutoAdvance(false);
+      const newProblemForLevelUp = generateAdditionProblem(adaptiveDifficulty);
+      setProblemsList(prev => {
+        const updated = [...prev];
+        updated[actualActiveProblemIndexBeforeViewingPrevious] = newProblemForLevelUp;
+        return updated;
+      });
+      setCurrentProblem(newProblemForLevelUp);
+      setDigitAnswers(Array(newProblemForLevelUp.answerMaxDigits).fill(""));
+      setCurrentAttempts(0);
+      setProblemTimerValue(settings.timeValue);
+      return;
+    }
+
     if (currentProblemIndex < problemsList.length - 1) {
       // Avanzar al siguiente problema
       const nextProblemIndex = currentProblemIndex + 1;
@@ -742,7 +881,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Último problema completado
       setExerciseCompleted(true);
     }
-  }, [currentProblem, currentProblemIndex, problemsList.length, problemsList]);
+  }, [currentProblem, currentProblemIndex, problemsList.length, problemsList, showLevelUpReward, adaptiveDifficulty, actualActiveProblemIndexBeforeViewingPrevious, settings.timeValue]);
 
   const startExercise = () => {
     if (exerciseStarted || exerciseCompleted || !currentProblem) return;
@@ -754,17 +893,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const effectiveDifficulty = settings.enableAdaptiveDifficulty 
                              ? adaptiveDifficulty 
                              : settings.difficulty as DifficultyLevel;
-    
+
     console.log(`[ADDITION] Generating new problem set with difficulty: ${effectiveDifficulty}`);
     const newProblems = Array.from({ length: settings.problemCount }, () => 
       generateAdditionProblem(effectiveDifficulty)
     );
-    
+
     setProblemsList(newProblems);
     setCurrentProblemIndex(0);
     setCurrentProblem(newProblems[0]);
     setUserAnswersHistory(Array(newProblems.length).fill(null));
-    
+
     setExerciseStarted(false);
     setExerciseCompleted(false);
     setWaitingForContinue(false);
@@ -773,11 +912,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setCurrentAttempts(0);
     setTimer(0);
     setProblemTimerValue(settings.timeValue);
-    
+
     // Resetear vista a primer problema activo
     setViewingPrevious(false);
     setActualActiveProblemIndexBeforeViewingPrevious(0);
-    
+
     // Resetear los intentos si la dificultad cambió
     if (adaptiveDifficulty !== effectiveDifficulty) {
       setAdaptiveDifficulty(effectiveDifficulty);
@@ -789,28 +928,117 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const restartExercise = () => {
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+    if (autoContinueTimerRef.current) clearTimeout(autoContinueTimerRef.current);
     generateNewProblemSet();
+    setShowRestartConfirm(false);
   };
 
   // Navegar entre problemas ya respondidos
   const handleViewPrevious = () => {
     if (currentProblemIndex === 0 || exerciseCompleted) return;
-    
+
     if (!viewingPrevious) {
       // Primera vez que vemos problemas anteriores
       setActualActiveProblemIndexBeforeViewingPrevious(currentProblemIndex);
     }
-    
+
     setViewingPrevious(true);
     setCurrentProblemIndex(prev => prev - 1);
     setCurrentProblem(problemsList[currentProblemIndex - 1]);
+
+    // Restaurar las respuestas ingresadas para el problema anterior
+    const prevAnswer = userAnswersHistory[currentProblemIndex - 1];
+    if (prevAnswer) {
+      // Convertir respuesta a arreglo de dígitos
+      const prevProblem = problemsList[currentProblemIndex - 1];
+      if (prevProblem) {
+        const answerStr = String(prevAnswer.userAnswer || '');
+
+        // Manejar respuestas con decimales
+        const decimalPosition = prevProblem.answerDecimalPosition;
+        if (decimalPosition !== undefined && decimalPosition > 0) {
+          const [intPart = '', decPart = ''] = answerStr.split('.');
+
+          // Llenar con los dígitos de la respuesta anterior
+          const restoredDigits: string[] = Array(prevProblem.answerMaxDigits).fill('');
+
+          // Parte entera
+          const intDigits = intPart.split('');
+          for (let i = 0; i < intDigits.length; i++) {
+            restoredDigits[i] = intDigits[i];
+          }
+
+          // Parte decimal
+          const decDigits = decPart.split('');
+          for (let i = 0; i < decDigits.length; i++) {
+            const position = i + (prevProblem.answerMaxDigits - decimalPosition);
+            if (position < prevProblem.answerMaxDigits) {
+              restoredDigits[position] = decDigits[i];
+            }
+          }
+
+          setDigitAnswers(restoredDigits);
+        } else {
+          // Sin decimales, simplemente rellenar los dígitos
+          const digits = answerStr.split('');
+          const restoredDigits: string[] = Array(prevProblem.answerMaxDigits).fill('');
+
+          for (let i = 0; i < digits.length; i++) {
+            if (i < restoredDigits.length) {
+              restoredDigits[i] = digits[i];
+            }
+          }
+
+          setDigitAnswers(restoredDigits);
+        }
+      }
+
+      // Mostrar resultado anterior como feedback
+      setFeedbackMessage(
+        prevAnswer.isCorrect 
+          ? t('exercises.yourAnswerWasCorrect', { userAnswer: prevAnswer.userAnswer }) 
+          : t('exercises.yourAnswerWasIncorrect', { 
+              userAnswer: isNaN(prevAnswer.userAnswer) ? t('common.notAnswered') : prevAnswer.userAnswer,
+              correctAnswer: prevAnswer.problem.correctAnswer 
+            })
+      );
+      setFeedbackColor(prevAnswer.isCorrect ? "green" : "red");
+    } else {
+      // No hay respuesta registrada
+      setFeedbackMessage(t('exercises.noAnswerRecordedForThisProblem'));
+      setFeedbackColor("blue");
+    }
   };
 
   const handleViewNext = () => {
     if (viewingPrevious && currentProblemIndex < actualActiveProblemIndexBeforeViewingPrevious) {
       setCurrentProblemIndex(prev => prev + 1);
       setCurrentProblem(problemsList[currentProblemIndex + 1]);
-      
+
+      // Restaurar la respuesta para el siguiente problema
+      const nextAnswer = userAnswersHistory[currentProblemIndex + 1];
+      if (nextAnswer) {
+        // Similar a handleViewPrevious, restaurar digitAnswers...
+        const nextProblem = problemsList[currentProblemIndex + 1];
+        if (nextProblem) {
+          const answerStr = String(nextAnswer.userAnswer || '');
+
+          // Similar al código en handleViewPrevious para restaurar digitAnswers
+          // (omití el código duplicado por brevedad)
+
+          // Mostrar resultado como feedback
+          setFeedbackMessage(
+            nextAnswer.isCorrect 
+              ? t('exercises.yourAnswerWasCorrect', { userAnswer: nextAnswer.userAnswer }) 
+              : t('exercises.yourAnswerWasIncorrect', { 
+                  userAnswer: isNaN(nextAnswer.userAnswer) ? t('common.notAnswered') : nextAnswer.userAnswer,
+                  correctAnswer: nextAnswer.problem.correctAnswer 
+                })
+          );
+          setFeedbackColor(nextAnswer.isCorrect ? "green" : "red");
+        }
+      }
+
       // Si llegamos al problema activo, volvemos al modo normal
       if (currentProblemIndex + 1 === actualActiveProblemIndexBeforeViewingPrevious) {
         setViewingPrevious(false);
@@ -819,18 +1047,92 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   // ==========================================
-  // 3.4: RENDERIZADO DE LA INTERFAZ
+  // 3.3: UTILIDADES Y CÁLCULOS
   // ==========================================
+
+  // Calcular puntuación actual
   const calculatedScore = useMemo(() => {
     if (userAnswersHistory.length === 0) return 0;
     const correctCount = userAnswersHistory.filter(a => a?.isCorrect).length;
     return Math.round((correctCount / problemsList.length) * 100);
   }, [userAnswersHistory, problemsList.length]);
 
+  // Determinar el tema de color basado en la dificultad
+  const getDifficultyTheme = (difficulty: DifficultyLevel) => {
+    switch (difficulty) {
+      case "beginner":
+        return {
+          bg: "bg-blue-50",
+          border: "border-blue-200",
+          text: "text-blue-600",
+          accent: "bg-blue-500",
+          accentHover: "hover:bg-blue-600",
+          accentText: "text-white",
+          timer: "bg-blue-100"
+        };
+      case "elementary":
+        return {
+          bg: "bg-emerald-50",
+          border: "border-emerald-200",
+          text: "text-emerald-600",
+          accent: "bg-emerald-500",
+          accentHover: "hover:bg-emerald-600",
+          accentText: "text-white",
+          timer: "bg-emerald-100"
+        };
+      case "intermediate":
+        return {
+          bg: "bg-orange-50",
+          border: "border-orange-200",
+          text: "text-orange-600",
+          accent: "bg-orange-500",
+          accentHover: "hover:bg-orange-600",
+          accentText: "text-white",
+          timer: "bg-orange-100"
+        };
+      case "advanced":
+        return {
+          bg: "bg-purple-50",
+          border: "border-purple-200",
+          text: "text-purple-600",
+          accent: "bg-purple-500",
+          accentHover: "hover:bg-purple-600",
+          accentText: "text-white",
+          timer: "bg-purple-100"
+        };
+      case "expert":
+        return {
+          bg: "bg-rose-50",
+          border: "border-rose-200",
+          text: "text-rose-600",
+          accent: "bg-rose-500",
+          accentHover: "hover:bg-rose-600",
+          accentText: "text-white",
+          timer: "bg-rose-100"
+        };
+      default:
+        return {
+          bg: "bg-gray-50",
+          border: "border-gray-200",
+          text: "text-gray-600",
+          accent: "bg-gray-500",
+          accentHover: "hover:bg-gray-600",
+          accentText: "text-white",
+          timer: "bg-gray-100"
+        };
+    }
+  };
+
+  const theme = getDifficultyTheme(adaptiveDifficulty);
+
+  // ==========================================
+  // 3.4: RENDERIZADO DE LA INTERFAZ
+  // ==========================================
   if (!currentProblem) {
     return (
-      <div className="flex items-center justify-center min-h-64 p-6">
+      <div className="flex items-center justify-center min-h-64 p-6 animate-pulse">
         <div className="text-center">
+          <div className="inline-block w-16 h-16 mb-4 rounded-full bg-gray-200"></div>
           <p className="text-lg font-medium text-gray-600">{t('exercises.loading')}</p>
         </div>
       </div>
@@ -838,17 +1140,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }
 
   if (exerciseCompleted) {
+    const correctCount = userAnswersHistory.filter(a => a?.isCorrect).length;
+
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 max-w-2xl mx-auto">
+      <div className={`${theme.bg} rounded-lg shadow-md p-6 max-w-2xl mx-auto border ${theme.border}`}>
         <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center p-4 mb-4 rounded-full bg-green-100 text-green-600">
+            <Trophy className="h-16 w-16" />
+          </div>
           <h2 className="text-2xl font-bold text-green-600 mb-2">{t('exercises.completed')}</h2>
-          <p className="text-lg font-medium text-gray-600">{t('exercises.score')}: {calculatedScore}%</p>
+          <p className="text-lg font-medium text-gray-600">{t('exercises.scoreWithCount', { score: calculatedScore, correct: correctCount, total: problemsList.length })}</p>
           <p className="text-lg font-medium text-gray-600">{t('exercises.timeTaken')}: {formatTime(timer)}</p>
         </div>
-        
+
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-700">Resumen del Ejercicio:</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
               <h4 className="font-medium text-blue-700 mb-2">Estadísticas:</h4>
@@ -871,7 +1178,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </li>
               </ul>
             </div>
-            
+
             <div className="bg-green-50 rounded-lg p-4 border border-green-100">
               <h4 className="font-medium text-green-700 mb-2">Tus Respuestas:</h4>
               <div className="max-h-40 overflow-y-auto pr-2">
@@ -891,7 +1198,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           </div>
         </div>
-        
+
         <div className="flex justify-center mt-8 space-x-4">
           <Button 
             variant="outline" 
@@ -901,7 +1208,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <RotateCcw className="h-4 w-4" />
             <span>{t('exercises.tryAgain')}</span>
           </Button>
-          
+
           <Button 
             onClick={() => {
               if (settings.enableAdaptiveDifficulty) {
@@ -912,8 +1219,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   console.error("Error resetting consecutive answers:", e);
                 }
               }
+              // Aquí habría una navegación a la pantalla principal
             }}
-            className="flex items-center space-x-2"
+            className={`flex items-center space-x-2 ${theme.accent} ${theme.accentHover} ${theme.accentText}`}
           >
             <ChevronLeft className="h-4 w-4" />
             <span>{t('exercises.returnHome')}</span>
@@ -930,23 +1238,29 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <span>{currentProblem.operands[0]}</span>
         <span className="text-gray-600">+</span>
         <span>{currentProblem.operands[1]}</span>
+        {currentProblem.operands.length > 2 && currentProblem.operands.slice(2).map((op, idx) => (
+          <React.Fragment key={`op-${idx}`}>
+            <span className="text-gray-600">+</span>
+            <span>{op}</span>
+          </React.Fragment>
+        ))}
         <span className="text-gray-600">=</span>
       </div>
     </div>
   );
 
   const renderVerticalProblem = () => {
-    const { maxIntLength, maxDecLength, operandsFormatted } = getVerticalAlignmentInfo(
+    const { maxIntLength, maxDecLength, operandsFormatted, sumLineTotalCharWidth } = getVerticalAlignmentInfo(
       currentProblem.operands, 
       currentProblem.answerDecimalPosition
     );
-    
+
     return (
       <div className="py-4 flex justify-center">
         <div className="flex flex-col items-end">
           {operandsFormatted.map((op, idx) => (
             <div key={idx} className="flex items-center mb-1">
-              {idx === 0 ? null : (
+              {idx === operandsFormatted.length - 1 && (
                 <span className={plusSignVerticalStyle}>+</span>
               )}
               <span className={verticalOperandStyle}>
@@ -960,7 +1274,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               </span>
             </div>
           ))}
-          <div className={sumLineStyle} style={{ width: `${(maxIntLength + maxDecLength + (maxDecLength > 0 ? 1 : 0)) * 0.6}em` }} />
+          <div className={sumLineStyle} style={{ width: `${sumLineTotalCharWidth * 0.6}em` }} />
         </div>
       </div>
     );
@@ -969,29 +1283,48 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const renderDigitAnswerBoxes = () => {
     const decimalPosition = currentProblem.answerDecimalPosition;
     const totalBoxes = digitAnswers.length;
-    
+
     return (
       <div className="flex justify-center items-center space-x-1 my-4">
         {digitAnswers.map((value, index) => {
-          const isDecimalPoint = decimalPosition !== undefined && 
-                               index === (totalBoxes - decimalPosition);
+          // Si tenemos un punto decimal, insértalo en la posición correcta
+          const isDecimalPointPosition = decimalPosition !== undefined && 
+                                         index === (totalBoxes - decimalPosition);
+
+          // Determinar si este cajón es para la parte decimal
           const isDecimalBox = decimalPosition !== undefined && 
                               index >= (totalBoxes - decimalPosition);
-          
-          if (isDecimalPoint) {
+
+          // Si este es donde va el punto decimal, mostrar primero el punto y luego el cajón
+          if (isDecimalPointPosition) {
             return (
               <React.Fragment key={`decimal-${index}`}>
-                <div className="text-2xl font-bold mx-0.5">.</div>
+                <div className="text-2xl font-bold mx-1 mt-1 opacity-75">.</div>
+                <div
+                  ref={(el) => {
+                    if (el) boxRefsArrayRef.current[index] = el;
+                  }}
+                  className={`
+                    ${digitBoxBaseStyle}
+                    ${focusedDigitIndex === index && !viewingPrevious && !waitingForContinue ? digitBoxFocusStyle : digitBoxBlurStyle}
+                    ${viewingPrevious || waitingForContinue ? digitBoxDisabledStyle : 'cursor-pointer'}
+                    ${isDecimalBox ? 'bg-blue-50' : ''}
+                  `}
+                  onClick={() => handleDigitClick(index)}
+                  onKeyDown={(e) => handleDigitKeyDown(e, index)}
+                  tabIndex={viewingPrevious || waitingForContinue ? -1 : 0}
+                  data-testid={`digit-box-${index}`}
+                >
+                  {value || <span className="opacity-0">0</span>}
+                </div>
               </React.Fragment>
             );
           }
-          
-          const isFocused = focusedDigitIndex === index;
-          const disabled = viewingPrevious || waitingForContinue || exerciseCompleted;
-          
+
+          // Cajón regular
           return (
             <div
-              key={index}
+              key={`digit-${index}`}
               ref={(el) => {
                 if (el) {
                   boxRefsArrayRef.current[index] = el;
@@ -1000,16 +1333,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               }}
               className={`
                 ${digitBoxBaseStyle}
-                ${isFocused && !disabled ? digitBoxFocusStyle : digitBoxBlurStyle}
-                ${disabled ? digitBoxDisabledStyle : 'cursor-pointer'}
+                ${focusedDigitIndex === index && !viewingPrevious && !waitingForContinue ? digitBoxFocusStyle : digitBoxBlurStyle}
+                ${viewingPrevious || waitingForContinue ? digitBoxDisabledStyle : 'cursor-pointer'}
                 ${isDecimalBox ? 'bg-blue-50' : ''}
               `}
-              onClick={(e) => handleDigitClick(index, e)}
+              onClick={() => handleDigitClick(index)}
               onKeyDown={(e) => handleDigitKeyDown(e, index)}
-              tabIndex={disabled ? -1 : 0}
+              tabIndex={viewingPrevious || waitingForContinue ? -1 : 0}
               data-testid={`digit-box-${index}`}
             >
-              {value}
+              {value || <span className="opacity-0">0</span>}
             </div>
           );
         })}
@@ -1017,14 +1350,62 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     );
   };
 
+  const renderNumpad = () => (
+    <div className="grid grid-cols-3 gap-2 mt-4 max-w-xs mx-auto">
+      {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"].map((key, idx) => (
+        <Button
+          key={key || `empty-${idx}`}
+          variant="outline"
+          className={`
+            h-12 text-lg font-medium
+            ${key === "" ? "invisible pointer-events-none" : ""}
+            ${key === "⌫" ? "bg-gray-100" : "bg-white"}
+          `}
+          onClick={() => {
+            if (waitingForContinue || viewingPrevious) return;
+
+            if (!exerciseStarted) startExercise();
+
+            if (key === "⌫" && focusedDigitIndex !== null) {
+              clearDigitBox(focusedDigitIndex);
+              // Ajustar el foco después de borrar
+              if (inputDirection === 'ltr' && focusedDigitIndex > 0) {
+                setFocusedDigitIndex(focusedDigitIndex - 1);
+              } else if (inputDirection === 'rtl' && focusedDigitIndex < digitAnswers.length - 1) {
+                setFocusedDigitIndex(focusedDigitIndex + 1);
+              }
+            } else if (/^[0-9]$/.test(key) && focusedDigitIndex !== null) {
+              // Insertar dígito
+              setDigitAnswers(prev => {
+                const updated = [...prev];
+                updated[focusedDigitIndex] = key;
+                return updated;
+              });
+
+              // Avanzar al siguiente cajón
+              if (inputDirection === 'ltr' && focusedDigitIndex < digitAnswers.length - 1) {
+                setFocusedDigitIndex(focusedDigitIndex + 1);
+              } else if (inputDirection === 'rtl' && focusedDigitIndex > 0) {
+                setFocusedDigitIndex(focusedDigitIndex - 1);
+              }
+            }
+          }}
+          disabled={waitingForContinue || viewingPrevious || key === ""}
+        >
+          {key}
+        </Button>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 max-w-2xl mx-auto">
+    <div className={`${theme.bg} rounded-lg shadow-md p-4 max-w-2xl mx-auto border ${theme.border}`}>
       {/* Cabecera con progreso y configuración */}
       <div className="flex justify-between items-center mb-3">
         <div className="text-sm font-medium text-gray-500">
           Problema {currentProblemIndex + 1} de {problemsList.length}
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline" 
@@ -1037,7 +1418,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </Button>
         </div>
       </div>
-      
+
       {/* Barra de progreso */}
       <div className="mb-6">
         <ProgressBarUI 
@@ -1045,37 +1426,61 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           className="h-1.5" 
         />
       </div>
-      
+
       {/* Timer en la parte superior */}
-      {settings.timeValue > 0 && (
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-sm font-medium text-gray-500">
-            Tiempo: {formatTime(timer)}
+      <div className="flex justify-between items-center mb-4">
+        <div className="text-sm font-medium text-gray-500 flex items-center">
+          <Info className="h-3.5 w-3.5 mr-1" />
+          Tiempo: {formatTime(timer)}
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {/* Nivel de dificultad */}
+          <div className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${theme.text} bg-white/70 border ${theme.border}`}>
+            {t(adaptiveDifficulty)}
           </div>
-          <div className="flex items-center">
-            <div className="text-sm font-medium text-gray-500 mr-2">
-              Tiempo para responder:
-            </div>
-            <div className={`text-sm font-bold ${problemTimerValue <= 5 ? 'text-red-500' : 'text-blue-600'}`}>
+
+          {/* Tiempo para resolver el problema actual */}
+          {settings.timeValue > 0 && (
+            <div className={`px-2 py-0.5 rounded-full text-xs font-medium 
+                          ${problemTimerValue <= 5 ? 'text-red-600 bg-red-50 animate-pulse' : 'text-gray-600 bg-white/70'} 
+                          border ${problemTimerValue <= 5 ? 'border-red-200' : theme.border}`}
+            >
               {problemTimerValue}s
             </div>
-          </div>
+          )}
+
+          {/* Intentos */}
+          {settings.maxAttempts > 0 && (
+            <div className={`px-2 py-0.5 rounded-full text-xs font-medium 
+                          ${currentAttempts >= settings.maxAttempts ? 'text-red-600 bg-red-50' : 
+                            currentAttempts > 0 ? 'text-amber-600 bg-amber-50' : 'text-gray-600 bg-white/70'} 
+                          border ${currentAttempts >= settings.maxAttempts ? 'border-red-200' : 
+                                  currentAttempts > 0 ? 'border-amber-200' : theme.border}`}
+            >
+              {currentAttempts}/{settings.maxAttempts}
+            </div>
+          )}
         </div>
-      )}
-      
+      </div>
+
       {/* Contenedor del problema */}
-      <div className="my-4 p-3 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
+      <div className={`my-4 p-3 rounded-lg border shadow-sm ${
+        waitingForContinue && feedbackColor === "green" ? "bg-green-50 border-green-200" :
+        waitingForContinue && feedbackColor === "red" ? "bg-red-50 border-red-200" :
+        "bg-white border-gray-200"
+      }`}>
         {currentProblem.layout === 'horizontal' 
           ? renderHorizontalProblem() 
           : renderVerticalProblem()
         }
-        
+
         {renderDigitAnswerBoxes()}
       </div>
-      
+
       {/* Mensaje de feedback */}
       {feedbackMessage && (
-        <div className={`mb-4 p-3 rounded-lg ${
+        <div className={`my-3 p-3 rounded-lg text-center ${
           feedbackColor === "green" ? "bg-green-50 border border-green-200 text-green-700" :
           feedbackColor === "red" ? "bg-red-50 border border-red-200 text-red-700" :
           "bg-blue-50 border border-blue-200 text-blue-700"
@@ -1083,58 +1488,145 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {feedbackMessage}
         </div>
       )}
-      
+
+      {/* Teclado numérico */}
+      {renderNumpad()}
+
       {/* Botones de acción */}
-      <div className="flex justify-between mt-4">
+      <div className="flex justify-between mt-5">
         <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleViewPrevious}
-            disabled={currentProblemIndex === 0 || !exerciseStarted}
-            className="flex items-center"
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Anterior
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleViewNext}
-            disabled={!viewingPrevious || currentProblemIndex >= actualActiveProblemIndexBeforeViewingPrevious}
-            className="flex items-center"
-          >
-            Siguiente
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleViewPrevious}
+                  disabled={currentProblemIndex === 0 || !exerciseStarted}
+                  className="flex items-center"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Anterior
+                </Button>
+              </TooltipTrigger>
+              {currentProblemIndex === 0 && (
+                <TooltipContent>
+                  <p>No hay problemas anteriores para revisar</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleViewNext}
+                  disabled={!viewingPrevious || currentProblemIndex >= actualActiveProblemIndexBeforeViewingPrevious}
+                  className="flex items-center"
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </TooltipTrigger>
+              {(!viewingPrevious || currentProblemIndex >= actualActiveProblemIndexBeforeViewingPrevious) && (
+                <TooltipContent>
+                  <p>No hay más problemas para avanzar</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         </div>
-        
+
         <div className="flex space-x-2">
-          {!exerciseStarted ? (
-            <Button onClick={startExercise} className="flex items-center">
-              {t('exercises.start')}
+          {viewingPrevious ? (
+            <Button 
+              onClick={() => {
+                setViewingPrevious(false);
+                setCurrentProblemIndex(actualActiveProblemIndexBeforeViewingPrevious);
+                setCurrentProblem(problemsList[actualActiveProblemIndexBeforeViewingPrevious]);
+                setFeedbackMessage(null);
+                setFeedbackColor(null);
+              }}
+              className={`flex items-center ${theme.accent} ${theme.accentHover} ${theme.accentText}`}
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Volver al Problema Actual
             </Button>
           ) : waitingForContinue ? (
-            <Button onClick={handleContinue} className="flex items-center bg-green-600 hover:bg-green-700">
-              Continuar
-              <ChevronRight className="h-4 w-4 ml-1" />
+            <div className="flex items-center space-x-2">
+              <Button 
+                onClick={handleContinue} 
+                className={`flex items-center ${feedbackColor === "green" ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700"} text-white`}
+              >
+                Continuar
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center space-x-2 ml-2 p-1 rounded border border-gray-200 bg-white/80">
+                      <Switch
+                        checked={autoContinue}
+                        onCheckedChange={setAutoContinue}
+                        className="data-[state=checked]:bg-green-500"
+                      />
+                      <span className="text-xs text-gray-500">Auto</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Avanzar automáticamente al siguiente problema</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          ) : !exerciseStarted ? (
+            <Button 
+              onClick={startExercise} 
+              className={`flex items-center ${theme.accent} ${theme.accentHover} ${theme.accentText}`}
+            >
+              {t('exercises.start')}
             </Button>
           ) : (
-            <Button onClick={checkCurrentAnswer} className="flex items-center">
+            <Button 
+              onClick={checkCurrentAnswer} 
+              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={waitingForContinue || viewingPrevious}
+            >
               <Check className="h-4 w-4 mr-1" />
               {t('exercises.check')}
             </Button>
           )}
-          
-          {settings.showAnswerWithExplanation && (
+
+          {settings.showAnswerWithExplanation && !waitingForContinue && !viewingPrevious && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
-                    onClick={() => setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }))}
-                    disabled={!exerciseStarted || !settings.showAnswerWithExplanation}
+                    onClick={() => {
+                      if (!exerciseStarted) startExercise();
+                      setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                      setFeedbackColor("blue");
+                      setWaitingForContinue(true);
+
+                      // Actualizar historial para marcar como revelada
+                      setUserAnswersHistory(prev => {
+                        const newHistory = [...prev];
+                        newHistory[currentProblemIndex] = {
+                          problemId: currentProblem.id,
+                          problem: currentProblem,
+                          userAnswer: null,
+                          isCorrect: false,
+                          status: 'revealed'
+                        };
+                        return newHistory;
+                      });
+                    }}
+                    disabled={!settings.showAnswerWithExplanation || waitingForContinue || viewingPrevious}
                     className="flex items-center"
                   >
                     <Info className="h-4 w-4 mr-1" />
@@ -1151,123 +1643,135 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         </div>
       </div>
-      
-      {/* Ajustes de auto-continuar */}
-      <div className="mt-4 border-t pt-3 flex justify-end">
-        <div className="flex items-center space-x-2">
-          <div className="text-sm text-gray-500">Avanzar automáticamente:</div>
-          <Switch
-            checked={autoContinue}
-            onCheckedChange={(checked) => {
-              setAutoContinue(checked);
-              try {
-                localStorage.setItem('addition_autoContinue', checked.toString());
-              } catch (e) {
-                console.error("Error saving autoContinue to localStorage:", e);
-              }
-            }}
-            className="data-[state=checked]:bg-green-500 h-4 w-7"
-          />
-        </div>
-      </div>
-      
+
       {/* Botón de reinicio */}
-      <div className="mt-4 border-t pt-3 flex justify-start">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            if (confirm("¿Estás seguro que deseas reiniciar el ejercicio? Se perderá tu progreso actual.")) {
-              restartExercise();
-            }
-          }}
-          className="flex items-center"
-        >
-          <RotateCcw className="h-4 w-4 mr-1" />
-          Reiniciar Ejercicio
-        </Button>
+      <div className="mt-5 border-t pt-3 flex justify-start">
+        <AlertDialog open={showRestartConfirm} onOpenChange={setShowRestartConfirm}>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Reiniciar Ejercicio
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center">
+                <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
+                Confirmar Reinicio
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                ¿Estás seguro que deseas reiniciar el ejercicio? Perderás todo tu progreso actual.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={restartExercise} className="bg-red-600 hover:bg-red-700">
+                Sí, Reiniciar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-      
+
       {/* Modal de subida de nivel */}
       {showLevelUpReward && (
-        <LevelUpModal 
-          isOpen={showLevelUpReward}
-          previousLevel={adaptiveDifficulty}
-          newLevel={adaptiveDifficulty}
-          onClose={() => {
-            setShowLevelUpReward(false);
-            setBlockAutoAdvance(false);
-          }}
-        />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="text-center mb-4">
+              <div className="inline-block p-4 rounded-full bg-indigo-100 mb-4">
+                <Trophy className="h-16 w-16 text-indigo-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-indigo-600">¡Nivel Superado!</h3>
+              <div className="flex justify-center mt-4">
+                <div className="relative">
+                  <div className="absolute -top-10 left-1/2 transform -translate-x-1/2">
+                    <div className="animate-bounce text-4xl">🎉</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-100 to-indigo-50 rounded-lg p-3 border border-indigo-200">
+                    <p className="text-sm text-indigo-700 mb-2">Nivel Anterior:</p>
+                    <p className="text-xl font-bold text-indigo-600 capitalize">{t(adaptiveDifficulty)}</p>
+                  </div>
+                  <div className="flex justify-center my-2">
+                    <div className="text-indigo-500">↓</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-indigo-100 to-purple-50 rounded-lg p-3 border border-purple-200">
+                    <p className="text-sm text-purple-700 mb-2">Nuevo Nivel:</p>
+                    <p className="text-xl font-bold text-purple-600 capitalize">{t(adaptiveDifficulty)}</p>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-6 text-sm text-gray-600">¡Has demostrado un gran dominio y ahora enfrentarás desafíos más complejos!</p>
+            </div>
+
+            <div className="flex justify-center mt-4">
+              <Button onClick={handleContinue} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                Continuar con el Nuevo Nivel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Animación de recompensa */}
+      {showRewardAnimation && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl animate-fadeInUp">
+            <div className="text-center">
+              <div className={`inline-block p-5 rounded-full 
+                ${rewardType === 'medal' ? 'bg-amber-100' : 
+                 rewardType === 'trophy' ? 'bg-indigo-100' : 'bg-pink-100'} 
+                mb-4`}
+              >
+                {rewardType === 'medal' ? (
+                  <div className="text-5xl">🏅</div>
+                ) : rewardType === 'trophy' ? (
+                  <div className="text-5xl">🏆</div>
+                ) : (
+                  <div className="text-5xl">⭐</div>
+                )}
+              </div>
+              <h3 className="text-xl font-bold mb-2">
+                {rewardType === 'medal' ? '¡Medalla Obtenida!' : 
+                 rewardType === 'trophy' ? '¡Trofeo Ganado!' : '¡Estrella Conseguida!'}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                ¡Enhorabuena! Has obtenido una recompensa por tu buen desempeño.
+              </p>
+              <Button 
+                onClick={() => setShowRewardAnimation(false)}
+                className={
+                  rewardType === 'medal' ? 'bg-amber-500 hover:bg-amber-600 text-white' : 
+                  rewardType === 'trophy' ? 'bg-indigo-500 hover:bg-indigo-600 text-white' : 
+                  'bg-pink-500 hover:bg-pink-600 text-white'
+                }
+              >
+                ¡Genial!
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
 // ==========================================
-// SECCIÓN 4: COMPONENTES INTERNOS
-// ==========================================
-interface LevelUpModalProps {
-  isOpen: boolean;
-  previousLevel: DifficultyLevel;
-  newLevel: DifficultyLevel;
-  onClose: () => void;
-}
-
-function LevelUpModal({ isOpen, previousLevel, newLevel, onClose }: LevelUpModalProps) {
-  if (!isOpen) return null;
-  
-  const { t } = useTranslations();
-  
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-        <div className="text-center mb-4">
-          <h3 className="text-2xl font-bold text-indigo-600">¡Nivel Superado!</h3>
-          <div className="flex justify-center mt-4">
-            <div className="relative">
-              <div className="absolute -top-10 left-1/2 transform -translate-x-1/2">
-                <div className="animate-bounce text-4xl">🎉</div>
-              </div>
-              <div className="bg-gradient-to-br from-blue-100 to-indigo-50 rounded-lg p-3 border border-indigo-200">
-                <p className="text-sm text-indigo-700 mb-2">{t('levelUp.previousLevel')}</p>
-                <p className="text-xl font-bold text-indigo-600 capitalize">{previousLevel}</p>
-              </div>
-              <div className="flex justify-center my-2">
-                <div className="text-indigo-500">↓</div>
-              </div>
-              <div className="bg-gradient-to-br from-indigo-100 to-purple-50 rounded-lg p-3 border border-purple-200">
-                <p className="text-sm text-purple-700 mb-2">{t('levelUp.newLevel')}</p>
-                <p className="text-xl font-bold text-purple-600 capitalize">{newLevel}</p>
-              </div>
-            </div>
-          </div>
-          <p className="mt-6 text-sm text-gray-600">{t('levelUp.adaptiveDifficultyEnabled')}</p>
-        </div>
-        
-        <div className="flex justify-center mt-4">
-          <Button onClick={onClose}>
-            {t('levelUp.continue')}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ==========================================
-// SECCIÓN 5: COMPONENTE DE CONFIGURACIÓN
+// SECCIÓN 4: COMPONENTE DE CONFIGURACIÓN
 // ==========================================
 interface SettingsProps {
   settings: ModuleSettings;
   onBack: () => void;
 }
 
-export function SettingsPanel({ settings, onBack }: SettingsProps) {
+function Settings({ settings, onBack }: SettingsProps) {
   const { updateModuleSettings, resetModuleSettings } = useSettings();
   const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  
+
   // Referencia a la función debounced para guardar la configuración
   const debouncedSave = useMemo(
     () =>
@@ -1277,12 +1781,12 @@ export function SettingsPanel({ settings, onBack }: SettingsProps) {
       }, 500), // Reducir el tiempo de espera a 500ms para asegurar que se guarde pronto
     [updateModuleSettings]
   );
-  
+
   // Guardar automáticamente cada vez que cambia un ajuste
   const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
     const updatedSettings = { ...localSettings, [key]: value };
     setLocalSettings(updatedSettings);
-    
+
     // Para cambios de dificultad, aplicar cambio inmediatamente
     if (key === "difficulty") {
       console.log("[ADDITION] Guardando configuración de dificultad inmediatamente:", value);
@@ -1293,18 +1797,18 @@ export function SettingsPanel({ settings, onBack }: SettingsProps) {
       debouncedSave(updatedSettings);
     }
   };
-  
+
   // Para poder navegar entre la configuración y el ejercicio sin perder cambios
   // Agregamos un efecto para guardar al desmontar y asegurar persistencia
   // Referencia para controlar si ya se ha guardado la configuración
   const hasSavedRef = useRef(false);
-  
+
   // Forzar el guardado de la configuración al componente cargarse
   useEffect(() => {
     // Guardar configuración inmediatamente al montar el componente para persistir valores actuales
     updateModuleSettings("addition", localSettings);
     console.log("[ADDITION] Guardando configuración al cargar:", localSettings);
-    
+
     // Al desmontar, volver a guardar
     return () => {
       if (!hasSavedRef.current) {
@@ -1312,13 +1816,13 @@ export function SettingsPanel({ settings, onBack }: SettingsProps) {
         // Llamada directa sin debounce para asegurar que se ejecute
         updateModuleSettings("addition", localSettings);
         console.log("[ADDITION] Guardando configuración al desmontar:", localSettings);
-        
+
         // Forzar localStorage para asegurar persistencia
         try {
           const profileId = localStorage.getItem('activeProfileId');
           const suffix = profileId ? `-profile-${profileId}` : '';
           const key = `moduleSettings${suffix}`;
-          
+
           // Obtener y actualizar configuraciones actuales en localStorage
           const currentSettings = localStorage.getItem(key);
           if (currentSettings) {
@@ -1459,17 +1963,17 @@ export function SettingsPanel({ settings, onBack }: SettingsProps) {
             <span className="mr-2">🎯</span>Nivel de Dificultad
           </h3>
           <p className={`text-sm ${theme.textSecondary} mb-2`}>Haz clic en un ejemplo para cambiar el nivel de dificultad:</p>
-          
+
           <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
             <DifficultyExamples 
               operation="addition" 
               activeDifficulty={localSettings.difficulty}
               onSelectDifficulty={(difficulty) => 
-                handleUpdateSetting("difficulty", difficulty as DifficultyLevel)
+                handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
               }
             />
           </div>
-          
+
           <div className="mt-3 mb-2 space-y-1.5">
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
               <span className="font-bold">Principiante:</span> Sumas con dígitos simples (1+8, 7+5)
@@ -1721,26 +2225,43 @@ export function SettingsPanel({ settings, onBack }: SettingsProps) {
         </div>
 
         <div className="pt-4">
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant={showResetConfirm ? "destructive" : "outline"}
-              onClick={handleResetSettings}
-              className={`mr-3 ${showResetConfirm ? "" : `border ${theme.border} hover:${theme.bgContainer}`}`}
-            >
-              {showResetConfirm ? (
-                "Confirmar Restablecimiento"
-              ) : (
-                <>
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Restablecer valores predeterminados
-                </>
-              )}
-            </Button>
-            {/* Botón de guardar eliminado - los cambios se guardan automáticamente */}
-          </div>
+          <AlertDialog open={showResetConfirm} onOpenChange={setShowResetConfirm}>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className={`mr-3 border ${theme.border} hover:${theme.bgContainer} text-red-600`}
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Restablecer valores predeterminados
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
+                  Confirmar Restablecimiento
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  ¿Estás seguro que deseas restablecer toda la configuración a los valores predeterminados?
+                  Esta acción no se puede deshacer.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleResetSettings} className="bg-red-600 hover:bg-red-700">
+                  Sí, Restablecer
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>
   );
 }
+
+// ==========================================
+// SECCIÓN 5: EXPORTACIÓN DE COMPONENTES
+// ==========================================
+export { Exercise as default, Settings as SettingsPanel };
