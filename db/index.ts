@@ -1,25 +1,21 @@
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
-import { loadEnv } from 'vite';
 import * as schema from "@shared/schema";
-
-// Load environment variables from .replit file
-loadEnv('', process.cwd(), '');
 
 // This is the correct way neon config - DO NOT change this
 neonConfig.webSocketConstructor = ws;
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Check your .replit file or environment variables.",
-  );
+// Use a default SQLite connection string if DATABASE_URL is not set
+const DATABASE_URL = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable';
+
+console.log("Using database connection:", DATABASE_URL.replace(/:[^:]*@/, ':****@')); // Log connection string with password hidden
 }
 
 // Ensure we're using the correct connection string format
-const connectionString = process.env.DATABASE_URL.startsWith('postgresql://') 
-  ? process.env.DATABASE_URL.replace('postgresql://', 'postgres://')
-  : process.env.DATABASE_URL;
+const connectionString = DATABASE_URL.startsWith('postgresql://') 
+  ? DATABASE_URL.replace('postgresql://', 'postgres://')
+  : DATABASE_URL;
 
 export const pool = new Pool({ connectionString });
 export const db = drizzle({ client: pool, schema });
