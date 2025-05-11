@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet";
 import { useSettings, GlobalSettings } from "@/context/SettingsContext";
+import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -8,12 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2, AlertTriangle, LogOut } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
+import { Link } from "wouter";
 
 export default function SettingsPage() {
   const { globalSettings, updateGlobalSettings, resetAllSettings } = useSettings();
   const { t } = useTranslations();
+  const { isAuthenticated } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -241,6 +244,28 @@ export default function SettingsPage() {
             </Button>
           )}
         </div>
+
+        {isAuthenticated && (
+          <div className="mt-8 pt-6 border-t">
+            <h3 className="text-xl font-medium mb-4">{t('settings.accountOptions')}</h3>
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <div>
+                  <h4 className="font-medium text-red-700 dark:text-red-300">Cerrar Sesión / Sign Out</h4>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                    {t('settings.signOutDescription')}
+                  </p>
+                </div>
+                <Link href="/logout">
+                  <Button variant="destructive" className="px-4">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    {t('common.signOut')}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
