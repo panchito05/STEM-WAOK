@@ -181,7 +181,7 @@ function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setUserInput('');
     
     // Configurar temporizador para todo el ejercicio si está habilitado
-    if (settings.timeLimit === 'total' && settings.timeValue) {
+    if (settings.timeLimit === 'exercise' && settings.timeValue) {
       const totalTimeLimit = settings.timeValue * 1000;
       setDisplayTimer(totalTimeLimit);
       

@@ -13,7 +13,7 @@ import { debouncePromise } from "@/lib/debounce";
 export interface ModuleSettings {
   difficulty: "beginner" | "elementary" | "intermediate" | "advanced" | "expert";
   problemCount: number;
-  timeLimit: "per-problem"; // Simplificado para solo usar un tipo
+  timeLimit: "per-problem" | "exercise" | "no-limit"; // Valores posibles para el límite de tiempo
   timeValue: number; // 0 para sin límite
   maxAttempts: number; // 0 para intentos ilimitados
   showImmediateFeedback: boolean;
@@ -69,7 +69,7 @@ const defaultGlobalSettings: GlobalSettings = {
 const defaultModuleSettings: ModuleSettings = {
   difficulty: "beginner",
   problemCount: 10,
-  timeLimit: "per-problem",
+  timeLimit: "no-limit",
   timeValue: 0, // Sin límite por defecto
   maxAttempts: 2,
   showImmediateFeedback: true,
