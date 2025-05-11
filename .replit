@@ -16,7 +16,7 @@ localPort = 5000
 externalPort = 80
 
 [env]
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/postgres"
+DATABASE_URL = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 
 [workflows]
 runButton = "Project"

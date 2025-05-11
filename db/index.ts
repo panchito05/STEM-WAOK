@@ -16,5 +16,10 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Ensure we're using the correct connection string format
+const connectionString = process.env.DATABASE_URL.startsWith('postgresql://') 
+  ? process.env.DATABASE_URL.replace('postgresql://', 'postgres://')
+  : process.env.DATABASE_URL;
+
+export const pool = new Pool({ connectionString });
 export const db = drizzle({ client: pool, schema });
