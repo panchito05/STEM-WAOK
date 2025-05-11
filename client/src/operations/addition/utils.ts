@@ -106,13 +106,15 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
 
   return {
     id,
-    num1: operands[0], // Mantener por compatibilidad o uso simple
-    num2: operands.length > 1 ? operands[1] : 0, // Mantener por compatibilidad
     operands,
     correctAnswer,
     layout,
     answerMaxDigits,
     answerDecimalPosition,
+    // Agregar propiedad de dificultad al problema generado
+    difficulty,
+    // Agregar numberOfAnswerSlots para compatibilidad con la interfaz Problem
+    numberOfAnswerSlots: answerMaxDigits
   };
 }
 

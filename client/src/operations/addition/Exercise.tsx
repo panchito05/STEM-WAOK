@@ -406,10 +406,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const generateNewProblemSet = () => {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
+    
+    // Calcular problemas adicionales basados en historial y configuración
+    let additionalProblems = 0;
+    
+    if (settings.enableCompensation && userAnswersHistory.length > 0) {
+      // Contar respuestas incorrectas y las que se mostraron (revealed)
+      const incorrectCount = userAnswersHistory.filter(
+        answer => answer && (answer.status === 'incorrect' || answer.status === 'revealed')
+      ).length;
+      
+      // Añadir un problema adicional por cada respuesta incorrecta o revelada
+      additionalProblems = incorrectCount;
+      console.log(`🔄 Compensación: Añadiendo ${additionalProblems} problemas adicionales`);
+    }
+    
+    // Calcular el número total de problemas (originales + adicionales)
+    const totalProblems = settings.problemCount + additionalProblems;
+    
+    // Generar el array de problemas
     const newProblemsArray: AdditionProblem[] = [];
-    for (let i = 0; i < settings.problemCount; i++) {
+    for (let i = 0; i < totalProblems; i++) {
       newProblemsArray.push(generateAdditionProblem(difficultyToUse));
     }
+    
     setProblemsList(newProblemsArray);
     setCurrentProblemIndex(0);
     setActualActiveProblemIndexBeforeViewingPrevious(0);
