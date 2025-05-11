@@ -336,7 +336,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           problem: currentProblem,
           userAnswer: NaN, 
           isCorrect: false,
-          status: 'timeout' // o 'unanswered'
+          status: 'revealed' as const // Cambiado de 'timeout' para funcionar con la compensación
       };
       setUserAnswersHistory(prev => {
           const newHistory = [...prev];
@@ -1000,7 +1000,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                     problem: currentProblem, 
                                     userAnswer: NaN,
                                     isCorrect: false, 
-                                    status: 'revealed' 
+                                    status: 'revealed' as const
                                 };
                                 console.log("Marcando respuesta como revelada para compensación:", revealedAnswer);
                                 newHistory[problemIdxForHistory] = revealedAnswer;
