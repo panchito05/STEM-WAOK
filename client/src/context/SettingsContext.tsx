@@ -445,11 +445,19 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     } catch (error) {
       console.error(`❌ Error al guardar configuración global:`, error);
       
-      toast({
-        title: "Error de conexión",
-        description: "No se pudieron guardar los cambios en el servidor",
-        variant: "destructive",
-      });
+      // Verificar si el error es por falta de autenticación (401)
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+        setIsAuthenticated(false);
+        // No mostrar error al usuario ya que probablemente acaba de cerrar sesión
+      } else {
+        // Solo mostrar el toast para otros tipos de errores
+        toast({
+          title: "Error de conexión",
+          description: "No se pudieron guardar los cambios en el servidor",
+          variant: "destructive",
+        });
+      }
     } finally {
       // Liberar la petición una vez completada
       pendingRequests.current[requestKey] = false;
@@ -519,11 +527,19 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     } catch (error) {
       console.error(`❌ Error al guardar configuración de ${moduleId} en servidor:`, error);
       
-      toast({
-        title: "Error de conexión",
-        description: "No se pudieron guardar los cambios en el servidor",
-        variant: "destructive",
-      });
+      // Verificar si el error es por falta de autenticación (401)
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+        setIsAuthenticated(false);
+        // No mostrar error al usuario ya que probablemente acaba de cerrar sesión
+      } else {
+        // Solo mostrar el toast para otros tipos de errores
+        toast({
+          title: "Error de conexión",
+          description: "No se pudieron guardar los cambios en el servidor",
+          variant: "destructive",
+        });
+      }
     } finally {
       // Liberar la petición una vez completada
       pendingRequests.current[requestKey] = false;
@@ -595,11 +611,24 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     } catch (error) {
       console.error(`❌ Error al restablecer valores en servidor:`, error);
       
-      toast({
-        title: "Error de conexión",
-        description: "No se pudieron guardar los cambios en el servidor",
-        variant: "destructive",
-      });
+      // Verificar si el error es por falta de autenticación (401)
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+        setIsAuthenticated(false);
+        
+        // Mostrar notificación de éxito local aunque el servidor falló
+        toast({
+          title: "Configuración restablecida",
+          description: "Se han aplicado los valores predeterminados localmente",
+        });
+      } else {
+        // Solo mostrar el toast para otros tipos de errores
+        toast({
+          title: "Error de conexión",
+          description: "No se pudieron guardar los cambios en el servidor",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -712,11 +741,19 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     } catch (error) {
       console.error(`❌ Error al guardar favoritos en servidor:`, error);
       
-      toast({
-        title: "Error de conexión",
-        description: "No se pudieron guardar los cambios en el servidor",
-        variant: "destructive",
-      });
+      // Verificar si el error es por falta de autenticación (401)
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+        setIsAuthenticated(false);
+        // No mostrar error al usuario ya que probablemente acaba de cerrar sesión
+      } else {
+        // Solo mostrar el toast para otros tipos de errores
+        toast({
+          title: "Error de conexión",
+          description: "No se pudieron guardar los cambios en el servidor",
+          variant: "destructive",
+        });
+      }
     } finally {
       // Liberar la petición una vez completada
       pendingRequests.current[requestKey] = false;
