@@ -188,12 +188,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
     const problemIndexForHistory = currentProblemIndex; 
     const newHistoryEntry: UserAnswerType = { 
-        problemId: currentProblem.id, 
         problem: currentProblem,
+        problemId: currentProblem.id, 
         userAnswer: userNumericAnswer, 
         isCorrect,
-        status: isCorrect ? 'correct' : 'incorrect' // Añadir status
+        status: isCorrect ? 'correct' : 'incorrect'
     };
+    console.log("Nueva respuesta registrada:", newHistoryEntry);
     setUserAnswersHistory(prev => {
         const newHistory = [...prev];
         newHistory[problemIndexForHistory] = newHistoryEntry;
@@ -411,18 +412,33 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     let additionalProblems = 0;
     
     if (settings.enableCompensation && userAnswersHistory.length > 0) {
-      // Contar respuestas incorrectas y las que se mostraron (revealed)
-      const incorrectCount = userAnswersHistory.filter(
-        answer => answer && (answer.status === 'incorrect' || answer.status === 'revealed')
-      ).length;
-      
-      // Añadir un problema adicional por cada respuesta incorrecta o revelada
-      additionalProblems = incorrectCount;
-      console.log(`🔄 Compensación: Añadiendo ${additionalProblems} problemas adicionales`);
+      try {
+        // Contar las respuestas incorrectas y las que se mostraron (revealed)
+        console.log("Historial de respuestas:", JSON.stringify(userAnswersHistory));
+        
+        // Contar manualmente cada estado
+        let incorrectCount = 0;
+        for (const answer of userAnswersHistory) {
+          if (answer) {
+            console.log("Respuesta:", answer);
+            if (answer.status === 'incorrect' || answer.status === 'revealed') {
+              incorrectCount++;
+              console.log("Incrementando contador de incorrectas:", incorrectCount);
+            }
+          }
+        }
+        
+        // Añadir un problema adicional por cada respuesta incorrecta o revelada
+        additionalProblems = incorrectCount;
+        console.log(`🔄 Compensación: Añadiendo ${additionalProblems} problemas adicionales`);
+      } catch (error) {
+        console.error("Error al calcular compensación:", error);
+      }
     }
     
     // Calcular el número total de problemas (originales + adicionales)
-    const totalProblems = settings.problemCount + additionalProblems;
+    const totalProblems = Number(settings.problemCount) + additionalProblems;
+    console.log(`📊 Generando ${settings.problemCount} problemas originales + ${additionalProblems} de compensación = ${totalProblems} total`);
     
     // Generar el array de problemas
     const newProblemsArray: AdditionProblem[] = [];
@@ -975,19 +991,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             setWaitingForContinue(true); // Pone waitingRef.current = true
                             const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
                             const answerEntry = userAnswersHistory[problemIdxForHistory];
-                            if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
-                                setUserAnswersHistory(prev => {
-                                    const newHistory = [...prev];
-                                    newHistory[problemIdxForHistory] = { 
-                                        problemId: currentProblem.id, 
-                                        problem: currentProblem, 
-                                        userAnswer: NaN,
-                                        isCorrect: false, 
-                                        status: 'revealed' 
-                                    };
-                                    return newHistory;
-                                });
-                            }
+                            
+                            // Siempre marcamos como revelado para asegurar la compensación
+                            setUserAnswersHistory(prev => {
+                                const newHistory = [...prev];
+                                const revealedAnswer = { 
+                                    problemId: currentProblem.id, 
+                                    problem: currentProblem, 
+                                    userAnswer: NaN,
+                                    isCorrect: false, 
+                                    status: 'revealed' 
+                                };
+                                console.log("Marcando respuesta como revelada para compensación:", revealedAnswer);
+                                newHistory[problemIdxForHistory] = revealedAnswer;
+                                return newHistory;
+                            });
                             if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
                                 setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
                             }
