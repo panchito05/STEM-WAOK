@@ -16,7 +16,8 @@ export function useTranslations() {
     : FALLBACK_LANGUAGE;
   
   // Función para obtener una traducción usando una clave compuesta (por ejemplo "exercises.start")
-  const t = useCallback((key: string) => {
+  // y reemplazar parámetros en el formato { paramName }
+  const t = useCallback((key: string, params?: Record<string, any>) => {
     // Dividir la clave en partes para acceder a la estructura anidada
     const parts = key.split(".");
     
@@ -34,8 +35,18 @@ export function useTranslations() {
       }
     }
     
-    // Devolver la traducción (o la clave original si no se encuentra)
-    return typeof translation === "string" ? translation : key;
+    // Si no hay parámetros, devolver la traducción tal cual
+    if (!params || typeof translation !== 'string') {
+      return typeof translation === "string" ? translation : key;
+    }
+    
+    // Reemplazar los parámetros en la traducción
+    let result = translation;
+    Object.entries(params).forEach(([paramName, value]) => {
+      result = result.replace(`{${paramName}}`, value);
+    });
+    
+    return result;
   }, [language]);
   
   // Buscar una traducción en el idioma por defecto (inglés) como fallback

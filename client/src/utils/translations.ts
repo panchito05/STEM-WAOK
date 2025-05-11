@@ -78,7 +78,7 @@ export const enTranslations: TranslationKeys = {
     showAnswer: "Show Answer",
     correct: "Correct!",
     incorrect: "Incorrect!",
-    correctAnswerIs: "The correct answer is = ",
+    correctAnswerIs: "The correct answer is = {correctAnswer}",
     loading: "Loading problems...",
     completed: "Exercise Completed!",
     score: "Your score",
