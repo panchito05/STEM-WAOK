@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect, useRef, useCallback } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect, useRef, useCallback, useMemo } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useChildProfiles } from "@/context/ChildProfilesContext";
@@ -7,6 +7,7 @@ import {
   saveToLocalStorage,
   TimestampedData
 } from "@/lib/localStorage";
+import { debouncePromise } from "@/lib/debounce";
 
 // Interfaces de datos
 export interface ModuleSettings {
@@ -267,6 +268,30 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     console.log("✅ Lista de favoritos cargada desde localStorage");
   }, []);
   
+  // Función para enviar configuraciones al servidor con debounce
+  const saveToServer = useCallback(async (
+    endpoint: string, 
+    data: any
+  ): Promise<Response> => {
+    try {
+      return await apiRequest("PUT", endpoint, data);
+    } catch (error) {
+      // Manejar error 401 (no autenticado)
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log("⚠️ Error 401: Usuario ya no está autenticado, actualizando estado");
+        setIsAuthenticated(false);
+      }
+      
+      throw error;
+    }
+  }, []);
+  
+  // Versión con debounce de la función para enviar al servidor
+  const debouncedSaveToServer = useMemo(() => 
+    debouncePromise(saveToServer, 500), 
+    [saveToServer]
+  );
+  
   // Escuchar eventos de cierre de sesión desde AuthContext
   useEffect(() => {
     const handleUserLogout = () => {
@@ -302,7 +327,8 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           ? `/api/child-profiles/${activeProfile.id}/settings/global`
           : "/api/settings/global";
         
-        await apiRequest("PUT", endpoint, updatedSettings);
+        // Usar la versión con debounce para evitar múltiples llamadas al servidor
+        await debouncedSaveToServer(endpoint, updatedSettings);
       } else {
         console.log("🔓 Usuario no autenticado: guardando configuración global en localStorage");
         
@@ -347,7 +373,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     // Crear configuración actualizada
     const updatedSettings = { ...currentSettings, ...newSettings };
     
-    // Actualizar estado local
+    // Actualizar estado local inmediatamente
     setModuleSettings(prevSettings => ({
       ...prevSettings,
       [moduleId]: updatedSettings
@@ -364,7 +390,8 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
           : `/api/settings/module/${moduleId}`;
         
-        await apiRequest("PUT", endpoint, updatedSettings);
+        // Usar la versión con debounce para evitar múltiples llamadas al servidor
+        await debouncedSaveToServer(endpoint, updatedSettings);
       } else {
         console.log(`🔓 Usuario no autenticado: configuración de ${moduleId} guardada solo en localStorage`);
         
@@ -633,7 +660,8 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           ? `/api/child-profiles/${activeProfile.id}/settings/favorites`
           : "/api/settings/favorites";
         
-        await apiRequest("PUT", endpoint, { favorites: newFavorites });
+        // Usar la versión con debounce para evitar múltiples llamadas al servidor
+        await debouncedSaveToServer(endpoint, { favorites: newFavorites });
       } else {
         console.log(`🔓 Usuario no autenticado: guardando lista de favoritos en localStorage`);
         
