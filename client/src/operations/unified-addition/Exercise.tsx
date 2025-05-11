@@ -21,10 +21,7 @@ import { Slider } from '@/components/ui/slider';
 import { defaultModuleSettings } from '@/utils/operationComponents';
 import DifficultyExamples from '@/components/DifficultyExamples';
 import { debounce } from '@/lib/utils';
-
-// Exportamos también la configuración desde este archivo
-import { Settings as SettingsComponent } from './Settings';
-export { SettingsComponent as Settings };
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 // ==========================================
 // SECCIÓN 1: TIPOS Y INTERFACES

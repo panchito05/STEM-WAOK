@@ -2,7 +2,7 @@ import * as Addition from "../operations/addition";
 import * as Fractions from "../operations/fractions";
 import * as Counting from "../operations/counting";
 // Importamos directamente desde Exercise para el módulo unificado
-import Exercise, { Settings as UnifiedSettings } from "../operations/unified-addition/Exercise";
+import Exercise, { SettingsPanel } from "../operations/unified-addition/Exercise";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -149,7 +149,7 @@ export const operationComponents: Record<string, ModuleComponent> = {
   // Nuevo módulo unificado, definimos manualmente con los componentes importados
   unifiedAddition: {
     Exercise: Exercise,
-    Settings: UnifiedSettings
+    Settings: SettingsPanel
   },
   fractions: Fractions,
   counting: Counting,

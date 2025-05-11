@@ -2,7 +2,7 @@
 // Página para probar el módulo unificado de adición
 
 import React, { useState } from 'react';
-import Exercise, { Settings } from '@/operations/unified-addition/Exercise';
+import Exercise, { SettingsPanel } from '@/operations/unified-addition/Exercise';
 import { useSettings } from '@/context/SettingsContext';
 import { defaultModuleSettings } from '@/utils/operationComponents';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,7 @@ export default function UnifiedAdditionTestPage() {
       
       <div className="bg-white rounded-xl shadow-md p-6">
         {showSettings ? (
-          <Settings 
+          <SettingsPanel 
             settings={settings} 
             onBack={() => setShowSettings(false)} 
           />
