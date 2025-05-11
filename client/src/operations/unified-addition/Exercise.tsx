@@ -22,6 +22,10 @@ import { defaultModuleSettings } from '@/utils/operationComponents';
 import DifficultyExamples from '@/components/DifficultyExamples';
 import { debounce } from '@/lib/utils';
 
+// Importar y re-exportar Settings
+import { Settings } from './Settings';
+export { Settings };
+
 // ==========================================
 // SECCIÓN 1: TIPOS Y INTERFACES
 // ==========================================
@@ -241,6 +245,11 @@ const verticalOperandStyle = "font-mono text-2xl sm:text-3xl text-right tracking
 const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
+// Importar y re-exportar Settings
+import { Settings } from './Settings';
+export { Settings };
+
+// Exportar el componente principal
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // ==========================================
   // 3.1: ESTADO Y REFS
