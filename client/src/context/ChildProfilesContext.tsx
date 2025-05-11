@@ -245,6 +245,24 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
       setActiveProfileState(null);
     }
   }, [isAuthenticated, user]);
+  
+  // Escuchar eventos de cierre de sesión desde AuthContext
+  useEffect(() => {
+    const handleUserLogout = () => {
+      console.log("🔄 Evento de cierre de sesión recibido en ChildProfilesContext");
+      
+      // Limpiar los perfiles cuando el usuario cierra sesión
+      setProfiles([]);
+      setActiveProfileState(null);
+    };
+    
+    window.addEventListener("user-logout", handleUserLogout);
+    
+    // Limpieza al desmontar
+    return () => {
+      window.removeEventListener("user-logout", handleUserLogout);
+    };
+  }, []);
 
   return (
     <ChildProfilesContext.Provider

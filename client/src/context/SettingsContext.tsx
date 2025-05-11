@@ -345,6 +345,25 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   useEffect(() => {
     fetchSettings();
   }, [isAuthenticated, activeProfile]);
+  
+  // Escuchar eventos de cierre de sesión desde AuthContext
+  useEffect(() => {
+    const handleUserLogout = () => {
+      console.log("🔄 Evento de cierre de sesión recibido en SettingsContext");
+      setIsAuthenticated(false);
+      
+      // Recargar las configuraciones desde localStorage inmediatamente
+      // para evitar intentos de guardar en el servidor después de cerrar sesión
+      fetchSettings();
+    };
+    
+    window.addEventListener("user-logout", handleUserLogout);
+    
+    // Limpieza al desmontar
+    return () => {
+      window.removeEventListener("user-logout", handleUserLogout);
+    };
+  }, []);
 
   // Al cambiar las configuraciones, guardarlas de forma diferente según si está autenticado o no
   useEffect(() => {

@@ -57,6 +57,32 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     };
     
     checkAuth();
+    
+    // Verificación periódica de autenticación cada 30 segundos
+    const authCheckInterval = setInterval(checkAuth, 30000);
+    
+    return () => {
+      clearInterval(authCheckInterval);
+    };
+  }, []);
+  
+  // Escuchar eventos de cierre de sesión desde AuthContext
+  useEffect(() => {
+    const handleUserLogout = () => {
+      console.log("🔄 Evento de cierre de sesión recibido en ProgressContext");
+      setIsAuthenticated(false);
+      
+      // Limpiar datos de progreso al cerrar sesión
+      setExerciseHistory([]);
+      setModuleProgress({});
+    };
+    
+    window.addEventListener("user-logout", handleUserLogout);
+    
+    // Limpieza al desmontar
+    return () => {
+      window.removeEventListener("user-logout", handleUserLogout);
+    };
   }, []);
 
   const fetchProgress = async () => {

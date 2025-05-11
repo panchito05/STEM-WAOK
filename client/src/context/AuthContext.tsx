@@ -295,23 +295,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
+      console.log("🔄 Iniciando proceso de cierre de sesión...");
+      
+      // Publicar un evento personalizado para notificar a otros contextos
+      // Este evento será escuchado por el SettingsContext para actualizar su estado
+      const logoutEvent = new CustomEvent("user-logout");
+      window.dispatchEvent(logoutEvent);
+      console.log("📣 Evento de cierre de sesión emitido");
+      
       // Cerrar sesión en nuestro backend
       await apiRequest("POST", "/api/auth/logout", {});
+      console.log("✅ Sesión cerrada en el backend");
       
       // Cerrar sesión en Firebase si está inicializado
       try {
         await firebaseSignOut();
+        console.log("✅ Sesión cerrada en Firebase");
       } catch (firebaseError) {
-        console.warn("Firebase logout error:", firebaseError);
+        console.warn("⚠️ Firebase logout error:", firebaseError);
       }
       
+      // Actualizar estado local
       setUser(null);
+      console.log("✅ Estado de usuario restablecido localmente");
+      
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out",
       });
+      
+      // Redirigir a la página principal
       setLocation("/");
     } catch (error) {
+      console.error("❌ Error durante el cierre de sesión:", error);
+      
       toast({
         title: "Logout Failed",
         description: "Could not log out properly",
