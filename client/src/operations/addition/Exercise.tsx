@@ -751,7 +751,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         )}
 
-      <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg ${ adaptiveDifficulty === "beginner" ? "bg-sky-50 border-sky-200" : adaptiveDifficulty === "elementary" ? "bg-lime-50 border-lime-200" : "bg-green-50 border-green-200" } border-2`}>
+      <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg ${
+        adaptiveDifficulty === "beginner" ? "bg-sky-50 border-sky-200" : 
+        adaptiveDifficulty === "elementary" ? "bg-lime-50 border-lime-200" : 
+        adaptiveDifficulty === "intermediate" ? "bg-blue-50 border-blue-200" :
+        adaptiveDifficulty === "advanced" ? "bg-purple-50 border-purple-200" :
+        adaptiveDifficulty === "expert" ? "bg-violet-50 border-violet-200" :
+        "bg-green-50 border-green-200"
+      } border-2`}>
         <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-gray-800">{t('Addition')}</h2>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
@@ -775,7 +782,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </Tooltip>
                   </TooltipProvider>
                 )}
-                <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold capitalize">
+                <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-sky-100 text-sky-800" : 
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-lime-100 text-lime-800" : 
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-blue-100 text-blue-800" :
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-violet-100 text-violet-800" :
+                  "bg-blue-100 text-blue-800"
+                }`}>
                     {t('Level')}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                 </span>
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
