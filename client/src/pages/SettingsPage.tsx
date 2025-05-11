@@ -253,13 +253,13 @@ export default function SettingsPage() {
                 <div>
                   <h4 className="font-medium text-red-700 dark:text-red-300">Cerrar Sesión / Sign Out</h4>
                   <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                    {t('settings.signOutDescription')}
+                    {t('Come Back Soon')}
                   </p>
                 </div>
                 <Link href="/logout">
                   <Button variant="destructive" className="px-4">
                     <LogOut className="h-4 w-4 mr-2" />
-                    {t('common.signOut')}
+                    {t('Press For SignOut')}
                   </Button>
                 </Link>
               </div>

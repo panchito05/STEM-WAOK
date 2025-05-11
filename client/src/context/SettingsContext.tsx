@@ -95,20 +95,37 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const pendingSyncs = useRef<Record<string, string>>({});
 
   // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch("/api/auth/me", {
-          credentials: "include",
-        });
-        
-        setIsAuthenticated(res.ok);
-      } catch (error) {
+  const checkAuth = async () => {
+    try {
+      const res = await fetch("/api/auth/me", {
+        credentials: "include",
+        // Avoid caching the authentication status
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+      });
+      
+      const newAuthStatus = res.ok;
+      if (newAuthStatus !== isAuthenticated) {
+        console.log(`🔐 Estado de autenticación cambiado: ${isAuthenticated} -> ${newAuthStatus}`);
+        setIsAuthenticated(newAuthStatus);
+      }
+    } catch (error) {
+      console.error("Error al verificar autenticación:", error);
+      if (isAuthenticated) {
+        console.log("❌ Error de conexión, considerando usuario como no autenticado");
         setIsAuthenticated(false);
       }
-    };
-    
+    }
+  };
+  
+  // Verificar estado de autenticación al cargar y cada 30 segundos
+  useEffect(() => {
+    // Verificar al inicio
     checkAuth();
+    
+    // Verificar periódicamente
+    const intervalId = setInterval(checkAuth, 30000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   // Crear claves de almacenamiento basadas en el perfil activo
