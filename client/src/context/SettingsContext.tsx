@@ -94,6 +94,30 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   // Control de sincronizaciones pendientes para saber cuál es la última
   const pendingSyncs = useRef<Record<string, string>>({});
 
+  // Agregar una referencia para almacenar la última configuración válida
+  const lastValidSettings = useRef<{
+    global: GlobalSettings,
+    modules: Record<string, ModuleSettings>,
+    favorites: string[]
+  }>({
+    global: {...defaultGlobalSettings},
+    modules: {},
+    favorites: []
+  });
+
+  // Actualizar la referencia cada vez que las configuraciones cambian
+  useEffect(() => {
+    if (initialLoadComplete.current) {
+      // Guardar la última configuración válida
+      lastValidSettings.current = {
+        global: {...globalSettings},
+        modules: {...moduleSettings},
+        favorites: [...favoriteModules]
+      };
+      console.log("📸 Snapshot guardado de configuraciones actuales");
+    }
+  }, [globalSettings, moduleSettings, favoriteModules]);
+
   // Check authentication status - esta función se encarga de verificar si el usuario está autenticado
   useEffect(() => {
     // Variable para controlar si el componente está montado
@@ -123,8 +147,27 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           
           // Si el usuario ha dejado de estar autenticado, guardar el estado actual en localStorage
           if (isAuthenticated && !newAuthStatus) {
-            console.log("⚠️ Usuario desautenticado detectado, guardando estado actual en localStorage");
-            persistCurrentStateToLocalStorage();
+            console.log("⚠️ Usuario desautenticado detectado, guardando último estado válido en localStorage");
+            
+            // Explícitamente guardar el último estado válido conocido
+            const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+            
+            // Usar el snapshot guardado
+            const snapshot = lastValidSettings.current;
+            
+            // Guardar configuraciones globales
+            console.log("💾 Respaldo forzado: guardando configuraciones globales", snapshot.global);
+            saveTimestampedData(globalSettingsKey, snapshot.global);
+            
+            // Guardar configuraciones de módulos
+            console.log("💾 Respaldo forzado: guardando configuraciones de módulos", snapshot.modules);
+            saveTimestampedData(moduleSettingsKey, snapshot.modules);
+            
+            // Guardar favoritos
+            console.log("💾 Respaldo forzado: guardando favoritos", snapshot.favorites);
+            saveTimestampedData(favoritesKey, snapshot.favorites);
+            
+            console.log("✅ Respaldo de emergencia completado");
           }
           
           // Actualizar estado después de las operaciones
@@ -139,7 +182,20 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         // Si estaba autenticado, guardar en localStorage y cambiar estado
         if (isAuthenticated) {
           console.log("❌ Error de conexión, considerando usuario como no autenticado");
-          persistCurrentStateToLocalStorage();
+          
+          // Explícitamente guardar el último estado válido conocido
+          const { globalSettingsKey, moduleSettingsKey, favoritesKey } = getStorageKeys();
+          
+          // Usar el snapshot guardado
+          const snapshot = lastValidSettings.current;
+          
+          // Guardar configuraciones del snapshot
+          saveTimestampedData(globalSettingsKey, snapshot.global);
+          saveTimestampedData(moduleSettingsKey, snapshot.modules);
+          saveTimestampedData(favoritesKey, snapshot.favorites);
+          
+          console.log("✅ Respaldo de emergencia completado (por error de conexión)");
+          
           setIsAuthenticated(false);
         }
       }
@@ -156,7 +212,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, [isAuthenticated]); // Añadir dependencia para que se actualice cuando cambia
+  }, []);
 
   // Crear claves de almacenamiento basadas en el perfil activo
   const getStorageKeys = () => {
