@@ -446,48 +446,27 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     
     console.log(`🔄 Actualizando configuración para ${moduleId}:`, updatedSettings);
     
-    // Crear referencia para el controlador de sincronización con servidor
-    const syncId = Date.now().toString();
-    pendingSyncs.current[moduleId] = syncId;
-    
     // Actualizar estado local inmediatamente
     setModuleSettings(prev => {
       const newSettings = {
         ...prev,
         [moduleId]: updatedSettings,
       };
-      
-      // Guardar inmediatamente en localStorage con timestamp para persistencia robusta
-      try {
-        const { moduleSettingsKey } = getStorageKeys();
-        
-        // Obtener configuraciones actuales
-        const currentData = getTimestampedData<Record<string, ModuleSettings>>(
-          moduleSettingsKey, 
-          {}
-        );
-        
-        // Actualizar solo este módulo en el objeto completo
-        const updatedData = {
-          ...currentData.data,
-          [moduleId]: updatedSettings
-        };
-        
-        // Guardar con timestamp actualizado
-        saveTimestampedData(moduleSettingsKey, updatedData);
-        console.log(`💾 Guardado en localStorage con timestamp: ${moduleSettingsKey}`);
-      } catch (e) {
-        console.error("❌ Error guardando en localStorage con timestamp:", e);
-      }
-      
       return newSettings;
     });
     
-    // Si no está autenticado, terminar aquí (solo localStorage)
+    // ESTRATEGIA SIMPLIFICADA:
+    // - Usuario autenticado: Solo guardar en servidor
+    // - Usuario no autenticado: Solo guardar en localStorage
+    
+    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
     if (!isAuthenticated) {
-      console.log(`⚠️ Usuario no autenticado, configuración de ${moduleId} guardada solo localmente`);
+      console.log(`🔓 Usuario no autenticado: configuración de ${moduleId} guardada solo en localStorage`);
       return;
     }
+    
+    // A partir de aquí solo ejecuta si el usuario está autenticado
+    console.log(`🔐 Usuario autenticado: enviando configuración de ${moduleId} al servidor`);
     
     // Determinar la URL del endpoint correcto
     const endpoint = activeProfile
@@ -507,20 +486,10 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     pendingRequests.current[requestKey] = true;
     
     try {
-      // Pequeña pausa para permitir que cambios rápidos consecutivos se agrupen
+      // Pequeña pausa para permitir que cambios rápidos se agrupen
       await new Promise(resolve => setTimeout(resolve, 250));
       
-      // Verificar si esta sincronización sigue siendo la más reciente
-      if (pendingSyncs.current[moduleId] !== syncId) {
-        console.log(`⏭️ Sincronización ${syncId} para ${moduleId} ha sido reemplazada por una más reciente`);
-        pendingRequests.current[requestKey] = false;
-        return;
-      }
-      
       console.log(`📤 Enviando configuración al servidor (${endpoint})`);
-      
-      // Guardar una copia de la configuración actualizada para comparación posterior
-      const settingsSnapshot = { ...updatedSettings };
       
       // Hacer la petición al servidor con la configuración actualizada
       const response = await apiRequest("PUT", endpoint, updatedSettings);
@@ -531,50 +500,16 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         throw new Error(`Error del servidor: ${response.status}`);
       }
     } catch (error) {
-      // Solo mostrar una notificación si hay un error real (no error de autenticación)
-      if (error instanceof Error && !error.message.includes("401")) {
-        console.error(`❌ Error guardando configuración para ${moduleId} en servidor:`, error);
-        console.log(`✓ Sin embargo, los cambios están seguros en localStorage con timestamp`);
-        
-        // Mostrar notificación discreta que no asusta al usuario
-        toast({
-          title: "Cambios guardados localmente",
-          description: "Se guardarán en el servidor cuando vuelva la conexión.",
-          variant: "default",
-        });
-        
-        // Programar un reintento después de un tiempo más corto
-        setTimeout(() => {
-          // Solo intentar si sigue siendo la última sincronización iniciada
-          if (pendingSyncs.current[moduleId] === syncId) {
-            console.log(`🔄 Reintentando sincronización para ${moduleId}`);
-            
-            // Obtener la configuración más actualizada para el módulo
-            const currentModuleSettings = getModuleSettings(moduleId);
-            
-            try {
-              // Solo volver a intentar la API, no actualizar estado local
-              apiRequest("PUT", endpoint, currentModuleSettings);
-              console.log(`✅ Reintento exitoso para ${moduleId}`);
-            } catch (retryError) {
-              console.error(`❌ Error en reintento para ${moduleId}:`, retryError);
-              // No intentar más, la próxima acción del usuario lo intentará de nuevo
-            }
-          } else {
-            console.log(`⏭️ Cancelando reintento para ${moduleId}, hay una sincronización más reciente`);
-          }
-        }, 5000); // Reintentar en 5 segundos (más rápido que antes)
-      } else {
-        console.warn(`⚠️ Error de autenticación al guardar configuración para ${moduleId}`);
-      }
-    } finally {
-      // Liberar la petición una vez completada o fallida
-      pendingRequests.current[requestKey] = false;
+      console.error(`❌ Error al guardar configuración de ${moduleId} en servidor:`, error);
       
-      // Limpiar el ID de sincronización si sigue siendo el actual
-      if (pendingSyncs.current[moduleId] === syncId) {
-        delete pendingSyncs.current[moduleId];
-      }
+      toast({
+        title: "Error de conexión",
+        description: "No se pudieron guardar los cambios en el servidor",
+        variant: "destructive",
+      });
+    } finally {
+      // Liberar la petición una vez completada
+      pendingRequests.current[requestKey] = false;
     }
   };
 
@@ -604,61 +539,50 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       return newSettings;
     });
     
-    // Actualizar localStorage con timestamp
-    try {
-      const { moduleSettingsKey } = getStorageKeys();
+    // ESTRATEGIA SIMPLIFICADA:
+    // - Usuario autenticado: Solo guardar en servidor
+    // - Usuario no autenticado: Solo guardar en localStorage (a través del useEffect)
+    
+    // Si no está autenticado, terminar aquí (localStorage se maneja en useEffect)
+    if (!isAuthenticated) {
+      console.log(`🔓 Usuario no autenticado: restablecimiento guardado solo en localStorage`);
       
-      // Obtener datos actuales con timestamp
-      const currentData = getTimestampedData<Record<string, ModuleSettings>>(
-        moduleSettingsKey, 
-        {}
-      );
-      
-      // Actualizar este módulo con valores predeterminados
-      const updatedData = {
-        ...currentData.data,
-        [moduleId]: { ...defaultModuleSettings }
-      };
-      
-      // Guardar con timestamp
-      saveTimestampedData(moduleSettingsKey, updatedData);
-      console.log(`✅ Valores predeterminados para ${moduleId} guardados en localStorage con timestamp`);
-      
-    } catch (e) {
-      console.error(`❌ Error guardando valores predeterminados en localStorage:`, e);
+      toast({
+        title: "Configuración restablecida",
+        description: "Se han aplicado los valores predeterminados",
+      });
+      return;
     }
     
-    // Si está autenticado, también actualizar en el servidor
-    if (isAuthenticated) {
-      try {
-        console.log(`📤 Enviando valores predeterminados al servidor para ${moduleId}`);
-        const endpoint = activeProfile
-          ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
-          : `/api/settings/module/${moduleId}`;
-        
-        // PUT para actualizar con valores predeterminados, no DELETE
-        const response = await apiRequest("PUT", endpoint, defaultModuleSettings);
-        
-        if (response.ok) {
-          console.log(`✅ Valores predeterminados guardados exitosamente en servidor para ${moduleId}`);
-          
-          toast({
-            title: "Configuración restablecida",
-            description: "Se han aplicado los valores predeterminados",
-          });
-        } else {
-          throw new Error(`Error del servidor: ${response.status}`);
-        }
-      } catch (error) {
-        console.error(`❌ Error al restablecer valores en servidor:`, error);
-        console.log(`✓ Sin embargo, los valores predeterminados están disponibles localmente`);
+    // A partir de aquí solo ejecuta si está autenticado
+    console.log(`🔐 Usuario autenticado: enviando restablecimiento de ${moduleId} al servidor`);
+    
+    try {
+      const endpoint = activeProfile
+        ? `/api/child-profiles/${activeProfile.id}/settings/module/${moduleId}`
+        : `/api/settings/module/${moduleId}`;
+      
+      // PUT para actualizar con valores predeterminados
+      const response = await apiRequest("PUT", endpoint, defaultModuleSettings);
+      
+      if (response.ok) {
+        console.log(`✅ Valores predeterminados guardados exitosamente en servidor para ${moduleId}`);
         
         toast({
-          title: "Configuración restablecida localmente",
-          description: "Los cambios se sincronizarán cuando haya conexión",
-          variant: "default",
+          title: "Configuración restablecida",
+          description: "Se han aplicado los valores predeterminados",
         });
+      } else {
+        throw new Error(`Error del servidor: ${response.status}`);
       }
+    } catch (error) {
+      console.error(`❌ Error al restablecer valores en servidor:`, error);
+      
+      toast({
+        title: "Error de conexión",
+        description: "No se pudieron guardar los cambios en el servidor",
+        variant: "destructive",
+      });
     }
   };
 
