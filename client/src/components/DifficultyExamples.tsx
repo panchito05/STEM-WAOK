@@ -8,21 +8,22 @@ interface DifficultyExampleProps {
 }
 
 function DifficultyExample({ level, examples, active = false, onClick }: DifficultyExampleProps) {
+  // Estilo para tarjetas basado en la imagen original
   // Color para la tarjeta activa (seleccionada) y no activa
   const activeClass = active 
-    ? "bg-blue-900 border-blue-700 text-white" 
-    : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:scale-105";
+    ? "bg-blue-100 border-blue-300 text-blue-800" 
+    : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300";
 
   return (
     <Card 
-      className={`w-full border border-gray-700 ${activeClass} transition-all cursor-pointer`}
+      className={`w-full border ${activeClass} transition-all cursor-pointer shadow-sm`}
       onClick={onClick}
     >
-      <CardContent className="p-4">
-        <CardTitle className="text-lg font-medium mb-2">{level}</CardTitle>
-        <div className="space-y-1 mt-2">
+      <CardContent className="p-3">
+        <CardTitle className="text-sm font-medium mb-2">{level}</CardTitle>
+        <div className="space-y-1">
           {examples.map((example, idx) => (
-            <p key={idx} className="font-mono text-sm">{example}</p>
+            <p key={idx} className="font-mono text-xs text-gray-600">{example}</p>
           ))}
         </div>
       </CardContent>
@@ -72,8 +73,8 @@ export default function DifficultyExamples({
   
   return (
     <div className="w-full">
-      <h3 className="text-xl font-bold mb-4">Difficulty Examples</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* Eliminamos el título para que coincida con la imagen original */}
+      <div className="flex flex-wrap gap-2">
         <DifficultyExample 
           level="Beginner"
           examples={operationExamples.beginner} 

@@ -3232,6 +3232,11 @@ function SettingsPanel({ settings, onBack }: SettingsPanelProps) {
           {/* Componente para mostrar ejemplos de dificultad y seleccionar */}
           {/* DifficultyExamples es asumido externo */}
           <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
+            {/* Depuración: Mostrar información de dificultad actual */}
+            <div className="bg-yellow-50 p-2 mb-3 rounded text-xs border border-yellow-200">
+              <strong>Debug:</strong> Active difficulty: {localSettings.difficulty}
+            </div>
+            
             <DifficultyExamples
               operation="addition" // Especifica la operación
               activeDifficulty={localSettings.difficulty} // Pasa la dificultad actual seleccionada
