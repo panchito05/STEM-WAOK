@@ -500,59 +500,98 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }, [adaptiveDifficulty]);
 
 
-  // Hook para generar el set de problemas inicial o cuando cambian settings relevantes
-  useEffect(() => {
-    // Usar la dificultad adaptativa si está habilitada, de lo contrario usar la configuración global.
-    // Si settings es undefined (ej. al cargar), usar defaultModuleSettings.
-    const effectiveDifficulty = (settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty)
-                                ? adaptiveDifficulty
-                                : (settings?.difficulty as DifficultyLevel ?? defaultModuleSettings.difficulty as DifficultyLevel);
-    const problemCount = settings?.problemCount ?? defaultModuleSettings.problemCount;
-    const timeValue = settings?.timeValue ?? defaultModuleSettings.timeValue; // También regenerar si cambia el tiempo (afecta problemTimerValue inicial)
+  // ==========================================
+  // NUEVO useEffect para reemplazar en Exercise.tsx
+  // ==========================================
 
-    console.log(`[ADDITION] Generating new problem set with difficulty: ${effectiveDifficulty}, count: ${problemCount}`);
-    const newProblems = Array.from({ length: problemCount }, () =>
-      generateAdditionProblem(effectiveDifficulty)
-    );
+    // Hook para generar el set de problemas inicial o cuando cambian settings relevantes
+    useEffect(() => {
+      const problemCount = settings?.problemCount ?? defaultModuleSettings.problemCount;
+      const timeValue = settings?.timeValue ?? defaultModuleSettings.timeValue;
+      const settingsDifficulty = settings?.difficulty;
+      
+      // Validar que la dificultad sea un valor permitido
+      const validDifficultyValues = ['beginner', 'elementary', 'intermediate', 'advanced', 'expert'];
+      let userSelectedDifficultySetting: DifficultyLevel;
+      
+      if (settingsDifficulty && validDifficultyValues.includes(settingsDifficulty)) {
+        userSelectedDifficultySetting = settingsDifficulty as DifficultyLevel;
+      } else {
+        console.warn(`[ADDITION] Invalid difficulty in settings: "${settingsDifficulty}". Using default: ${defaultModuleSettings.difficulty}`);
+        userSelectedDifficultySetting = defaultModuleSettings.difficulty as DifficultyLevel;
+      }
+      const adaptiveEnabledBySetting = settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty;
 
-    setProblemsList(newProblems);
-    setCurrentProblemIndex(0); // Siempre empezar en el primer problema del nuevo set
-    setActualActiveProblemIndexBeforeViewingPrevious(0); // El problema activo es el primero
-    setCurrentProblem(newProblems[0]); // Cargar el primer problema
+      let difficultyForGeneration = adaptiveDifficulty; // Por defecto, usa el estado adaptativo actual
 
-    // Inicializar historial de respuestas para el nuevo set
-    setUserAnswersHistory(Array(newProblems.length).fill(null));
-    setTimer(0); // Resetear timer general
-    setExerciseStarted(false); // Reiniciar estado de ejercicio (el usuario debe presionar Start/Check)
-    setExerciseCompleted(false);
-    setFeedbackMessage(null); // Limpiar feedback
-    setFeedbackColor(null);
-    setWaitingForContinue(false); // No estamos esperando continuar al inicio
-    setBlockAutoAdvance(false); // Desbloquear avance
-    setShowLevelUpReward(false); // Ocultar modal de level up
-    setViewingPrevious(false); // No estamos viendo problemas anteriores
-    setProblemTimerValue(timeValue); // Resetear timer del problema
-    setCurrentAttempts(0); // Resetear intentos del problema
-    digitBoxRefs.current = []; // Limpiar referencias a las cajas de input
+      if (adaptiveEnabledBySetting) {
+        // Si la dificultad adaptativa está HABILITADA Y la dificultad seleccionada por el usuario
+        // en settings ES DIFERENTE de la dificultad adaptativa actual en el estado del ejercicio,
+        // ENTONCES, la dificultad seleccionada por el usuario debe tener precedencia como el NUEVO punto de partida.
+        if (userSelectedDifficultySetting !== adaptiveDifficulty) {
+          console.log(`[ADDITION] Adaptive ON. User changed base difficulty from ${adaptiveDifficulty} to ${userSelectedDifficultySetting}. Resetting adaptive state.`);
+          setAdaptiveDifficulty(userSelectedDifficultySetting); // <--- ¡CAMBIO CLAVE! Actualiza el estado adaptativo.
+          // Resetear rachas porque la dificultad base cambió explícitamente por el usuario.
+          setConsecutiveCorrectAnswers(0);
+          setConsecutiveIncorrectAnswers(0);
+          difficultyForGeneration = userSelectedDifficultySetting; // Usar esta para la generación actual.
+        } else {
+          // Adaptativa habilitada y la dificultad seleccionada coincide con la adaptativa actual, o no ha cambiado.
+          // Simplemente continuamos con adaptiveDifficulty.
+          difficultyForGeneration = adaptiveDifficulty;
+           console.log(`[ADDITION] Adaptive ON. User selected difficulty (${userSelectedDifficultySetting}) matches current adaptive (${adaptiveDifficulty}). Using ${adaptiveDifficulty}.`);
+        }
+      } else {
+        // Si la dificultad adaptativa está DESHABILITADA, siempre usamos la seleccionada por el usuario.
+        difficultyForGeneration = userSelectedDifficultySetting;
+        // También, si el estado interno adaptiveDifficulty no coincide, lo sincronizamos
+        // para que si el usuario vuelve a activar la adaptativa, empiece desde la última dificultad no adaptativa seleccionada.
+        if (adaptiveDifficulty !== userSelectedDifficultySetting) {
+          setAdaptiveDifficulty(userSelectedDifficultySetting);
+           console.log(`[ADDITION] Adaptive OFF. Setting internal adaptiveDifficulty to ${userSelectedDifficultySetting} for consistency.`);
+        }
+         console.log(`[ADDITION] Adaptive OFF. Using user selected difficulty: ${userSelectedDifficultySetting}`);
+      }
 
-    // Si la dificultad efectiva usada es diferente a la que teníamos, actualizar estado de racha
-    // Esto ocurre si settings.enableAdaptiveDifficulty cambia o si se fuerza un reset de settings.
-    if (adaptiveDifficulty !== effectiveDifficulty) {
-       console.log(`[ADDITION] Difficulty mismatch, resetting adaptive state. Effective: ${effectiveDifficulty}, Current Adaptive: ${adaptiveDifficulty}`);
-       setAdaptiveDifficulty(effectiveDifficulty); // Asegurar que el estado adaptativo refleje la dificultad inicial
-       setConsecutiveCorrectAnswers(0); // Resetear racha si cambia la dificultad "base"
-       setConsecutiveIncorrectAnswers(0);
-    } else {
-        // Si la dificultad no cambió, las rachas se mantienen (cargadas desde localStorage)
-        console.log(`[ADDITION] Difficulty consistent. Maintaining adaptive state. Racha Correctas: ${consecutiveCorrectAnswers}, Racha Incorrectas: ${consecutiveIncorrectAnswers}`);
-    }
+      console.log(`[ADDITION] Generating new problem set with effective difficulty: ${difficultyForGeneration}, count: ${problemCount}`);
+      const newProblems = Array.from({ length: problemCount }, () =>
+        generateAdditionProblem(difficultyForGeneration)
+      );
 
-  // Regenerar solo cuando cambian los parámetros que afectan la generación O la dificultad adaptativa
-  // settings?.prop para manejar caso settings undefined
-  // Incluir adaptiveDifficulty aquí es crucial porque la generación depende de él cuando adaptiveDifficulty está activado
-  // Incluir problemCount y timeValue para regenerar si cambian
-  // Dependencias: settings (para problemCount, difficulty, enableAdaptiveDifficulty, timeValue), adaptiveDifficulty
-  }, [settings?.problemCount, settings?.difficulty, settings?.enableAdaptiveDifficulty, settings?.timeValue, adaptiveDifficulty]);
+      setProblemsList(newProblems);
+      setCurrentProblemIndex(0);
+      setActualActiveProblemIndexBeforeViewingPrevious(0);
+      setCurrentProblem(newProblems[0]);
+
+      setUserAnswersHistory(Array(newProblems.length).fill(null));
+      setTimer(0);
+      setExerciseStarted(false);
+      setExerciseCompleted(false);
+      setFeedbackMessage(null);
+      setFeedbackColor(null);
+      setWaitingForContinue(false);
+      setBlockAutoAdvance(false);
+      setShowLevelUpReward(false);
+      setViewingPrevious(false);
+      setProblemTimerValue(timeValue);
+      setCurrentAttempts(0);
+      digitBoxRefs.current = [];
+
+      // La lógica de "Difficulty mismatch" que estaba aquí antes ya está cubierta por la nueva lógica de arriba.
+      // Las rachas se resetean arriba si es necesario.
+
+    // Dependencias:
+    // - settings (para problemCount, difficulty, enableAdaptiveDifficulty, timeValue)
+    // - adaptiveDifficulty (el estado interno de dificultad adaptativa)
+    // - setAdaptiveDifficulty (el setter para el estado adaptativo, para que ESLint esté contento, aunque es estable)
+    }, [
+        settings?.problemCount,
+        settings?.difficulty,
+        settings?.enableAdaptiveDifficulty,
+        settings?.timeValue,
+        adaptiveDifficulty,
+        setAdaptiveDifficulty // Añadido para cumplir reglas de hooks si ESLint es estricto (es estable)
+    ]);
 
 
   // Hook para reaccionar a cambios en el problema actual o el estado de vista
@@ -2529,7 +2568,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   "bg-indigo-100 text-indigo-800" // Fallback
                 }`}>
                     {/* Mostrar la dificultad adaptativa si está activa en settings, sino la configurada */}
-                    {t('Level')}: {t((settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty) ? adaptiveDifficulty : (settings?.difficulty as DifficultyLevel ?? defaultModuleSettings.difficulty as DifficultyLevel))}
+                    {t('Level')}: {t((settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty) ? adaptiveDifficulty : (settings?.difficulty ?? defaultModuleSettings.difficulty))}
                  </span>
               </TooltipTrigger>
                {/* TooltipContent es asumido externo */}
@@ -2971,13 +3010,28 @@ function SettingsPanel({ settings, onBack }: SettingsPanelProps) {
   const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
     // Crear un nuevo objeto de configuración local con el ajuste actualizado
     const updatedSettings = { ...localSettings, [key]: value };
+    console.log(`[DEBUG] Actualizando ajuste "${key}" a:`, value);
+    
+    // Para el caso específico de la dificultad, asegurarse que sea uno de los valores válidos
+    if (key === "difficulty") {
+      const validDifficultyValues = ['beginner', 'elementary', 'intermediate', 'advanced', 'expert'];
+      const difficultyValue = String(value);
+      
+      if (!validDifficultyValues.includes(difficultyValue)) {
+        console.error(`[ADDITION] Valor de dificultad inválido: ${difficultyValue}. Usando 'beginner' como fallback.`);
+        updatedSettings.difficulty = 'beginner' as DifficultyLevel;
+      } else {
+        console.log(`[ADDITION] Dificultad validada: ${difficultyValue}`);
+        updatedSettings.difficulty = difficultyValue as DifficultyLevel;
+      }
+    }
+    
     setLocalSettings(updatedSettings); // Actualizar estado local
 
     // Lógica para guardar: si cambia la dificultad, guardar inmediatamente; para otros ajustes, usar debounce.
     if (key === "difficulty") {
-      console.log(`[ADDITION] Guardando configuración de dificultad inmediatamente: ${value}`);
-      // Cast es necesario porque la prop value es ModuleSettings[K], pero el contexto espera ModuleSettings
-      // y la dificultad aquí ya está validada por DifficultyExamples o Input.
+      console.log(`[ADDITION] Guardando configuración de dificultad inmediatamente:`, updatedSettings.difficulty);
+      // Guardar inmediatamente en caso de cambio de dificultad
       updateModuleSettings("addition", updatedSettings as ModuleSettings);
     } else {
       // Para otros ajustes (sliders, switches, etc.), usar la función debounced.
@@ -3181,17 +3235,6 @@ function SettingsPanel({ settings, onBack }: SettingsPanelProps) {
             {/* Depuración: Mostrar información de dificultad actual */}
             <div className="bg-yellow-50 p-2 mb-3 rounded text-xs border border-yellow-200">
               <strong>Debug:</strong> Active difficulty: {localSettings.difficulty}
-              <div className="mt-2">
-                <button 
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
-                  onClick={() => {
-                    console.log("Forzando regeneración de problemas con dificultad:", localSettings.difficulty);
-                    onBack(); // Volver al ejercicio
-                  }}
-                >
-                  Aplicar y regenerar problemas
-                </button>
-              </div>
             </div>
             
             <DifficultyExamples
