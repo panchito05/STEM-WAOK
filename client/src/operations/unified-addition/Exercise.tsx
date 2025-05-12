@@ -1554,6 +1554,109 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
 
   // Usa useCallback para estabilizar handleDigitBoxClick
+  // Manejar la entrada de dígitos desde el teclado numérico
+  const handleDigitInput = useCallback((value: string) => {
+    if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
+    
+    // Si el ejercicio no ha comenzado, iniciarlo
+    if (!exerciseStarted) startExercise();
+
+    // Crear una copia del array de respuestas
+    let newAnswers = [...digitAnswers];
+    let currentFocus = focusedDigitIndex;
+    const maxDigits = currentProblem.answerMaxDigits;
+
+    // Manejar backspace (borrar dígito)
+    if (value === "backspace") {
+      newAnswers[currentFocus] = "";
+    } 
+    // Manejar entrada de dígitos
+    else if (/[0-9]/.test(value)) {
+      newAnswers[currentFocus] = value;
+      
+      // Mover el foco según la dirección de entrada
+      if (inputDirection === 'rtl') { 
+        if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
+      } else {
+        if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
+      }
+    }
+    
+    // Actualizar el estado de las respuestas
+    setDigitAnswers(newAnswers);
+  }, [waitingRef, focusedDigitIndex, currentProblem, exerciseCompleted, viewingPrevious, exerciseStarted, digitAnswers, inputDirection, startExercise]);
+
+  // Función para mostrar la respuesta correcta
+  const showAnswer = useCallback(() => {
+    if (!currentProblem || !exerciseStarted || exerciseCompleted || waitingRef.current || showLevelUpReward) {
+      return; // No hacer nada si no hay problema o estamos en un estado que lo bloquea
+    }
+
+    console.log("[ADDITION] Showing answer...");
+    
+    // Detener temporizador si está activo
+    if (singleProblemTimerRef.current) {
+      clearInterval(singleProblemTimerRef.current);
+      singleProblemTimerRef.current = null;
+    }
+    
+    // Mostrar la respuesta correcta
+    setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+    setFeedbackColor("blue");
+    setWaitingForContinue(true);
+    setFocusedDigitIndex(null);
+    
+    // Actualizar historial para marcar como revelado
+    const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+    const answerEntry = userAnswersHistory[problemIdxForHistory];
+    
+    // Incrementar intentos al revelar si no se han agotado
+    const maxAttempts = settings?.maxAttempts ?? defaultModuleSettings.maxAttempts;
+    const attemptsBeforeReveal = currentAttempts;
+    let attemptsAfterReveal = attemptsBeforeReveal;
+    
+    if (maxAttempts === 0 || attemptsBeforeReveal < maxAttempts) {
+      attemptsAfterReveal = attemptsBeforeReveal + 1;
+      setCurrentAttempts(attemptsAfterReveal);
+    }
+    
+    // Crear o actualizar entrada del historial
+    const updatedHistoryEntry: UserAnswer = answerEntry ? {
+      ...answerEntry,
+      userAnswerString: undefined,
+      userAnswer: null,
+      isCorrect: false,
+      status: 'revealed',
+      attemptsMade: attemptsAfterReveal,
+    } : {
+      problemId: currentProblem.id,
+      problem: currentProblem,
+      userAnswerString: undefined,
+      userAnswer: null,
+      isCorrect: false,
+      status: 'revealed',
+      attemptsMade: attemptsAfterReveal,
+    };
+    
+    setUserAnswersHistory(prev => {
+      const newHistory = [...prev];
+      newHistory[problemIdxForHistory] = updatedHistoryEntry;
+      return newHistory;
+    });
+    
+    // Lógica de compensación
+    const enableCompensation = settings?.enableCompensation ?? defaultModuleSettings.enableCompensation;
+    if (enableCompensation) {
+      const difficultyForCompensation = (settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty) 
+        ? adaptiveDifficulty 
+        : (settings?.difficulty as DifficultyLevel ?? defaultModuleSettings.difficulty as DifficultyLevel);
+      
+      const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+      setProblemsList(prev => [...prev, compensationProblem]);
+      setUserAnswersHistory(prev => [...prev, null]);
+    }
+  }, [currentProblem, exerciseStarted, exerciseCompleted, waitingRef, showLevelUpReward, t, actualActiveProblemIndexBeforeViewingPrevious, userAnswersHistory, settings, defaultModuleSettings, currentAttempts, adaptiveDifficulty]);
+
   const handleDigitBoxClick = useCallback((index: number, event?: React.MouseEvent) => {
     // Usar waitingRef.current para la comprobación más actualizada
     // Bloquear si está viendo historial, esperando, ejercicio completado, o modal level up activo
