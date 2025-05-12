@@ -2527,8 +2527,8 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
 
   return (
-    // Contenedor principal del ejercicio
-    <div className="bg-blue-50 rounded-lg shadow-md p-6 max-w-2xl mx-auto">
+    // Contenedor principal del ejercicio, ajustado al tamaño del CardContent
+    <div className="bg-blue-50 rounded-lg p-4 sm:p-6 w-full h-full">
 
        {/* Overlay/Modal de Level Up (Componente LevelUpModal definido abajo) */}
        {/* LevelUpModal es un componente auxiliar, se define más abajo */}
