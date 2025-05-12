@@ -2393,7 +2393,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   return (
     // Contenedor principal del ejercicio
-    <div className="bg-white rounded-lg shadow-md p-4 max-w-2xl mx-auto">
+    <div className="bg-blue-50 rounded-lg shadow-md p-6 max-w-2xl mx-auto">
 
        {/* Overlay/Modal de Level Up (Componente LevelUpModal definido abajo) */}
        {/* LevelUpModal es un componente auxiliar, se define más abajo */}
@@ -2477,119 +2477,36 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
 
       {/* Cabecera principal del ejercicio (Progreso, Timers, Configuración) */}
-      <div className="flex justify-between items-center mb-3">
-        <div className="text-sm font-medium text-gray-500">
-          {/* Mostrar índice del problema actual (visible) y total */}
-          {t('Problem')} {currentProblemIndex + 1} {t('of')} {problemsList.length}
-        </div>
-
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">Addition</h2>
+        
         {/* Área de Timers e Indicadores */}
-         {/* Usamos flex items-center para alinear verticalmente */}
         <div className="flex items-center space-x-3 text-sm">
-           {/* Timer general del ejercicio */}
-           {/* Info icon y formatTime son asumidos externos */}
-          <TooltipProvider delayDuration={300}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="font-medium text-gray-700 flex items-center cursor-help">
-                   <Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)} {/* Tiempo total */}
-                </span>
-              </TooltipTrigger>
-               {/* TooltipContent es asumido externo */}
-              <TooltipContent>
-                 {/* t() es asumido externo */}
-                <p>{t('tooltips.totalTime')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {/* Timer general del ejercicio */}
+          <span className="text-gray-600 flex items-center">
+            {formatTime(timer)}
+          </span>
 
+          {/* Contador de intentos */}
+          <span className="text-gray-600">
+            Attempts: {currentAttempts}/{settings?.maxAttempts ?? defaultModuleSettings.maxAttempts}
+          </span>
 
-          {/* Timer del problema actual (si hay límite de tiempo y no estamos en un estado de espera/final) */}
-           {/* Usar waitingRef.current para checkear el estado de espera */}
-          { (settings?.timeValue ?? defaultModuleSettings.timeValue) > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && !exerciseCompleted && !showLevelUpReward && (
-             // Check si quedan intentos para mostrar el timer
-             (settings?.maxAttempts ?? defaultModuleSettings.maxAttempts) === 0 || currentAttempts < (settings?.maxAttempts ?? defaultModuleSettings.maxAttempts)
-          ) && (
-            <span className={`font-medium p-1 px-2 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "bg-red-100 text-red-600 animate-pulse" : "bg-gray-100 text-gray-700"}`}>
-              {t('Timer')}: {problemTimerValue}s
-            </span>
-          )}
+          {/* Indicador de nivel de dificultad */}
+          <span className="text-gray-600">
+            Level: {t((settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty) 
+              ? adaptiveDifficulty 
+              : (settings?.difficulty ?? defaultModuleSettings.difficulty))}
+          </span>
 
-          {/* Contador de intentos (si hay límite de intentos y no estamos viendo historial) */}
-           {/* Usar waitingRef.current para checkear el estado de espera */}
-          { (settings?.maxAttempts ?? defaultModuleSettings.maxAttempts) > 0 && !viewingPrevious && !exerciseCompleted && !showLevelUpReward && (
-             <TooltipProvider delayDuration={300}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                   <span className={`font-medium p-1 px-2 rounded cursor-help ${currentAttempts > 0 && currentAttempts < (settings?.maxAttempts ?? defaultModuleSettings.maxAttempts) ? "bg-amber-100 text-amber-800" : currentAttempts >= (settings?.maxAttempts ?? defaultModuleSettings.maxAttempts) ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}>
-                     {t('Attempts')}: {currentAttempts}/{settings.maxAttempts}
-                   </span>
-                </TooltipTrigger>
-                 {/* TooltipContent es asumido externo */}
-                <TooltipContent>
-                   {/* t() es asumido externo */}
-                  <p>{t('tooltips.maxAttemptsPerProblem')}</p>
-                </TooltipContent>
-              </Tooltip>
-             </TooltipProvider>
-          )}
-
-           {/* Indicador de Score Parcial */}
-           {/* Usar TooltipProvider y Tooltip */}
-          <TooltipProvider delayDuration={300}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                 {/* Usamos un span con cursor-help para indicar que es tooltip */}
-                 <span className="font-medium p-1 px-2 rounded bg-blue-100 text-blue-800 cursor-help">
-                   {t('Score')}: {finalScorePercentage}%
-                 </span>
-              </TooltipTrigger>
-               {/* TooltipContent es asumido externo */}
-              <TooltipContent>
-                 {/* t() es asumido externo */}
-                <p>{t('tooltips.partialScore')}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-
-           {/* Indicador de nivel de dificultad (adaptativa si está activa) */}
-           {/* Usamos TooltipProvider y Tooltip */}
-          <TooltipProvider delayDuration={300}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                 {/* Usamos un span con cursor-help */}
-                 <span className={`px-2 py-0.5 rounded-full font-semibold capitalize cursor-help ${
-                   adaptiveDifficulty === "beginner" ? "bg-blue-100 text-blue-800" :
-                   adaptiveDifficulty === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                   adaptiveDifficulty === "intermediate" ? "bg-orange-100 text-orange-800" :
-                   adaptiveDifficulty === "advanced" ? "bg-purple-100 text-purple-800" :
-                   adaptiveDifficulty === "expert" ? "bg-rose-100 text-rose-800" :
-                  "bg-indigo-100 text-indigo-800" // Fallback
-                }`}>
-                    {/* Mostrar la dificultad adaptativa si está activa en settings, sino la configurada */}
-                    {t('Level')}: {t((settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty) ? adaptiveDifficulty : (settings?.difficulty ?? defaultModuleSettings.difficulty))}
-                 </span>
-              </TooltipTrigger>
-               {/* TooltipContent es asumido externo */}
-              <TooltipContent>
-                 {/* t() es asumido externo */}
-                <p>{t('tooltips.currentDifficulty')}</p>
-                 {(settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty) && (
-                    <>
-                        <p>{t('tooltips.adaptiveDifficultyEnabled')}</p>
-                        <p>{t('tooltips.consecutiveCorrect', { count: consecutiveCorrectAnswers })}</p>
-                        <p>{t('tooltips.consecutiveIncorrect', { count: consecutiveIncorrectAnswers })}</p>
-                    </>
-                 )}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-           {/* Botón para abrir configuración (icono renombrado a SettingsIcon) */}
-           {/* Button y Cog icon son asumidos externos */}
-          <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-            <Cog className="h-4 w-4" /> {t('common.settings')}
+          {/* Botón para abrir configuración */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onOpenSettings} 
+            className="flex items-center gap-1 px-2 text-gray-600 hover:bg-gray-100"
+          >
+            <Cog className="h-4 w-4" /> Settings
           </Button>
         </div>
       </div>
@@ -2604,13 +2521,29 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         />
       </div>
 
-      {/* Contenedor del problema (expresión matemática) y la respuesta del usuario */}
-      <div className="my-4 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200 shadow-sm min-h-[150px] flex flex-col items-center justify-center">
-         {/* Renderizar problema Horizontal o Vertical según layout */}
-         {currentProblem.layout === 'horizontal'
-          ? renderHorizontalProblem()
-          : renderVerticalProblem()
-         }
+      {/* Información de progreso del problema */}
+      <div className="flex justify-between items-center mb-3">
+        <div className="text-sm font-medium text-gray-500">
+          Problem {currentProblemIndex + 1} of {problemsList.length}
+        </div>
+        <div className="text-sm font-medium text-gray-500">
+          Your score: {finalScorePercentage}
+        </div>
+      </div>
+      
+      {/* Contenedor del problema (expresión matemática) */}
+      <div className="mb-6 p-6 bg-white rounded-lg border border-gray-200 shadow min-h-[150px] flex flex-col items-center justify-center">
+         {/* Renderizar problema Horizontal */}
+         <div className="text-3xl font-bold mb-4 flex items-center justify-center">
+           {currentProblem && currentProblem.operands && currentProblem.operands.length > 1 && (
+             <>
+               <span>{currentProblem.operands[0]}</span>
+               <span className="mx-3">+</span>
+               <span>{currentProblem.operands[1]}</span>
+               <span className="mx-3">=</span>
+             </>
+           )}
+         </div>
 
          {/* Renderizar las cajas de input para la respuesta */}
          {renderDigitAnswerBoxes()}
