@@ -11,9 +11,9 @@ export default function UnifiedAdditionTestPage() {
   const { moduleSettings } = useSettings();
   const [showSettings, setShowSettings] = useState(false);
   
-  // Usa los ajustes del módulo si existen, sino los del módulo original, o los valores por defecto
-  const settings = moduleSettings.unifiedAddition || 
-                  moduleSettings.addition || 
+  // Usa los ajustes del módulo si existen, sino los valores por defecto
+  // NOTA: Aseguramos que siempre use "addition" para consistencia
+  const settings = moduleSettings.addition || 
                   defaultModuleSettings;
   
   return (
