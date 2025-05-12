@@ -1697,9 +1697,30 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
     // Usar la dificultad adaptativa si está habilitada, de lo contrario usar la configuración global.
     // Si settings es undefined (ej. error de carga), usar defaultModuleSettings.
-    const effectiveDifficulty = (settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty)
-                                ? adaptiveDifficulty // Usar la dificultad adaptativa actual
-                                : (settings?.difficulty as DifficultyLevel ?? defaultModuleSettings.difficulty as DifficultyLevel); // O la configurada
+    
+    // Asegurarnos de que la dificultad sea una de las válidas o usar beginner por defecto
+    const validateDifficulty = (diff?: string): DifficultyLevel => {
+        if (diff && ['beginner', 'elementary', 'intermediate', 'advanced', 'expert'].includes(diff)) {
+            return diff as DifficultyLevel;
+        }
+        return 'beginner'; // Valor por defecto si la dificultad no es válida
+    };
+    
+    // Obtener la dificultad efectiva
+    let effectiveDifficulty: DifficultyLevel;
+    if (settings?.enableAdaptiveDifficulty) {
+        // Usar dificultad adaptativa si está habilitada
+        effectiveDifficulty = adaptiveDifficulty;
+    } else {
+        // Usar la dificultad configurada en los ajustes
+        effectiveDifficulty = validateDifficulty(settings?.difficulty);
+    }
+    
+    // Registrar la dificultad que se va a usar
+    console.log(`[ADDITION] Effective difficulty: ${effectiveDifficulty}`);
+    console.log(`[ADDITION] Settings difficulty: ${settings?.difficulty}`);
+    console.log(`[ADDITION] Adaptive difficulty: ${adaptiveDifficulty}`);
+    console.log(`[ADDITION] Adaptive enabled: ${settings?.enableAdaptiveDifficulty}`);
     const problemCount = settings?.problemCount ?? defaultModuleSettings.problemCount;
     const timeValue = settings?.timeValue ?? defaultModuleSettings.timeValue;
 
@@ -3157,13 +3178,36 @@ function SettingsPanel({ settings, onBack }: SettingsPanelProps) {
           {/* Componente para mostrar ejemplos de dificultad y seleccionar */}
           {/* DifficultyExamples es asumido externo */}
           <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
+            {/* Depuración: Mostrar información de dificultad actual */}
+            <div className="bg-yellow-50 p-2 mb-3 rounded text-xs border border-yellow-200">
+              <strong>Debug:</strong> Active difficulty: {localSettings.difficulty}
+              <div className="mt-2">
+                <button 
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
+                  onClick={() => {
+                    console.log("Forzando regeneración de problemas con dificultad:", localSettings.difficulty);
+                    onBack(); // Volver al ejercicio
+                  }}
+                >
+                  Aplicar y regenerar problemas
+                </button>
+              </div>
+            </div>
+            
             <DifficultyExamples
               operation="addition" // Especifica la operación
               activeDifficulty={localSettings.difficulty} // Pasa la dificultad actual seleccionada
-              onSelectDifficulty={(difficulty) =>
-                // Llama a handleUpdateSetting con la dificultad seleccionada (convertida a DifficultyLevel)
-                handleUpdateSetting("difficulty", difficulty as DifficultyLevel)
-              }
+              onSelectDifficulty={(difficulty) => {
+                console.log(`[ADDITION] Dificultad seleccionada: ${difficulty}`);
+                // Asegurarse de que la dificultad sea un valor válido
+                const validDifficulty = ['beginner', 'elementary', 'intermediate', 'advanced', 'expert'].includes(difficulty)
+                  ? difficulty as DifficultyLevel
+                  : 'beginner' as DifficultyLevel;
+                  
+                console.log(`[ADDITION] Dificultad validada: ${validDifficulty}`);
+                // Llama a handleUpdateSetting con la dificultad validada
+                handleUpdateSetting("difficulty", validDifficulty);
+              }}
             />
           </div>
 
