@@ -2331,62 +2331,76 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const totalDigitBoxes = currentProblem!.answerMaxDigits; // Total de cajas de DÍGITO
 
     // Calculamos el índice donde iría el punto decimal visual
-    // Si hay 3 decimales (XXX.YYY), el punto está después del 3er dígito de derecha a izquierda.
-    // En un array LTR, si hay 7 cajas y 3 decimales, el punto está después del índice 7-3-1 = 3.
-    // indices: [0][1][2][3] . [4][5][6]  (7 cajas, 3 decimales)
-    // El punto está después de la caja con índice `totalDigitBoxes - decimalPosition - 1`
     const decimalPointVisualIndex = decimalPosition !== undefined && decimalPosition > 0
                                     ? totalDigitBoxes - decimalPosition -1
                                     : -1; // No hay punto visual
 
+    // Deshabilitar input si estamos viendo historial, esperando 'Continuar', ejercicio completado, o modal level up activo
+    const disabled = viewingPrevious || waitingForContinue || exerciseCompleted || showLevelUpReward;
+
     return (
-      <div className="flex justify-center items-center space-x-1 my-4">
-        {/* Iterar sobre el número total de cajas de DÍGITO */}
-        {Array(totalDigitBoxes).fill(0).map((_, index) => {
+      <>
+        {/* Cajas de respuesta */}
+        <div className="flex justify-center items-center space-x-1 mb-6">
+          {Array(totalDigitBoxes).fill(0).map((_, index) => {
+            const isVisualDecimalPointAfterThisBox = index === decimalPointVisualIndex;
+            const isFocused = focusedDigitIndex === index;
 
-           // Determinar si debe haber un punto decimal visual DESPUÉS de esta caja
-           const isVisualDecimalPointAfterThisBox = index === decimalPointVisualIndex;
+            return (
+              <Fragment key={`digit-box-frag-${index}-${currentProblem!.id}`}>
+                <div
+                  ref={el => {
+                    if (el) {
+                      digitBoxRefs.current[index] = el;
+                    }
+                  }}
+                  tabIndex={disabled ? -1 : 0}
+                  className={`w-10 h-14 text-2xl font-bold border border-gray-300 rounded-md flex items-center justify-center transition-all select-none outline-none
+                    ${isFocused && !disabled ? 'border-blue-500 ring-2 ring-blue-300' : ''}
+                    ${disabled ? 'bg-gray-100 text-gray-500' : 'cursor-pointer hover:border-blue-400'}`
+                  }
+                  onClick={(e) => handleDigitBoxClick(index, e)}
+                  onKeyDown={(e) => !disabled && handleDigitKeyDown(e, index)}
+                  data-testid={`digit-box-${index}`}
+                >
+                  {digitAnswers[index] || <span className="opacity-0">0</span>}
+                </div>
+                {isVisualDecimalPointAfterThisBox && (
+                  <div className="text-3xl font-bold mx-1 self-center select-none pointer-events-none">.</div>
+                )}
+              </Fragment>
+            );
+          })}
+        </div>
 
-          const isFocused = focusedDigitIndex === index;
-          // Deshabilitar input si estamos viendo historial, esperando 'Continuar', ejercicio completado, o modal level up activo
-          const disabled = viewingPrevious || waitingForContinue || exerciseCompleted || showLevelUpReward;
-
-          return (
-            <Fragment key={`digit-box-frag-${index}-${currentProblem!.id}`}>
-              <div
-                // Asignar la referencia al elemento DOM
-                ref={el => {
-                   if (el) {
-                      // Almacenar la referencia en el array mutable de refs
-                       digitBoxRefs.current[index] = el;
-                   }
-                }}
-                // Hacer la caja enfocable solo si no está deshabilitada
-                tabIndex={disabled ? -1 : 0}
-                 // Aplicar estilos de base, foco, blur y deshabilitado
-                className={`
-                  ${digitBoxBaseStyle}
-                  ${isFocused && !disabled ? digitBoxFocusStyle : digitBoxBlurStyle}
-                  ${disabled ? digitBoxDisabledStyle : 'cursor-pointer hover:border-gray-400'}
-                   ${(decimalPosition !== undefined && decimalPosition > 0 && index >= totalDigitBoxes - decimalPosition) ? 'bg-blue-50/60' : ''} {/* Estilo visual para parte decimal */}
-                `}
-                 // Manejar clic en la caja (solo si no está deshabilitada)
-                onClick={(e) => handleDigitBoxClick(index, e)}
-                 // Manejar eventos de teclado físico (solo si no está deshabilitada)
-                onKeyDown={(e) => !disabled && handleDigitKeyDown(e, index)}
-                data-testid={`digit-box-${index}`} // Atributo para tests
-              >
-                 {/* Mostrar el dígito o un espacio transparente para mantener el tamaño */}
-                {digitAnswers[index] || <span className="opacity-0">0</span>}
-              </div>
-               {/* Renderizar el punto decimal como un elemento separado si corresponde */}
-              {isVisualDecimalPointAfterThisBox && (
-                <div className="text-2xl sm:text-3xl font-bold mx-0.5 sm:mx-1 opacity-80 self-center select-none pointer-events-none">.</div> // No interactuable
-              )}
-            </Fragment>
-          );
-        })}
-      </div>
+        {/* Teclado numérico */}
+        <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "←", "0", ""].map((key, idx) => (
+            <Button
+              key={key || `empty-key-${idx}`}
+              variant={key === "" ? "ghost" : "outline"}
+              className={`text-xl h-12 ${key === "" ? "invisible pointer-events-none" : "bg-white hover:bg-gray-50 active:bg-gray-100"}`}
+              onClick={() => {
+                if (!viewingPrevious && !exerciseCompleted && !waitingRef.current && key) {
+                  if (key === "←") {
+                    // Implementar borrado (backspace)
+                    handleDigitInput("backspace");
+                  } else {
+                    handleDigitInput(key);
+                  }
+                }
+              }}
+              disabled={waitingRef.current || exerciseCompleted || viewingPrevious || !key}
+            >
+              {key === "←" ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+              ) : key}
+            </Button>
+          ))}
+        </div>
+      </>
     );
   };
 
@@ -2595,56 +2609,27 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {/* Botón central de acción: Start, Check, o Continuar */}
         <div className="flex space-x-2">
           {!exerciseStarted ? (
-            /* Button es asumido externo */
-            /* Deshabilitar si está completado o modal level up activo */
-            <Button onClick={startExercise} className="flex items-center px-4 sm:px-6 text-sm sm:text-base" disabled={exerciseCompleted || showLevelUpReward}>
+            <Button 
+              onClick={startExercise} 
+              className="bg-blue-500 hover:bg-blue-600 text-white font-medium text-base px-6"
+              disabled={exerciseCompleted || showLevelUpReward}
+            >
               {t('exercises.start')}
             </Button>
-          ) : waitingForContinue ? ( // Usar waitingRef.current para determinar si mostrar "Continuar"
-            /* Button es asumido externo */
-            /* Deshabilitar si showLevelUpReward es true, ya que el botón "Continuar" del modal se encarga */
-            /* Usamos animate-pulse para hacerlo más llamativo */
+          ) : waitingForContinue ? (
             <Button
-               // Deshabilitar si showLevelUpReward es true, ya que el botón "Continuar" del modal se encarga
               onClick={handleContinue}
               disabled={showLevelUpReward}
-              className={`px-4 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-base ${showLevelUpReward ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 animate-pulse'} text-white flex items-center justify-center`}
+              className={`bg-green-600 hover:bg-green-700 text-white font-medium px-6 py-2 ${!showLevelUpReward && 'animate-pulse'}`}
             >
-                <span className="flex-grow text-center font-medium">{t('Continue')}</span>
-                 {/* Toggle de Auto-Continue (visible solo en el botón Continuar) */}
-                 {/* Tooltip components son asumidos externos */}
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div
-                         className={`ml-2 flex items-center bg-black/20 py-0.5 px-1.5 rounded-md cursor-pointer ${showLevelUpReward ? 'opacity-50 cursor-not-allowed' : ''}`}
-                         // Solo permitir clic si no está bloqueado por level up modal
-                        onClick={(e) => {
-                          if (!showLevelUpReward) {
-                            e.stopPropagation(); // Evita que el clic se propague al botón padre
-                            setAutoContinue(prev => !prev);
-                          }
-                        }}
-                      >
-                         {/* Check icon es asumido externo */}
-                        <div className={`h-3.5 w-3.5 border border-white rounded-sm flex items-center justify-center mr-1 ${autoContinue ? 'bg-white' : ''}`}>
-                          {autoContinue && <Check className="h-2.5 w-2.5 text-green-700" />}
-                        </div>
-                        <span className="text-xs font-medium">{t('Auto')}</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                       {/* t() es asumido externo */}
-                      <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              {t('Continue')}
             </Button>
           ) : (
-            /* Botón Check para verificar la respuesta */
-            /* Button y Check icon son asumidos externos */
-            /* Deshabilitar si está completado, esperando, viendo historial, o modal level up activo */
-            <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current || viewingPrevious || showLevelUpReward} className="px-4 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white flex items-center">
+            <Button 
+              onClick={checkCurrentAnswer} 
+              disabled={exerciseCompleted || waitingRef.current || viewingPrevious || showLevelUpReward} 
+              className="bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center font-medium px-6"
+            >
               <Check className="h-4 w-4 mr-1" />
               {t('exercises.check')}
             </Button>
