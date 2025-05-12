@@ -890,7 +890,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // problemTimerValue no necesita ser dependencia si solo se usa el valor inicial de settings.timeValue aquí.
   }, [ exerciseStarted, exerciseCompleted, settings?.timeValue, settings?.maxAttempts, currentProblem,
        viewingPrevious, currentAttempts, waitingRef, showLevelUpReward,
-       handleTimeOrAttemptsUp, defaultModuleSettings.timeValue, defaultModuleSettings.maxAttempts
+       defaultModuleSettings.timeValue, defaultModuleSettings.maxAttempts
      ]);
 
 
@@ -1187,7 +1187,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     currentProblem, digitAnswers, currentAttempts, settings, defaultModuleSettings,
     adaptiveDifficulty, consecutiveCorrectAnswers, consecutiveIncorrectAnswers, CORRECT_ANSWERS_FOR_LEVEL_UP,
     updateModuleSettings, eventBus, setShowLevelUpReward, setBlockAutoAdvance,
-    autoContinue, autoContinueTimerRef, handleContinue, t, userAnswersHistory, currentProblemIndex,
+    autoContinue, autoContinueTimerRef, t, userAnswersHistory, currentProblemIndex,
     actualActiveProblemIndexBeforeViewingPrevious, problemsList, waitingRef, checkAnswer, generateAdditionProblem, showLevelUpReward,
     /* set... setters */
   ]);
@@ -1377,7 +1377,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // - showLevelUpReward: Para bloquear.
   }, [
      currentProblem, digitAnswers, currentAttempts, settings, defaultModuleSettings,
-     adaptiveDifficulty, autoContinue, blockAutoAdvance, autoContinueTimerRef, handleContinue, t,
+     adaptiveDifficulty, autoContinue, blockAutoAdvance, autoContinueTimerRef, t,
      userAnswersHistory, currentProblemIndex, actualActiveProblemIndexBeforeViewingPrevious,
      problemsList, waitingRef, generateAdditionProblem, showLevelUpReward,
      /* set... setters */
@@ -1444,7 +1444,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // - set... setters: Para actualizar el estado (setWaitingForContinue, setFeedbackMessage, setFeedbackColor, setFocusedDigitIndex, setCurrentProblemIndex, setCurrentProblem, setActualActiveProblemIndexBeforeViewingPrevious, setDigitAnswers, setCurrentAttempts, setProblemTimerValue, setViewingPrevious).
   }, [
      waitingRef, currentProblem, actualActiveProblemIndexBeforeViewingPrevious, problemsList,
-     settings?.timeValue, defaultModuleSettings.timeValue, completeExercise, autoContinueTimerRef,
+     settings?.timeValue, defaultModuleSettings.timeValue, autoContinueTimerRef,
      /* set... setters */
   ]);
 
@@ -1917,7 +1917,7 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         returnToActiveProblem(); // Llama a la función memoizada
      }
 
-  }, [viewingPrevious, currentProblemIndex, actualActiveProblemIndexBeforeViewingPrevious, exerciseCompleted, showLevelUpReward, problemsList, userAnswersHistory, settings?.maxAttempts, defaultModuleSettings.maxAttempts, returnToActiveProblem, t /* set... setters */]); // Dependencias: Estados de control/navegación, historial, lista problemas, settings, returnToActiveProblem, t. Setters son estables.
+  }, [viewingPrevious, currentProblemIndex, actualActiveProblemIndexBeforeViewingPrevious, exerciseCompleted, showLevelUpReward, problemsList, userAnswersHistory, settings?.maxAttempts, defaultModuleSettings.maxAttempts, t /* set... setters */]); // Dependencias: Estados de control/navegación, historial, lista problemas, settings, t. Setters son estables.
 
 
    // Usa useCallback para estabilizar returnToActiveProblem (volver del historial a la vista activa)
