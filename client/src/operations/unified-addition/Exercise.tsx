@@ -2925,6 +2925,8 @@ interface SettingsPanelProps {
 }
 
 function SettingsPanel({ settings, onBack }: SettingsPanelProps) {
+  // Importamos la función de traducción
+  const { t } = useTranslations();
   // useSettings y resetModuleSettings son asumidos externos
   const { updateModuleSettings, resetModuleSettings } = useSettings();
   // Estado local para la configuración, inicializado con las props
