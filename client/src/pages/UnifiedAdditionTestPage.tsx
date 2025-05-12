@@ -2,7 +2,7 @@
 // Página para probar el módulo unificado de adición
 
 import React, { useState } from 'react';
-import Exercise, { SettingsPanel } from '@/operations/unified-addition/Exercise';
+import { Exercise, Settings as SettingsPanel } from '@/operations/unified-addition';
 import { useSettings } from '@/context/SettingsContext';
 import { defaultModuleSettings } from '@/utils/operationComponents';
 import { Button } from '@/components/ui/button';
