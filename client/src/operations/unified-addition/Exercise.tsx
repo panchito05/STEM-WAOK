@@ -1724,6 +1724,125 @@ export function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // El useEffect del timer del problema también se activará si aplica.
   }, [exerciseStarted, exerciseCompleted, currentProblem /* setExerciseStarted */]); // Dependencias: estados de inicio/fin, problema actual. Setter es estable.
 
+  
+  // Manejar la entrada de dígitos desde el teclado numérico
+  const handleDigitInput = useCallback((value: string) => {
+    if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
+    
+    // Si el ejercicio no ha comenzado, iniciarlo
+    if (!exerciseStarted) startExercise();
+
+    // Crear una copia del array de respuestas
+    let newAnswers = [...digitAnswers];
+    let currentFocus = focusedDigitIndex;
+    const maxDigits = currentProblem.answerMaxDigits;
+
+    // Manejar backspace (borrar dígito)
+    if (value === "backspace") {
+      newAnswers[currentFocus] = "";
+    } 
+    // Manejar entrada de dígitos
+    else if (/[0-9]/.test(value)) {
+      newAnswers[currentFocus] = value;
+      
+      // Mover el foco según la dirección de entrada
+      if (inputDirection === 'rtl') { 
+        if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
+      } else {
+        if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
+      }
+    }
+    
+    // Actualizar el estado de las respuestas
+    setDigitAnswers(newAnswers);
+  }, [waitingRef, focusedDigitIndex, currentProblem, exerciseCompleted, viewingPrevious, exerciseStarted, digitAnswers, inputDirection, startExercise]);
+
+  // Función para mostrar la respuesta correcta
+  const showAnswer = useCallback(() => {
+    if (!currentProblem || !exerciseStarted || exerciseCompleted || waitingRef.current || showLevelUpReward) {
+      return; // No hacer nada si no hay problema o estamos en un estado que lo bloquea
+    }
+
+    console.log("[ADDITION] Showing answer...");
+    
+    // Detener temporizador si está activo
+    if (singleProblemTimerRef.current) {
+      clearInterval(singleProblemTimerRef.current);
+      singleProblemTimerRef.current = null;
+    }
+    
+    // Mostrar la respuesta correcta
+    setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+    setFeedbackColor("blue");
+    setWaitingForContinue(true);
+    setFocusedDigitIndex(null);
+    
+    // Actualizar historial para marcar como revelado
+    const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+    const answerEntry = userAnswersHistory[problemIdxForHistory];
+    
+    // Incrementar intentos al revelar si no se han agotado
+    const maxAttempts = settings?.maxAttempts ?? defaultModuleSettings.maxAttempts;
+    const attemptsBeforeReveal = currentAttempts;
+    let attemptsAfterReveal = attemptsBeforeReveal;
+    
+    if (maxAttempts === 0 || attemptsBeforeReveal < maxAttempts) {
+      attemptsAfterReveal = attemptsBeforeReveal + 1;
+      setCurrentAttempts(attemptsAfterReveal);
+    }
+    
+    // Crear o actualizar entrada del historial
+    const updatedHistoryEntry: UserAnswer = answerEntry ? {
+      ...answerEntry,
+      userAnswerString: undefined,
+      userAnswer: null,
+      isCorrect: false,
+      status: 'revealed',
+      attemptsMade: attemptsAfterReveal,
+    } : {
+      problemId: currentProblem.id,
+      problem: currentProblem,
+      userAnswerString: undefined,
+      userAnswer: null,
+      isCorrect: false,
+      status: 'revealed',
+      attemptsMade: attemptsAfterReveal,
+    };
+    
+    setUserAnswersHistory(prev => {
+      const newHistory = [...prev];
+      newHistory[problemIdxForHistory] = updatedHistoryEntry;
+      return newHistory;
+    });
+    
+    // Lógica de compensación
+    const enableCompensation = settings?.enableCompensation ?? defaultModuleSettings.enableCompensation;
+    if (enableCompensation) {
+      const difficultyForCompensation = (settings?.enableAdaptiveDifficulty ?? defaultModuleSettings.enableAdaptiveDifficulty) 
+        ? adaptiveDifficulty 
+        : (settings?.difficulty as DifficultyLevel ?? defaultModuleSettings.difficulty as DifficultyLevel);
+      
+      const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+      setProblemsList(prev => [...prev, compensationProblem]);
+      setUserAnswersHistory(prev => [...prev, null]);
+    }
+    
+    // Iniciar timer de auto-continuar si está activado
+    if (autoContinue && !blockAutoAdvance) {
+      if (autoContinueTimerRef.current) clearTimeout(autoContinueTimerRef.current);
+      console.log("[ADDITION] Auto-continue enabled after revealing, waiting 3s...");
+      autoContinueTimerRef.current = setTimeout(() => {
+        if (!blockAutoAdvance && waitingRef.current) {
+          console.log("[ADDITION] Auto-continuing after revealing...");
+          handleContinue();
+          autoContinueTimerRef.current = null;
+        } else {
+          console.log("[ADDITION] Auto-continue blocked or waiting state changed before trigger after revealing.");
+        }
+      }, 3000);
+    }
+  }, [currentProblem, exerciseStarted, exerciseCompleted, waitingRef, showLevelUpReward, t, actualActiveProblemIndexBeforeViewingPrevious, userAnswersHistory, settings, defaultModuleSettings, currentAttempts, adaptiveDifficulty, handleContinue, autoContinue, blockAutoAdvance]);
+
 
   // Función para generar un nuevo set completo de problemas (reiniciar)
   const generateNewProblemSet = useCallback(() => {
