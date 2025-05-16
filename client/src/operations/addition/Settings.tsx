@@ -187,32 +187,56 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   const theme = getDifficultyTheme(localSettings.difficulty || "beginner");
 
+  // Función para cambiar el idioma
+  const toggleLanguage = () => {
+    const newLanguage = localSettings.language === "english" ? "spanish" : "english";
+    handleUpdateSetting("language", newLanguage);
+  };
+
+  // Determinar textos según el idioma actual
+  const isEnglish = localSettings.language === "english";
+  const headerTitle = isEnglish ? "Configuration - Addition Exercise" : "Configuración - Ejercicio de Suma";
+  const subheaderText = isEnglish ? "Customize your exercise experience" : "Personaliza tu experiencia de ejercicio";
+  const backButtonText = isEnglish ? "Back to Exercise" : "Volver al Ejercicio";
+  const languageButtonText = isEnglish ? "Español" : "English";
+
   return (
     <div className={`px-4 py-5 sm:p-6 rounded-xl shadow-md ${theme.bg} border-2 ${theme.border}`}>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
         <div>
           <h2 className={`text-2xl font-bold ${theme.text} flex items-center`}>
-            {theme.emoji} Configuración - Ejercicio de Suma
+            {theme.emoji} {headerTitle}
           </h2>
-          <p className={`text-sm font-medium ${theme.textSecondary}`}>Personaliza tu experiencia de ejercicio</p>
+          <p className={`text-sm font-medium ${theme.textSecondary}`}>{subheaderText}</p>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onBack}
-          className={`border ${theme.border} hover:${theme.bgContainer}`}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver al Ejercicio
-        </Button>
+        <div className="flex mt-3 sm:mt-0 space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={toggleLanguage}
+            className={`border ${theme.border} hover:${theme.bgContainer}`}
+          >
+            <span className="mr-1">{localSettings.language === "english" ? "🇪🇸" : "🇺🇸"}</span>
+            {languageButtonText}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onBack}
+            className={`border ${theme.border} hover:${theme.bgContainer}`}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {backButtonText}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-6">
         <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
           <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">🎯</span>Nivel de Dificultad
+            <span className="mr-2">🎯</span>{isEnglish ? "Difficulty Level" : "Nivel de Dificultad"}
           </h3>
-          <p className={`text-sm ${theme.textSecondary} mb-2`}>Haz clic en un ejemplo para cambiar el nivel de dificultad:</p>
+          <p className={`text-sm ${theme.textSecondary} mb-2`}>{isEnglish ? "Click on an example to change the difficulty level:" : "Haz clic en un ejemplo para cambiar el nivel de dificultad:"}</p>
           
           <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
             <DifficultyExamples 
@@ -226,26 +250,26 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           
           <div className="mt-3 mb-2 space-y-1.5">
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">Principiante:</span> Sumas con dígitos simples (1+8, 7+5)
+              <span className="font-bold">{isEnglish ? "Beginner:" : "Principiante:"}</span> {isEnglish ? "Simple digit additions (1+8, 7+5)" : "Sumas con dígitos simples (1+8, 7+5)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">Elemental:</span> Sumas de números de dos dígitos (12+15, 24+13)
+              <span className="font-bold">{isEnglish ? "Elementary:" : "Elemental:"}</span> {isEnglish ? "Two-digit number additions (12+15, 24+13)" : "Sumas de números de dos dígitos (12+15, 24+13)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">Intermedio:</span> Sumas con números grandes (65+309, 392+132)
+              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Additions with large numbers (65+309, 392+132)" : "Sumas con números grandes (65+309, 392+132)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">Avanzado:</span> Sumas de números de 4 dígitos (1247+3568, 5934+8742)
+              <span className="font-bold">{isEnglish ? "Advanced:" : "Avanzado:"}</span> {isEnglish ? "4-digit number additions (1247+3568, 5934+8742)" : "Sumas de números de 4 dígitos (1247+3568, 5934+8742)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">Experto:</span> Sumas con números muy grandes (70960+11650, 28730+59436)
+              <span className="font-bold">{isEnglish ? "Expert:" : "Experto:"}</span> {isEnglish ? "Very large number additions (70960+11650, 28730+59436)" : "Sumas con números muy grandes (70960+11650, 28730+59436)"}
             </p>
           </div>
         </div>
 
         <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
           <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">🔢</span>Número de Problemas
+            <span className="mr-2">🔢</span>{isEnglish ? "Number of Problems" : "Número de Problemas"}
           </h3>
           <div className="mt-3">
             <div className="flex items-center space-x-4">
@@ -281,14 +305,14 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               </div>
             </div>
             <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
-              <span className="font-medium">Especifica cuántos problemas quieres resolver:</span> <span className={`font-bold ${theme.text}`}>{localSettings.problemCount}</span>
+              <span className="font-medium">{isEnglish ? "Specify how many problems you want to solve:" : "Especifica cuántos problemas quieres resolver:"}</span> <span className={`font-bold ${theme.text}`}>{localSettings.problemCount}</span>
             </p>
           </div>
         </div>
 
         <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
           <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">⏱️</span>Límite de Tiempo
+            <span className="mr-2">⏱️</span>{isEnglish ? "Time Limit" : "Límite de Tiempo"}
           </h3>
           <div className="mt-3">
             <div className="flex items-center space-x-4">
@@ -324,7 +348,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               </div>
             </div>
             <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
-              <span className="font-medium">Tiempo en segundos:</span> <span className={`font-bold ${theme.text}`}>{localSettings.timeValue}</span> <span className="text-xs">(0 para sin límite)</span>
+              <span className="font-medium">{isEnglish ? "Time in seconds:" : "Tiempo en segundos:"}</span> <span className={`font-bold ${theme.text}`}>{localSettings.timeValue}</span> <span className="text-xs">{isEnglish ? "(0 for no limit)" : "(0 para sin límite)"}</span>
             </p>
           </div>
         </div>
