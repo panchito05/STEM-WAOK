@@ -444,9 +444,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               />
             </div>
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="enable-compensation" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">➕</span>Habilitar Compensación
-                <br/><span className="text-xs ml-5 opacity-80">(Añadir 1 problema por cada incorrecto/revelado)</span>
+              <Label htmlFor="enable-compensation" className={`cursor-pointer ${theme.accent} flex items-center flex-col items-start`}>
+                <span className="flex items-center"><span className="mr-2">➕</span>{isEnglish ? "Enable Compensation" : "Habilitar Compensación"}</span>
+                <span className="text-xs ml-5 opacity-80">{isEnglish ? "(Add 1 problem for each incorrect/revealed answer)" : "(Añadir 1 problema por cada incorrecto/revelado)"}</span>
               </Label>
               <Switch
                 id="enable-compensation"
@@ -457,7 +457,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             </div>
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
               <Label htmlFor="enable-rewards" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">🏆</span>Activar sistema de recompensas aleatorias
+                <span className="mr-2">🏆</span>{isEnglish ? "Enable random rewards system" : "Activar sistema de recompensas aleatorias"}
                 <div className="flex items-center ml-2 mt-1">
                   <span className="mx-0.5 text-xl">🏅</span>
                   <span className="mx-0.5 text-xl">🏆</span>
@@ -474,24 +474,24 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             {localSettings.enableRewards && (
               <div className={`ml-6 mt-3 p-3 rounded-md bg-white/70 border ${theme.border}`}>
                 <p className={`text-sm ${theme.accent}`}>
-                  <span className="mr-2">🎲</span>Las recompensas aparecerán de forma aleatoria durante los ejercicios:
+                  <span className="mr-2">🎲</span>{isEnglish ? "Rewards will appear randomly during exercises:" : "Las recompensas aparecerán de forma aleatoria durante los ejercicios:"}
                 </p>
                 <div className="flex flex-wrap gap-3 mt-2 justify-center">
                   <div className={`p-2 rounded-md bg-white/90 border ${theme.border} flex flex-col items-center`}>
                     <span className="text-2xl">🏅</span>
-                    <span className={`text-xs font-medium ${theme.text}`}>Medallas</span>
+                    <span className={`text-xs font-medium ${theme.text}`}>{isEnglish ? "Medals" : "Medallas"}</span>
                   </div>
                   <div className={`p-2 rounded-md bg-white/90 border ${theme.border} flex flex-col items-center`}>
                     <span className="text-2xl">🏆</span>
-                    <span className={`text-xs font-medium ${theme.text}`}>Trofeos</span>
+                    <span className={`text-xs font-medium ${theme.text}`}>{isEnglish ? "Trophies" : "Trofeos"}</span>
                   </div>
                   <div className={`p-2 rounded-md bg-white/90 border ${theme.border} flex flex-col items-center`}>
                     <span className="text-2xl">⭐</span>
-                    <span className={`text-xs font-medium ${theme.text}`}>Estrellas</span>
+                    <span className={`text-xs font-medium ${theme.text}`}>{isEnglish ? "Stars" : "Estrellas"}</span>
                   </div>
                 </div>
                 <p className={`text-xs mt-3 ${theme.textSecondary} text-center italic`}>
-                  El sistema elegirá automáticamente qué recompensa mostrar en cada ocasión
+                  {isEnglish ? "The system will automatically choose which reward to display each time" : "El sistema elegirá automáticamente qué recompensa mostrar en cada ocasión"}
                 </p>
               </div>
             )}
