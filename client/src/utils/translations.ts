@@ -16,6 +16,7 @@ type TranslationKeys = {
     returnToActive: string;
     level: string;
     addition: string;
+    auto: string;
   };
   exercises: {
     start: string;
@@ -88,6 +89,7 @@ export const enTranslations: TranslationKeys = {
     returnToActive: "Return to active problem",
     level: "Level",
     addition: "Addition",
+    auto: "Auto",
   },
   exercises: {
     start: "Start Exercise",
@@ -160,6 +162,7 @@ export const esTranslations: TranslationKeys = {
     returnToActive: "Volver al problema activo",
     level: "Nivel",
     addition: "Suma",
+    auto: "Auto",
   },
   exercises: {
     start: "Comenzar Ejercicio",

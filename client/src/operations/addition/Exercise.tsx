@@ -970,7 +970,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                         <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
                           {autoContinue && <Check className="h-3 w-3 text-green-700" />}
                         </div>
-                        <span className="text-xs font-medium">{t('Auto')}</span>
+                        <span className="text-xs font-medium">{t('common.auto')}</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
