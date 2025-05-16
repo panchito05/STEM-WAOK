@@ -49,14 +49,15 @@ export const operationModules: Module[] = [
     color: "#4287f5", // Azul vivo como en la imagen
     icon: "Plus",
   },
-  {
-    id: "unifiedAddition",
-    displayName: "Addition (New)",
-    description: "Practice addition with our improved unified module",
-    difficulty: "beginner",
-    color: "#3b82f6", // Un azul diferente
-    icon: "PlusCircle",
-  },
+  // Eliminamos la entrada de "Addition (New)" ya que ahora usamos el módulo estándar
+  // {
+  //   id: "unifiedAddition",
+  //   displayName: "Addition (New)",
+  //   description: "Practice addition with our improved unified module",
+  //   difficulty: "beginner",
+  //   color: "#3b82f6", // Un azul diferente
+  //   icon: "PlusCircle",
+  // },
   {
     id: "fractions",
     displayName: "Fractions",
@@ -143,9 +144,7 @@ export const operationModules: Module[] = [
 
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
-  addition: Addition, // Mantenemos el módulo original por compatibilidad
-  // Usamos el mismo módulo de addition también para unifiedAddition
-  unifiedAddition: Addition,
+  addition: Addition, // El módulo principal de adición
   fractions: Fractions,
   counting: Counting,
 };
