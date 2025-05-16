@@ -808,7 +808,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
         <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{t('Addition')}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{t('common.addition')}</h2>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
@@ -847,7 +847,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <span>{t('Problem')} {currentProblemIndex + 1} {t('of')} {problemsList.length}</span>
+            <span>{t('exercises.problem')} {currentProblemIndex + 1} {t('common.of')} {problemsList.length}</span>
             <span className="font-semibold">{t('exercises.score')}: {score}</span>
         </div>
 

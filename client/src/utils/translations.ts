@@ -13,6 +13,9 @@ type TranslationKeys = {
     reloadingProblem: string;
     errorLoadingProblem: string;
     of: string;
+    returnToActive: string;
+    level: string;
+    addition: string;
   };
   exercises: {
     start: string;
@@ -77,6 +80,12 @@ export const enTranslations: TranslationKeys = {
     reset: "Reset",
     prev: "Previous",
     next: "Next",
+    reloadingProblem: "Reloading problem",
+    errorLoadingProblem: "Error loading problem",
+    of: "of",
+    returnToActive: "Return to active problem",
+    level: "Level",
+    addition: "Addition",
   },
   exercises: {
     start: "Start Exercise",
@@ -91,6 +100,9 @@ export const enTranslations: TranslationKeys = {
     timeTaken: "Time taken",
     tryAgain: "Try Again",
     returnHome: "Return Home",
+    problem: "Problem",
+    yourScore: "Your score:",
+    attempts: "Attempts",
   },
   tooltips: {
     activateShowAnswer: "To activate this option, go to Settings",
@@ -138,6 +150,12 @@ export const esTranslations: TranslationKeys = {
     reset: "Restablecer",
     prev: "Anterior",
     next: "Siguiente",
+    reloadingProblem: "Recargando problema",
+    errorLoadingProblem: "Error al cargar el problema",
+    of: "de",
+    returnToActive: "Volver al problema activo",
+    level: "Nivel",
+    addition: "Suma",
   },
   exercises: {
     start: "Comenzar Ejercicio",
@@ -152,6 +170,9 @@ export const esTranslations: TranslationKeys = {
     timeTaken: "Tiempo usado",
     tryAgain: "Intentar de Nuevo",
     returnHome: "Volver al Inicio",
+    problem: "Problema",
+    yourScore: "Tu puntuación:",
+    attempts: "Intentos",
   },
   tooltips: {
     activateShowAnswer: "Para activar esta opción, ve a Configuración",
