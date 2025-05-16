@@ -355,7 +355,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
         <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
           <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">🔄</span>Máximo de Intentos por Problema
+            <span className="mr-2">🔄</span>{isEnglish ? "Maximum Attempts per Problem" : "Máximo de Intentos por Problema"}
           </h3>
           <div className="mt-3">
             <div className="flex items-center space-x-4">
@@ -391,17 +391,17 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               </div>
             </div>
             <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
-              <span className="font-medium">Intentos máximos:</span> <span className={`font-bold ${theme.text}`}>{localSettings.maxAttempts}</span> <span className="text-xs">(0 para intentos ilimitados)</span>
+              <span className="font-medium">{isEnglish ? "Maximum attempts:" : "Intentos máximos:"}</span> <span className={`font-bold ${theme.text}`}>{localSettings.maxAttempts}</span> <span className="text-xs">{isEnglish ? "(0 for unlimited attempts)" : "(0 para intentos ilimitados)"}</span>
             </p>
           </div>
 
           <h3 className={`text-lg font-bold ${theme.text} flex items-center mt-6`}>
-            <span className="mr-2">⚙️</span>Configuración Adicional
+            <span className="mr-2">⚙️</span>{isEnglish ? "Additional Settings" : "Configuración Adicional"}
           </h3>
           <div className="mt-3 space-y-3">
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
               <Label htmlFor="show-immediate-feedback" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">📝</span>Mostrar retroalimentación inmediata
+                <span className="mr-2">📝</span>{isEnglish ? "Show immediate feedback" : "Mostrar retroalimentación inmediata"}
               </Label>
               <Switch
                 id="show-immediate-feedback"
@@ -412,7 +412,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             </div>
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
               <Label htmlFor="enable-sound-effects" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">🔊</span>Habilitar efectos de sonido
+                <span className="mr-2">🔊</span>{isEnglish ? "Enable sound effects" : "Habilitar efectos de sonido"}
               </Label>
               <Switch
                 id="enable-sound-effects"
@@ -423,7 +423,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             </div>
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
               <Label htmlFor="show-answer-explanation" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">❓</span>Mostrar explicación de respuestas
+                <span className="mr-2">❓</span>{isEnglish ? "Show answer explanations" : "Mostrar explicación de respuestas"}
               </Label>
               <Switch
                 id="show-answer-explanation"
@@ -434,7 +434,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             </div>
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
               <Label htmlFor="enable-adaptive-difficulty" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">📈</span>Habilitar Dificultad Adaptativa
+                <span className="mr-2">📈</span>{isEnglish ? "Enable Adaptive Difficulty" : "Habilitar Dificultad Adaptativa"}
               </Label>
               <Switch
                 id="enable-adaptive-difficulty"
