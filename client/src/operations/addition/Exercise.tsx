@@ -1011,7 +1011,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ) : (
             <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current} className="px-5 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white">
-              {!exerciseStarted ? t('exercises.start') : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
+              {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
             </Button>
           )}
 
@@ -1064,7 +1064,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     }}
                     className="text-xs sm:text-sm"
                 >
-                    <Info className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {t('exercises.showAnswer')}
+                    <Info className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.showAnswer}
                 </Button>
               </TooltipTrigger>
               {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
