@@ -86,6 +86,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { saveExerciseResult } = useProgress();
   const { updateModuleSettings } = useSettings();
   const { t } = useTranslations();
+  
+  // Traducciones para elementos específicos de la interfaz
+  const translations = {
+    english: {
+      addition: "Addition",
+      attempts: "Attempts",
+      level: "Level",
+      settings: "Settings",
+      previous: "Previous",
+      startExercise: "Start Exercise",
+      showAnswer: "Show Answer",
+      problem: "Problem",
+      of: "of"
+    },
+    spanish: {
+      addition: "Suma",
+      attempts: "Intentos",
+      level: "Nivel",
+      settings: "Ajustes",
+      previous: "Anterior",
+      startExercise: "Iniciar Ejercicio",
+      showAnswer: "Mostrar Respuesta",
+      problem: "Problema",
+      of: "de"
+    }
+  };
+  
+  // Seleccionar el idioma adecuado
+  const isEnglish = settings.language !== "spanish";
+  const currentTranslations = isEnglish ? translations.english : translations.spanish;
   const { setShowRewardAnimation } = useRewardsStore();
 
   useEffect(() => {
@@ -808,7 +838,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
         <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{t('Addition')}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
@@ -821,7 +851,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className={`font-medium p-1 rounded ${currentAttempts > 0 && currentAttempts < settings.maxAttempts ? "bg-amber-100 text-amber-800" : currentAttempts >= settings.maxAttempts ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}>
-                          {t('Attempts')}: {currentAttempts}/{settings.maxAttempts}
+                          {currentTranslations.attempts}: {currentAttempts}/{settings.maxAttempts}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -838,16 +868,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
                   "bg-indigo-100 text-indigo-800"
                 }`}>
-                    {t('Level')}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
+                    {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                 </span>
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                  <Cog className="h-4 w-4" /> {t('common.settings')}
+                  <Cog className="h-4 w-4" /> {currentTranslations.settings}
                 </Button>
             </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <span>{t('Problem')} {currentProblemIndex + 1} {t('of')} {problemsList.length}</span>
+            <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
             <span className="font-semibold">{t('exercises.score')}: {score}</span>
         </div>
 
@@ -947,7 +977,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             onClick={moveToPreviousProblem} 
             className="text-xs sm:text-sm"
           >
-            <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {t('common.prev')}
+            <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
           </Button>
 
           {viewingPrevious ? (
