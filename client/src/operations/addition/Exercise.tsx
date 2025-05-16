@@ -272,6 +272,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newHistory[problemIndexForHistory] = updatedHistoryEntry;
             return newHistory;
         });
+        
+        // Añadir problema de compensación cuando se agota el número de intentos (respuesta incorrecta)
+        if (settings.enableCompensation) {
+          console.log("[ADDITION] Agregando problema de compensación por respuesta incorrecta");
+          const difficultyForCompensation = settings.enableAdaptiveDifficulty 
+            ? adaptiveDifficulty 
+            : (settings.difficulty as DifficultyLevel);
+          
+          const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+          setProblemsList(prev => [...prev, compensationProblem]);
+          // Agregamos null al historial para que coincida con el nuevo problema añadido
+          setUserAnswersHistory(prev => [...prev, null]);
+          console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+        }
+        
         setWaitingForContinue(true); // Pone waitingRef.current = true via useEffect
         if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
         return true; // Problema resuelto (sin más intentos)
