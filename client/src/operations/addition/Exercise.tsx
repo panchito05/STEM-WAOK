@@ -808,7 +808,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
         <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{t('common.addition')}</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{t('Addition')}</h2>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
@@ -821,7 +821,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className={`font-medium p-1 rounded ${currentAttempts > 0 && currentAttempts < settings.maxAttempts ? "bg-amber-100 text-amber-800" : currentAttempts >= settings.maxAttempts ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}>
-                          {t('exercises.attempts')}: {currentAttempts}/{settings.maxAttempts}
+                          {t('Attempts')}: {currentAttempts}/{settings.maxAttempts}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -838,7 +838,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
                   "bg-indigo-100 text-indigo-800"
                 }`}>
-                    {t('common.level')}: {t(`difficulty.${settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}`)}
+                    {t('Level')}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                 </span>
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> {t('common.settings')}
@@ -847,7 +847,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <span>{t('exercises.problem')} {currentProblemIndex + 1} {t('common.of')} {problemsList.length}</span>
+            <span>{t('Problem')} {currentProblemIndex + 1} {t('of')} {problemsList.length}</span>
             <span className="font-semibold">{t('exercises.score')}: {score}</span>
         </div>
 
@@ -956,7 +956,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
             <Button onClick={handleContinue} className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs mx-auto">
-                <span className="flex-grow text-center font-medium">{t('common.next')}</span>
+                <span className="flex-grow text-center font-medium">{t('Continue')}</span>
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -970,7 +970,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                         <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
                           {autoContinue && <Check className="h-3 w-3 text-green-700" />}
                         </div>
-                        <span className="text-xs font-medium">{t('common.auto')}</span>
+                        <span className="text-xs font-medium">{t('Auto')}</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>

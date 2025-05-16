@@ -10,13 +10,6 @@ type TranslationKeys = {
     reset: string;
     prev: string;
     next: string;
-    reloadingProblem: string;
-    errorLoadingProblem: string;
-    of: string;
-    returnToActive: string;
-    level: string;
-    addition: string;
-    auto: string;
   };
   exercises: {
     start: string;
@@ -31,16 +24,11 @@ type TranslationKeys = {
     timeTaken: string;
     tryAgain: string;
     returnHome: string;
-    problem: string;
-    yourScore: string;
-    attempts: string;
   };
   tooltips: {
     activateShowAnswer: string;
     maxAttemptsPerProblem: string;
     autoContinue: string;
-    enableAutoContinue: string;
-    disableAutoContinue: string;
   };
   levelUp: {
     previousLevel: string;
@@ -83,13 +71,6 @@ export const enTranslations: TranslationKeys = {
     reset: "Reset",
     prev: "Previous",
     next: "Next",
-    reloadingProblem: "Reloading problem",
-    errorLoadingProblem: "Error loading problem",
-    of: "of",
-    returnToActive: "Return to active problem",
-    level: "Level",
-    addition: "Addition",
-    auto: "Auto",
   },
   exercises: {
     start: "Start Exercise",
@@ -104,16 +85,11 @@ export const enTranslations: TranslationKeys = {
     timeTaken: "Time taken",
     tryAgain: "Try Again",
     returnHome: "Return Home",
-    problem: "Problem",
-    yourScore: "Your score:",
-    attempts: "Attempts",
   },
   tooltips: {
     activateShowAnswer: "To activate this option, go to Settings",
     maxAttemptsPerProblem: "Maximum attempts allowed per problem",
     autoContinue: "When checked, automatically advances to next problem after a correct answer",
-    enableAutoContinue: "Enable automatic advance after correct answers",
-    disableAutoContinue: "Disable automatic advance after correct answers",
   },
   levelUp: {
     previousLevel: "Previous Level",
@@ -156,13 +132,6 @@ export const esTranslations: TranslationKeys = {
     reset: "Restablecer",
     prev: "Anterior",
     next: "Siguiente",
-    reloadingProblem: "Recargando problema",
-    errorLoadingProblem: "Error al cargar el problema",
-    of: "de",
-    returnToActive: "Volver al problema activo",
-    level: "Nivel",
-    addition: "Suma",
-    auto: "Auto",
   },
   exercises: {
     start: "Comenzar Ejercicio",
@@ -177,16 +146,11 @@ export const esTranslations: TranslationKeys = {
     timeTaken: "Tiempo usado",
     tryAgain: "Intentar de Nuevo",
     returnHome: "Volver al Inicio",
-    problem: "Problema",
-    yourScore: "Tu puntuación:",
-    attempts: "Intentos",
   },
   tooltips: {
     activateShowAnswer: "Para activar esta opción, ve a Configuración",
     maxAttemptsPerProblem: "Número máximo de intentos permitidos por problema",
     autoContinue: "Cuando está marcado, avanza automáticamente al siguiente problema después de una respuesta correcta",
-    enableAutoContinue: "Habilitar avance automático después de respuestas correctas",
-    disableAutoContinue: "Deshabilitar avance automático después de respuestas correctas",
   },
   levelUp: {
     previousLevel: "Nivel Anterior",
