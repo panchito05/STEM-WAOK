@@ -30,103 +30,6 @@ const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
-  // Crear una función para traducir textos según el idioma configurado en el módulo
-  const { t, language } = useTranslations();
-  
-  const translateText = useCallback((key: string, options?: { default?: string, params?: Record<string, any> }) => {
-    const params = options?.params || {};
-    const defaultValue = options?.default || key;
-    
-    // Definir traducciones específicas del módulo de adición que pueden no estar en el sistema global
-    const moduleTranslations: Record<string, Record<string, string>> = {
-      en: {
-        // Botones y etiquetas de la interfaz
-        "startExercise": "Start Exercise",
-        "checkAnswer": "Check Answer",
-        "showAnswer": "Show Answer",
-        "next": "Next Problem",
-        "finish": "Finish Exercise",
-        "correct": "Correct!",
-        "incorrect": "Incorrect!",
-        "timeUp": "Time's up!",
-        "problem": "Problem",
-        "of": "of",
-        "score": "Score",
-        "time": "Time",
-        "settings": "Settings",
-        "enterAnswer": "Enter your answer...",
-        // Mensajes de explicación
-        "answerIs": "The correct answer is:",
-        "compensationEnabled": "Extra problem added for compensation.",
-        "timeLimitExpired": "Time limit expired. Skipping to next problem.",
-        "exerciseCompleted": "Exercise completed!",
-        "yourScore": "Your score:",
-        "timeTaken": "Time taken:",
-        "tryAgain": "Try Again",
-        "returnHome": "Return Home",
-        // Tooltips
-        "tipSettings": "Open settings",
-        "tipShowAnswer": "Show the correct answer",
-        "tipAddCarry": "Add/Remove carry",
-      },
-      es: {
-        // Botones y etiquetas de la interfaz
-        "startExercise": "Comenzar Ejercicio",
-        "checkAnswer": "Verificar Respuesta",
-        "showAnswer": "Mostrar Respuesta",
-        "next": "Siguiente Problema",
-        "finish": "Terminar Ejercicio",
-        "correct": "¡Correcto!",
-        "incorrect": "¡Incorrecto!",
-        "timeUp": "¡Tiempo agotado!",
-        "problem": "Problema",
-        "of": "de",
-        "score": "Puntuación",
-        "time": "Tiempo",
-        "settings": "Configuración",
-        "enterAnswer": "Ingresa tu respuesta...",
-        // Mensajes de explicación
-        "answerIs": "La respuesta correcta es:",
-        "compensationEnabled": "Problema extra añadido por compensación.",
-        "timeLimitExpired": "Tiempo límite expirado. Pasando al siguiente problema.",
-        "exerciseCompleted": "¡Ejercicio completado!",
-        "yourScore": "Tu puntuación:",
-        "timeTaken": "Tiempo usado:",
-        "tryAgain": "Intentar de Nuevo",
-        "returnHome": "Volver al Inicio",
-        // Tooltips
-        "tipSettings": "Abrir configuración",
-        "tipShowAnswer": "Mostrar la respuesta correcta",
-        "tipAddCarry": "Añadir/Quitar llevada",
-      }
-    };
-    
-    // Determinar qué idioma usar
-    const moduleLanguage = settings.language === "english" ? "en" : 
-                          settings.language === "spanish" ? "es" : "en";
-    
-    // Verificar si tenemos una traducción específica del módulo
-    const parts = key.split(".");
-    if (parts.length === 1 && moduleTranslations[moduleLanguage] && moduleTranslations[moduleLanguage][key]) {
-      let translation = moduleTranslations[moduleLanguage][key];
-      
-      // Reemplazar parámetros si existen
-      if (params && typeof translation === 'string') {
-        Object.entries(params).forEach(([paramName, value]) => {
-          translation = translation.replace(`{${paramName}}`, value);
-        });
-      }
-      
-      return translation;
-    }
-    
-    // Si no hay traducción específica del módulo, usar el sistema global
-    return t(key, params);
-  }, [settings.language]);
-  
-  // Alias más corto para facilitar el uso en el componente
-  const mt = translateText;
-  
   const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -182,6 +85,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const { saveExerciseResult } = useProgress();
   const { updateModuleSettings } = useSettings();
+  const { t } = useTranslations();
   const { setShowRewardAnimation } = useRewardsStore();
 
   useEffect(() => {
@@ -273,7 +177,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const userNumericAnswer = parseFloat(userAnswerString);
 
     if (isNaN(userNumericAnswer) && digitAnswers.some(d => d && d.trim() !== "")) {
-        setFeedbackMessage(mt('invalidAnswer', {default: 'Respuesta inválida'})); 
+        setFeedbackMessage(t('exercises.invalidAnswer')); 
         setFeedbackColor("red"); 
         return false; // Inválido, no resuelto
     }
@@ -298,7 +202,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setActualActiveProblemIndexBeforeViewingPrevious(problemIndexForHistory);
 
     if (isCorrect) {
-      setFeedbackMessage(mt('correct')); 
+      setFeedbackMessage(t('exercises.correct')); 
       setFeedbackColor("green");
       const newConsecutive = consecutiveCorrectAnswers + 1;
       setConsecutiveCorrectAnswers(newConsecutive); 
@@ -1043,16 +947,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             onClick={moveToPreviousProblem} 
             className="text-xs sm:text-sm"
           >
-            <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {mt('prev')}
+            <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {t('common.prev')}
           </Button>
 
           {viewingPrevious ? (
             <Button onClick={returnToActiveProblem} className="px-4 sm:px-5 text-sm sm:text-base bg-orange-500 hover:bg-orange-600 text-white">
-                <RotateCcw className="mr-1 h-4 w-4" /> {mt('returnToActive', {default: "Volver al ejercicio activo"})} 
+                <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')} 
             </Button>
           ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
             <Button onClick={handleContinue} className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs mx-auto">
-                <span className="flex-grow text-center font-medium">{mt('next')}</span>
+                <span className="flex-grow text-center font-medium">{t('Continue')}</span>
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -1066,18 +970,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                         <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
                           {autoContinue && <Check className="h-3 w-3 text-green-700" />}
                         </div>
-                        <span className="text-xs font-medium">{mt('auto', {default: 'Auto'})}</span>
+                        <span className="text-xs font-medium">{t('Auto')}</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{autoContinue ? mt('tooltips.disableAutoContinue', {default: 'Desactivar continuación automática'}) : mt('tooltips.enableAutoContinue', {default: 'Activar continuación automática'})}</p>
+                      <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
             </Button>
           ) : (
             <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current} className="px-5 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white">
-              {!exerciseStarted ? mt('startExercise') : <><Check className="mr-1 h-4 w-4" />{mt('checkAnswer')}</>}
+              {!exerciseStarted ? t('exercises.start') : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
             </Button>
           )}
 
@@ -1091,7 +995,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                         if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) { 
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
                             // Usamos la respuesta correcta del problema directamente
-                            setFeedbackMessage(mt('answerIs', { default: 'La respuesta correcta es:' }) + ' ' + currentProblem.correctAnswer);
+                            setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
                             setFeedbackColor("blue");
                             setWaitingForContinue(true); // Pone waitingRef.current = true
                             const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
