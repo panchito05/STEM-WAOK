@@ -245,6 +245,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               onSelectDifficulty={(difficulty) => 
                 handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
               }
+              language={localSettings.language || "english"}
             />
           </div>
           

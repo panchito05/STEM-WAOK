@@ -33,11 +33,13 @@ function DifficultyExample({ level, examples, active = false, onClick }: Difficu
 export default function DifficultyExamples({ 
   operation = "addition", 
   activeDifficulty = "beginner", 
-  onSelectDifficulty
+  onSelectDifficulty,
+  language = "english" // Añadido parámetro para el idioma
 }: { 
   operation?: string; 
   activeDifficulty?: string;
   onSelectDifficulty?: (difficulty: string) => void;
+  language?: string; // Puede ser "english" o "spanish"
 }) {
   // Ejemplos específicos para diferentes operaciones (coinciden exactamente con utils.ts)
   const examples = {
@@ -70,36 +72,63 @@ export default function DifficultyExamples({
   // Si no hay función para cambiar dificultad, mostrar como solo lectura
   const handleClick = onSelectDifficulty ? onSelectDifficulty : undefined;
   
+  // Traducción de los nombres de dificultad
+  const difficultyNames = {
+    english: {
+      title: "Difficulty Examples",
+      levels: {
+        beginner: "Beginner",
+        elementary: "Elementary",
+        intermediate: "Intermediate",
+        advanced: "Advanced",
+        expert: "Expert"
+      }
+    },
+    spanish: {
+      title: "Ejemplos de Dificultad",
+      levels: {
+        beginner: "Principiante",
+        elementary: "Elemental",
+        intermediate: "Intermedio",
+        advanced: "Avanzado",
+        expert: "Experto"
+      }
+    }
+  };
+
+  // Determinar qué idioma usar
+  const translations = language === "spanish" ? difficultyNames.spanish : difficultyNames.english;
+
   return (
     <div className="w-full">
-      <h3 className="text-xl font-bold mb-4">Difficulty Examples</h3>
+      <h3 className="text-xl font-bold mb-4">{translations.title}</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <DifficultyExample 
-          level="Beginner"
+          level={translations.levels.beginner}
           examples={operationExamples.beginner} 
           active={activeDifficulty === "beginner"}
           onClick={handleClick ? () => handleClick("beginner") : undefined}
         />
         <DifficultyExample 
-          level="Elementary"
+          level={translations.levels.elementary}
           examples={operationExamples.elementary} 
           active={activeDifficulty === "elementary"}
           onClick={handleClick ? () => handleClick("elementary") : undefined}
         />
         <DifficultyExample 
-          level="Intermediate"
+          level={translations.levels.intermediate}
           examples={operationExamples.intermediate} 
           active={activeDifficulty === "intermediate"}
           onClick={handleClick ? () => handleClick("intermediate") : undefined}
         />
         <DifficultyExample 
-          level="Advanced"
+          level={translations.levels.advanced}
           examples={operationExamples.advanced} 
           active={activeDifficulty === "advanced"}
           onClick={handleClick ? () => handleClick("advanced") : undefined}
         />
         <DifficultyExample 
-          level="Expert"
+          level={translations.levels.expert}
           examples={operationExamples.expert} 
           active={activeDifficulty === "expert"}
           onClick={handleClick ? () => handleClick("expert") : undefined}
