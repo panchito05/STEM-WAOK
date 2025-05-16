@@ -10,6 +10,9 @@ type TranslationKeys = {
     reset: string;
     prev: string;
     next: string;
+    reloadingProblem: string;
+    errorLoadingProblem: string;
+    of: string;
   };
   exercises: {
     start: string;
@@ -24,6 +27,9 @@ type TranslationKeys = {
     timeTaken: string;
     tryAgain: string;
     returnHome: string;
+    problem: string;
+    yourScore: string;
+    attempts: string;
   };
   tooltips: {
     activateShowAnswer: string;
