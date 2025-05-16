@@ -30,7 +30,17 @@ const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
-
+  // Obtener el sistema de traducción con el idioma que corresponda al módulo
+  const { t } = useTranslations();
+  
+  // Verificar si hay un idioma específico configurado para el módulo
+  useEffect(() => {
+    if (settings.language) {
+      // Aquí podríamos implementar la lógica para cambiar el idioma del módulo
+      console.log(`Módulo configurado en idioma: ${settings.language}`);
+    }
+  }, [settings.language]);
+  
   const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -86,7 +96,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const { saveExerciseResult } = useProgress();
   const { updateModuleSettings } = useSettings();
-  const { t } = useTranslations();
   const { setShowRewardAnimation } = useRewardsStore();
 
   useEffect(() => {
