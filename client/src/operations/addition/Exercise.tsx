@@ -31,9 +31,11 @@ const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Crear una función para traducir textos según el idioma configurado en el módulo
-  const translateText = useCallback((key: string, params?: Record<string, any>) => {
-    // Utilizar el hook de traducciones oficial
-    const { t } = useTranslations();
+  const { t, language } = useTranslations();
+  
+  const translateText = useCallback((key: string, options?: { default?: string, params?: Record<string, any> }) => {
+    const params = options?.params || {};
+    const defaultValue = options?.default || key;
     
     // Definir traducciones específicas del módulo de adición que pueden no estar en el sistema global
     const moduleTranslations: Record<string, Record<string, string>> = {
@@ -271,7 +273,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const userNumericAnswer = parseFloat(userAnswerString);
 
     if (isNaN(userNumericAnswer) && digitAnswers.some(d => d && d.trim() !== "")) {
-        setFeedbackMessage(t('exercises.invalidAnswer')); 
+        setFeedbackMessage(mt('invalidAnswer', {default: 'Respuesta inválida'})); 
         setFeedbackColor("red"); 
         return false; // Inválido, no resuelto
     }
@@ -1089,7 +1091,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                         if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) { 
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
                             // Usamos la respuesta correcta del problema directamente
-                            setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                            setFeedbackMessage(mt('answerIs', { default: 'La respuesta correcta es:' }) + ' ' + currentProblem.correctAnswer);
                             setFeedbackColor("blue");
                             setWaitingForContinue(true); // Pone waitingRef.current = true
                             const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
