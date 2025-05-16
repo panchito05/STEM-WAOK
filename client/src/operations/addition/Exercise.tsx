@@ -838,7 +838,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
                   "bg-indigo-100 text-indigo-800"
                 }`}>
-                    {t('Level')}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
+                    {t('common.level')}: {t(`difficulty.${settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty}`)}
                 </span>
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> {t('common.settings')}
