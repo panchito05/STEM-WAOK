@@ -376,6 +376,29 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           </h3>
           <div className="mt-3 space-y-3">
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
+              <Label htmlFor="language-selector" className={`cursor-pointer ${theme.accent} flex items-center`}>
+                <span className="mr-2">🌎</span>Idioma / Language
+              </Label>
+              <div className="flex space-x-2">
+                <Button 
+                  variant={localSettings.language === "english" ? "default" : "outline"} 
+                  size="sm"
+                  className={localSettings.language === "english" ? theme.text : ""}
+                  onClick={() => handleUpdateSetting("language", "english")}
+                >
+                  English
+                </Button>
+                <Button 
+                  variant={localSettings.language === "spanish" ? "default" : "outline"} 
+                  size="sm"
+                  className={localSettings.language === "spanish" ? theme.text : ""}
+                  onClick={() => handleUpdateSetting("language", "spanish")}
+                >
+                  Español
+                </Button>
+              </div>
+            </div>
+            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
               <Label htmlFor="show-immediate-feedback" className={`cursor-pointer ${theme.accent} flex items-center`}>
                 <span className="mr-2">📝</span>Mostrar retroalimentación inmediata
               </Label>
