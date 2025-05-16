@@ -1020,7 +1020,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <TooltipTrigger asChild>
                 <Button 
                     variant="outline" size="sm" 
-                    disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current} 
+                    disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted} 
                     onClick={() => { 
                         if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) { 
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
