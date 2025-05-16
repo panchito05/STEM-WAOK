@@ -330,6 +330,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts) {
           // Esto es redundante si checkCurrentAnswer ya lo manejó, pero es una salvaguarda.
           setFeedbackMessage(t('exercises.noAttemptsLeftAnswerWas', { correctAnswer: currentProblem.correctAnswer }));
+          
+          // Añadir problema de compensación cuando se agota el tiempo con respuesta incorrecta
+          if (settings.enableCompensation) {
+            console.log("[ADDITION] Agregando problema de compensación por tiempo agotado (con respuesta incorrecta)");
+            const difficultyForCompensation = settings.enableAdaptiveDifficulty 
+              ? adaptiveDifficulty 
+              : (settings.difficulty as DifficultyLevel);
+            
+            const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+            setProblemsList(prev => [...prev, compensationProblem]);
+            // Agregamos null al historial para que coincida con el nuevo problema añadido
+            setUserAnswersHistory(prev => [...prev, null]);
+            console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+          }
+          
           setWaitingForContinue(true);
           // Historial ya actualizado por checkCurrentAnswer
         } else {
@@ -368,6 +383,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newHistory[problemIndexForHistory] = updatedHistoryEntry;
             return newHistory;
         });
+        
+        // Añadir problema de compensación cuando se agota el tiempo y se revelan las respuestas
+        if (settings.enableCompensation) {
+          console.log("[ADDITION] Agregando problema de compensación por tiempo agotado (sin respuesta)");
+          const difficultyForCompensation = settings.enableAdaptiveDifficulty 
+            ? adaptiveDifficulty 
+            : (settings.difficulty as DifficultyLevel);
+          
+          const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+          setProblemsList(prev => [...prev, compensationProblem]);
+          // Agregamos null al historial para que coincida con el nuevo problema añadido
+          setUserAnswersHistory(prev => [...prev, null]);
+          console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+        }
+        
         setWaitingForContinue(true);
       } else {
         setFeedbackMessage(t('exercises.timeUpNoAnswer', {attemptsMade: newAttempts, maxAttempts: settings.maxAttempts}));
