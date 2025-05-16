@@ -982,6 +982,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                     };
                                     return newHistory;
                                 });
+                                
+                                // Añadir problema de compensación cuando se revela la respuesta
+                                if (settings.enableCompensation) {
+                                    console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
+                                    const difficultyForCompensation = settings.enableAdaptiveDifficulty 
+                                        ? adaptiveDifficulty 
+                                        : (settings.difficulty as DifficultyLevel);
+                                    
+                                    const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                                    setProblemsList(prev => [...prev, compensationProblem]);
+                                    // Agregamos null al historial para que coincida con el nuevo problema añadido
+                                    setUserAnswersHistory(prev => [...prev, null]);
+                                    console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+                                }
                             }
                             if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
                                 setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
