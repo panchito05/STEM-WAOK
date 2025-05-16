@@ -298,7 +298,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setActualActiveProblemIndexBeforeViewingPrevious(problemIndexForHistory);
 
     if (isCorrect) {
-      setFeedbackMessage(t('exercises.correct')); 
+      setFeedbackMessage(mt('correct')); 
       setFeedbackColor("green");
       const newConsecutive = consecutiveCorrectAnswers + 1;
       setConsecutiveCorrectAnswers(newConsecutive); 
