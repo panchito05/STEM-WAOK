@@ -22,7 +22,6 @@ import { useSettings } from "@/context/SettingsContext";
 import { useProgress } from "@/context/ProgressContext";
 import { useTranslations, mapConfigLanguageToSupported } from "@/hooks/use-translations";
 import { SupportedLanguage } from "@/utils/translations";
-import ExerciseHistoryDialog from "./ExerciseHistoryDialog";
 
 interface DraggableModuleCardProps {
   module: Module;
@@ -122,12 +121,13 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     toggleFavorite(module.id);
   };
   
-  // Manejador para mostrar el historial del módulo directamente
+  // Manejador para navegar al historial del módulo
   const handleViewHistory = (e: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
     }
-    // Este evento no navegará, ahora mostrará un diálogo
+    // Redirigir a la página de progreso con el filtro para este módulo
+    setLocation(`/progress?module=${module.id}`);
   };
   
   drag(drop(ref));
@@ -225,33 +225,20 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
-          {/* Botón de historial con diálogo integrado */}
+          {/* Botón de historial */}
           {!module.comingSoon && (
-            hasHistory ? (
-              <ExerciseHistoryDialog 
-                moduleId={module.id} 
-                exerciseHistory={exerciseHistory}
-                trigger={
-                  <div 
-                    className="focus:outline-none p-1.5 rounded-full transition-all cursor-pointer 
-                      text-blue-400 hover:text-white bg-white/20 hover:bg-white/10"
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label={t('progress.viewHistory') || "Ver historial"}
-                  >
-                    <History className="h-5 w-5" />
-                  </div>
-                }
-              />
-            ) : (
-              <div 
-                className="focus:outline-none p-1.5 rounded-full transition-all 
-                  text-white/50 opacity-50 cursor-not-allowed"
-                onClick={(e) => e.stopPropagation()}
-                aria-label={t('progress.noHistory') || "Sin historial"}
-              >
-                <History className="h-5 w-5" />
-              </div>
-            )
+            <button 
+              className={`focus:outline-none p-1.5 rounded-full transition-all ${
+                hasHistory 
+                  ? "text-blue-400 hover:text-white bg-white/20 hover:bg-white/10" 
+                  : "text-white/50 cursor-not-allowed"
+              }`}
+              onClick={(e) => hasHistory && handleViewHistory(e)}
+              disabled={!hasHistory}
+              aria-label={hasHistory ? t('progress.viewHistory') || "Ver historial" : t('progress.noHistory') || "Sin historial"}
+            >
+              <History className={`h-5 w-5 ${hasHistory ? "" : "opacity-50"}`} />
+            </button>
           )}
           
           {!module.comingSoon && (
