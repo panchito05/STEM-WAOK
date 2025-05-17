@@ -285,8 +285,8 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                     className="flex justify-between items-center h-auto py-3 text-left w-full bg-white hover:bg-gray-50"
                     onClick={() => setSelectedExercise(exercise)}
                   >
-                    <div className="flex flex-col">
-                      <div className="font-medium">
+                    <div className="flex flex-col justify-start">
+                      <div className="font-medium text-base">
                         N/A
                       </div>
                       <div className="text-sm text-gray-500">
@@ -296,12 +296,12 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                     
                     <div className="flex items-center gap-4">
                       <div className="flex items-center">
-                        <Award className="h-4 w-4 text-yellow-500 mr-1" />
-                        <span className="text-yellow-500">{exercise.score}/{exercise.totalProblems}</span>
+                        <Award className="h-5 w-5 text-yellow-500 mr-1" />
+                        <span className="text-yellow-500 font-medium">{exercise.score}/{exercise.totalProblems}</span>
                       </div>
                       <div className="flex items-center">
-                        <Clock className="h-4 w-4 text-blue-500 mr-1" />
-                        <span className="text-blue-500">{formatTime(exercise.timeSpent)}</span>
+                        <Clock className="h-5 w-5 text-blue-500 mr-1" />
+                        <span className="text-blue-500 font-medium">{formatTime(exercise.timeSpent)}</span>
                       </div>
                     </div>
                   </Button>
