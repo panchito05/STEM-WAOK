@@ -15,6 +15,7 @@ import eventBus from '@/lib/eventBus'; // Eliminado 'on', 'off' ya que no se usa
 import LevelUpHandler from "@/components/LevelUpHandler";
 import { useRewardsStore, awardReward, getRewardProbability, selectRandomReward } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
+import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -30,6 +31,10 @@ const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
+  // Acceder a la información de historial mediante el contexto de progreso
+  const { exerciseHistory } = useProgress();
+  const moduleId = "addition"; // ID del módulo de suma
+
   const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -718,78 +723,73 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
     
-    // Calcular estadísticas detalladas para guardar
     const correctCount = userAnswersHistory.filter(a => a && a.isCorrect).length;
     const accuracy = problemsList.length > 0 ? Math.round((correctCount / problemsList.length) * 100) : 0;
+    
+    // Cálculo de tiempo promedio por problema
     const avgTimePerProblem = problemsList.length > 0 ? Math.round(timer / problemsList.length) : 0;
     
-    // Cálculo de intentos promedio - corrección para contar los intentos reales por problema
+    // Cálculo de intentos promedio
     let totalAttempts = 0;
     const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
     
     userAnswersHistory.forEach(answer => {
       if (answer) {
-        // Usando la propiedad attempts del objeto answer si existe, de lo contrario asumimos 1
         totalAttempts += answer.attempts || 1;
-        
-        // Si la respuesta fue revelada, contamos un intento adicional
         if (answer.status === 'revealed') {
           totalAttempts++;
         }
       }
     });
     
-    const avgAttempts = attemptedProblemsCount > 0 
-      ? parseFloat((totalAttempts / attemptedProblemsCount).toFixed(1)) 
+    const avgAttemptsValue = attemptedProblemsCount > 0 
+      ? parseFloat((totalAttempts / attemptedProblemsCount).toFixed(1))
       : 0;
     
     // Contar respuestas reveladas
     const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
     
-    // Nivel final - actualizamos para detectar posibles cambios de nivel durante el ejercicio
+    // Nivel final - usamos el último nivel alcanzado
     const finalLevel = settings.enableAdaptiveDifficulty 
       ? localStorage.getItem('addition_adaptiveDifficulty') || adaptiveDifficulty 
       : settings.difficulty;
-    
-    // Preparar los detalles de cada problema para el historial
+      
+    // Construir detalles de problemas para guardar en historial
     const problemDetails = userAnswersHistory.map((answer, index) => {
       if (!answer) return null;
       
       const problem = problemsList[index];
       if (!problem) return null;
       
-      // Formato para mostrar el problema
-      let problemText = '';
-      if (problem.operands && problem.operands.length > 0) {
-        if (problem.operands.length === 2) {
-          problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
-        }
-      }
-      
       return {
-        problemNumber: index + 1,
-        problem: problemText,
+        problemId: problem.id || index,
+        problem: {
+          operands: problem.operands,
+          correctAnswer: problem.correctAnswer,
+          layout: problem.layout
+        },
         isCorrect: answer.isCorrect,
         userAnswer: answer.userAnswer,
         correctAnswer: problem.correctAnswer,
         attempts: answer.attempts || 1,
-        timeSpent: avgTimePerProblem, // Como no tenemos el tiempo exacto por problema, usamos el promedio
+        status: answer.status,
         level: finalLevel
       };
-    }).filter(Boolean); // Eliminar los null
+    }).filter(item => item !== null);
     
-    // Guardar el resultado con toda la información detallada
+    // Guardar resultado detallado
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
       score: correctCount,
       totalProblems: problemsList.length,
       timeSpent: timer,
-      difficulty: (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) as string,
-      // Información detallada adicional
+      difficulty: finalLevel as string,
+      
+      // Campos adicionales detallados
       accuracy: accuracy,
       avgTimePerProblem: avgTimePerProblem,
-      avgAttempts: avgAttempts,
+      avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       problemDetails: problemDetails
     });
@@ -1151,18 +1151,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </Tooltip>
                   </TooltipProvider>
                 </Button>
-                <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <History className="h-4 w-4 text-blue-500" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{t('tooltips.exerciseHistory') || "Exercise history"}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </Button>
+                <ExerciseHistoryDialog
+                  moduleId={moduleId}
+                  exerciseHistory={exerciseHistory}
+                  trigger={
+                    <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <History className="h-4 w-4 text-blue-500" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t('tooltips.exerciseHistory') || "Exercise history"}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Button>
+                  }
+                />
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> {currentTranslations.settings}
                 </Button>
