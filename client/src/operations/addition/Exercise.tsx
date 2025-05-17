@@ -940,9 +940,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
     });
     
+    // Corrección: mantener como número para la base de datos
     const avgAttempts = attemptedProblemsCount > 0 
-      ? (totalAttempts / attemptedProblemsCount).toFixed(1) 
-      : "0";
+      ? parseFloat((totalAttempts / attemptedProblemsCount).toFixed(1)) 
+      : 0;
     
     // Contar respuestas reveladas
     const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
