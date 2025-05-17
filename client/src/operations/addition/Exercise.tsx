@@ -7,8 +7,7 @@ import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
 import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Download } from "lucide-react";
-// Importaremos jsPDF de forma dinámica cuando sea necesario
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/use-translations";
 import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
@@ -16,6 +15,7 @@ import eventBus from '@/lib/eventBus'; // Eliminado 'on', 'off' ya que no se usa
 import LevelUpHandler from "@/components/LevelUpHandler";
 import { useRewardsStore, awardReward, getRewardProbability, selectRandomReward } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
+import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -31,6 +31,10 @@ const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
+  // Acceder a la información de historial mediante el contexto de progreso
+  const { exerciseHistory } = useProgress();
+  const moduleId = "addition"; // ID del módulo de suma
+
   const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -719,80 +723,147 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
     
-    // Calcular estadísticas detalladas para guardar
     const correctCount = userAnswersHistory.filter(a => a && a.isCorrect).length;
     const accuracy = problemsList.length > 0 ? Math.round((correctCount / problemsList.length) * 100) : 0;
+    
+    // Cálculo de tiempo promedio por problema
     const avgTimePerProblem = problemsList.length > 0 ? Math.round(timer / problemsList.length) : 0;
     
-    // Cálculo de intentos promedio - corrección para contar los intentos reales por problema
+    // Cálculo de intentos promedio
     let totalAttempts = 0;
     const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
     
     userAnswersHistory.forEach(answer => {
       if (answer) {
-        // Usando la propiedad attempts del objeto answer si existe, de lo contrario asumimos 1
         totalAttempts += answer.attempts || 1;
-        
-        // Si la respuesta fue revelada, contamos un intento adicional
         if (answer.status === 'revealed') {
           totalAttempts++;
         }
       }
     });
     
-    const avgAttempts = attemptedProblemsCount > 0 
-      ? parseFloat((totalAttempts / attemptedProblemsCount).toFixed(1)) 
+    const avgAttemptsValue = attemptedProblemsCount > 0 
+      ? parseFloat((totalAttempts / attemptedProblemsCount).toFixed(1))
       : 0;
     
     // Contar respuestas reveladas
     const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
     
-    // Nivel final - actualizamos para detectar posibles cambios de nivel durante el ejercicio
+    // Nivel final - usamos el último nivel alcanzado
     const finalLevel = settings.enableAdaptiveDifficulty 
       ? localStorage.getItem('addition_adaptiveDifficulty') || adaptiveDifficulty 
       : settings.difficulty;
-    
-    // Preparar los detalles de cada problema para el historial
+      
+    // Construir detalles de problemas para guardar en historial
     const problemDetails = userAnswersHistory.map((answer, index) => {
       if (!answer) return null;
       
       const problem = problemsList[index];
       if (!problem) return null;
       
-      // Formato para mostrar el problema
-      let problemText = '';
-      if (problem.operands && problem.operands.length > 0) {
-        if (problem.operands.length === 2) {
-          problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
-        }
-      }
-      
       return {
-        problemNumber: index + 1,
-        problem: problemText,
+        problemId: problem.id || index,
+        problem: {
+          operands: problem.operands,
+          correctAnswer: problem.correctAnswer,
+          layout: problem.layout
+        },
         isCorrect: answer.isCorrect,
         userAnswer: answer.userAnswer,
         correctAnswer: problem.correctAnswer,
         attempts: answer.attempts || 1,
-        timeSpent: avgTimePerProblem, // Como no tenemos el tiempo exacto por problema, usamos el promedio
+        status: answer.status,
         level: finalLevel
       };
-    }).filter(Boolean); // Eliminar los null
+    }).filter(item => item !== null);
     
-    // Guardar el resultado con toda la información detallada
+    // Create screenshot-like data structure that matches our template
+    const screenshotData = {
+      title: "Addition Exercise Complete!",
+      scoreData: {
+        totalTime: formatTime(timer),
+        score: { 
+          value: `${correctCount} / ${problemsList.length}`, 
+          bgColor: "bg-blue-50", 
+          textColor: "text-indigo-600" 
+        },
+        accuracy: { 
+          value: `${accuracy}%`, 
+          bgColor: "bg-green-50", 
+          textColor: "text-green-600" 
+        },
+        avgTime: { 
+          value: `${avgTimePerProblem}s`, 
+          bgColor: "bg-purple-50", 
+          textColor: "text-purple-600" 
+        },
+        avgAttempts: { 
+          value: avgAttemptsValue.toString(), 
+          bgColor: "bg-amber-50", 
+          textColor: "text-amber-600" 
+        },
+        revealed: { 
+          value: revealedAnswers.toString(), 
+          bgColor: "bg-red-50", 
+          textColor: "text-red-600" 
+        },
+        finalLevel: { 
+          value: settings.enableAdaptiveDifficulty 
+            ? (adaptiveDifficulty === 'beginner' ? '1' 
+              : adaptiveDifficulty === 'elementary' ? '2'
+              : adaptiveDifficulty === 'intermediate' ? '3'
+              : adaptiveDifficulty === 'advanced' ? '4'
+              : adaptiveDifficulty === 'expert' ? '5' : '1')
+            : (settings.difficulty === 'beginner' ? '1' 
+              : settings.difficulty === 'elementary' ? '2'
+              : settings.difficulty === 'intermediate' ? '3'
+              : settings.difficulty === 'advanced' ? '4'
+              : settings.difficulty === 'expert' ? '5' : '1'),
+          bgColor: "bg-teal-50", 
+          textColor: "text-teal-600" 
+        }
+      },
+      problemReview: problemDetails.map(detail => {
+        if (!detail) return null;
+        
+        // Format the problem nicely for display
+        const { operands, correctAnswer } = detail.problem;
+        const problemText = `${operands[0]} + ${operands[1]} = ${correctAnswer}`;
+        
+        return {
+          problem: problemText,
+          level: settings.difficulty === 'beginner' ? '1' 
+              : settings.difficulty === 'elementary' ? '2'
+              : settings.difficulty === 'intermediate' ? '3'
+              : settings.difficulty === 'advanced' ? '4'
+              : settings.difficulty === 'expert' ? '5' : '1',
+          attempts: detail.attempts?.toString() || "1",
+          time: `${detail.timeSpent || avgTimePerProblem}s`,
+          isCorrect: detail.isCorrect
+        };
+      }).filter(Boolean)
+    };
+    
+    // Guardar resultado detallado con los datos de la captura
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
       score: correctCount,
       totalProblems: problemsList.length,
       timeSpent: timer,
-      difficulty: (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) as string,
-      // Información detallada adicional
+      difficulty: finalLevel as string,
+      
+      // Campos adicionales detallados
       accuracy: accuracy,
       avgTimePerProblem: avgTimePerProblem,
-      avgAttempts: avgAttempts,
+      avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
-      problemDetails: problemDetails
+      problemDetails: problemDetails,
+      
+      // Include the screenshot-like data
+      extra_data: {
+        screenshot: screenshotData
+      }
     });
   };
 
@@ -1054,160 +1125,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         </div>
         
-        {/* Guardar resultados */}
-        <div className="mb-6 border border-gray-200 rounded-lg p-4 bg-sky-50">
-          <h3 className="text-lg font-semibold mb-3 flex items-center">
-            <Download className="h-5 w-5 mr-2 text-blue-600" />
-            Guardar resultados
-          </h3>
-          <p className="text-sm text-gray-600 mb-3">
-            Puedes guardar estos resultados en el sistema para revisarlos más tarde en tu historial de progreso.
-          </p>
-          <div className="flex flex-col gap-3">
-            <Button 
-              onClick={async () => {
-                try {
-                  // Preparamos los datos para guardar en la base de datos
-                  const progressData = {
-                    operationId: "addition",
-                    score: finalScore,
-                    totalProblems: problemsList.length,
-                    timeSpent: timer,
-                    difficulty: finalLevel,
-                    accuracy,
-                    avgTimePerProblem,
-                    avgAttempts,
-                    revealedAnswers,
-                    problemDetails: problemsList.map((problem, index) => {
-                      const answer = userAnswersHistory[index];
-                      if (!answer) return null;
-                      
-                      return {
-                        problemNumber: index + 1,
-                        problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
-                        isCorrect: answer.isCorrect,
-                        userAnswer: answer.userAnswer,
-                        correctAnswer: problem.correctAnswer,
-                        attempts: answer.attempts || 1,
-                        timeSpent: Math.round(avgTimePerProblem),
-                        level: finalLevel
-                      };
-                    }).filter(Boolean)
-                  };
-                  
-                  // Enviamos los datos al servidor
-                  const response = await fetch('/api/progress', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(progressData),
-                  });
-                  
-                  if (!response.ok) {
-                    throw new Error('Error al guardar en el servidor');
-                  }
-                  
-                  // También guardamos en localStorage como respaldo
-                  const storageKey = `math_results_${new Date().toISOString().slice(0, 10)}`;
-                  localStorage.setItem(storageKey, JSON.stringify(progressData));
-                  
-                  alert("Resultados guardados correctamente");
-                  
-                  // Notificamos al sistema de progreso
-                  if (saveProgress) {
-                    saveProgress(progressData);
-                  }
-                } catch (error) {
-                  console.error("Error saving progress:", error);
-                  
-                  // Guardamos al menos en localStorage
-                  try {
-                    const storageKey = `math_results_${new Date().toISOString().slice(0, 10)}`;
-                    const progressData = {
-                      operationId: "addition",
-                      date: new Date().toISOString(),
-                      score: finalScore,
-                      totalProblems: problemsList.length,
-                      timeSpent: timer,
-                      difficulty: finalLevel,
-                      accuracy,
-                      avgTimePerProblem,
-                      avgAttempts,
-                      revealedAnswers
-                    };
-                    localStorage.setItem(storageKey, JSON.stringify(progressData));
-                    alert("No se pudo guardar en el servidor pero se guardó localmente");
-                  } catch (localError) {
-                    alert("Error al guardar los resultados. Por favor intenta de nuevo.");
-                  }
-                }
-              }}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Guardar en mi progreso
-            </Button>
-            
-            <Button 
-              onClick={async () => {
-                try {
-                  // Creamos un texto formateado para exportar
-                  const fecha = new Date().toLocaleDateString();
-                  const hora = new Date().toLocaleTimeString();
-                  
-                  let contenido = `RESULTADOS DEL EJERCICIO DE SUMA\n`;
-                  contenido += `Fecha: ${fecha} - Hora: ${hora}\n\n`;
-                  contenido += `RESUMEN:\n`;
-                  contenido += `Total de problemas: ${problemsList.length}\n`;
-                  contenido += `Puntuación: ${finalScore} / ${problemsList.length}\n`;
-                  contenido += `Precisión: ${accuracy}%\n`;
-                  contenido += `Tiempo total: ${formatTime(timer)}\n`;
-                  contenido += `Tiempo promedio por problema: ${Math.round(avgTimePerProblem)}s\n`;
-                  contenido += `Intentos promedio: ${avgAttempts.toFixed(1)}\n`;
-                  contenido += `Respuestas reveladas: ${revealedAnswers}\n`;
-                  contenido += `Nivel de dificultad: ${finalLevel}\n\n`;
-                  
-                  contenido += `DETALLE DE PROBLEMAS:\n`;
-                  problemsList.forEach((problem, index) => {
-                    const answer = userAnswersHistory[index];
-                    if (!answer) return;
-                    
-                    contenido += `Problema #${index + 1}: ${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}\n`;
-                    contenido += `  Respuesta del usuario: ${answer.userAnswer || '-'}\n`;
-                    contenido += `  Correcto: ${answer.isCorrect ? 'Sí' : 'No'}\n`;
-                    contenido += `  Intentos: ${answer.attempts || 1}\n`;
-                    contenido += `  Nivel: ${finalLevel}\n\n`;
-                  });
-                  
-                  // Crear el archivo de texto y descargarlo
-                  const blob = new Blob([contenido], { type: 'text/plain' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `resultados_suma_${new Date().toISOString().slice(0, 10)}.txt`;
-                  document.body.appendChild(a);
-                  a.click();
-                  
-                  // Limpiar
-                  setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                  }, 0);
-                } catch (error) {
-                  console.error("Error al exportar:", error);
-                  alert("Error al exportar los resultados. Por favor intenta de nuevo.");
-                }
-              }}
-              variant="outline"
-              className="w-full border-blue-500 text-blue-700 hover:bg-blue-50"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Exportar como texto
-            </Button>
-          </div>
-        </div>
-        
         <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
           <Button onClick={generateNewProblemSet} className="w-full sm:w-auto">
             {t('exercises.tryAgain')}
@@ -1306,18 +1223,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </Tooltip>
                   </TooltipProvider>
                 </Button>
-                <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <History className="h-4 w-4 text-blue-500" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{t('tooltips.exerciseHistory') || "Exercise history"}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </Button>
+                <ExerciseHistoryDialog
+                  moduleId={moduleId}
+                  exerciseHistory={exerciseHistory}
+                  trigger={
+                    <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <History className="h-4 w-4 text-blue-500" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{t('tooltips.exerciseHistory') || "Exercise history"}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Button>
+                  }
+                />
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> {currentTranslations.settings}
                 </Button>

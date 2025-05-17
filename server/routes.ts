@@ -243,7 +243,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const progressData = await storage.getProgressForUser(userId);
       
-      return res.json(progressData);
+      // Organizar los datos para el formato esperado por el frontend
+      // Extrayendo ejercicios por operationId para construir moduleProgress
+      const moduleProgress: Record<string, any> = {};
+      const exerciseHistory = progressData || [];
+      
+      // Procesar datos para construir moduleProgress
+      exerciseHistory.forEach(entry => {
+        const opId = entry.operationId;
+        if (!moduleProgress[opId]) {
+          moduleProgress[opId] = {
+            operationId: opId,
+            totalCompleted: 0,
+            bestScore: 0,
+            averageScore: 0,
+            totalScore: 0,
+            averageTime: 0,
+            totalTime: 0,
+            lastAttempt: null
+          };
+        }
+        
+        // Actualizar métricas
+        moduleProgress[opId].totalCompleted += 1;
+        moduleProgress[opId].bestScore = Math.max(moduleProgress[opId].bestScore, entry.score);
+        moduleProgress[opId].totalScore += entry.score;
+        moduleProgress[opId].totalTime += entry.timeSpent;
+        
+        // Actualizar última fecha de intento
+        const entryDate = new Date(entry.createdAt);
+        const lastDate = moduleProgress[opId].lastAttempt ? new Date(moduleProgress[opId].lastAttempt) : null;
+        
+        if (!lastDate || entryDate > lastDate) {
+          moduleProgress[opId].lastAttempt = entry.createdAt;
+        }
+      });
+      
+      // Calcular promedios
+      Object.keys(moduleProgress).forEach(opId => {
+        const module = moduleProgress[opId];
+        if (module.totalCompleted > 0) {
+          module.averageScore = module.totalScore / module.totalCompleted;
+          module.averageTime = module.totalTime / module.totalCompleted;
+        }
+      });
+      
+      return res.json({
+        exerciseHistory,
+        moduleProgress
+      });
     } catch (error) {
       console.error("Error fetching progress:", error);
       return res.status(500).json({ error: "Internal server error" });
@@ -258,9 +306,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validar los datos de progreso con zod
       const validatedProgress = exerciseProgressSchema.parse(req.body);
       
-      const newProgress = await storage.insertProgress(userId, validatedProgress);
+      // Insertar el nuevo progreso
+      await storage.insertProgress(userId, validatedProgress);
       
-      return res.status(201).json(newProgress);
+      // Obtener el progreso actualizado para devolverlo en el formato esperado
+      const progressData = await storage.getProgressForUser(userId);
+      
+      // Organizar los datos para el formato esperado por el frontend
+      const moduleProgress: Record<string, any> = {};
+      const exerciseHistory = progressData || [];
+      
+      // Procesar datos para construir moduleProgress
+      exerciseHistory.forEach(entry => {
+        const opId = entry.operationId;
+        if (!moduleProgress[opId]) {
+          moduleProgress[opId] = {
+            operationId: opId,
+            totalCompleted: 0,
+            bestScore: 0,
+            averageScore: 0,
+            totalScore: 0,
+            averageTime: 0,
+            totalTime: 0,
+            lastAttempt: null
+          };
+        }
+        
+        // Actualizar métricas
+        moduleProgress[opId].totalCompleted += 1;
+        moduleProgress[opId].bestScore = Math.max(moduleProgress[opId].bestScore, entry.score);
+        moduleProgress[opId].totalScore += entry.score;
+        moduleProgress[opId].totalTime += entry.timeSpent;
+        
+        // Actualizar última fecha de intento
+        const entryDate = new Date(entry.createdAt);
+        const lastDate = moduleProgress[opId].lastAttempt ? new Date(moduleProgress[opId].lastAttempt) : null;
+        
+        if (!lastDate || entryDate > lastDate) {
+          moduleProgress[opId].lastAttempt = entry.createdAt;
+        }
+      });
+      
+      // Calcular promedios
+      Object.keys(moduleProgress).forEach(opId => {
+        const module = moduleProgress[opId];
+        if (module.totalCompleted > 0) {
+          module.averageScore = module.totalScore / module.totalCompleted;
+          module.averageTime = module.totalTime / module.totalCompleted;
+        }
+      });
+      
+      return res.status(201).json({
+        exerciseHistory,
+        moduleProgress
+      });
     } catch (error) {
       console.error("Error saving progress:", error);
       if (error instanceof z.ZodError) {
@@ -400,6 +499,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(activatedProfile);
     } catch (error) {
       console.error("Error activating child profile:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+  
+  app.post("/api/child-profiles/:id/progress", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Validar datos de progreso
+      const validatedProgress = exerciseProgressSchema.parse(req.body);
+      
+      // Guardar progreso
+      const newProgress = await storage.insertProgressForChildProfile(profileId, validatedProgress);
+      
+      // Devolver progreso completo actualizado
+      const progressData = await storage.getProgressForChildProfile(profileId);
+      
+      return res.status(201).json({
+        success: true,
+        message: "Progress saved successfully",
+        data: newProgress
+      });
+    } catch (error) {
+      console.error("Error saving child profile progress:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid progress data", details: error.errors });
+      }
       return res.status(500).json({ error: "Internal server error" });
     }
   });

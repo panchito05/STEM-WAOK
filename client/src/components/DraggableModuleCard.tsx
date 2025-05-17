@@ -22,6 +22,7 @@ import { useSettings } from "@/context/SettingsContext";
 import { useProgress } from "@/context/ProgressContext";
 import { useTranslations, mapConfigLanguageToSupported } from "@/hooks/use-translations";
 import { SupportedLanguage } from "@/utils/translations";
+import ExerciseHistoryDialog from "./ExerciseHistoryDialog";
 
 interface DraggableModuleCardProps {
   module: Module;
@@ -63,11 +64,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   const isHidden = hiddenModules.includes(module.id);
   
   // Verificar si hay historial para este módulo
-  const hasHistory = exerciseHistory?.some(entry => entry.operationId === module.id) || false;
-  console.log(`Verificando historial para ${module.id}:`, { 
-    hasHistory, 
-    historiaDisponible: exerciseHistory?.filter(entry => entry.operationId === module.id)
-  });
+  const hasHistory = exerciseHistory && exerciseHistory.some(entry => entry.operationId === module.id);
 
   const [{ isDragging }, drag] = useDragItem(() => ({
     type: "MODULE_CARD",
@@ -125,23 +122,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     toggleFavorite(module.id);
   };
   
-  // Manejador para navegar al historial del módulo
+  // Manejador para mostrar el historial del módulo directamente
   const handleViewHistory = (e: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
-      e.preventDefault();
     }
-    // Registramos información para depuración
-    console.log(`Navegando al historial de ${module.id}`);
-    
-    // Redirigir a la página de progreso con el filtro para este módulo
-    setLocation(`/progress?module=${module.id}`);
-    
-    // Alternativa usando window.location como respaldo si wouter no funciona
-    if (!hasHistory) {
-      console.log("No hay historial disponible, no navegamos");
-      return;
-    }
+    // Este evento no navegará, ahora mostrará un diálogo
   };
   
   drag(drop(ref));
@@ -239,19 +225,33 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
-          {/* Botón de historial - Mejorado para capturar todos los clics */}
+          {/* Botón de historial con diálogo integrado */}
           {!module.comingSoon && (
-            <button 
-              className={`focus:outline-none p-1.5 rounded-full transition-all ${
-                hasHistory 
-                  ? "text-blue-400 hover:text-white bg-white/20 hover:bg-white/10" 
-                  : "text-white/50"
-              }`}
-              onClick={handleViewHistory}
-              aria-label={hasHistory ? t('progress.viewHistory') || "Ver historial" : t('progress.noHistory') || "Sin historial"}
-            >
-              <History className={`h-5 w-5 ${hasHistory ? "" : "opacity-50"}`} />
-            </button>
+            hasHistory ? (
+              <ExerciseHistoryDialog 
+                moduleId={module.id} 
+                exerciseHistory={exerciseHistory}
+                trigger={
+                  <div 
+                    className="focus:outline-none p-1.5 rounded-full transition-all cursor-pointer 
+                      text-blue-400 hover:text-white bg-white/20 hover:bg-white/10"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={t('progress.viewHistory') || "Ver historial"}
+                  >
+                    <History className="h-5 w-5" />
+                  </div>
+                }
+              />
+            ) : (
+              <div 
+                className="focus:outline-none p-1.5 rounded-full transition-all 
+                  text-white/50 opacity-50 cursor-not-allowed"
+                onClick={(e) => e.stopPropagation()}
+                aria-label={t('progress.noHistory') || "Sin historial"}
+              >
+                <History className="h-5 w-5" />
+              </div>
+            )
           )}
           
           {!module.comingSoon && (
@@ -278,10 +278,11 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                   </div>
                 </DropdownMenuItem>
                 
-                {/* Opción de historial en el menú - mejorada */}
+                {/* Opción de historial en el menú */}
                 <DropdownMenuItem 
                   onClick={handleViewHistory} 
-                  className="cursor-pointer"
+                  disabled={!hasHistory}
+                  className={`cursor-pointer ${!hasHistory ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <div className="flex items-center">
                     <ListChecks className="h-4 w-4 mr-2 text-blue-500" />
