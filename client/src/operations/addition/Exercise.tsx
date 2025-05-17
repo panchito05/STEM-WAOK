@@ -829,7 +829,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <Trophy className="h-20 w-20 sm:h-24 sm:w-24 text-yellow-400 mx-auto mb-3 sm:mb-4" />
               <h3 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">{t('levelUp.title')}</h3>
               <p className="text-lg sm:text-xl mb-4 sm:mb-6">{t('levelUp.message', { level: t(adaptiveDifficulty) })}</p>
-              <Button onClick={handleContinue} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-base sm:text-lg py-2.5 sm:py-3">
+              <Button 
+                ref={continueButtonRef}
+                onClick={handleContinue} 
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-base sm:text-lg py-2.5 sm:py-3"
+              >
                 {t('levelUp.continueChallenge')}
               </Button>
             </div>
