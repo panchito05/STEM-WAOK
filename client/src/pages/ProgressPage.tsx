@@ -13,6 +13,10 @@ import { Loader2 } from "lucide-react";
 export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, isLoading } = useProgress();
   const [isClearing, setIsClearing] = useState(false);
+  
+  // Nos aseguramos de que exerciseHistory y moduleProgress siempre sean objetos válidos
+  const safeExerciseHistory = Array.isArray(exerciseHistory) ? exerciseHistory : [];
+  const safeModuleProgress = moduleProgress || {};
 
   if (isLoading) {
     return (
@@ -50,23 +54,21 @@ export default function ProgressPage() {
   }).reverse();
 
   const recentProgressData = last7Days.map(day => {
-    // Asegurarnos de que exerciseHistory existe y es un array antes de filtrar
-    const dayResults = exerciseHistory && Array.isArray(exerciseHistory) 
-      ? exerciseHistory.filter(result => {
-          if (!result || !result.date) return false;
-          try {
-            const resultDate = parseISO(result.date);
-            return (
-              resultDate.getDate() === day.dateObj.getDate() &&
-              resultDate.getMonth() === day.dateObj.getMonth() &&
-              resultDate.getFullYear() === day.dateObj.getFullYear()
-            );
-          } catch (error) {
-            console.error("Error al procesar fecha:", error, result);
-            return false;
-          }
-        }) 
-      : [];
+    // Usamos safeExerciseHistory para garantizar que siempre es un array 
+    const dayResults = safeExerciseHistory.filter(result => {
+      if (!result || !result.date) return false;
+      try {
+        const resultDate = parseISO(result.date);
+        return (
+          resultDate.getDate() === day.dateObj.getDate() &&
+          resultDate.getMonth() === day.dateObj.getMonth() &&
+          resultDate.getFullYear() === day.dateObj.getFullYear()
+        );
+      } catch (error) {
+        console.error("Error al procesar fecha:", error, result);
+        return false;
+      }
+    });
 
     const dayData: any = {
       date: day.date,
@@ -92,7 +94,7 @@ export default function ProgressPage() {
     .filter(module => !module.comingSoon && module.id)
     .map(module => {
       // Verificación de seguridad para asegurar que existe moduleProgress y tiene el id del módulo
-      const progress = moduleProgress && module.id ? moduleProgress[module.id] : undefined;
+      const progress = safeModuleProgress && module.id ? safeModuleProgress[module.id] : undefined;
       return {
         name: module.displayName || module.id,
         completed: progress?.totalCompleted || 0,
@@ -102,18 +104,16 @@ export default function ProgressPage() {
     });
 
   // Recent exercises list
-  const recentExercises = Array.isArray(exerciseHistory) 
-    ? [...exerciseHistory]
-        .filter(exercise => exercise && exercise.date) // Filtramos solo ejercicios válidos
-        .sort((a, b) => {
-          try {
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-          } catch (error) {
-            return 0; // En caso de error en la fecha, mantener orden
-          }
-        })
-        .slice(0, 10)
-    : [];
+  const recentExercises = [...safeExerciseHistory]
+    .filter(exercise => exercise && exercise.date) // Filtramos solo ejercicios válidos
+    .sort((a, b) => {
+      try {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      } catch (error) {
+        return 0; // En caso de error en la fecha, mantener orden
+      }
+    })
+    .slice(0, 10);
 
   const getDifficultyBadgeClass = (difficulty: string) => {
     switch (difficulty) {
@@ -174,7 +174,7 @@ export default function ProgressPage() {
           </AlertDialog>
         </div>
         
-        {!exerciseHistory || !Array.isArray(exerciseHistory) || exerciseHistory.length === 0 ? (
+        {safeExerciseHistory.length === 0 ? (
           <Card>
             <CardContent className="py-10">
               <div className="text-center">
