@@ -38,11 +38,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   // Obtenemos los favoritos del perfil activo desde SettingsContext
   const { toggleFavorite, isFavorite } = useModuleFavorites();
   
-  // Obtenemos la configuración personalizada del módulo
-  const { moduleSettings } = useSettings();
+  // Obtenemos la configuración personalizada del módulo y la configuración global
+  const { moduleSettings, globalSettings } = useSettings();
   
-  // Obtenemos las traducciones
-  const { t, language } = useTranslations();
+  // Obtenemos las traducciones - usamos el lenguaje de la configuración global directamente
+  const { t } = useTranslations();
+  const language = globalSettings.language;
 
   const isModuleFavorite = isFavorite(module.id);
   const isHidden = hiddenModules.includes(module.id);
