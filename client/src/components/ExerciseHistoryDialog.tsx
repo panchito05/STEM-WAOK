@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
-import { History, Info, Check, ThumbsDown, Award, Clock } from 'lucide-react';
+import { History, Info, Check, Award, Clock } from 'lucide-react';
 import { formatTime } from '@/lib/utils';
 import { format } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
@@ -25,51 +25,58 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   const [selectedExercise, setSelectedExercise] = useState<ExerciseResult | null>(null);
   const { t, language } = useTranslations();
   
-  // Filtrar solo el historial relacionado con este módulo (asegurando que exerciseHistory existe)
-  const moduleHistory = exerciseHistory ? exerciseHistory.filter(entry => entry.operationId === moduleId) : [];
-  
-  // Ordenar el historial por fecha, más reciente primero (protegerse contra moduleHistory vacío)
-  const sortedHistory = moduleHistory && moduleHistory.length > 0 
-    ? [...moduleHistory].sort((a, b) => {
-        try {
-          const dateA = new Date(a.date || 0).getTime();
-          const dateB = new Date(b.date || 0).getTime();
-          return dateB - dateA; // Orden descendente (más reciente primero)
-        } catch (error) {
-          console.error('Error ordenando por fecha:', error);
-          return 0;
-        }
-      })
+  // Filtrar solo el historial relacionado con este módulo
+  const moduleHistory = Array.isArray(exerciseHistory) 
+    ? exerciseHistory.filter(entry => entry && entry.operationId === moduleId)
     : [];
+  
+  // Ordenar por fecha - más reciente primero
+  const sortedHistory = [...moduleHistory].sort((a, b) => {
+    try {
+      // Manejar fechas inválidas con valores por defecto
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      
+      if (isNaN(dateA) || isNaN(dateB)) {
+        return 0;
+      }
+      
+      return dateB - dateA;
+    } catch (error) {
+      console.error("Error ordenando fechas:", error);
+      return 0;
+    }
+  });
   
   // Función para obtener el nombre de dificultad localizado
   const getDifficultyName = (difficultyCode: string) => {
-    switch(difficultyCode) {
-      case 'beginner': return t('difficulty.beginner');
-      case 'elementary': return t('difficulty.elementary');
-      case 'intermediate': return t('difficulty.intermediate');
-      case 'advanced': return t('difficulty.advanced');
-      case 'expert': return t('difficulty.expert');
-      default: return difficultyCode;
+    switch(difficultyCode?.toLowerCase()) {
+      case 'beginner': return t('difficulty.beginner') || 'Beginner';
+      case 'elementary': return t('difficulty.elementary') || 'Elementary';
+      case 'intermediate': return t('difficulty.intermediate') || 'Intermediate';
+      case 'advanced': return t('difficulty.advanced') || 'Advanced';
+      case 'expert': return t('difficulty.expert') || 'Expert';
+      default: return difficultyCode || 'Unknown';
     }
   };
   
-  // Formatear fecha según el idioma con validación
-  const formatDate = (dateString: string | Date | null) => {
+  // Formatear fecha según el idioma con validación robusta
+  const formatDate = (dateString: string | Date | null | undefined) => {
     if (!dateString) return 'N/A';
     
     try {
       const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+      
       // Verificar que la fecha sea válida
-      if (isNaN(date.getTime())) {
-        return 'Fecha inválida';
+      if (!(date instanceof Date) || isNaN(date.getTime())) {
+        return 'N/A';
       }
       
       const locale = language === 'es' ? es : enUS;
       return format(date, 'PPpp', { locale });
     } catch (error) {
-      console.error('Error al formatear fecha:', dateString, error);
-      return 'Fecha inválida';
+      console.error('Error formateando fecha:', dateString, error);
+      return 'N/A';
     }
   };
   
@@ -79,15 +86,15 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
         {trigger || (
           <Button variant="outline" size="sm" className="w-full">
             <History className="h-4 w-4 mr-2" />
-            {t('Exercise History')}
+            {t('Exercise History') || 'Exercise History'}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('Exercise History')}</DialogTitle>
+          <DialogTitle>{t('Exercise History') || 'Exercise History'}</DialogTitle>
           <DialogDescription>
-            {t('View details of your previous exercise sessions')}
+            {t('View details of your previous exercise sessions') || 'View details of your previous exercise sessions'}
           </DialogDescription>
         </DialogHeader>
         
@@ -95,7 +102,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <Button variant="outline" size="sm" onClick={() => setSelectedExercise(null)}>
-                {t('Back to List')}
+                {t('Back to List') || 'Back to List'}
               </Button>
               <div className="text-sm text-gray-500">
                 {formatDate(selectedExercise.date)}
@@ -103,7 +110,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
             </div>
             
             <div className="bg-gray-100 p-3 rounded-lg mb-4 text-center">
-              <div className="text-sm text-gray-600 mb-1">{t('Total Time')}</div>
+              <div className="text-sm text-gray-600 mb-1">{t('Total Time') || 'Total Time'}</div>
               <div className="text-xl font-bold">
                 {formatTime(selectedExercise.timeSpent)}
               </div>
@@ -111,14 +118,14 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
               <div className="bg-blue-50 p-3 rounded-lg shadow-sm text-center border border-blue-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Score')}</div>
+                <div className="text-sm text-gray-600 mb-1">{t('Score') || 'Score'}</div>
                 <div className="text-xl text-indigo-600 font-semibold">
                   {selectedExercise.score} / {selectedExercise.totalProblems}
                 </div>
               </div>
               
               <div className="bg-green-50 p-3 rounded-lg shadow-sm text-center border border-green-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Accuracy')}</div>
+                <div className="text-sm text-gray-600 mb-1">{t('Accuracy') || 'Accuracy'}</div>
                 <div className="text-xl text-green-600 font-semibold">
                   {selectedExercise.accuracy || 
                    Math.round((selectedExercise.score / selectedExercise.totalProblems) * 100)}%
@@ -126,7 +133,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
               </div>
               
               <div className="bg-purple-50 p-3 rounded-lg shadow-sm text-center border border-purple-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Avg. Time')}</div>
+                <div className="text-sm text-gray-600 mb-1">{t('Avg. Time') || 'Avg. Time'}</div>
                 <div className="text-xl text-purple-600 font-semibold">
                   {selectedExercise.avgTimePerProblem || 
                    Math.round(selectedExercise.timeSpent / selectedExercise.totalProblems)}s
@@ -134,21 +141,21 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
               </div>
               
               <div className="bg-amber-50 p-3 rounded-lg shadow-sm text-center border border-amber-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Avg. Attempts')}</div>
+                <div className="text-sm text-gray-600 mb-1">{t('Avg. Attempts') || 'Avg. Attempts'}</div>
                 <div className="text-xl text-amber-600 font-semibold">
                   {selectedExercise.avgAttempts?.toFixed(1) || "1.0"}
                 </div>
               </div>
               
               <div className="bg-red-50 p-3 rounded-lg shadow-sm text-center border border-red-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Revealed')}</div>
+                <div className="text-sm text-gray-600 mb-1">{t('Revealed') || 'Revealed'}</div>
                 <div className="text-xl text-red-600 font-semibold">
                   {selectedExercise.revealedAnswers || 0}
                 </div>
               </div>
               
               <div className="bg-teal-50 p-3 rounded-lg shadow-sm text-center border border-teal-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Level')}</div>
+                <div className="text-sm text-gray-600 mb-1">{t('Level') || 'Level'}</div>
                 <div className="text-xl text-teal-600 font-semibold">
                   {getDifficultyName(selectedExercise.difficulty)}
                 </div>
@@ -158,7 +165,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
             {/* Detalles de los problemas si existen */}
             {selectedExercise.problemDetails && selectedExercise.problemDetails.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">{t('Problem Review')}</h3>
+                <h3 className="text-lg font-semibold mb-3">{t('Problem Review') || 'Problem Review'}</h3>
                 <div className="space-y-2">
                   {selectedExercise.problemDetails.map((problem, index) => {
                     if (!problem) return null;
@@ -192,8 +199,8 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                           </div>
                         </div>
                         <div className="text-xs text-gray-600 mt-1">
-                          {t('Level')}: {getDifficultyName(problem.level || selectedExercise.difficulty)}, 
-                          {t('Attempts')}: {problem.attempts || 1}
+                          {t('Level') || 'Level'}: {getDifficultyName(problem.level || selectedExercise.difficulty)}, 
+                          {t('Attempts') || 'Attempts'}: {problem.attempts || 1}
                         </div>
                       </div>
                     );
@@ -207,8 +214,8 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
             {sortedHistory.length === 0 ? (
               <div className="text-center py-8">
                 <Info className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">{t('No exercise history available yet.')}</p>
-                <p className="text-gray-500 text-sm mt-2">{t('Complete an exercise to see your results here.')}</p>
+                <p className="text-gray-600">{t('No exercise history available yet.') || 'No exercise history available yet.'}</p>
+                <p className="text-gray-500 text-sm mt-2">{t('Complete an exercise to see your results here.') || 'Complete an exercise to see your results here.'}</p>
               </div>
             ) : (
               <div className="grid gap-3">
@@ -224,7 +231,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                         {formatDate(exercise.date)}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {t('Level')}: {getDifficultyName(exercise.difficulty)}
+                        {t('Level') || 'Level'}: {getDifficultyName(exercise.difficulty)}
                       </div>
                     </div>
                     
