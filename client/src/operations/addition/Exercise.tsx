@@ -717,7 +717,68 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setExerciseCompleted(true);
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+    
+    // Calcular estadísticas detalladas para guardar
     const correctCount = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    const accuracy = problemsList.length > 0 ? Math.round((correctCount / problemsList.length) * 100) : 0;
+    const avgTimePerProblem = problemsList.length > 0 ? Math.round(timer / problemsList.length) : 0;
+    
+    // Cálculo de intentos promedio - corrección para contar los intentos reales por problema
+    let totalAttempts = 0;
+    const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
+    
+    userAnswersHistory.forEach(answer => {
+      if (answer) {
+        // Usando la propiedad attempts del objeto answer si existe, de lo contrario asumimos 1
+        totalAttempts += answer.attempts || 1;
+        
+        // Si la respuesta fue revelada, contamos un intento adicional
+        if (answer.status === 'revealed') {
+          totalAttempts++;
+        }
+      }
+    });
+    
+    const avgAttempts = attemptedProblemsCount > 0 
+      ? parseFloat((totalAttempts / attemptedProblemsCount).toFixed(1)) 
+      : 0;
+    
+    // Contar respuestas reveladas
+    const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
+    
+    // Nivel final - actualizamos para detectar posibles cambios de nivel durante el ejercicio
+    const finalLevel = settings.enableAdaptiveDifficulty 
+      ? localStorage.getItem('addition_adaptiveDifficulty') || adaptiveDifficulty 
+      : settings.difficulty;
+    
+    // Preparar los detalles de cada problema para el historial
+    const problemDetails = userAnswersHistory.map((answer, index) => {
+      if (!answer) return null;
+      
+      const problem = problemsList[index];
+      if (!problem) return null;
+      
+      // Formato para mostrar el problema
+      let problemText = '';
+      if (problem.operands && problem.operands.length > 0) {
+        if (problem.operands.length === 2) {
+          problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+        }
+      }
+      
+      return {
+        problemNumber: index + 1,
+        problem: problemText,
+        isCorrect: answer.isCorrect,
+        userAnswer: answer.userAnswer,
+        correctAnswer: problem.correctAnswer,
+        attempts: answer.attempts || 1,
+        timeSpent: avgTimePerProblem, // Como no tenemos el tiempo exacto por problema, usamos el promedio
+        level: finalLevel
+      };
+    }).filter(Boolean); // Eliminar los null
+    
+    // Guardar el resultado con toda la información detallada
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
@@ -725,6 +786,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       totalProblems: problemsList.length,
       timeSpent: timer,
       difficulty: (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) as string,
+      // Información detallada adicional
+      accuracy: accuracy,
+      avgTimePerProblem: avgTimePerProblem,
+      avgAttempts: avgAttempts,
+      revealedAnswers: revealedAnswers,
+      problemDetails: problemDetails
     });
   };
 
