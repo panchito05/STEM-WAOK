@@ -332,7 +332,7 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500">Best Score</p>
                                 <p className="text-2xl font-bold">
                                   {progress?.bestScore 
-                                    ? `${Math.round(progress.bestScore * 100)}%` 
+                                    ? `${Math.min(100, Math.round(progress.bestScore * 100))}%` 
                                     : "N/A"}
                                 </p>
                               </div>
