@@ -1054,61 +1054,158 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         </div>
         
-        {/* Exportar a PDF */}
+        {/* Guardar resultados */}
         <div className="mb-6 border border-gray-200 rounded-lg p-4 bg-sky-50">
           <h3 className="text-lg font-semibold mb-3 flex items-center">
             <Download className="h-5 w-5 mr-2 text-blue-600" />
             Guardar resultados
           </h3>
           <p className="text-sm text-gray-600 mb-3">
-            Puedes guardar estos resultados en un archivo para revisarlos más tarde o compartirlos.
+            Puedes guardar estos resultados en el sistema para revisarlos más tarde en tu historial de progreso.
           </p>
-          <Button 
-            onClick={() => {
-              // Enviamos los resultados al servidor para guardarlos
-              const progressData = {
-                operationId: "addition",
-                date: new Date().toISOString(),
-                score: finalScore,
-                totalProblems: problemsList.length,
-                timeSpent: timer,
-                difficulty: finalLevel,
-                accuracy: accuracy,
-                avgTimePerProblem: avgTimePerProblem,
-                avgAttempts: avgAttempts,
-                revealedAnswers: revealedAnswers,
-                problemDetails: problemsList.map((problem, index) => {
-                  const answer = userAnswersHistory[index];
-                  if (!answer) return null;
-                  
-                  return {
-                    problemNumber: index + 1,
-                    problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
-                    isCorrect: answer.isCorrect,
-                    userAnswer: answer.userAnswer,
-                    correctAnswer: problem.correctAnswer,
-                    attempts: answer.attempts || 1,
-                    timeSpent: avgTimePerProblem,
-                    level: finalLevel
+          <div className="flex flex-col gap-3">
+            <Button 
+              onClick={async () => {
+                try {
+                  // Preparamos los datos para guardar en la base de datos
+                  const progressData = {
+                    operationId: "addition",
+                    score: finalScore,
+                    totalProblems: problemsList.length,
+                    timeSpent: timer,
+                    difficulty: finalLevel,
+                    accuracy,
+                    avgTimePerProblem,
+                    avgAttempts,
+                    revealedAnswers,
+                    problemDetails: problemsList.map((problem, index) => {
+                      const answer = userAnswersHistory[index];
+                      if (!answer) return null;
+                      
+                      return {
+                        problemNumber: index + 1,
+                        problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+                        isCorrect: answer.isCorrect,
+                        userAnswer: answer.userAnswer,
+                        correctAnswer: problem.correctAnswer,
+                        attempts: answer.attempts || 1,
+                        timeSpent: Math.round(avgTimePerProblem),
+                        level: finalLevel
+                      };
+                    }).filter(Boolean)
                   };
-                }).filter(Boolean)
-              };
-              
-              // Guardar en localStorage para acceso rápido
-              try {
-                const storageKey = `math_results_${new Date().toISOString().slice(0, 10)}`;
-                localStorage.setItem(storageKey, JSON.stringify(progressData));
-                alert("Resultados guardados correctamente");
-              } catch (error) {
-                console.error("Error al guardar:", error);
-                alert("Error al guardar los resultados. Por favor intenta de nuevo.");
-              }
-            }}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Guardar resultados
-          </Button>
+                  
+                  // Enviamos los datos al servidor
+                  const response = await fetch('/api/progress', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(progressData),
+                  });
+                  
+                  if (!response.ok) {
+                    throw new Error('Error al guardar en el servidor');
+                  }
+                  
+                  // También guardamos en localStorage como respaldo
+                  const storageKey = `math_results_${new Date().toISOString().slice(0, 10)}`;
+                  localStorage.setItem(storageKey, JSON.stringify(progressData));
+                  
+                  alert("Resultados guardados correctamente");
+                  
+                  // Notificamos al sistema de progreso
+                  if (saveProgress) {
+                    saveProgress(progressData);
+                  }
+                } catch (error) {
+                  console.error("Error saving progress:", error);
+                  
+                  // Guardamos al menos en localStorage
+                  try {
+                    const storageKey = `math_results_${new Date().toISOString().slice(0, 10)}`;
+                    const progressData = {
+                      operationId: "addition",
+                      date: new Date().toISOString(),
+                      score: finalScore,
+                      totalProblems: problemsList.length,
+                      timeSpent: timer,
+                      difficulty: finalLevel,
+                      accuracy,
+                      avgTimePerProblem,
+                      avgAttempts,
+                      revealedAnswers
+                    };
+                    localStorage.setItem(storageKey, JSON.stringify(progressData));
+                    alert("No se pudo guardar en el servidor pero se guardó localmente");
+                  } catch (localError) {
+                    alert("Error al guardar los resultados. Por favor intenta de nuevo.");
+                  }
+                }
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Guardar en mi progreso
+            </Button>
+            
+            <Button 
+              onClick={async () => {
+                try {
+                  // Creamos un texto formateado para exportar
+                  const fecha = new Date().toLocaleDateString();
+                  const hora = new Date().toLocaleTimeString();
+                  
+                  let contenido = `RESULTADOS DEL EJERCICIO DE SUMA\n`;
+                  contenido += `Fecha: ${fecha} - Hora: ${hora}\n\n`;
+                  contenido += `RESUMEN:\n`;
+                  contenido += `Total de problemas: ${problemsList.length}\n`;
+                  contenido += `Puntuación: ${finalScore} / ${problemsList.length}\n`;
+                  contenido += `Precisión: ${accuracy}%\n`;
+                  contenido += `Tiempo total: ${formatTime(timer)}\n`;
+                  contenido += `Tiempo promedio por problema: ${Math.round(avgTimePerProblem)}s\n`;
+                  contenido += `Intentos promedio: ${avgAttempts.toFixed(1)}\n`;
+                  contenido += `Respuestas reveladas: ${revealedAnswers}\n`;
+                  contenido += `Nivel de dificultad: ${finalLevel}\n\n`;
+                  
+                  contenido += `DETALLE DE PROBLEMAS:\n`;
+                  problemsList.forEach((problem, index) => {
+                    const answer = userAnswersHistory[index];
+                    if (!answer) return;
+                    
+                    contenido += `Problema #${index + 1}: ${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}\n`;
+                    contenido += `  Respuesta del usuario: ${answer.userAnswer || '-'}\n`;
+                    contenido += `  Correcto: ${answer.isCorrect ? 'Sí' : 'No'}\n`;
+                    contenido += `  Intentos: ${answer.attempts || 1}\n`;
+                    contenido += `  Nivel: ${finalLevel}\n\n`;
+                  });
+                  
+                  // Crear el archivo de texto y descargarlo
+                  const blob = new Blob([contenido], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `resultados_suma_${new Date().toISOString().slice(0, 10)}.txt`;
+                  document.body.appendChild(a);
+                  a.click();
+                  
+                  // Limpiar
+                  setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }, 0);
+                } catch (error) {
+                  console.error("Error al exportar:", error);
+                  alert("Error al exportar los resultados. Por favor intenta de nuevo.");
+                }
+              }}
+              variant="outline"
+              className="w-full border-blue-500 text-blue-700 hover:bg-blue-50"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Exportar como texto
+            </Button>
+          </div>
         </div>
         
         <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
