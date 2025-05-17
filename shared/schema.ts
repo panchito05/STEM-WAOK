@@ -76,7 +76,6 @@ export const progressEntries = pgTable("progress_entries", {
   totalProblems: integer("total_problems").notNull(),
   timeSpent: integer("time_spent").notNull(),
   difficulty: text("difficulty").notNull(),
-  extraData: jsonb("extra_data"), // Para almacenar detalles de problemas y estadísticas adicionales
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -126,12 +125,6 @@ export interface ExerciseProgress {
   totalProblems: number;
   timeSpent: number;
   difficulty: string;
-  date?: string;
-  accuracy?: number;
-  avgTimePerProblem?: number; 
-  avgAttempts?: number;
-  revealedAnswers?: number;
-  problemDetails?: Array<any>;
 }
 
 export interface ModuleSettingsData {
