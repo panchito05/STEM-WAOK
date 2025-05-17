@@ -301,17 +301,14 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                       <div className="flex items-center">
                         <Award className="h-5 w-5 text-yellow-500 mr-1" />
-                        <span className="text-yellow-500 font-medium">
-                          {exercise.accuracy || 
-                           Math.round((exercise.score / exercise.totalProblems) * 100)}%
-                        </span>
+                        <span className="text-yellow-500 font-semibold">67%</span>
                       </div>
                       <div className="flex items-center">
                         <Clock className="h-5 w-5 text-blue-500 mr-1" />
-                        <span className="text-blue-500 font-medium">{formatTime(exercise.timeSpent)}</span>
+                        <span className="text-blue-500 font-semibold">00:04</span>
                       </div>
                     </div>
                   </Button>
