@@ -183,94 +183,72 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
               <div className="space-y-2">
-                {/* Creamos problemas de ejemplo basados en el score y datos del ejercicio */}
-                {(() => {
-                  // Generamos ejemplos de problemas basados en la puntuación
-                  const demoProblems = [];
-                  const operationId = selectedExercise.operationId || 'addition';
-                  const operator = getOperator(operationId);
-                  
-                  // Número de problemas que el usuario respondió correctamente
-                  const correctCount = selectedExercise.score || 0;
-                  // Número total de problemas en el ejercicio
-                  const totalProblems = selectedExercise.totalProblems || 3;
-                  
-                  // Creamos problemas para cada uno en el ejercicio
-                  for (let i = 0; i < totalProblems; i++) {
-                    // Generamos operandos aleatorios basados en la dificultad
-                    const num1 = Math.floor(Math.random() * 9) + 1;
-                    const num2 = Math.floor(Math.random() * 9) + 1;
-                    let correctAnswer, userAnswer;
+                {/* Usamos los problemas guardados del ejercicio si existen */}
+                {selectedExercise.extraData && (() => {
+                  try {
+                    // Intentar parsear los datos extra que contienen los detalles del problema
+                    const extraData = JSON.parse(selectedExercise.extraData || '{}');
+                    const problemDetails = extraData.problemDetails || [];
                     
-                    // Calculamos la respuesta según la operación
-                    switch(operationId) {
-                      case 'addition':
-                        correctAnswer = num1 + num2;
-                        break;
-                      case 'subtraction':
-                        correctAnswer = num1 - num2;
-                        break;
-                      case 'multiplication':
-                        correctAnswer = num1 * num2;
-                        break;
-                      case 'division':
-                        correctAnswer = (num1 / num2).toFixed(2);
-                        break;
-                      default:
-                        correctAnswer = num1 + num2;
+                    // Si tenemos problemas guardados, los mostramos
+                    if (problemDetails && problemDetails.length > 0) {
+                      return problemDetails.map((problemDetail, index) => {
+                        if (!problemDetail) return null;
+                        
+                        const operationId = selectedExercise.operationId || 'addition';
+                        const operator = getOperator(operationId);
+                        let problemDisplay = '';
+                        
+                        // Crear una representación visual del problema
+                        if (problemDetail.problem && problemDetail.problem.operands) {
+                          const operands = problemDetail.problem.operands;
+                          if (operands.length === 2) {
+                            problemDisplay = `${operands[0]} ${operator} ${operands[1]} = ${problemDetail.correctAnswer}`;
+                            
+                            // Añadir respuesta del usuario si es incorrecta
+                            if (!problemDetail.isCorrect && problemDetail.userAnswer !== undefined) {
+                              const userAnswerDisplay = String(problemDetail.userAnswer);
+                              problemDisplay += ` (Tu respuesta: ${userAnswerDisplay})`;
+                            }
+                          }
+                        }
+                        
+                        return (
+                          <div 
+                            key={index} 
+                            className={`p-3 rounded-lg ${problemDetail.isCorrect 
+                              ? 'bg-green-100' 
+                              : 'bg-red-100'}`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <span className="font-medium">(#{index + 1})</span> {problemDisplay}
+                              </div>
+                              <div>
+                                {problemDetail.isCorrect 
+                                  ? <Check className="h-5 w-5 text-green-600" /> 
+                                  : <span className="text-red-600 text-xl font-bold">✕</span>}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-600 mt-1">
+                              Lvl: {problemDetail.level || selectedExercise.difficulty}, 
+                              Att: {problemDetail.attempts || 1}, 
+                              T: {problemDetail.timeSpent || Math.round(selectedExercise.timeSpent / selectedExercise.totalProblems)}s
+                            </div>
+                          </div>
+                        );
+                      });
                     }
-                    
-                    // Determinamos si este problema fue respondido correctamente
-                    const isCorrect = i < correctCount;
-                    
-                    // Si no es correcto, generamos una respuesta incorrecta
-                    if (!isCorrect) {
-                      userAnswer = correctAnswer + (Math.random() > 0.5 ? 1 : -1);
-                    } else {
-                      userAnswer = correctAnswer;
-                    }
-                    
-                    // Creamos representación del problema
-                    let problemDisplay = `${num1} ${operator} ${num2} = ${correctAnswer}`;
-                    if (!isCorrect) {
-                      problemDisplay += ` (Tu respuesta: ${userAnswer})`;
-                    }
-                    
-                    demoProblems.push({
-                      index: i,
-                      problemDisplay,
-                      isCorrect,
-                      level: selectedExercise.difficulty || 'beginner',
-                      attempts: 1,
-                      timeSpent: Math.round(selectedExercise.timeSpent / totalProblems)
-                    });
+                  } catch (error) {
+                    console.error("Error al procesar datos extras:", error);
                   }
                   
-                  // Devolvemos el componente con los problemas generados
-                  return demoProblems.map((problem) => (
-                    <div 
-                      key={problem.index} 
-                      className={`p-3 rounded-lg ${problem.isCorrect 
-                        ? 'bg-green-100' 
-                        : 'bg-red-100'}`}
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <span className="font-medium">(#{problem.index + 1})</span> {problem.problemDisplay}
-                        </div>
-                        <div>
-                          {problem.isCorrect 
-                            ? <Check className="h-5 w-5 text-green-600" /> 
-                            : <span className="text-red-600 text-xl font-bold">✕</span>}
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-600 mt-1">
-                        Lvl: {problem.level}, 
-                        Att: {problem.attempts}, 
-                        T: {problem.timeSpent}s
-                      </div>
+                  // Si no hay datos o hay un error, usamos un mensaje de fallback
+                  return (
+                    <div className="p-4 bg-gray-50 rounded-lg text-center">
+                      <p className="text-gray-500">No hay detalles específicos disponibles para este ejercicio.</p>
                     </div>
-                  ));
+                  );
                 })()}
               </div>
             </div>
