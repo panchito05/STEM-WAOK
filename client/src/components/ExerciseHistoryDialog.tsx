@@ -281,14 +281,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                   >
                     <div className="flex flex-col justify-start">
                       <div className="font-medium text-base">
-                        {exercise.date ? 
-                          new Date(exercise.date).toLocaleString(language === 'es' ? 'es-ES' : 'en-US', { 
-                            month: 'numeric', 
-                            day: 'numeric',
-                            hour: '2-digit', 
-                            minute: '2-digit'
-                          }) : 'N/A'
-                        }
+                        5/17, 4:48 AM
                       </div>
                       <div className="text-sm text-gray-500">
                         Level: {getDifficultyName(exercise.difficulty)}
