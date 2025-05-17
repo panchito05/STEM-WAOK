@@ -312,15 +312,27 @@ export async function getProgressForChildProfile(childProfileId: number) {
 }
 
 export async function insertProgressForChildProfile(childProfileId: number, progressData: ExerciseProgress) {
-  const [newProgress] = await db.insert(progressEntries)
-    .values({
-      childProfileId,
-      operationId: progressData.operationId,
-      score: progressData.score,
-      totalProblems: progressData.totalProblems,
-      timeSpent: progressData.timeSpent,
-      difficulty: progressData.difficulty
+  // Crear un objeto con los datos básicos
+  const basicData = {
+    childProfileId,
+    operationId: progressData.operationId,
+    score: progressData.score,
+    totalProblems: progressData.totalProblems,
+    timeSpent: progressData.timeSpent,
+    difficulty: progressData.difficulty,
+    // Guardar todos los datos adicionales como JSON en el campo extraData
+    extraData: JSON.stringify({
+      date: progressData.date || new Date().toISOString(),
+      accuracy: progressData.accuracy,
+      avgTimePerProblem: progressData.avgTimePerProblem,
+      avgAttempts: progressData.avgAttempts,
+      revealedAnswers: progressData.revealedAnswers,
+      problemDetails: progressData.problemDetails || []
     })
+  };
+  
+  const [newProgress] = await db.insert(progressEntries)
+    .values(basicData)
     .returning();
   
   return newProgress;
