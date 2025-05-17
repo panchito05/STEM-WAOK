@@ -212,6 +212,20 @@ export const esTranslations: TranslationKeys = {
     resetToDefault: "Restablecer Configuración Predeterminada",
     resetConfirmation: "Esto restablecerá todos los ajustes a los valores predeterminados. ¿Estás seguro?",
   },
+  modules: {
+    addition: {
+      name: "Suma",
+      description: "Practica sumas con varios niveles de dificultad"
+    },
+    fractions: {
+      name: "Fracciones",
+      description: "Aprende a sumar, restar y comparar fracciones"
+    },
+    counting: {
+      name: "Conteo de Números",
+      description: "Practica conteo con visualización divertida"
+    }
+  },
 };
 
 // Objeto con todos los idiomas disponibles

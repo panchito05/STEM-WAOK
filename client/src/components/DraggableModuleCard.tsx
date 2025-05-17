@@ -40,6 +40,9 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   
   // Obtenemos la configuración personalizada del módulo
   const { moduleSettings } = useSettings();
+  
+  // Obtenemos las traducciones
+  const { t, language } = useTranslations();
 
   const isModuleFavorite = isFavorite(module.id);
   const isHidden = hiddenModules.includes(module.id);
@@ -174,7 +177,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               {getModuleIcon()}
             </div>
             <h3 className="text-xl font-bold text-white text-shadow">
-              {module.displayName}
+              {t(`modules.${module.id}.name`, undefined) || module.displayName}
             </h3>
           </div>
         </div>
@@ -238,7 +241,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       </div>
       <div className="p-5 bg-gradient-to-b from-white to-blue-50">
         <p className={`text-sm mb-5 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
-          {module.description}
+          {t(`modules.${module.id}.description`, undefined) || module.description}
         </p>
         <div className="flex justify-between items-center">
           <div className="flex items-center">
@@ -254,7 +257,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                 variant="default" 
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-5"
               >
-                Start
+                {t('common.start')}
               </Button>
             </Link>
           )}
