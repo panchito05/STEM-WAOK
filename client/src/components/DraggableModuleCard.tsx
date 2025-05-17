@@ -22,6 +22,7 @@ import { useSettings } from "@/context/SettingsContext";
 import { useProgress } from "@/context/ProgressContext";
 import { useTranslations, mapConfigLanguageToSupported } from "@/hooks/use-translations";
 import { SupportedLanguage } from "@/utils/translations";
+import { useToast } from "@/hooks/use-toast";
 
 interface DraggableModuleCardProps {
   module: Module;
@@ -47,6 +48,9 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   
   // Obtenemos el progreso y el historial de ejercicios
   const { exerciseHistory, moduleProgress } = useProgress();
+  
+  // Obtenemos la función toast para mostrar notificaciones
+  const { toast } = useToast();
   
   // Determinamos el idioma específico a usar para este módulo
   let moduleLanguage: SupportedLanguage = globalSettings.language as SupportedLanguage;
@@ -131,16 +135,23 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       e.stopPropagation();
       e.preventDefault();
     }
+    
     // Registramos información para depuración
     console.log(`Navegando al historial de ${module.id}`);
     
-    // Redirigir a la página de progreso con el filtro para este módulo
-    setLocation(`/progress?module=${module.id}`);
-    
-    // Alternativa usando window.location como respaldo si wouter no funciona
-    if (!hasHistory) {
-      console.log("No hay historial disponible, no navegamos");
-      return;
+    // Verificar primero si hay historial disponible
+    if (hasHistory) {
+      // Si hay historial, redirigir a la página de progreso con el filtro para este módulo
+      setLocation(`/progress?module=${module.id}`);
+    } else {
+      // Si no hay historial, mostrar un mensaje al usuario
+      console.log("No hay historial disponible para este módulo");
+      
+      // Mostrar un mensaje usando el hook useToast
+      toast({
+        title: t('progress.noHistory') || "Sin historial",
+        description: t('progress.completeExercises') || "Completa ejercicios para ver tu progreso",
+      });
     }
   };
   
