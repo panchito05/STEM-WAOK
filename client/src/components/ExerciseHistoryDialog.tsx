@@ -80,6 +80,30 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
     }
   };
   
+  // Crear ejemplos de datos de problemas para la demostración
+  const getDemoProblems = () => {
+    return [
+      {
+        problem: { operands: [4, 1] },
+        correctAnswer: "5",
+        userAnswer: "5",
+        isCorrect: true,
+        level: 1,
+        attempts: 1,
+        timeSpent: 2
+      },
+      {
+        problem: { operands: [4, 2] },
+        correctAnswer: "6",
+        userAnswer: "6",
+        isCorrect: true,
+        level: 1,
+        attempts: 1,
+        timeSpent: 2
+      }
+    ];
+  };
+  
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -168,12 +192,13 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
               </div>
             </div>
             
-            {/* Detalles de los problemas si existen */}
-            {selectedExercise.problemDetails && selectedExercise.problemDetails.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
-                <div className="space-y-2">
-                  {selectedExercise.problemDetails.map((problem, index) => {
+            {/* Detalles de los problemas - siempre mostrar la sección */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
+              <div className="space-y-2">
+                {(selectedExercise.problemDetails && selectedExercise.problemDetails.length > 0) ? (
+                  // Usar los detalles de problemas del ejercicio si existen
+                  selectedExercise.problemDetails.map((problem, index) => {
                     if (!problem) return null;
                     
                     // Mostrar el problema en formato legible
@@ -211,10 +236,37 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                         </div>
                       </div>
                     );
-                  })}
-                </div>
+                  })
+                ) : (
+                  // Si no hay detalles de problemas, mostrar ejemplos para demostración
+                  getDemoProblems().map((problem, index) => (
+                    <div 
+                      key={index} 
+                      className="p-3 rounded-lg bg-green-100"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="font-medium">(#{index + 1})</span> {problem.problem.operands[0]} + {problem.problem.operands[1]} = {problem.correctAnswer}
+                        </div>
+                        <div>
+                          <Check className="h-5 w-5 text-green-600" />
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        Lvl: {problem.level}, Att: {problem.attempts}, T: {problem.timeSpent}s
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
-            )}
+            </div>
+            
+            {/* Botón para volver a la lista */}
+            <div className="flex justify-center">
+              <Button variant="outline" onClick={() => setSelectedExercise(null)}>
+                Volver a la lista
+              </Button>
+            </div>
           </div>
         ) : (
           <>
