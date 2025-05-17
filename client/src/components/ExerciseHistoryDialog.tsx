@@ -23,7 +23,7 @@ interface ExerciseHistoryDialogProps {
 
 export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigger }: ExerciseHistoryDialogProps) {
   const [selectedExercise, setSelectedExercise] = useState<ExerciseResult | null>(null);
-  const { t, currentLanguage } = useTranslations();
+  const { t, language } = useTranslations();
   
   // Filtrar solo el historial relacionado con este módulo
   const moduleHistory = exerciseHistory.filter(entry => entry.operationId === moduleId);
@@ -48,7 +48,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   // Formatear fecha según el idioma
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const locale = currentLanguage === 'spanish' ? es : enUS;
+    const locale = language === 'es' ? es : enUS;
     return format(date, 'PPpp', { locale });
   };
   
@@ -173,7 +173,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                         <div className="text-xs text-gray-600 mt-1">
                           {t('Level')}: {getDifficultyName(problem.level || selectedExercise.difficulty)}, 
                           {t('Attempts')}: {problem.attempts || 1}
-                          {problem.status === 'revealed' ? `, ${t('Revealed')}` : ''}
+                          {/* Se ha eliminado la comprobación de status ya que no forma parte de la estructura de datos */}
                         </div>
                       </div>
                     );
