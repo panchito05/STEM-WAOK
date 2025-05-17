@@ -155,7 +155,14 @@ export async function insertProgress(userId: number, progressData: ExerciseProgr
       score: progressData.score,
       totalProblems: progressData.totalProblems,
       timeSpent: progressData.timeSpent,
-      difficulty: progressData.difficulty
+      difficulty: progressData.difficulty,
+      // Campos adicionales para estadísticas detalladas
+      accuracy: progressData.accuracy,
+      avgTimePerProblem: progressData.avgTimePerProblem,
+      avgAttempts: progressData.avgAttempts,
+      revealedAnswers: progressData.revealedAnswers,
+      // Guardar los detalles completos de cada problema
+      problemDetails: progressData.problemDetails
     })
     .returning();
   
@@ -319,7 +326,14 @@ export async function insertProgressForChildProfile(childProfileId: number, prog
       score: progressData.score,
       totalProblems: progressData.totalProblems,
       timeSpent: progressData.timeSpent,
-      difficulty: progressData.difficulty
+      difficulty: progressData.difficulty,
+      // Campos adicionales para estadísticas detalladas
+      accuracy: progressData.accuracy,
+      avgTimePerProblem: progressData.avgTimePerProblem,
+      avgAttempts: progressData.avgAttempts,
+      revealedAnswers: progressData.revealedAnswers,
+      // Guardar los detalles completos de cada problema
+      problemDetails: progressData.problemDetails
     })
     .returning();
   
