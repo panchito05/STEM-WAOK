@@ -12,6 +12,12 @@ export interface ExerciseResult {
   difficulty: string;
   createdAt?: string;     // Fecha de creación del registro
   
+  // Additional field for storing screenshot-like data
+  extra_data?: {
+    screenshot?: any;
+    [key: string]: any;
+  };
+  
   // Campos adicionales para estadísticas detalladas
   accuracy?: number;
   avgTimePerProblem?: number;
