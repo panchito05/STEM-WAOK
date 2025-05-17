@@ -1223,24 +1223,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </Tooltip>
                   </TooltipProvider>
                 </Button>
-                <ExerciseHistoryDialog
-                  moduleId={moduleId}
-                  exerciseHistory={exerciseHistory}
-                  trigger={
-                    <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                      <TooltipProvider delayDuration={300}>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <History className="h-4 w-4 text-blue-500" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{t('tooltips.exerciseHistory') || "Exercise history"}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </Button>
-                  }
-                />
+                {/* History button removed */}
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> {currentTranslations.settings}
                 </Button>
