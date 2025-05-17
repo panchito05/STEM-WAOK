@@ -137,28 +137,41 @@ export default function ProgressPage() {
       </Helmet>
       
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Your Progress</h1>
-            <p className="text-gray-600">Track your math learning journey</p>
+        <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 mb-6 overflow-hidden">
+          {/* Background pattern similar to DraggableModuleCard */}
+          <div className="absolute inset-0 opacity-10">
+            <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <pattern id="progress-grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                  <circle cx="2" cy="2" r="1" fill="white" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#progress-grid)" />
+            </svg>
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="mt-4 md:mt-0" 
-                disabled={isClearing || !exerciseHistory || !Array.isArray(exerciseHistory) || exerciseHistory.length === 0}
-              >
-                {isClearing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Clearing...
-                  </>
-                ) : (
-                  "Clear All Progress"
-                )}
-              </Button>
-            </AlertDialogTrigger>
+          
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between relative z-10">
+            <div>
+              <h1 className="text-2xl font-bold text-white text-shadow">Your Progress</h1>
+              <p className="text-white text-opacity-90">Track your math learning journey</p>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="mt-4 md:mt-0 bg-white/20 hover:bg-white/30 text-white border-white/30" 
+                  disabled={isClearing || !exerciseHistory || !Array.isArray(exerciseHistory) || exerciseHistory.length === 0}
+                >
+                  {isClearing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Clearing...
+                    </>
+                  ) : (
+                    "Clear All Progress"
+                  )}
+                </Button>
+              </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
