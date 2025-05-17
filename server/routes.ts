@@ -554,9 +554,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Obtener progreso
-      const progress = await storage.getProgressForChildProfile(profileId);
+      const exerciseHistory = await storage.getProgressForChildProfile(profileId);
       
-      return res.json(progress);
+      // Organizar los datos para el formato esperado por el frontend
+      // Extrayendo ejercicios por operationId para construir moduleProgress
+      const moduleProgress: Record<string, any> = {};
+      
+      // Procesar datos para construir moduleProgress
+      exerciseHistory.forEach(entry => {
+        const opId = entry.operationId;
+        if (!moduleProgress[opId]) {
+          moduleProgress[opId] = {
+            operationId: opId,
+            totalCompleted: 0,
+            bestScore: 0,
+            averageScore: 0,
+            totalScore: 0,
+            averageTime: 0,
+            totalTime: 0,
+            lastAttempt: null
+          };
+        }
+        
+        // Actualizar métricas
+        moduleProgress[opId].totalCompleted += 1;
+        
+        // Calcular el puntaje como porcentaje (0-1)
+        const scorePercentage = entry.totalProblems > 0 ? entry.score / entry.totalProblems : 0;
+        
+        // Usar porcentaje en vez del puntaje bruto
+        moduleProgress[opId].bestScore = Math.max(moduleProgress[opId].bestScore, scorePercentage);
+        moduleProgress[opId].totalScore += scorePercentage;
+        moduleProgress[opId].totalTime += entry.timeSpent;
+        
+        // Actualizar última fecha de intento
+        const entryDate = new Date(entry.createdAt);
+        const lastDate = moduleProgress[opId].lastAttempt ? new Date(moduleProgress[opId].lastAttempt) : null;
+        
+        if (!lastDate || entryDate > lastDate) {
+          moduleProgress[opId].lastAttempt = entry.createdAt;
+        }
+      });
+      
+      // Calcular promedios
+      Object.keys(moduleProgress).forEach(opId => {
+        const module = moduleProgress[opId];
+        if (module.totalCompleted > 0) {
+          module.averageScore = module.totalScore / module.totalCompleted;
+          module.averageTime = module.totalTime / module.totalCompleted;
+        }
+      });
+      
+      return res.json({
+        exerciseHistory,
+        moduleProgress
+      });
     } catch (error) {
       console.error("Error fetching child profile progress:", error);
       return res.status(500).json({ error: "Internal server error" });

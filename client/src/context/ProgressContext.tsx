@@ -120,16 +120,121 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
 
     try {
       setIsLoading(true);
-      const res = await fetch("/api/progress", {
-        credentials: "include",
+      
+      // Primero, verificamos si hay un perfil de niño activo
+      const activeProfileRes = await fetch("/api/child-profiles/active", {
+        credentials: "include"
       });
       
-      if (res.ok) {
-        const data = await res.json();
-        setExerciseHistory(data.exerciseHistory || []);
-        setModuleProgress(data.moduleProgress || {});
-      } else {
-        throw new Error("Failed to fetch progress data");
+      let progressData;
+      
+      if (activeProfileRes.ok) {
+        const activeProfile = await activeProfileRes.json();
+        
+        if (activeProfile && activeProfile.id) {
+          console.log("Cargando progreso para perfil activo:", activeProfile.name, "ID:", activeProfile.id);
+          
+          // Obtenemos el progreso específico del perfil activo
+          const profileProgressRes = await fetch(`/api/child-profiles/${activeProfile.id}/progress`, {
+            credentials: "include",
+            cache: "no-store", // Evitar caché
+            headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+          });
+          
+          if (profileProgressRes.ok) {
+            const profileData = await profileProgressRes.json();
+            
+            // Verificar el formato de los datos
+            if (Array.isArray(profileData)) {
+              // Si es un array, es el historial de ejercicios pero falta moduleProgress
+              console.log("Datos de perfil recibidos como array, procesando...");
+              
+              // Construir moduleProgress desde los datos del historial
+              const moduleProgress: Record<string, any> = {};
+              
+              profileData.forEach(entry => {
+                const opId = entry.operationId;
+                if (!moduleProgress[opId]) {
+                  moduleProgress[opId] = {
+                    operationId: opId,
+                    totalCompleted: 0,
+                    bestScore: 0,
+                    averageScore: 0,
+                    totalScore: 0,
+                    averageTime: 0,
+                    totalTime: 0,
+                    lastAttempt: null
+                  };
+                }
+                
+                // Actualizar métricas
+                moduleProgress[opId].totalCompleted += 1;
+                
+                // Calcular el puntaje como porcentaje (0-1)
+                const scorePercentage = entry.totalProblems > 0 ? entry.score / entry.totalProblems : 0;
+                
+                // Usar porcentaje en vez del puntaje bruto
+                moduleProgress[opId].bestScore = Math.max(moduleProgress[opId].bestScore, scorePercentage);
+                moduleProgress[opId].totalScore += scorePercentage;
+                moduleProgress[opId].totalTime += entry.timeSpent;
+                
+                // Actualizar última fecha de intento
+                const entryDate = new Date(entry.createdAt);
+                const lastDate = moduleProgress[opId].lastAttempt ? new Date(moduleProgress[opId].lastAttempt) : null;
+                
+                if (!lastDate || entryDate > lastDate) {
+                  moduleProgress[opId].lastAttempt = entry.createdAt;
+                }
+              });
+              
+              // Calcular promedios
+              Object.keys(moduleProgress).forEach(opId => {
+                const module = moduleProgress[opId];
+                if (module.totalCompleted > 0) {
+                  module.averageScore = module.totalScore / module.totalCompleted;
+                  module.averageTime = module.totalTime / module.totalCompleted;
+                }
+              });
+              
+              // Construir el objeto en el formato esperado
+              progressData = {
+                exerciseHistory: profileData,
+                moduleProgress
+              };
+              
+              console.log("Datos procesados:", progressData.exerciseHistory.length, "ejercicios,", 
+                Object.keys(progressData.moduleProgress).length, "módulos");
+            } else {
+              // Ya tiene el formato esperado
+              progressData = profileData;
+            }
+          } else {
+            console.error("Error al cargar progreso del perfil de niño");
+          }
+        }
+      }
+      
+      // Si no hay perfil activo o hubo error, cargar progreso del usuario principal
+      if (!progressData) {
+        const res = await fetch("/api/progress", {
+          credentials: "include",
+          cache: "no-store", // Evitar caché
+          headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+        });
+        
+        if (res.ok) {
+          progressData = await res.json();
+        } else {
+          throw new Error("Failed to fetch progress data");
+        }
+      }
+      
+      if (progressData) {
+        setExerciseHistory(progressData.exerciseHistory || []);
+        setModuleProgress(progressData.moduleProgress || {});
+        console.log("Datos de progreso cargados:", 
+          progressData.exerciseHistory?.length, "ejercicios,", 
+          Object.keys(progressData.moduleProgress || {}).length, "módulos");
       }
     } catch (error) {
       console.error("Error fetching progress:", error);
