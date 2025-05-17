@@ -22,6 +22,7 @@ import { useSettings } from "@/context/SettingsContext";
 import { useProgress } from "@/context/ProgressContext";
 import { useTranslations, mapConfigLanguageToSupported } from "@/hooks/use-translations";
 import { SupportedLanguage } from "@/utils/translations";
+import ExerciseHistoryDialog from "./ExerciseHistoryDialog";
 
 interface DraggableModuleCardProps {
   module: Module;
@@ -121,13 +122,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     toggleFavorite(module.id);
   };
   
-  // Manejador para navegar al historial del módulo
+  // Manejador para mostrar el historial del módulo directamente
   const handleViewHistory = (e: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
     }
-    // Redirigir a la página de progreso con el filtro para este módulo
-    setLocation(`/progress?module=${module.id}`);
+    // Este evento no navegará, ahora mostrará un diálogo
   };
   
   drag(drop(ref));

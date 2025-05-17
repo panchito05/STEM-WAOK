@@ -717,14 +717,76 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setExerciseCompleted(true);
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+    
     const correctCount = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    const accuracy = problemsList.length > 0 ? Math.round((correctCount / problemsList.length) * 100) : 0;
+    
+    // Cálculo de tiempo promedio por problema
+    const avgTimePerProblem = problemsList.length > 0 ? Math.round(timer / problemsList.length) : 0;
+    
+    // Cálculo de intentos promedio
+    let totalAttempts = 0;
+    const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
+    
+    userAnswersHistory.forEach(answer => {
+      if (answer) {
+        totalAttempts += answer.attempts || 1;
+        if (answer.status === 'revealed') {
+          totalAttempts++;
+        }
+      }
+    });
+    
+    const avgAttemptsValue = attemptedProblemsCount > 0 
+      ? parseFloat((totalAttempts / attemptedProblemsCount).toFixed(1))
+      : 0;
+    
+    // Contar respuestas reveladas
+    const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
+    
+    // Nivel final - usamos el último nivel alcanzado
+    const finalLevel = settings.enableAdaptiveDifficulty 
+      ? localStorage.getItem('addition_adaptiveDifficulty') || adaptiveDifficulty 
+      : settings.difficulty;
+      
+    // Construir detalles de problemas para guardar en historial
+    const problemDetails = userAnswersHistory.map((answer, index) => {
+      if (!answer) return null;
+      
+      const problem = problemsList[index];
+      if (!problem) return null;
+      
+      return {
+        problemId: problem.id || index,
+        problem: {
+          operands: problem.operands,
+          correctAnswer: problem.correctAnswer,
+          layout: problem.layout
+        },
+        isCorrect: answer.isCorrect,
+        userAnswer: answer.userAnswer,
+        correctAnswer: problem.correctAnswer,
+        attempts: answer.attempts || 1,
+        status: answer.status,
+        level: finalLevel
+      };
+    }).filter(item => item !== null);
+    
+    // Guardar resultado detallado
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
       score: correctCount,
       totalProblems: problemsList.length,
       timeSpent: timer,
-      difficulty: (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) as string,
+      difficulty: finalLevel as string,
+      
+      // Campos adicionales detallados
+      accuracy: accuracy,
+      avgTimePerProblem: avgTimePerProblem,
+      avgAttempts: avgAttemptsValue,
+      revealedAnswers: revealedAnswers,
+      problemDetails: problemDetails
     });
   };
 
