@@ -63,7 +63,11 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   const isHidden = hiddenModules.includes(module.id);
   
   // Verificar si hay historial para este módulo
-  const hasHistory = exerciseHistory && exerciseHistory.some(entry => entry.operationId === module.id);
+  const hasHistory = exerciseHistory?.some(entry => entry.operationId === module.id) || false;
+  console.log(`Verificando historial para ${module.id}:`, { 
+    hasHistory, 
+    historiaDisponible: exerciseHistory?.filter(entry => entry.operationId === module.id)
+  });
 
   const [{ isDragging }, drag] = useDragItem(() => ({
     type: "MODULE_CARD",
@@ -125,9 +129,19 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   const handleViewHistory = (e: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
+      e.preventDefault();
     }
+    // Registramos información para depuración
+    console.log(`Navegando al historial de ${module.id}`);
+    
     // Redirigir a la página de progreso con el filtro para este módulo
     setLocation(`/progress?module=${module.id}`);
+    
+    // Alternativa usando window.location como respaldo si wouter no funciona
+    if (!hasHistory) {
+      console.log("No hay historial disponible, no navegamos");
+      return;
+    }
   };
   
   drag(drop(ref));
@@ -225,16 +239,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
-          {/* Botón de historial */}
+          {/* Botón de historial - Mejorado para capturar todos los clics */}
           {!module.comingSoon && (
             <button 
               className={`focus:outline-none p-1.5 rounded-full transition-all ${
                 hasHistory 
                   ? "text-blue-400 hover:text-white bg-white/20 hover:bg-white/10" 
-                  : "text-white/50 cursor-not-allowed"
+                  : "text-white/50"
               }`}
-              onClick={(e) => hasHistory && handleViewHistory(e)}
-              disabled={!hasHistory}
+              onClick={handleViewHistory}
               aria-label={hasHistory ? t('progress.viewHistory') || "Ver historial" : t('progress.noHistory') || "Sin historial"}
             >
               <History className={`h-5 w-5 ${hasHistory ? "" : "opacity-50"}`} />
@@ -265,11 +278,10 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                   </div>
                 </DropdownMenuItem>
                 
-                {/* Opción de historial en el menú */}
+                {/* Opción de historial en el menú - mejorada */}
                 <DropdownMenuItem 
                   onClick={handleViewHistory} 
-                  disabled={!hasHistory}
-                  className={`cursor-pointer ${!hasHistory ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className="cursor-pointer"
                 >
                   <div className="flex items-center">
                     <ListChecks className="h-4 w-4 mr-2 text-blue-500" />
