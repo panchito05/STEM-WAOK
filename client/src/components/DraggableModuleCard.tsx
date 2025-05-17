@@ -5,7 +5,7 @@ import { useAccessibleDnd } from "./AccessibleDndContext";
 import { useModuleStore, useModuleFavorites } from "@/store/moduleStore";
 import { Module } from "@/utils/operationComponents";
 import { 
-  GripVertical, MoreVertical, Star, StarOff, Plus, Minus, X, 
+  GripVertical, MoreVertical, Star, StarOff, Plus, Minus, X,
   DivideIcon, PieChart, BookOpen, Hash, Calculator, 
   ArrowLeftRight, Square, Percent, Triangle, LucideIcon,
   Eye, EyeOff, MapIcon
@@ -19,41 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSettings } from "@/context/SettingsContext";
-import { useGlobalLanguage } from "@/hooks/useGlobalLanguage";
-
-// Traducciones de los módulos
-const moduleTranslations = {
-  addition: {
-    displayName: {
-      english: "Addition",
-      spanish: "Suma"
-    },
-    description: {
-      english: "Practice addition with various difficulty levels",
-      spanish: "Practica sumas con varios niveles de dificultad"
-    }
-  },
-  fractions: {
-    displayName: {
-      english: "Fractions",
-      spanish: "Fracciones"
-    },
-    description: {
-      english: "Learn to add, subtract, and compare fractions",
-      spanish: "Aprende a sumar, restar y comparar fracciones"
-    }
-  },
-  counting: {
-    displayName: {
-      english: "Counting Numbers",
-      spanish: "Conteo de Números"
-    },
-    description: {
-      english: "Practice counting with fun visualization",
-      spanish: "Practica conteo con visualización divertida"
-    }
-  }
-};
+import { useTranslations } from "@/hooks/use-translations";
 
 interface DraggableModuleCardProps {
   module: Module;
@@ -75,8 +41,8 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   // Obtenemos la configuración personalizada del módulo
   const { moduleSettings } = useSettings();
   
-  // Obtenemos el idioma actual
-  const { isSpanish } = useGlobalLanguage();
+  // Obtenemos las traducciones
+  const { t, language } = useTranslations();
 
   const isModuleFavorite = isFavorite(module.id);
   const isHidden = hiddenModules.includes(module.id);
@@ -142,29 +108,19 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     // Si el módulo tiene configuración personalizada, mostrar esa dificultad en lugar de la predeterminada
     const difficulty = moduleConfig?.difficulty || defaultDifficulty;
     
-    // Traducciones de dificultad
-    const difficultyLabels = {
-      beginner: isSpanish ? "Principiante" : "Beginner",
-      elementary: isSpanish ? "Elemental" : "Elementary",
-      intermediate: isSpanish ? "Intermedio" : "Intermediate",
-      advanced: isSpanish ? "Avanzado" : "Advanced",
-      expert: isSpanish ? "Experto" : "Expert",
-      comingSoon: isSpanish ? "Próximamente" : "Coming Soon"
-    };
-    
     switch (difficulty) {
       case "beginner":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.beginner}</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">{t('difficulty.beginner')}</Badge>;
       case "elementary":
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.elementary}</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">{t('difficulty.elementary')}</Badge>;
       case "intermediate":
-        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.intermediate}</Badge>;
+        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">{t('difficulty.intermediate')}</Badge>;
       case "advanced":
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.advanced}</Badge>;
+        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">{t('difficulty.advanced')}</Badge>;
       case "expert":
-        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.expert}</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">{t('difficulty.expert')}</Badge>;
       default:
-        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.comingSoon}</Badge>;
+        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">{language === 'en' ? 'Coming Soon' : 'Próximamente'}</Badge>;
     }
   };
 
@@ -221,12 +177,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               {getModuleIcon()}
             </div>
             <h3 className="text-xl font-bold text-white text-shadow">
-              {moduleTranslations[module.id as keyof typeof moduleTranslations]
-                ? isSpanish 
-                  ? moduleTranslations[module.id as keyof typeof moduleTranslations].displayName.spanish
-                  : moduleTranslations[module.id as keyof typeof moduleTranslations].displayName.english
-                : module.displayName
-              }
+              {t(`modules.${module.id}.name`, undefined) || module.displayName}
             </h3>
           </div>
         </div>
@@ -241,10 +192,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             }`}
             onClick={(e) => !module.comingSoon && handleToggleFavorite(e)}
             disabled={module.comingSoon}
-            aria-label={isModuleFavorite 
-              ? (isSpanish ? "Quitar de favoritos" : "Remove from favorites") 
-              : (isSpanish ? "Añadir a favoritos" : "Add to favorites")
-            }
+            aria-label={isModuleFavorite ? (language === 'en' ? "Remove from favorites" : "Quitar de favoritos") : (language === 'en' ? "Add to favorites" : "Añadir a favoritos")}
           >
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
@@ -261,12 +209,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                     {isModuleFavorite ? (
                       <>
                         <StarOff className="h-4 w-4 mr-2 text-amber-500" />
-                        Quitar de favoritos
+                        {language === 'en' ? 'Remove from favorites' : 'Quitar de favoritos'}
                       </>
                     ) : (
                       <>
                         <Star className="h-4 w-4 mr-2 text-amber-500" />
-                        Añadir a favoritos
+                        {language === 'en' ? 'Add to favorites' : 'Añadir a favoritos'}
                       </>
                     )}
                   </div>
@@ -276,12 +224,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                     {isHidden ? (
                       <>
                         <Eye className="h-4 w-4 mr-2 text-purple-500" />
-                        Restaurar módulo
+                        {language === 'en' ? 'Restore module' : 'Restaurar módulo'}
                       </>
                     ) : (
                       <>
                         <EyeOff className="h-4 w-4 mr-2 text-purple-500" />
-                        Ocultar módulo
+                        {language === 'en' ? 'Hide module' : 'Ocultar módulo'}
                       </>
                     )}
                   </div>
@@ -293,12 +241,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       </div>
       <div className="p-5 bg-gradient-to-b from-white to-blue-50">
         <p className={`text-sm mb-5 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
-          {moduleTranslations[module.id as keyof typeof moduleTranslations]
-            ? isSpanish 
-              ? moduleTranslations[module.id as keyof typeof moduleTranslations].description.spanish
-              : moduleTranslations[module.id as keyof typeof moduleTranslations].description.english
-            : module.description
-          }
+          {t(`modules.${module.id}.description`, undefined) || module.description}
         </p>
         <div className="flex justify-between items-center">
           <div className="flex items-center">
@@ -306,7 +249,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           </div>
           {module.comingSoon ? (
             <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-5">
-              {isSpanish ? "Próximamente" : "Coming Soon"}
+              {language === 'en' ? 'Coming Soon' : 'Próximamente'}
             </Button>
           ) : (
             <Link href={`/operation/${module.id}`}>
@@ -314,7 +257,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                 variant="default" 
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-5"
               >
-                {isSpanish ? "Iniciar" : "Start"}
+                {t('common.start')}
               </Button>
             </Link>
           )}
