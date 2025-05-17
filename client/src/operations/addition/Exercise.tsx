@@ -851,14 +851,132 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }
   if (exerciseCompleted) {
     const finalScore = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    const accuracyPercentage = Math.round((finalScore / problemsList.length) * 100);
+    const averageTimePerProblem = Math.round(timer / problemsList.length);
+    
+    // Análisis de errores
+    const incorrectAnswers = userAnswersHistory.filter(a => a && !a.isCorrect);
+    const hasErrors = incorrectAnswers.length > 0;
+    
+    // Identificar patrones de errores
+    let errorPatterns = "";
+    if (hasErrors) {
+      // Verificar si hay errores con números grandes
+      const largeNumberErrors = incorrectAnswers.filter(a => 
+        a.problem.operand1 > 50 || a.problem.operand2 > 50
+      ).length;
+      
+      // Verificar si hay errores con compensación
+      const carryErrors = incorrectAnswers.filter(a => 
+        a.problem.requiresCarry
+      ).length;
+      
+      if (largeNumberErrors > 0 && largeNumberErrors === incorrectAnswers.length) {
+        errorPatterns = t('exercises.analysis.largeNumbersError');
+      } else if (carryErrors > 0 && carryErrors >= incorrectAnswers.length / 2) {
+        errorPatterns = t('exercises.analysis.carryError') || "Necesitas practicar más la compensación";
+      } else {
+        errorPatterns = t('exercises.analysis.mixedErrors') || "Errores variados";
+      }
+    }
+    
+    // Calificar el desempeño
+    let performanceRating = "";
+    if (accuracyPercentage >= 90) {
+      performanceRating = t('exercises.rating.excellent') || "Excelente";
+    } else if (accuracyPercentage >= 70) {
+      performanceRating = t('exercises.rating.good') || "Bueno";
+    } else if (accuracyPercentage >= 50) {
+      performanceRating = t('exercises.rating.average') || "Regular";
+    } else {
+      performanceRating = t('exercises.rating.needsPractice') || "Necesita práctica";
+    }
+    
+    // Sugerencia personalizada
+    let suggestion = "";
+    if (hasErrors) {
+      if (errorPatterns.includes("compensación")) {
+        suggestion = t('exercises.suggestion.practiceCarrying') || "Practica más ejercicios con compensación";
+      } else if (errorPatterns.includes("números grandes")) {
+        suggestion = t('exercises.suggestion.practiceLargeNumbers') || "Practica más con números grandes";
+      } else {
+        suggestion = t('exercises.suggestion.general') || "Practica más para mejorar tu velocidad y precisión";
+      }
+    } else {
+      suggestion = t('exercises.suggestion.tryHarder') || "¡Sigue así! Intenta un nivel más difícil";
+    }
+    
     return (
-      <div className="px-4 py-5 sm:p-6 text-center">
-        <Trophy className="h-20 w-20 text-yellow-500 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900">{t('Congratulations, You Have Completed The Established Exercises15')}</h2>
-        <p className="text-gray-700 mt-2">{t('Your Score Is')} {finalScore}/{problemsList.length}</p>
-        <p className="text-gray-600">{t('exercises.timeTaken')}: {formatTime(timer)}</p>
+      <div className="px-4 py-5 sm:p-6">
+        <div className="text-center mb-6">
+          <Trophy className="h-20 w-20 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900">{t('Congratulations, You Have Completed The Established Exercises15')}</h2>
+        </div>
+        
+        {/* Resumen de rendimiento */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-gray-500">{t('exercises.summary.accuracy') || "Precisión"}</p>
+                <p className="text-2xl font-bold">{accuracyPercentage}%</p>
+              </div>
+              <div className={`text-white p-2 rounded-full ${
+                accuracyPercentage >= 70 ? "bg-green-500" : 
+                accuracyPercentage >= 50 ? "bg-yellow-500" : "bg-red-500"
+              }`}>
+                <Check className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mt-1">{finalScore} {t('exercises.summary.correctOf') || "correctas de"} {problemsList.length}</p>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-gray-500">{t('exercises.summary.totalTime') || "Tiempo total"}</p>
+                <p className="text-2xl font-bold">{formatTime(timer)}</p>
+              </div>
+              <div className="text-white p-2 rounded-full bg-blue-500">
+                <History className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mt-1">{averageTimePerProblem} {t('exercises.summary.secondsPerProblem') || "segundos por problema"}</p>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm font-medium text-gray-500">{t('exercises.summary.level') || "Nivel"}</p>
+                <p className="text-2xl font-bold">{adaptiveDifficulty || settings.difficulty}</p>
+              </div>
+              <div className="text-white p-2 rounded-full bg-purple-500">
+                <Star className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mt-1">{t('exercises.summary.performance') || "Desempeño"}: {performanceRating}</p>
+          </div>
+        </div>
+        
+        {/* Análisis de errores y recomendaciones */}
+        {hasErrors && (
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+            <h3 className="font-semibold text-lg mb-2">{t('exercises.analysis.title') || "Análisis de errores"}</h3>
+            <div className="flex items-center mb-2">
+              <Info className="h-5 w-5 text-amber-500 mr-2" />
+              <p className="text-gray-700">{errorPatterns}</p>
+            </div>
+            <div className="flex items-center">
+              <Award className="h-5 w-5 text-blue-500 mr-2" />
+              <p className="text-gray-700">{suggestion}</p>
+            </div>
+          </div>
+        )}
+        
+        {/* Botones de acción */}
         <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-3">
-          <Button onClick={generateNewProblemSet} className="w-full sm:w-auto">
+          <Button onClick={generateNewProblemSet} className="w-full sm:w-auto bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700">
+            <RotateCcw className="mr-2 h-4 w-4" />
             {t('exercises.tryAgain')}
           </Button>
           <Button variant="outline" onClick={onOpenSettings} className="w-full sm:w-auto">
