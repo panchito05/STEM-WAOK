@@ -153,9 +153,11 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       const res = await apiRequest("POST", "/api/progress", result);
       
       if (res.ok) {
-        const data = await res.json();
-        setExerciseHistory(data.exerciseHistory);
-        setModuleProgress(data.moduleProgress);
+        // Actualizar el estado local añadiendo el nuevo resultado primero
+        setExerciseHistory(prevHistory => [result, ...prevHistory]);
+        
+        // Actualizar los datos desde el servidor para asegurar sincronización
+        await fetchProgress();
         
         toast({
           title: "Progress Saved",
