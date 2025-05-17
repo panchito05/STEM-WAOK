@@ -70,9 +70,12 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   // Check if we have history for this module from actual data
   const hasRealHistory = exerciseHistory.some(item => item.operationId === moduleId);
   
+  // Get all exercises for this module
+  const moduleExercises = exerciseHistory.filter(item => item.operationId === moduleId);
+  
   // We'll check if the exercise has extra data (screenshot) stored in the extra_data field
-  const historyWithScreenshots = exerciseHistory.filter(
-    item => item.operationId === moduleId && item.extra_data?.screenshot
+  const historyWithScreenshots = moduleExercises.filter(
+    item => item.extra_data?.screenshot
   );
   
   // If we have real history items with screenshots, use those, otherwise use our template
@@ -142,6 +145,12 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
     }
   };
   
+  // Function to handle clicking an exercise in the history list
+  const handleSelectExercise = (exercise: ExerciseResult) => {
+    // Make sure we load the correct data for this specific exercise
+    setSelectedExercise(exercise);
+  };
+  
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -155,11 +164,14 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl text-center font-bold">
-            {selectedExercise ? (selectedExercise.operationId === "addition" ? "Addition Exercise Complete!" : 
-                              selectedExercise.operationId === "subtraction" ? "Subtraction Exercise Complete!" :
-                              selectedExercise.operationId === "multiplication" ? "Multiplication Exercise Complete!" :
-                              selectedExercise.operationId === "division" ? "Division Exercise Complete!" :
-                              "Math Exercise Complete!") : 
+            {selectedExercise ? (
+              selectedExercise.extra_data?.screenshot?.title ||
+              (selectedExercise.operationId === "addition" ? "Addition Exercise Complete!" : 
+              selectedExercise.operationId === "subtraction" ? "Subtraction Exercise Complete!" :
+              selectedExercise.operationId === "multiplication" ? "Multiplication Exercise Complete!" :
+              selectedExercise.operationId === "division" ? "Division Exercise Complete!" :
+              "Math Exercise Complete!")
+            ) : 
             (t('Exercise History') || 'Exercise History')}
           </DialogTitle>
           {!selectedExercise && (
@@ -401,7 +413,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                       key={index} 
                       variant="outline" 
                       className="flex justify-between items-center h-auto py-3 text-left w-full bg-white hover:bg-gray-50"
-                      onClick={() => setSelectedExercise(exercise)}
+                      onClick={() => handleSelectExercise(exercise)}
                     >
                       <div className="flex flex-col justify-start">
                         <div className="font-medium text-base">
