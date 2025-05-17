@@ -172,19 +172,20 @@ export default function ProgressPage() {
                   )}
                 </Button>
               </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete all your progress data.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearProgress}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete all your progress data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearProgress}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
         
         {safeExerciseHistory.length === 0 ? (
@@ -364,17 +365,21 @@ export default function ProgressPage() {
                               <td className="py-3 px-4">
                                 {exercise.score !== undefined ? exercise.score : 0}/
                                 {exercise.totalProblems || 0} 
-                                ({exercise.totalProblems && exercise.score !== undefined
-                                  ? Math.round((exercise.score / exercise.totalProblems) * 100)
+                                ({exercise.totalProblems 
+                                  ? Math.round((exercise.score / exercise.totalProblems) * 100) 
                                   : 0}%)
                               </td>
-                              <td className="py-3 px-4">{exercise.timeSpent || 0}s</td>
+                              <td className="py-3 px-4">
+                                {exercise.timeSpent !== undefined 
+                                  ? `${Math.floor(exercise.timeSpent / 60)}:${(exercise.timeSpent % 60).toString().padStart(2, '0')}` 
+                                  : "N/A"}
+                              </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan={5} className="py-8 text-center text-gray-500">
-                              No se encontró historial de ejercicios. ¡Completa algunos ejercicios para ver tu progreso!
+                            <td colSpan={5} className="py-4 text-center text-gray-500">
+                              No recent exercise data available
                             </td>
                           </tr>
                         )}
