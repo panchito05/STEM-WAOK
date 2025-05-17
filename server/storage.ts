@@ -312,23 +312,14 @@ export async function getProgressForChildProfile(childProfileId: number) {
 }
 
 export async function insertProgressForChildProfile(childProfileId: number, progressData: ExerciseProgress) {
-  // Crear un objeto con los datos básicos
+  // Usar solo los datos básicos que existen en la tabla
   const basicData = {
     childProfileId,
     operationId: progressData.operationId,
     score: progressData.score,
     totalProblems: progressData.totalProblems,
     timeSpent: progressData.timeSpent,
-    difficulty: progressData.difficulty,
-    // Guardar todos los datos adicionales como JSON en el campo extraData
-    extraData: JSON.stringify({
-      date: progressData.date || new Date().toISOString(),
-      accuracy: progressData.accuracy,
-      avgTimePerProblem: progressData.avgTimePerProblem,
-      avgAttempts: progressData.avgAttempts,
-      revealedAnswers: progressData.revealedAnswers,
-      problemDetails: progressData.problemDetails || []
-    })
+    difficulty: progressData.difficulty
   };
   
   const [newProgress] = await db.insert(progressEntries)

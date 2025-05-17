@@ -76,7 +76,6 @@ export const progressEntries = pgTable("progress_entries", {
   totalProblems: integer("total_problems").notNull(),
   timeSpent: integer("time_spent").notNull(),
   difficulty: text("difficulty").notNull(),
-  extraData: text("extra_data"), // Campo para almacenar datos adicionales como JSON string
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
