@@ -58,14 +58,14 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     }),
   }));
 
-  const [{ handlerId }, drop] = useDropTarget(() => ({
+  const [{ handlerId }, drop] = useDropTarget<{ id: string; index: number }>(() => ({
     accept: "MODULE_CARD",
     collect(monitor) {
       return {
         handlerId: monitor.getHandlerId(),
       };
     },
-    hover(item: { id: string; index: number }, monitor) {
+    hover(item, monitor) {
       if (!ref.current) {
         return;
       }
