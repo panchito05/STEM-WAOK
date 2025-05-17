@@ -282,7 +282,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                     <div className="flex flex-col justify-start">
                       <div className="font-medium text-base">
                         {exercise.date ? 
-                          new Date(exercise.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { 
+                          new Date(exercise.date).toLocaleString(language === 'es' ? 'es-ES' : 'en-US', { 
                             month: 'numeric', 
                             day: 'numeric',
                             hour: '2-digit', 
