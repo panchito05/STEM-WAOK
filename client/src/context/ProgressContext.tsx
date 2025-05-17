@@ -9,6 +9,22 @@ export interface ExerciseResult {
   totalProblems: number;
   timeSpent: number; // in seconds
   difficulty: string;
+  
+  // Campos adicionales para estadísticas detalladas
+  accuracy?: number;
+  avgTimePerProblem?: number;
+  avgAttempts?: number;
+  revealedAnswers?: number;
+  problemDetails?: Array<{
+    problemId?: string | number;
+    problem?: any;
+    isCorrect: boolean;
+    userAnswer?: any;
+    correctAnswer?: any;
+    attempts?: number;
+    timeSpent?: number;
+    level?: string;
+  }>;
 }
 
 export interface ModuleProgress {
