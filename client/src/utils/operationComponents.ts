@@ -75,14 +75,7 @@ export const operationModules: Module[] = [
     color: "#4299e1", // Azul claro como en la imagen
     icon: "Hash",
   },
-  {
-    id: "geometry",
-    displayName: "Geometry",
-    description: "Calculate area and perimeter of shapes",
-    difficulty: "intermediate",
-    color: "#6b7280", // Gris
-    icon: "Square",
-  },
+
 ];
 
 // Map operation IDs to their React components
