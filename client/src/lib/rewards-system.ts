@@ -666,42 +666,73 @@ export function getRewardProbability(
     previousRewardShown = -1
   } = context;
   
+  // Probabilidad base según nivel de dificultad
+  const difficultyBaseProbabilities: Record<string, number> = {
+    'beginner': 0.18,      // 18% (mayor probabilidad para principiantes)
+    'elementary': 0.15,    // 15%
+    'intermediate': 0.12,  // 12%
+    'advanced': 0.08,      // 8%
+    'expert': 0.05         // 5%
+  };
+  
+  let probability = difficultyBaseProbabilities[difficulty] || 0.12;
+  
+  // Contador de compasión: garantizar recompensa después de cierto número de problemas correctos
+  const compassionThresholds: Record<string, number> = {
+    'beginner': 8,      // Garantizar recompensa después de 8 respuestas correctas sin premio
+    'elementary': 10,   // para principiantes
+    'intermediate': 12,
+    'advanced': 15,
+    'expert': 18
+  };
+  
   // Siempre garantizar recompensa en el último problema solo si no se mostró recientemente
   if (isLastProblem && (problemIndex - previousRewardShown) > 2) {
+    console.log('🏆 Garantizando recompensa en último problema');
     return 1.0; // 100% probabilidad
   }
   
-  // Recompensas por racha significativa
-  if (streak >= 7) {
-    return 0.8; // 80% probabilidad
+  // Garantizar recompensa si se supera el umbral de compasión
+  const problemsSinceLastReward = previousRewardShown === -1 ? 
+    problemIndex + 1 : problemIndex - previousRewardShown;
+    
+  const compassionThreshold = compassionThresholds[difficulty] || 12;
+  
+  if (problemsSinceLastReward >= compassionThreshold && streak >= 3) {
+    console.log(`🎁 Recompensa por compasión tras ${problemsSinceLastReward} problemas`);
+    return 0.95; // 95% de probabilidad (casi garantizada)
   }
   
+  // Incremento por racha correcta
+  if (streak >= 3) {
+    probability += 0.05; // +5% por cada 3 respuestas correctas
+  }
   if (streak >= 5) {
-    return 0.6; // 60% probabilidad
+    probability += 0.10; // +10% adicional al llegar a 5 correctas
+  }
+  if (streak >= 8) {
+    probability += 0.15; // +15% adicional al llegar a 8 correctas
   }
   
   // Recompensa en punto medio del ejercicio (solo si no ha habido recompensa recientemente)
   if (isMidPoint && (problemIndex - previousRewardShown) > 3) {
-    return 0.4; // 40% probabilidad
+    probability += 0.20; // +20% en punto medio del ejercicio
   }
   
-  // Recompensa después de varios problemas sin mostrar ninguna
-  const problemsSinceLastReward = previousRewardShown === -1 ? 
-    problemIndex + 1 : problemIndex - previousRewardShown;
-    
+  // Aumentar probabilidad si han pasado varios problemas sin mostrar recompensa
   if (problemsSinceLastReward >= 5) {
-    return 0.3; // 30% probabilidad
+    probability += 0.10; // +10% cada 5 problemas sin recompensa
   }
   
-  // Baja probabilidad para el resto de problemas (factor sorpresa)
-  // La probabilidad aumenta ligeramente con dificultades mayores
-  const difficultyBonus = {
-    'beginner': 0,
-    'elementary': 0.02,
-    'intermediate': 0.04,
-    'advanced': 0.06,
-    'expert': 0.08
-  }[difficulty] || 0;
+  if (problemsSinceLastReward >= 10) {
+    probability += 0.15; // +15% adicional cada 10 problemas sin recompensa
+  }
   
-  return 0.05 + difficultyBonus; // 5-13% probabilidad base + bonus
+  // Registrar en consola para depuración
+  console.log(`🎲 Probabilidad de recompensa: ${(probability * 100).toFixed(1)}% [Dificultad: ${difficulty}, Racha: ${streak}, Problemas sin recompensa: ${problemsSinceLastReward}]`);
+  
+  // Limitar la probabilidad máxima al 95%
+  return Math.min(probability, 0.95);
 }
+
+// El sistema de recompensas ha sido actualizado con probabilidades progresivas
