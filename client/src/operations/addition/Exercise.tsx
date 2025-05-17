@@ -1065,31 +1065,56 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </p>
           <Button 
             onClick={() => {
+              // Utilizaremos una solución más simple para generar un reporte
               try {
-                // Usando una función para cargar jsPDF dinámicamente
-                const loadJsPDF = async () => {
-                  try {
-                    // Importar dinámicamente jsPDF y autoTable
-                    const jsPDFModule = await import('jspdf');
-                    await import('jspdf-autotable');
+                // Datos para exportar
+                const reportData = {
+                  title: "Resultados del Ejercicio de Suma",
+                  date: new Date().toLocaleDateString(),
+                  resumen: {
+                    operacion: "Adición",
+                    tiempoTotal: formatTime(timer),
+                    puntuacion: `${finalScore} / ${problemsList.length}`,
+                    precision: `${accuracy}%`,
+                    tiempoPromedio: `${avgTimePerProblem}s`,
+                    intentosPromedio: avgAttempts,
+                    respuestasReveladas: revealedAnswers,
+                    nivelFinal: finalLevel
+                  },
+                  problemas: problemsList.map((problem, index) => {
+                    const answer = userAnswersHistory[index];
+                    if (!answer) return null;
                     
-                    const jsPDF = jsPDFModule.default;
-                    const doc = new jsPDF();
-                    
-                    // Obtener ancho de página
-                    const pageWidth = doc.internal.pageSize.getWidth();
-                    
-                    // Título del documento
-                    doc.setFontSize(18);
-                    doc.text("Resultados del Ejercicio de Suma", pageWidth / 2, 20, { align: 'center' });
-                    
-                    // Subtítulo
-                    doc.setFontSize(12);
-                    doc.text("Plataforma de Aprendizaje Matemático", pageWidth / 2, 28, { align: 'center' });
-                    
-                    // Crear tablas con autoTable
-                    // @ts-ignore - Usamos @ts-ignore porque sabemos que autoTable está disponible
-                    doc.autoTable({
+                    return {
+                      numero: index + 1,
+                      problema: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+                      correcto: answer.isCorrect ? 'Sí' : 'No',
+                      respuestaUsuario: answer.userAnswer?.toString() || '-',
+                      respuestaCorrecta: problem.correctAnswer.toString(),
+                      intentos: (answer.attempts || 1).toString(),
+                      tiempo: `${avgTimePerProblem}s`,
+                      nivel: finalLevel
+                    };
+                  }).filter(Boolean)
+                };
+                
+                // Crear un elemento temporal para guardar el texto del reporte
+                const reportText = JSON.stringify(reportData, null, 2);
+                const blob = new Blob([reportText], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                // Crear un enlace de descarga y simulamos un clic
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `resultados_suma_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Limpiar
+                setTimeout(() => {
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }, 0);
                       startY: 35,
                       head: [['', '']],
                       body: [
