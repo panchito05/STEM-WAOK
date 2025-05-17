@@ -1211,18 +1211,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 }`}>
                     {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                 </span>
-                <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <Star className="h-4 w-4 text-amber-500" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{t('tooltips.rewardsCollected') || "Rewards collected"}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </Button>
+                {/* Rewards button removed */}
                 {/* History button removed */}
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> {currentTranslations.settings}
