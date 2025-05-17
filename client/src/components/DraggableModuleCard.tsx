@@ -177,7 +177,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               {getModuleIcon()}
             </div>
             <h3 className="text-xl font-bold text-white text-shadow">
-              {t(`modules.${module.id}.name`, undefined) || module.displayName}
+              {t(`modules.${module.id}.name`)}
             </h3>
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       </div>
       <div className="p-5 bg-gradient-to-b from-white to-blue-50">
         <p className={`text-sm mb-5 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
-          {t(`modules.${module.id}.description`, undefined) || module.description}
+          {t(`modules.${module.id}.description`)}
         </p>
         <div className="flex justify-between items-center">
           <div className="flex items-center">
