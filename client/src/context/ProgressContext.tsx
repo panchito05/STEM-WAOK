@@ -3,26 +3,35 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export interface ExerciseResult {
+  id?: number;            // ID del registro en la base de datos
   operationId: string;
   date: string;
   score: number;
   totalProblems: number;
   timeSpent: number; // in seconds
   difficulty: string;
-  // Campos adicionales para información detallada
+  createdAt?: string;     // Fecha de creación del registro
+  
+  // Additional field for storing screenshot-like data
+  extra_data?: {
+    screenshot?: any;
+    [key: string]: any;
+  };
+  
+  // Campos adicionales para estadísticas detalladas
   accuracy?: number;
   avgTimePerProblem?: number;
   avgAttempts?: number;
   revealedAnswers?: number;
   problemDetails?: Array<{
-    problemNumber: number;
-    problem: string;
+    problemId?: string | number;
+    problem?: any;
     isCorrect: boolean;
-    userAnswer?: string | number;
-    correctAnswer: string | number;
-    attempts: number;
-    timeSpent: number;
-    level: string;
+    userAnswer?: any;
+    correctAnswer?: any;
+    attempts?: number;
+    timeSpent?: number;
+    level?: string;
   }>;
 }
 
@@ -149,15 +158,31 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     try {
       console.log("Enviando progreso al servidor:", result);
       
-      // Enviamos directamente el objeto resultado, sin anidarlo dentro de otro objeto
-      const res = await apiRequest("POST", "/api/progress", result);
+      // Primero, verificamos si hay un perfil de niño activo
+      const activeProfileRes = await fetch("/api/child-profiles/active", {
+        credentials: "include"
+      });
+      
+      let res;
+      
+      if (activeProfileRes.ok) {
+        const activeProfile = await activeProfileRes.json();
+        console.log("Perfil activo detectado:", activeProfile.name, "ID:", activeProfile.id);
+        
+        // Si hay un perfil activo, enviamos el progreso a ese perfil
+        res = await apiRequest("POST", `/api/child-profiles/${activeProfile.id}/progress`, result);
+      } else {
+        // Si no hay perfil activo o hubo error, guardamos el progreso en la cuenta principal
+        console.log("No se detectó perfil activo, guardando en cuenta principal");
+        res = await apiRequest("POST", "/api/progress", result);
+      }
       
       if (res.ok) {
-        // Actualizar el estado local añadiendo el nuevo resultado primero
-        setExerciseHistory(prevHistory => [result, ...prevHistory]);
+        const data = await res.json();
         
-        // Actualizar los datos desde el servidor para asegurar sincronización
-        await fetchProgress();
+        // Actualizamos los datos en el estado
+        // Necesitamos volver a cargar los datos para ver el ejercicio actualizado
+        fetchProgress();
         
         toast({
           title: "Progress Saved",

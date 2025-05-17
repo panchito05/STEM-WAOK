@@ -155,14 +155,7 @@ export async function insertProgress(userId: number, progressData: ExerciseProgr
       score: progressData.score,
       totalProblems: progressData.totalProblems,
       timeSpent: progressData.timeSpent,
-      difficulty: progressData.difficulty,
-      // Campos adicionales para estadísticas detalladas
-      accuracy: progressData.accuracy,
-      avgTimePerProblem: progressData.avgTimePerProblem,
-      avgAttempts: progressData.avgAttempts,
-      revealedAnswers: progressData.revealedAnswers,
-      // Guardar los detalles completos de cada problema
-      problemDetails: progressData.problemDetails
+      difficulty: progressData.difficulty
     })
     .returning();
   
@@ -319,22 +312,26 @@ export async function getProgressForChildProfile(childProfileId: number) {
 }
 
 export async function insertProgressForChildProfile(childProfileId: number, progressData: ExerciseProgress) {
-  const [newProgress] = await db.insert(progressEntries)
-    .values({
-      childProfileId,
-      operationId: progressData.operationId,
-      score: progressData.score,
-      totalProblems: progressData.totalProblems,
-      timeSpent: progressData.timeSpent,
-      difficulty: progressData.difficulty,
-      // Campos adicionales para estadísticas detalladas
+  // Guardar todos los datos enviados, incluyendo los detalles de los problemas
+  const progressDataToSave = {
+    childProfileId,
+    operationId: progressData.operationId,
+    score: progressData.score,
+    totalProblems: progressData.totalProblems,
+    timeSpent: progressData.timeSpent,
+    difficulty: progressData.difficulty,
+    // Guardamos todos los campos adicionales como un objeto JSON en el campo extraData
+    extraData: JSON.stringify({
       accuracy: progressData.accuracy,
       avgTimePerProblem: progressData.avgTimePerProblem,
       avgAttempts: progressData.avgAttempts,
       revealedAnswers: progressData.revealedAnswers,
-      // Guardar los detalles completos de cada problema
-      problemDetails: progressData.problemDetails
+      problemDetails: progressData.problemDetails || []
     })
+  };
+  
+  const [newProgress] = await db.insert(progressEntries)
+    .values(progressDataToSave)
     .returning();
   
   return newProgress;

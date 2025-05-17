@@ -13,10 +13,6 @@ import { Loader2 } from "lucide-react";
 export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, isLoading } = useProgress();
   const [isClearing, setIsClearing] = useState(false);
-  
-  // Nos aseguramos de que exerciseHistory y moduleProgress siempre sean objetos válidos
-  const safeExerciseHistory = Array.isArray(exerciseHistory) ? exerciseHistory : [];
-  const safeModuleProgress = moduleProgress || {};
 
   if (isLoading) {
     return (
@@ -54,20 +50,13 @@ export default function ProgressPage() {
   }).reverse();
 
   const recentProgressData = last7Days.map(day => {
-    // Usamos safeExerciseHistory para garantizar que siempre es un array 
-    const dayResults = safeExerciseHistory.filter(result => {
-      if (!result || !result.date) return false;
-      try {
-        const resultDate = parseISO(result.date);
-        return (
-          resultDate.getDate() === day.dateObj.getDate() &&
-          resultDate.getMonth() === day.dateObj.getMonth() &&
-          resultDate.getFullYear() === day.dateObj.getFullYear()
-        );
-      } catch (error) {
-        console.error("Error al procesar fecha:", error, result);
-        return false;
-      }
+    const dayResults = exerciseHistory.filter(result => {
+      const resultDate = parseISO(result.date);
+      return (
+        resultDate.getDate() === day.dateObj.getDate() &&
+        resultDate.getMonth() === day.dateObj.getMonth() &&
+        resultDate.getFullYear() === day.dateObj.getFullYear()
+      );
     });
 
     const dayData: any = {
@@ -91,12 +80,11 @@ export default function ProgressPage() {
 
   // Module comparison data
   const moduleComparisonData = operationModules
-    .filter(module => !module.comingSoon && module.id)
+    .filter(module => !module.comingSoon)
     .map(module => {
-      // Verificación de seguridad para asegurar que existe moduleProgress y tiene el id del módulo
-      const progress = safeModuleProgress && module.id ? safeModuleProgress[module.id] : undefined;
+      const progress = moduleProgress[module.id];
       return {
-        name: module.displayName || module.id,
+        name: module.displayName,
         completed: progress?.totalCompleted || 0,
         accuracy: progress?.averageScore ? Math.round(progress.averageScore * 100) : 0,
         color: getModuleColor(module.id)
@@ -104,15 +92,8 @@ export default function ProgressPage() {
     });
 
   // Recent exercises list
-  const recentExercises = [...safeExerciseHistory]
-    .filter(exercise => exercise && exercise.date) // Filtramos solo ejercicios válidos
-    .sort((a, b) => {
-      try {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      } catch (error) {
-        return 0; // En caso de error en la fecha, mantener orden
-      }
-    })
+  const recentExercises = [...exerciseHistory]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 10);
 
   const getDifficultyBadgeClass = (difficulty: string) => {
@@ -137,58 +118,40 @@ export default function ProgressPage() {
       </Helmet>
       
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="relative bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 mb-6 overflow-hidden">
-          {/* Background pattern similar to DraggableModuleCard */}
-          <div className="absolute inset-0 opacity-10">
-            <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="progress-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                  <circle cx="2" cy="2" r="1" fill="white" />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#progress-grid)" />
-            </svg>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Your Progress</h1>
+            <p className="text-gray-600">Track your math learning journey</p>
           </div>
-          
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between relative z-10">
-            <div>
-              <h1 className="text-2xl font-bold text-white text-shadow">Your Progress</h1>
-              <p className="text-white text-opacity-90">Track your math learning journey</p>
-            </div>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="mt-4 md:mt-0 bg-white/20 hover:bg-white/30 text-white border-white/30" 
-                  disabled={isClearing || !exerciseHistory || !Array.isArray(exerciseHistory) || exerciseHistory.length === 0}
-                >
-                  {isClearing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Clearing...
-                    </>
-                  ) : (
-                    "Clear All Progress"
-                  )}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete all your progress data.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleClearProgress}>Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="mt-4 md:mt-0" disabled={isClearing || exerciseHistory.length === 0}>
+                {isClearing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Clearing...
+                  </>
+                ) : (
+                  "Clear All Progress"
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete all your progress data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearProgress}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
         
-        {safeExerciseHistory.length === 0 ? (
+        {exerciseHistory.length === 0 ? (
           <Card>
             <CardContent className="py-10">
               <div className="text-center">
@@ -277,9 +240,9 @@ export default function ProgressPage() {
             <TabsContent value="detailed">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {operationModules
-                  .filter(module => !module.comingSoon && module.id)
+                  .filter(module => !module.comingSoon)
                   .map(module => {
-                    const progress = safeModuleProgress[module.id || ""];
+                    const progress = moduleProgress[module.id];
                     return (
                       <Card key={module.id}>
                         <CardHeader>
@@ -348,41 +311,23 @@ export default function ProgressPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {recentExercises.length > 0 ? (
-                          recentExercises.map((exercise: ExerciseResult, index: number) => (
-                            <tr key={index} className="border-b">
-                              <td className="py-3 px-4">
-                                {exercise.date ? format(new Date(exercise.date), "MMM dd, yyyy HH:mm") : "N/A"}
-                              </td>
-                              <td className="py-3 px-4">{getModuleName(exercise.operationId || "")}</td>
-                              <td className="py-3 px-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyBadgeClass(exercise.difficulty || "beginner")}`}>
-                                  {exercise.difficulty 
-                                    ? exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1) 
-                                    : "Beginner"}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4">
-                                {exercise.score !== undefined ? exercise.score : 0}/
-                                {exercise.totalProblems || 0} 
-                                ({exercise.totalProblems 
-                                  ? Math.round((exercise.score / exercise.totalProblems) * 100) 
-                                  : 0}%)
-                              </td>
-                              <td className="py-3 px-4">
-                                {exercise.timeSpent !== undefined 
-                                  ? `${Math.floor(exercise.timeSpent / 60)}:${(exercise.timeSpent % 60).toString().padStart(2, '0')}` 
-                                  : "N/A"}
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={5} className="py-4 text-center text-gray-500">
-                              No recent exercise data available
+                        {recentExercises.map((exercise: ExerciseResult, index: number) => (
+                          <tr key={index} className="border-b">
+                            <td className="py-3 px-4">
+                              {format(new Date(exercise.date), "MMM dd, yyyy HH:mm")}
                             </td>
+                            <td className="py-3 px-4">{getModuleName(exercise.operationId)}</td>
+                            <td className="py-3 px-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyBadgeClass(exercise.difficulty)}`}>
+                                {exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              {exercise.score}/{exercise.totalProblems} ({Math.round((exercise.score / exercise.totalProblems) * 100)}%)
+                            </td>
+                            <td className="py-3 px-4">{exercise.timeSpent}s</td>
                           </tr>
-                        )}
+                        ))}
                       </tbody>
                     </table>
                   </div>
