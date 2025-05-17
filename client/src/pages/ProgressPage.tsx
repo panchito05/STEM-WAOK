@@ -29,29 +29,9 @@ export default function ProgressPage() {
     }
   }, [refreshProgress]);
 
-  // Actualización automática cada 15 segundos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      handleRefresh();
-    }, 15000); // 15 segundos
-    
-    return () => clearInterval(interval);
-  }, [handleRefresh]);
-
-  // También actualizar cuando la página gane foco
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        handleRefresh();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [handleRefresh]);
+  // Nota: La actualización automática ha sido desactivada
+  // La actualización ahora sólo ocurre cuando el usuario 
+  // hace clic en el botón de "Refresh Data"
 
   if (isLoading) {
     return (
