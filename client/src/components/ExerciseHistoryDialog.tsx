@@ -184,15 +184,22 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
               <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
               <div className="space-y-2">
                 {/* Usamos los problemas guardados del ejercicio si existen */}
-                {selectedExercise.extraData && (() => {
+                {(() => {
                   try {
-                    // Intentar parsear los datos extra que contienen los detalles del problema
-                    const extraData = JSON.parse(selectedExercise.extraData || '{}');
-                    const problemDetails = extraData.problemDetails || [];
+                    // Obtener los detalles de los problemas del extraData (que es un JSON string)
+                    let problemDetails: any[] = [];
+                    if (selectedExercise.extraData) {
+                      try {
+                        const extraData = JSON.parse(selectedExercise.extraData);
+                        problemDetails = extraData.problemDetails || [];
+                      } catch (e) {
+                        console.error("Error al parsear extraData:", e);
+                      }
+                    }
                     
                     // Si tenemos problemas guardados, los mostramos
                     if (problemDetails && problemDetails.length > 0) {
-                      return problemDetails.map((problemDetail, index) => {
+                      return problemDetails.map((problemDetail: any, index: number) => {
                         if (!problemDetail) return null;
                         
                         const operationId = selectedExercise.operationId || 'addition';
