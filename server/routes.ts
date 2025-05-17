@@ -502,6 +502,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ error: "Internal server error" });
     }
   });
+  
+  app.post("/api/child-profiles/:id/progress", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      // Validar datos de progreso
+      const validatedProgress = exerciseProgressSchema.parse(req.body);
+      
+      // Guardar progreso
+      const newProgress = await storage.insertProgressForChildProfile(profileId, validatedProgress);
+      
+      // Devolver progreso completo actualizado
+      const progressData = await storage.getProgressForChildProfile(profileId);
+      
+      return res.status(201).json({
+        success: true,
+        message: "Progress saved successfully",
+        data: newProgress
+      });
+    } catch (error) {
+      console.error("Error saving child profile progress:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid progress data", details: error.errors });
+      }
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
 
   // Rutas para progreso de perfiles de niños
   app.get("/api/child-profiles/:id/progress", isAuthenticated, async (req: any, res) => {

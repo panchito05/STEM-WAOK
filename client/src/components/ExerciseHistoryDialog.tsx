@@ -304,11 +304,13 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                     <div className="flex items-center gap-2">
                       <div className="flex items-center">
                         <Award className="h-5 w-5 text-yellow-500 mr-1" />
-                        <span className="text-yellow-500 font-semibold">67%</span>
+                        <span className="text-yellow-500 font-semibold">
+                          {Math.round((exercise.score / exercise.totalProblems) * 100)}%
+                        </span>
                       </div>
                       <div className="flex items-center">
                         <Clock className="h-5 w-5 text-blue-500 mr-1" />
-                        <span className="text-blue-500 font-semibold">00:04</span>
+                        <span className="text-blue-500 font-semibold">{formatTime(exercise.timeSpent)}</span>
                       </div>
                     </div>
                   </Button>
