@@ -27,7 +27,6 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   const moduleExercises = exerciseHistory.filter(item => item.operationId === moduleId);
 
   const sortedHistory = moduleExercises
-    .filter(item => item.extra_data?.screenshot)
     .sort((a, b) => {
       const dateA = new Date(a.date || a.createdAt || 0);
       const dateB = new Date(b.date || b.createdAt || 0);
