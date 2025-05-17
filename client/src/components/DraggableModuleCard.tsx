@@ -63,7 +63,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   const isHidden = hiddenModules.includes(module.id);
   
   // Verificar si hay historial para este módulo
-  const hasHistory = exerciseHistory.some(entry => entry.operationId === module.id);
+  const hasHistory = exerciseHistory && exerciseHistory.some(entry => entry.operationId === module.id);
 
   const [{ isDragging }, drag] = useDragItem(() => ({
     type: "MODULE_CARD",
