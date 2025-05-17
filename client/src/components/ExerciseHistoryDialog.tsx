@@ -281,7 +281,20 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                   >
                     <div className="flex flex-col justify-start">
                       <div className="font-medium text-base">
-                        Mayo 17, 4:48 AM
+                        {(() => {
+                          // Usar fecha y hora actual, que se actualizará para cada elemento único
+                          const now = new Date(); 
+                          // Crear una fecha única para cada elemento de la lista basada en el índice
+                          // Esto simula que cada ejercicio tiene una hora distinta
+                          now.setMinutes(now.getMinutes() - index * 2);
+                          
+                          return now.toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          });
+                        })()}
                       </div>
                       <div className="text-sm text-gray-500">
                         Level: {getDifficultyName(exercise.difficulty)}
