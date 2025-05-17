@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { History, Info, Check, Award, Clock } from 'lucide-react';
 import { formatTime } from '@/lib/utils';
 import { useTranslations } from '@/hooks/use-translations';
+import { useProgress, useForceUpdate } from "@/context/ProgressContext";
 
 interface ExerciseHistoryDialogProps {
   moduleId: string;
@@ -23,6 +24,14 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   const [open, setOpen] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
   const { t, language } = useTranslations();
+  const { fetchProgress } = useProgress();
+
+  useEffect(() => {
+    if (open) {
+      // Force re-fetch progress when dialog opens
+      fetchProgress();
+    }
+  }, [open, fetchProgress]);
 
   const moduleExercises = exerciseHistory.filter(item => item.operationId === moduleId);
 
