@@ -287,7 +287,14 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                   >
                     <div className="flex flex-col justify-start">
                       <div className="font-medium text-base">
-                        N/A
+                        {exercise.date ? 
+                          new Date(exercise.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { 
+                            month: 'numeric', 
+                            day: 'numeric',
+                            hour: '2-digit', 
+                            minute: '2-digit'
+                          }) : 'N/A'
+                        }
                       </div>
                       <div className="text-sm text-gray-500">
                         Level: {getDifficultyName(exercise.difficulty)}
@@ -297,7 +304,10 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                     <div className="flex items-center gap-4">
                       <div className="flex items-center">
                         <Award className="h-5 w-5 text-yellow-500 mr-1" />
-                        <span className="text-yellow-500 font-medium">{exercise.score}/{exercise.totalProblems}</span>
+                        <span className="text-yellow-500 font-medium">
+                          {exercise.accuracy || 
+                           Math.round((exercise.score / exercise.totalProblems) * 100)}%
+                        </span>
                       </div>
                       <div className="flex items-center">
                         <Clock className="h-5 w-5 text-blue-500 mr-1" />
