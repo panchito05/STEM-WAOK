@@ -8,6 +8,15 @@ import { ExerciseResult } from "@/context/ProgressContext";
 import { es, enUS } from 'date-fns/locale';
 import { useSettings } from '@/context/SettingsContext';
 
+// Interface to fix TypeScript issues with jsPDF + autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    previousAutoTable?: {
+      finalY: number;
+    };
+  }
+}
+
 interface ExercisePdfExportProps {
   exerciseResult: ExerciseResult;
   buttonClassName?: string;
@@ -23,8 +32,8 @@ const ExercisePdfExport = ({
   buttonSize = "sm",
   includeTitle = true
 }: ExercisePdfExportProps) => {
-  const { getGlobalSettings } = useSettings();
-  const globalSettings = getGlobalSettings();
+  const { moduleSettings } = useSettings();
+  const globalSettings = moduleSettings.global || {};
   const language = globalSettings.language || 'eng';
   
   const dateLocale = language === 'esp' ? es : enUS;

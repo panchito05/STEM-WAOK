@@ -7,7 +7,9 @@ import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
 import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Download } from "lucide-react";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/use-translations";
 import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
@@ -1051,6 +1053,131 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               );
             })}
           </div>
+        </div>
+        
+        {/* Exportar a PDF */}
+        <div className="mb-6 border border-gray-200 rounded-lg p-4 bg-sky-50">
+          <h3 className="text-lg font-semibold mb-3 flex items-center">
+            <Download className="h-5 w-5 mr-2 text-blue-600" />
+            Guardar resultados
+          </h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Puedes guardar estos resultados en un archivo PDF para revisarlos más tarde o compartirlos.
+          </p>
+          <Button 
+            onClick={() => {
+              try {
+                // Usar jsPDF para generar un PDF con los resultados del ejercicio
+                const doc = new jsPDF();
+                const pageWidth = doc.internal.pageSize.getWidth();
+                
+                // Título del documento
+                doc.setFontSize(18);
+                doc.text("Resultados del Ejercicio de Suma", pageWidth / 2, 20, { align: 'center' });
+                
+                // Subtítulo
+                doc.setFontSize(12);
+                doc.text("Plataforma de Aprendizaje Matemático", pageWidth / 2, 28, { align: 'center' });
+                
+                // Usar autoTable para crear tablas con jsPDF-AutoTable
+                // @ts-ignore - Ignoramos el error porque sabemos que está disponible gracias a la importación
+                doc.autoTable({
+                  startY: 35,
+                  head: [['', '']],
+                  body: [
+                    ['Operación:', 'Adición'],
+                    ['Fecha:', new Date().toLocaleDateString()],
+                    ['Tiempo Total:', formatTime(timer)],
+                    ['Puntuación:', `${finalScore} / ${problemsList.length}`],
+                    ['Precisión:', `${accuracy}%`],
+                    ['Tiempo Promedio:', `${avgTimePerProblem}s`],
+                    ['Intentos Promedio:', avgAttempts],
+                    ['Respuestas Reveladas:', revealedAnswers.toString()],
+                    ['Nivel Final:', finalLevel],
+                  ],
+                  theme: 'striped',
+                  headStyles: {
+                    fillColor: [41, 128, 185],
+                    textColor: [255, 255, 255],
+                  },
+                  columnStyles: {
+                    0: { fontStyle: 'bold', cellWidth: 50 },
+                    1: { cellWidth: 'auto' },
+                  },
+                  margin: { left: 30, right: 30 },
+                });
+                
+                // Tabla de problemas
+                const problemsTableData = problemsList.map((problem, index) => {
+                  const answer = userAnswersHistory[index];
+                  if (!answer) return null;
+                  
+                  return [
+                    `${index + 1}`,
+                    `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+                    answer.isCorrect ? 'Sí' : 'No',
+                    answer.userAnswer?.toString() || '-',
+                    problem.correctAnswer.toString(),
+                    (answer.attempts || 1).toString(),
+                    `${avgTimePerProblem}s`,
+                    finalLevel,
+                  ];
+                }).filter(Boolean);
+                
+                if (problemsTableData.length > 0) {
+                  // Título de la sección
+                  doc.setFontSize(14);
+                  const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : 35;
+                  doc.text("Revisión de Problemas", pageWidth / 2, finalY + 15, { align: 'center' });
+                  
+                  // Tabla de problemas
+                  autoTable(doc, {
+                    startY: finalY + 20,
+                    head: [[
+                      '#', 
+                      'Problema', 
+                      'Correcto', 
+                      'Tu Respuesta', 
+                      'Respuesta Correcta', 
+                      'Intentos', 
+                      'Tiempo', 
+                      'Nivel'
+                    ]],
+                    body: problemsTableData,
+                    theme: 'grid',
+                    headStyles: {
+                      fillColor: [41, 128, 185],
+                      textColor: [255, 255, 255],
+                    },
+                    styles: { fontSize: 9 },
+                    columnStyles: {
+                      0: { cellWidth: 10 },
+                      1: { cellWidth: 40 },
+                    },
+                    margin: { left: 15, right: 15 },
+                  });
+                }
+                
+                // Pie de página
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                  doc.setPage(i);
+                  doc.setFontSize(8);
+                  doc.text(`Plataforma de Aprendizaje Matemático - ${new Date().toLocaleDateString()}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+                }
+                
+                // Guardar el PDF
+                doc.save(`resultados_suma_${new Date().toISOString().slice(0, 10)}.pdf`);
+              } catch (error) {
+                console.error("Error al generar PDF:", error);
+                alert("Error al generar el PDF. Por favor intenta de nuevo.");
+              }
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Guardar como PDF
+          </Button>
         </div>
         
         <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
