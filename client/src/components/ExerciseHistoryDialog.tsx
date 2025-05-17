@@ -77,7 +77,12 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   
   // If we have real history items with screenshots, use those, otherwise use our template
   const sortedHistory = hasRealHistory && historyWithScreenshots.length > 0
-    ? historyWithScreenshots
+    ? historyWithScreenshots.sort((a, b) => {
+        // Sort by date, newest first
+        const dateA = new Date(a.date || a.createdAt || new Date());
+        const dateB = new Date(b.date || b.createdAt || new Date());
+        return dateB.getTime() - dateA.getTime();
+      })
     : template 
       ? [{ 
           id: 1001,
