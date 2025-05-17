@@ -28,11 +28,18 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   // Filtrar solo el historial relacionado con este módulo (asegurando que exerciseHistory existe)
   const moduleHistory = exerciseHistory ? exerciseHistory.filter(entry => entry.operationId === moduleId) : [];
   
-  // Ordenar por fecha - más reciente primero (protegerse contra moduleHistory vacío)
+  // Ordenar el historial por fecha, más reciente primero (protegerse contra moduleHistory vacío)
   const sortedHistory = moduleHistory && moduleHistory.length > 0 
     ? [...moduleHistory].sort((a, b) => {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      }) 
+        try {
+          const dateA = new Date(a.date || 0).getTime();
+          const dateB = new Date(b.date || 0).getTime();
+          return dateB - dateA; // Orden descendente (más reciente primero)
+        } catch (error) {
+          console.error('Error ordenando por fecha:', error);
+          return 0;
+        }
+      })
     : [];
   
   // Función para obtener el nombre de dificultad localizado
@@ -187,7 +194,6 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                         <div className="text-xs text-gray-600 mt-1">
                           {t('Level')}: {getDifficultyName(problem.level || selectedExercise.difficulty)}, 
                           {t('Attempts')}: {problem.attempts || 1}
-                          {/* Se ha eliminado la comprobación de status ya que no forma parte de la estructura de datos */}
                         </div>
                       </div>
                     );
