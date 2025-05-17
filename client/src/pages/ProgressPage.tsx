@@ -315,18 +315,20 @@ export default function ProgressPage() {
                         {recentExercises.map((exercise: ExerciseResult, index: number) => (
                           <tr key={index} className="border-b">
                             <td className="py-3 px-4">
-                              {format(new Date(exercise.date), "MMM dd, yyyy HH:mm")}
+                              {exercise.date ? format(new Date(exercise.date), "MMM dd, yyyy HH:mm") : "N/A"}
                             </td>
                             <td className="py-3 px-4">{getModuleName(exercise.operationId)}</td>
                             <td className="py-3 px-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyBadgeClass(exercise.difficulty)}`}>
-                                {exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyBadgeClass(exercise.difficulty || 'beginner')}`}>
+                                {(exercise.difficulty || 'beginner').charAt(0).toUpperCase() + (exercise.difficulty || 'beginner').slice(1)}
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              {exercise.score}/{exercise.totalProblems} ({Math.round((exercise.score / exercise.totalProblems) * 100)}%)
+                              {exercise.score !== undefined && exercise.totalProblems ? 
+                                `${exercise.score}/${exercise.totalProblems} (${Math.round((exercise.score / exercise.totalProblems) * 100)}%)` : 
+                                "N/A"}
                             </td>
-                            <td className="py-3 px-4">{exercise.timeSpent}s</td>
+                            <td className="py-3 px-4">{exercise.timeSpent !== undefined ? `${exercise.timeSpent}s` : "N/A"}</td>
                           </tr>
                         ))}
                       </tbody>
