@@ -23,11 +23,9 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   const [open, setOpen] = useState(false);
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
   const { t, language } = useTranslations();
-  
-  // Get all exercises for this module
+
   const moduleExercises = exerciseHistory.filter(item => item.operationId === moduleId);
-  
-  // Filter for exercises with screenshots and sort by date (newest first)
+
   const sortedHistory = moduleExercises
     .filter(item => item.extra_data?.screenshot)
     .sort((a, b) => {
@@ -35,23 +33,19 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
       const dateB = new Date(b.date || b.createdAt || 0);
       return dateB.getTime() - dateA.getTime();
     });
-  
-  // Get the currently selected exercise
+
   const selectedExercise = selectedExerciseId 
     ? sortedHistory.find(ex => ex.id === selectedExerciseId) || null
     : null;
-  
-  // Reset selection when dialog closes
+
   useEffect(() => {
     if (!open) {
       setSelectedExerciseId(null);
     }
   }, [open]);
 
-  // If there's screenshot data, show it instead of raw data
   const hasScreenshot = selectedExercise?.extra_data?.screenshot;
-  
-  // Format date in a localized way
+
   const formatDate = (dateString: string | Date | null | undefined) => {
     try {
       const date = dateString ? new Date(dateString) : new Date();
@@ -66,8 +60,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
       return 'N/A';
     }
   };
-  
-  // Get localized difficulty name
+
   const getDifficultyName = (difficultyCode: string) => {
     switch(difficultyCode?.toLowerCase()) {
       case 'beginner': return t('difficulty.beginner') || 'Beginner';
@@ -104,125 +97,30 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
             </DialogDescription>
           )}
         </DialogHeader>
-        
         {selectedExercise ? (
-          hasScreenshot ? (
-            // Display screenshot-style data
-            <div className="space-y-6">
-              {/* Total Time */}
-              <div className="bg-gray-50 p-4 rounded-lg text-center">
-                <div className="text-sm text-gray-600 mb-1">Total Time</div>
-                <div className="text-xl font-bold">
-                  {selectedExercise.extra_data.screenshot.scoreData.totalTime}
-                </div>
+          <div className="space-y-6">
+            <div className="bg-gray-50 p-4 rounded-lg text-center">
+              <div className="text-sm text-gray-600 mb-1">Total Time</div>
+              <div className="text-xl font-bold">
+                {selectedExercise.extra_data?.screenshot?.scoreData.totalTime || formatTime(selectedExercise.timeSpent)}
               </div>
-              
-              {/* First row metrics */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className={`${selectedExercise.extra_data.screenshot.scoreData.score.bgColor} p-3 rounded-lg text-center`}>
-                  <div className="text-sm text-gray-600 mb-1">Score</div>
-                  <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.score.textColor} font-semibold`}>
-                    {selectedExercise.extra_data.screenshot.scoreData.score.value}
-                  </div>
-                </div>
-                
-                <div className={`${selectedExercise.extra_data.screenshot.scoreData.accuracy.bgColor} p-3 rounded-lg text-center`}>
-                  <div className="text-sm text-gray-600 mb-1">Accuracy</div>
-                  <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.accuracy.textColor} font-semibold`}>
-                    {selectedExercise.extra_data.screenshot.scoreData.accuracy.value}
-                  </div>
-                </div>
-                
-                <div className={`${selectedExercise.extra_data.screenshot.scoreData.avgTime.bgColor} p-3 rounded-lg text-center`}>
-                  <div className="text-sm text-gray-600 mb-1">Avg. Time</div>
-                  <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.avgTime.textColor} font-semibold`}>
-                    {selectedExercise.extra_data.screenshot.scoreData.avgTime.value}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Second row metrics */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className={`${selectedExercise.extra_data.screenshot.scoreData.avgAttempts.bgColor} p-3 rounded-lg text-center`}>
-                  <div className="text-sm text-gray-600 mb-1">Avg. Attempts</div>
-                  <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.avgAttempts.textColor} font-semibold`}>
-                    {selectedExercise.extra_data.screenshot.scoreData.avgAttempts.value}
-                  </div>
-                </div>
-                
-                <div className={`${selectedExercise.extra_data.screenshot.scoreData.revealed.bgColor} p-3 rounded-lg text-center`}>
-                  <div className="text-sm text-gray-600 mb-1">Revealed</div>
-                  <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.revealed.textColor} font-semibold`}>
-                    {selectedExercise.extra_data.screenshot.scoreData.revealed.value}
-                  </div>
-                </div>
-                
-                <div className={`${selectedExercise.extra_data.screenshot.scoreData.finalLevel.bgColor} p-3 rounded-lg text-center`}>
-                  <div className="text-sm text-gray-600 mb-1">Final Level</div>
-                  <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.finalLevel.textColor} font-semibold`}>
-                    {selectedExercise.extra_data.screenshot.scoreData.finalLevel.value}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Problem Review */}
-              {selectedExercise.extra_data.screenshot.problemReview && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
-                  <div className="space-y-2">
-                    {selectedExercise.extra_data.screenshot.problemReview.map((problem: any, index: number) => (
-                      <div key={index} 
-                           className={`p-3 rounded-lg ${problem.isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <span className="font-medium">(#{index + 1})</span> {problem.problem}
-                          </div>
-                          <div>
-                            {problem.isCorrect 
-                              ? <Check className="h-5 w-5 text-green-600" /> 
-                              : <span className="text-red-600 text-xl font-bold">✕</span>
-                            }
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-600 mt-1">
-                          Lvl: {problem.level}, Att: {problem.attempts}, T: {problem.time}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
-          ) : (
-            // Fallback to old display format
-            <div className="space-y-6">
-              {/* Total Time */}
-              <div className="bg-gray-50 p-4 rounded-lg text-center">
-                <div className="text-sm text-gray-600 mb-1">Total Time</div>
-                <div className="text-xl font-bold">
-                  {formatTime(selectedExercise.timeSpent)}
-                </div>
-              </div>
-            
-            {/* First row metrics */}
+
             <div className="grid grid-cols-3 gap-3">
-              {/* Score */}
               <div className={`${selectedExercise.extra_data?.screenshot?.scoreData.score.bgColor || 'bg-blue-50'} p-3 rounded-lg text-center`}>
                 <div className="text-sm text-gray-600 mb-1">Score</div>
                 <div className={`text-xl ${selectedExercise.extra_data?.screenshot?.scoreData.score.textColor || 'text-indigo-600'} font-semibold`}>
                   {selectedExercise.extra_data?.screenshot?.scoreData.score.value || `${selectedExercise.score} / ${selectedExercise.totalProblems}`}
                 </div>
               </div>
-              
-              {/* Accuracy */}
+
               <div className={`${selectedExercise.extra_data?.screenshot?.scoreData.accuracy.bgColor || 'bg-green-50'} p-3 rounded-lg text-center`}>
                 <div className="text-sm text-gray-600 mb-1">Accuracy</div>
                 <div className={`text-xl ${selectedExercise.extra_data?.screenshot?.scoreData.accuracy.textColor || 'text-green-600'} font-semibold`}>
                   {selectedExercise.extra_data?.screenshot?.scoreData.accuracy.value || "100%"}
                 </div>
               </div>
-              
-              {/* Avg Time */}
+
               <div className={`${selectedExercise.extra_data?.screenshot?.scoreData.avgTime.bgColor || 'bg-purple-50'} p-3 rounded-lg text-center`}>
                 <div className="text-sm text-gray-600 mb-1">Avg. Time</div>
                 <div className={`text-xl ${selectedExercise.extra_data?.screenshot?.scoreData.avgTime.textColor || 'text-purple-600'} font-semibold`}>
@@ -230,26 +128,22 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                 </div>
               </div>
             </div>
-            
-            {/* Second row metrics */}
+
             <div className="grid grid-cols-3 gap-3">
-              {/* Avg Attempts */}
               <div className={`${selectedExercise.extra_data?.screenshot?.scoreData.avgAttempts.bgColor || 'bg-amber-50'} p-3 rounded-lg text-center`}>
                 <div className="text-sm text-gray-600 mb-1">Avg. Attempts</div>
                 <div className={`text-xl ${selectedExercise.extra_data?.screenshot?.scoreData.avgAttempts.textColor || 'text-amber-600'} font-semibold`}>
                   {selectedExercise.extra_data?.screenshot?.scoreData.avgAttempts.value || "1.0"}
                 </div>
               </div>
-              
-              {/* Revealed */}
+
               <div className={`${selectedExercise.extra_data?.screenshot?.scoreData.revealed.bgColor || 'bg-red-50'} p-3 rounded-lg text-center`}>
                 <div className="text-sm text-gray-600 mb-1">Revealed</div>
                 <div className={`text-xl ${selectedExercise.extra_data?.screenshot?.scoreData.revealed.textColor || 'text-red-600'} font-semibold`}>
                   {selectedExercise.extra_data?.screenshot?.scoreData.revealed.value || "0"}
                 </div>
               </div>
-              
-              {/* Final Level */}
+
               <div className={`${selectedExercise.extra_data?.screenshot?.scoreData.finalLevel.bgColor || 'bg-teal-50'} p-3 rounded-lg text-center`}>
                 <div className="text-sm text-gray-600 mb-1">Final Level</div>
                 <div className={`text-xl ${selectedExercise.extra_data?.screenshot?.scoreData.finalLevel.textColor || 'text-teal-600'} font-semibold`}>
@@ -257,8 +151,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                 </div>
               </div>
             </div>
-            
-            {/* Problem Review */}
+
             {selectedExercise.extra_data?.screenshot?.problemReview && (
               <div>
                 <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
@@ -285,7 +178,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                 </div>
               </div>
             )}
-            
+
             <Button 
               variant="ghost" 
               onClick={() => setSelectedExerciseId(null)}
@@ -295,7 +188,6 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
             </Button>
           </div>
         ) : (
-          // Display the history list
           <div className="space-y-4">
             {sortedHistory.length === 0 ? (
               <div className="text-center py-4">
