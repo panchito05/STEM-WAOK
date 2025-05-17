@@ -11,6 +11,7 @@ type TranslationKeys = {
     prev: string;
     next: string;
     start: string;
+    comingSoon: string;
   };
   exercises: {
     start: string;
@@ -60,7 +61,15 @@ type TranslationKeys = {
     resetToDefault: string;
     resetConfirmation: string;
   };
+  favorites: {
+    add: string;
+    remove: string;
+  };
   modules: {
+    visibility: {
+      hide: string;
+      restore: string;
+    };
     addition: {
       name: string;
       description: string;
@@ -87,6 +96,11 @@ export const enTranslations: TranslationKeys = {
     prev: "Previous",
     next: "Next",
     start: "Start",
+    comingSoon: "Coming Soon"
+  },
+  favorites: {
+    add: "Add to favorites",
+    remove: "Remove from favorites"
   },
   exercises: {
     start: "Start Exercise",
@@ -137,6 +151,10 @@ export const enTranslations: TranslationKeys = {
     resetConfirmation: "This will reset all settings to default values. Are you sure?",
   },
   modules: {
+    visibility: {
+      hide: "Hide module",
+      restore: "Restore module"
+    },
     addition: {
       name: "Addition",
       description: "Practice addition with various difficulty levels"
@@ -163,6 +181,11 @@ export const esTranslations: TranslationKeys = {
     prev: "Anterior",
     next: "Siguiente",
     start: "Iniciar",
+    comingSoon: "Próximamente"
+  },
+  favorites: {
+    add: "Añadir a favoritos",
+    remove: "Quitar de favoritos"
   },
   exercises: {
     start: "Comenzar Ejercicio",
@@ -213,6 +236,10 @@ export const esTranslations: TranslationKeys = {
     resetConfirmation: "Esto restablecerá todos los ajustes a los valores predeterminados. ¿Estás seguro?",
   },
   modules: {
+    visibility: {
+      hide: "Ocultar módulo",
+      restore: "Restaurar módulo"
+    },
     addition: {
       name: "Suma",
       description: "Practica sumas con varios niveles de dificultad"

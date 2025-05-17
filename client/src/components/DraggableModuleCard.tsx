@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo } from "react";
+import { useRef } from "react";
 import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { useAccessibleDnd } from "./AccessibleDndContext";
@@ -7,7 +7,7 @@ import { Module } from "@/utils/operationComponents";
 import { 
   GripVertical, MoreVertical, Star, StarOff, Plus, Minus, X,
   DivideIcon, PieChart, BookOpen, Hash, Calculator, 
-  ArrowLeftRight, Square, Percent, Triangle, LucideIcon,
+  ArrowLeftRight, Square, Percent, Triangle,
   Eye, EyeOff, MapIcon
 } from "lucide-react";
 import { 
@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSettings } from "@/context/SettingsContext";
-import { useTranslations } from "@/hooks/use-translations";
+import { useTranslations, mapConfigLanguageToSupported } from "@/hooks/use-translations";
 import { SupportedLanguage } from "@/utils/translations";
 
 interface DraggableModuleCardProps {
@@ -41,29 +41,19 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   
   // Obtenemos la configuración personalizada del módulo y la configuración global
   const { moduleSettings, globalSettings } = useSettings();
-  
-  // Obtenemos la configuración específica para este módulo (si existe)
   const moduleConfig = moduleSettings[module.id];
   
-  // Determinar el idioma a usar para este módulo:
-  // 1. Si el módulo tiene un idioma configurado, usamos ese
-  // 2. Si no, usamos el idioma global
-  const moduleLanguage = useMemo(() => {
-    if (moduleConfig?.language) {
-      // Convertir el idioma del módulo al formato que usa el sistema de traducciones
-      const langMap: Record<string, SupportedLanguage> = {
-        "english": "en",
-        "spanish": "es"
-      };
-      return langMap[moduleConfig.language] || globalSettings.language;
-    }
-    return globalSettings.language;
-  }, [moduleConfig, globalSettings.language]);
+  // Determinamos el idioma específico a usar para este módulo
+  let moduleLanguage: SupportedLanguage = globalSettings.language as SupportedLanguage;
   
-  // Obtenemos las traducciones para el idioma específico del módulo
-  const { t } = useTranslations();
-  const language = moduleLanguage;
-
+  // Si existe configuración para este módulo y tiene idioma definido, convertirlo al formato de traducción
+  if (moduleConfig?.language) {
+    moduleLanguage = mapConfigLanguageToSupported(moduleConfig.language);
+  }
+  
+  // Obtenemos las traducciones basadas en el idioma específico del módulo
+  const { t } = useTranslations(moduleLanguage);
+  
   const isModuleFavorite = isFavorite(module.id);
   const isHidden = hiddenModules.includes(module.id);
 
@@ -209,7 +199,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             }`}
             onClick={(e) => !module.comingSoon && handleToggleFavorite(e)}
             disabled={module.comingSoon}
-            aria-label={isModuleFavorite ? (language === 'en' ? "Remove from favorites" : "Quitar de favoritos") : (language === 'en' ? "Add to favorites" : "Añadir a favoritos")}
+            aria-label={isModuleFavorite ? t('favorites.remove') : t('favorites.add')}
           >
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
@@ -226,12 +216,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                     {isModuleFavorite ? (
                       <>
                         <StarOff className="h-4 w-4 mr-2 text-amber-500" />
-                        {language === 'en' ? 'Remove from favorites' : 'Quitar de favoritos'}
+                        {t('favorites.remove')}
                       </>
                     ) : (
                       <>
                         <Star className="h-4 w-4 mr-2 text-amber-500" />
-                        {language === 'en' ? 'Add to favorites' : 'Añadir a favoritos'}
+                        {t('favorites.add')}
                       </>
                     )}
                   </div>
@@ -241,12 +231,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                     {isHidden ? (
                       <>
                         <Eye className="h-4 w-4 mr-2 text-purple-500" />
-                        {language === 'en' ? 'Restore module' : 'Restaurar módulo'}
+                        {t('modules.visibility.restore')}
                       </>
                     ) : (
                       <>
                         <EyeOff className="h-4 w-4 mr-2 text-purple-500" />
-                        {language === 'en' ? 'Hide module' : 'Ocultar módulo'}
+                        {t('modules.visibility.hide')}
                       </>
                     )}
                   </div>
@@ -266,7 +256,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           </div>
           {module.comingSoon ? (
             <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-5">
-              {language === 'en' ? 'Coming Soon' : 'Próximamente'}
+              {t('common.comingSoon')}
             </Button>
           ) : (
             <Link href={`/operation/${module.id}`}>
