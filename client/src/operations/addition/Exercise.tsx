@@ -8,6 +8,7 @@ import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "
 import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Download } from "lucide-react";
+import { useLocation } from "wouter"; // Importamos useLocation para la navegación
 // Importaremos jsPDF de forma dinámica cuando sea necesario
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useTranslations } from "@/hooks/use-translations";
@@ -31,6 +32,7 @@ const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
+  const [, setLocation] = useLocation(); // Hook para la navegación
   const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -1217,6 +1219,34 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <Settings className="mr-2 h-4 w-4" />
             {t('common.settings')}
           </Button>
+        </div>
+        
+        {/* Botón para ver el historial de progreso */}
+        <div className="mt-4 text-center">
+          <h3 className="text-sm text-gray-500 mb-2">{t('progress.viewHistory') || "View your progress history"}</h3>
+          <div className="flex justify-center">
+            <Button 
+              variant="outline" 
+              className="relative overflow-hidden bg-blue-500 hover:bg-blue-600 text-white border-none"
+              onClick={() => setLocation('/progress?module=addition')}
+            >
+              {/* Background pattern for visual interest - similar to DraggableModuleCard */}
+              <div className="absolute inset-0 opacity-10">
+                <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <pattern id="progress-grid-addition" width="10" height="10" patternUnits="userSpaceOnUse">
+                      <circle cx="2" cy="2" r="1" fill="white" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#progress-grid-addition)" />
+                </svg>
+              </div>
+              <div className="flex items-center relative z-10">
+                <History className="mr-2 h-4 w-4" />
+                {t('progress.viewHistory') || "View Progress History"}
+              </div>
+            </Button>
+          </div>
         </div>
       </div>
     );
