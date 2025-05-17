@@ -80,28 +80,15 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
     }
   };
   
-  // Crear ejemplos de datos de problemas para la demostración
-  const getDemoProblems = () => {
-    return [
-      {
-        problem: { operands: [4, 1] },
-        correctAnswer: "5",
-        userAnswer: "5",
-        isCorrect: true,
-        level: 1,
-        attempts: 1,
-        timeSpent: 2
-      },
-      {
-        problem: { operands: [4, 2] },
-        correctAnswer: "6",
-        userAnswer: "6",
-        isCorrect: true,
-        level: 1,
-        attempts: 1,
-        timeSpent: 2
-      }
-    ];
+  // Función para determinar el operador según el tipo de operación
+  const getOperator = (operationId: string) => {
+    switch (operationId) {
+      case 'addition': return '+';
+      case 'subtraction': return '-';
+      case 'multiplication': return '×';
+      case 'division': return '÷';
+      default: return '+';
+    }
   };
   
   return (
@@ -201,16 +188,35 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                   selectedExercise.problemDetails.map((problem, index) => {
                     if (!problem) return null;
                     
-                    // Mostrar el problema en formato legible
+                    // Mostrar el problema en formato legible según el tipo de operación
                     let problemDisplay = '';
+                    const operator = getOperator(selectedExercise.operationId);
+                    
                     if (problem.problem?.operands && problem.problem.operands.length > 0) {
-                      // Formatear basado en el tipo de operación
                       if (problem.problem.operands.length === 2) {
-                        problemDisplay = `${problem.problem.operands[0]} + ${problem.problem.operands[1]} = ${problem.correctAnswer}`;
+                        problemDisplay = `${problem.problem.operands[0]} ${operator} ${problem.problem.operands[1]} = ${problem.correctAnswer}`;
                         // Solo mostrar respuesta incorrecta si la hay y no coincide con la correcta
-                        if (problem.userAnswer !== problem.correctAnswer && !isNaN(Number(problem.userAnswer))) {
-                          problemDisplay += ` (${problem.userAnswer})`;
+                        if (!problem.isCorrect && problem.userAnswer !== problem.correctAnswer) {
+                          problemDisplay += ` (Tu respuesta: ${problem.userAnswer || 'No respondida'})`;
                         }
+                      }
+                    } else if (problem.problem) {
+                      // Para otros tipos de problemas sin formato "operands" específico
+                      try {
+                        // Intentar mostrar algún tipo de representación legible del problema
+                        if (typeof problem.problem === 'object') {
+                          problemDisplay = `Problema #${index + 1}: `;
+                          if (problem.correctAnswer) {
+                            problemDisplay += `Respuesta correcta: ${problem.correctAnswer}`;
+                            if (!problem.isCorrect && problem.userAnswer) {
+                              problemDisplay += `, Tu respuesta: ${problem.userAnswer}`;
+                            }
+                          }
+                        } else {
+                          problemDisplay = `${problem.problem} = ${problem.correctAnswer}`;
+                        }
+                      } catch (error) {
+                        problemDisplay = `Problema #${index + 1}`;
                       }
                     }
                     
@@ -228,35 +234,23 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                           <div>
                             {problem.isCorrect 
                               ? <Check className="h-5 w-5 text-green-600" /> 
-                              : <span className="text-red-600">✕</span>}
+                              : <span className="text-red-600 text-xl font-bold">✕</span>}
                           </div>
                         </div>
                         <div className="text-xs text-gray-600 mt-1">
-                          Lvl: {problem.level || 1}, Att: {problem.attempts || 1}, T: {problem.timeSpent || 2}s
+                          Lvl: {problem.level || selectedExercise.difficulty || '1'}, 
+                          Att: {problem.attempts || 1}, 
+                          T: {problem.timeSpent || Math.round(selectedExercise.timeSpent / selectedExercise.totalProblems)}s
                         </div>
                       </div>
                     );
                   })
                 ) : (
-                  // Si no hay detalles de problemas, mostrar ejemplos para demostración
-                  getDemoProblems().map((problem, index) => (
-                    <div 
-                      key={index} 
-                      className="p-3 rounded-lg bg-green-100"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <span className="font-medium">(#{index + 1})</span> {problem.problem.operands[0]} + {problem.problem.operands[1]} = {problem.correctAnswer}
-                        </div>
-                        <div>
-                          <Check className="h-5 w-5 text-green-600" />
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-600 mt-1">
-                        Lvl: {problem.level}, Att: {problem.attempts}, T: {problem.timeSpent}s
-                      </div>
-                    </div>
-                  ))
+                  // Si no hay detalles de problemas, mostrar un mensaje indicando que no hay datos disponibles
+                  <div className="p-4 bg-gray-50 rounded-lg text-center">
+                    <p className="text-gray-500">No hay detalles de problemas disponibles para este ejercicio.</p>
+                    <p className="text-sm text-gray-400 mt-1">Los ejercicios nuevos incluirán información detallada de cada problema.</p>
+                  </div>
                 )}
               </div>
             </div>
