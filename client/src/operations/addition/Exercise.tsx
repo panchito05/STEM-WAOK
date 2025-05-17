@@ -777,7 +777,74 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       };
     }).filter(item => item !== null);
     
-    // Guardar resultado detallado
+    // Create screenshot-like data structure that matches our template
+    const screenshotData = {
+      title: "Addition Exercise Complete!",
+      scoreData: {
+        totalTime: formatTime(timer),
+        score: { 
+          value: `${correctCount} / ${problemsList.length}`, 
+          bgColor: "bg-blue-50", 
+          textColor: "text-indigo-600" 
+        },
+        accuracy: { 
+          value: `${accuracy}%`, 
+          bgColor: "bg-green-50", 
+          textColor: "text-green-600" 
+        },
+        avgTime: { 
+          value: `${avgTimePerProblem}s`, 
+          bgColor: "bg-purple-50", 
+          textColor: "text-purple-600" 
+        },
+        avgAttempts: { 
+          value: avgAttemptsValue.toString(), 
+          bgColor: "bg-amber-50", 
+          textColor: "text-amber-600" 
+        },
+        revealed: { 
+          value: revealedAnswers.toString(), 
+          bgColor: "bg-red-50", 
+          textColor: "text-red-600" 
+        },
+        finalLevel: { 
+          value: settings.enableAdaptiveDifficulty 
+            ? (adaptiveDifficulty === 'beginner' ? '1' 
+              : adaptiveDifficulty === 'elementary' ? '2'
+              : adaptiveDifficulty === 'intermediate' ? '3'
+              : adaptiveDifficulty === 'advanced' ? '4'
+              : adaptiveDifficulty === 'expert' ? '5' : '1')
+            : (settings.difficulty === 'beginner' ? '1' 
+              : settings.difficulty === 'elementary' ? '2'
+              : settings.difficulty === 'intermediate' ? '3'
+              : settings.difficulty === 'advanced' ? '4'
+              : settings.difficulty === 'expert' ? '5' : '1'),
+          bgColor: "bg-teal-50", 
+          textColor: "text-teal-600" 
+        }
+      },
+      problemReview: problemDetails.map(detail => {
+        if (!detail) return null;
+        
+        // Format the problem nicely for display
+        const { operands, correctAnswer } = detail.problem;
+        const problemText = `${operands[0]} + ${operands[1]} = ${correctAnswer}`;
+        
+        return {
+          problem: problemText,
+          level: settings.difficulty === 'beginner' ? '1' 
+              : settings.difficulty === 'elementary' ? '2'
+              : settings.difficulty === 'intermediate' ? '3'
+              : settings.difficulty === 'advanced' ? '4'
+              : settings.difficulty === 'expert' ? '5' : '1',
+          attempts: detail.attempts?.toString() || "1",
+          time: `${detail.timeSpent || avgTimePerProblem}s`,
+          isCorrect: detail.isCorrect
+        };
+      }).filter(Boolean)
+    };
+    
+    // Guardar resultado detallado con los datos de la captura
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
@@ -791,7 +858,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
-      problemDetails: problemDetails
+      problemDetails: problemDetails,
+      
+      // Include the screenshot-like data
+      extra_data: {
+        screenshot: screenshotData
+      }
     });
   };
 

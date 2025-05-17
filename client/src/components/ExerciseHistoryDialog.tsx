@@ -166,116 +166,205 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
         
         {selectedExercise ? (
           <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-lg mb-4 text-center">
-              <div className="text-sm text-gray-600 mb-1">Total Time</div>
-              <div className="text-xl font-bold">
-                {formatTime(selectedExercise.timeSpent)}
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-blue-50 p-3 rounded-lg text-center">
-                <div className="text-sm text-gray-600 mb-1">Score</div>
-                <div className="text-xl text-indigo-600 font-semibold">
-                  {selectedExercise.score} / {selectedExercise.totalProblems}
+            {/* If the exercise has screenshot data, display it */}
+            {selectedExercise.extra_data?.screenshot ? (
+              // Screenshot-style display using the template
+              <div className="space-y-6">
+                {/* Total Time */}
+                <div className="bg-gray-50 p-4 rounded-lg text-center">
+                  <div className="text-sm text-gray-600 mb-1">Total Time</div>
+                  <div className="text-xl font-bold">
+                    {selectedExercise.extra_data.screenshot.scoreData.totalTime}
+                  </div>
                 </div>
-              </div>
-              
-              <div className="bg-green-50 p-3 rounded-lg text-center">
-                <div className="text-sm text-gray-600 mb-1">Accuracy</div>
-                <div className="text-xl text-green-600 font-semibold">
-                  {selectedExercise.accuracy || 
-                   Math.round((selectedExercise.score / selectedExercise.totalProblems) * 100)}%
-                </div>
-              </div>
-              
-              <div className="bg-purple-50 p-3 rounded-lg text-center">
-                <div className="text-sm text-gray-600 mb-1">Avg. Time</div>
-                <div className="text-xl text-purple-600 font-semibold">
-                  {selectedExercise.avgTimePerProblem || 
-                   Math.round(selectedExercise.timeSpent / selectedExercise.totalProblems)}s
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="bg-amber-50 p-3 rounded-lg text-center">
-                <div className="text-sm text-gray-600 mb-1">Avg. Attempts</div>
-                <div className="text-xl text-amber-600 font-semibold">
-                  {selectedExercise.avgAttempts?.toFixed(1) || "1.0"}
-                </div>
-              </div>
-              
-              <div className="bg-red-50 p-3 rounded-lg text-center">
-                <div className="text-sm text-gray-600 mb-1">Revealed</div>
-                <div className="text-xl text-red-600 font-semibold">
-                  {selectedExercise.revealedAnswers || 0}
-                </div>
-              </div>
-              
-              <div className="bg-teal-50 p-3 rounded-lg text-center">
-                <div className="text-sm text-gray-600 mb-1">Final Level</div>
-                <div className="text-xl text-teal-600 font-semibold">
-                  {selectedExercise.difficulty === 'beginner' ? 1 : 
-                   selectedExercise.difficulty === 'elementary' ? 2 :
-                   selectedExercise.difficulty === 'intermediate' ? 3 :
-                   selectedExercise.difficulty === 'advanced' ? 4 : 
-                   selectedExercise.difficulty === 'expert' ? 5 : 1}
-                </div>
-              </div>
-            </div>
-            
-            {/* Detalles de los problemas - siempre mostrar la sección */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
-              <div className="space-y-2">
-                {/* Mostrar problemas de las capturas de pantalla */}
-                {(() => {
-                  // Obtener los detalles de los problemas directamente desde el objeto seleccionado
-                  const problems = selectedExercise.problemDetails || [];
-                  const operatorSymbol = getOperator(selectedExercise.operationId || 'addition');
+                
+                {/* First row metrics */}
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Score */}
+                  <div className={`${selectedExercise.extra_data.screenshot.scoreData.score.bgColor} p-3 rounded-lg text-center`}>
+                    <div className="text-sm text-gray-600 mb-1">Score</div>
+                    <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.score.textColor} font-semibold`}>
+                      {selectedExercise.extra_data.screenshot.scoreData.score.value}
+                    </div>
+                  </div>
                   
-                  // Mapear los problemas para mostrarlos en la UI
-                  return problems.map((problem, index) => {
-                    // Obtener los operandos y respuestas
-                    const { operands, correctAnswer } = problem.problem || {};
-                    const num1 = operands?.[0] || 0;
-                    const num2 = operands?.[1] || 0;
-                    
-                    // Crear la representación visual del problema
-                    let problemDisplay = `${num1} ${operatorSymbol} ${num2} = ${correctAnswer}`;
-                    if (!problem.isCorrect) {
-                      problemDisplay += ` (Tu respuesta: ${problem.userAnswer})`;
-                    }
-                    
-                    return (
-                      <div 
-                        key={index} 
-                        className={`p-3 rounded-lg ${problem.isCorrect 
-                          ? 'bg-green-100' 
-                          : 'bg-red-100'}`}
-                      >
+                  {/* Accuracy */}
+                  <div className={`${selectedExercise.extra_data.screenshot.scoreData.accuracy.bgColor} p-3 rounded-lg text-center`}>
+                    <div className="text-sm text-gray-600 mb-1">Accuracy</div>
+                    <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.accuracy.textColor} font-semibold`}>
+                      {selectedExercise.extra_data.screenshot.scoreData.accuracy.value}
+                    </div>
+                  </div>
+                  
+                  {/* Avg Time */}
+                  <div className={`${selectedExercise.extra_data.screenshot.scoreData.avgTime.bgColor} p-3 rounded-lg text-center`}>
+                    <div className="text-sm text-gray-600 mb-1">Avg. Time</div>
+                    <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.avgTime.textColor} font-semibold`}>
+                      {selectedExercise.extra_data.screenshot.scoreData.avgTime.value}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Second row metrics */}
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Avg Attempts */}
+                  <div className={`${selectedExercise.extra_data.screenshot.scoreData.avgAttempts.bgColor} p-3 rounded-lg text-center`}>
+                    <div className="text-sm text-gray-600 mb-1">Avg. Attempts</div>
+                    <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.avgAttempts.textColor} font-semibold`}>
+                      {selectedExercise.extra_data.screenshot.scoreData.avgAttempts.value}
+                    </div>
+                  </div>
+                  
+                  {/* Revealed */}
+                  <div className={`${selectedExercise.extra_data.screenshot.scoreData.revealed.bgColor} p-3 rounded-lg text-center`}>
+                    <div className="text-sm text-gray-600 mb-1">Revealed</div>
+                    <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.revealed.textColor} font-semibold`}>
+                      {selectedExercise.extra_data.screenshot.scoreData.revealed.value}
+                    </div>
+                  </div>
+                  
+                  {/* Final Level */}
+                  <div className={`${selectedExercise.extra_data.screenshot.scoreData.finalLevel.bgColor} p-3 rounded-lg text-center`}>
+                    <div className="text-sm text-gray-600 mb-1">Final Level</div>
+                    <div className={`text-xl ${selectedExercise.extra_data.screenshot.scoreData.finalLevel.textColor} font-semibold`}>
+                      {selectedExercise.extra_data.screenshot.scoreData.finalLevel.value}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Problem Review */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
+                  <div className="space-y-2">
+                    {selectedExercise.extra_data.screenshot.problemReview.map((problem, index) => (
+                      <div key={index} 
+                           className={`p-3 rounded-lg ${problem.isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
                         <div className="flex justify-between items-center">
                           <div>
-                            <span className="font-medium">(#{index + 1})</span> {problemDisplay}
+                            <span className="font-medium">(#{index + 1})</span> {problem.problem}
                           </div>
                           <div>
                             {problem.isCorrect 
                               ? <Check className="h-5 w-5 text-green-600" /> 
-                              : <span className="text-red-600 text-xl font-bold">✕</span>}
+                              : <span className="text-red-600 text-xl font-bold">✕</span>
+                            }
                           </div>
                         </div>
                         <div className="text-xs text-gray-600 mt-1">
-                          Lvl: {selectedExercise.difficulty || 'beginner'}, 
-                          Att: {problem.attempts || 1}, 
-                          T: {problem.timeSpent || selectedExercise.avgTimePerProblem || 6}s
+                          Lvl: {problem.level}, Att: {problem.attempts}, T: {problem.time}
                         </div>
                       </div>
-                    );
-                  });
-                })()}
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              // Regular display (fallback to the original code)
+              <>
+                <div className="bg-gray-50 p-4 rounded-lg mb-4 text-center">
+                  <div className="text-sm text-gray-600 mb-1">Total Time</div>
+                  <div className="text-xl font-bold">
+                    {formatTime(selectedExercise.timeSpent)}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="bg-blue-50 p-3 rounded-lg text-center">
+                    <div className="text-sm text-gray-600 mb-1">Score</div>
+                    <div className="text-xl text-indigo-600 font-semibold">
+                      {selectedExercise.score} / {selectedExercise.totalProblems}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-50 p-3 rounded-lg text-center">
+                    <div className="text-sm text-gray-600 mb-1">Accuracy</div>
+                    <div className="text-xl text-green-600 font-semibold">
+                      {selectedExercise.accuracy || 
+                       Math.round((selectedExercise.score / selectedExercise.totalProblems) * 100)}%
+                    </div>
+                  </div>
+                  
+                  <div className="bg-purple-50 p-3 rounded-lg text-center">
+                    <div className="text-sm text-gray-600 mb-1">Avg. Time</div>
+                    <div className="text-xl text-purple-600 font-semibold">
+                      {selectedExercise.avgTimePerProblem || 
+                       Math.round(selectedExercise.timeSpent / selectedExercise.totalProblems)}s
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="bg-amber-50 p-3 rounded-lg text-center">
+                    <div className="text-sm text-gray-600 mb-1">Avg. Attempts</div>
+                    <div className="text-xl text-amber-600 font-semibold">
+                      {selectedExercise.avgAttempts?.toFixed(1) || "1.0"}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-red-50 p-3 rounded-lg text-center">
+                    <div className="text-sm text-gray-600 mb-1">Revealed</div>
+                    <div className="text-xl text-red-600 font-semibold">
+                      {selectedExercise.revealedAnswers || 0}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-teal-50 p-3 rounded-lg text-center">
+                    <div className="text-sm text-gray-600 mb-1">Final Level</div>
+                    <div className="text-xl text-teal-600 font-semibold">
+                      {selectedExercise.difficulty === 'beginner' ? 1 : 
+                       selectedExercise.difficulty === 'elementary' ? 2 :
+                       selectedExercise.difficulty === 'intermediate' ? 3 :
+                       selectedExercise.difficulty === 'advanced' ? 4 : 
+                       selectedExercise.difficulty === 'expert' ? 5 : 1}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Problem details */}
+                {selectedExercise.problemDetails && selectedExercise.problemDetails.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
+                    <div className="space-y-2">
+                      {selectedExercise.problemDetails.map((problem, index) => {
+                        const { operands, correctAnswer } = problem.problem || {};
+                        const num1 = operands?.[0] || 0;
+                        const num2 = operands?.[1] || 0;
+                        
+                        let problemDisplay = `${num1} ${getOperator(selectedExercise.operationId)} ${num2} = ${correctAnswer}`;
+                        if (!problem.isCorrect) {
+                          problemDisplay += ` (Tu respuesta: ${problem.userAnswer})`;
+                        }
+                        
+                        return (
+                          <div 
+                            key={index} 
+                            className={`p-3 rounded-lg ${problem.isCorrect 
+                              ? 'bg-green-100' 
+                              : 'bg-red-100'}`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <span className="font-medium">(#{index + 1})</span> {problemDisplay}
+                              </div>
+                              <div>
+                                {problem.isCorrect 
+                                  ? <Check className="h-5 w-5 text-green-600" /> 
+                                  : <span className="text-red-600 text-xl font-bold">✕</span>}
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-600 mt-1">
+                              Lvl: {selectedExercise.difficulty || 'beginner'}, 
+                              Att: {problem.attempts || 1}, 
+                              T: {problem.timeSpent || selectedExercise.avgTimePerProblem || 6}s
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
             
             {/* Botón para volver a la lista */}
             <div className="flex justify-center">
@@ -294,49 +383,47 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
               </div>
             ) : (
               <div className="grid gap-3">
-                {sortedHistory.map((exercise, index) => (
-                  <Button 
-                    key={index} 
-                    variant="outline" 
-                    className="flex justify-between items-center h-auto py-3 text-left w-full bg-white hover:bg-gray-50"
-                    onClick={() => setSelectedExercise(exercise)}
-                  >
-                    <div className="flex flex-col justify-start">
-                      <div className="font-medium text-base">
-                        {(() => {
-                          // Usar fecha y hora actual, que se actualizará para cada elemento único
-                          const now = new Date(); 
-                          // Crear una fecha única para cada elemento de la lista basada en el índice
-                          // Esto simula que cada ejercicio tiene una hora distinta
-                          now.setMinutes(now.getMinutes() - index * 2);
-                          
-                          return now.toLocaleString(language === 'es' ? 'es-ES' : 'en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          });
-                        })()}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Level: {getDifficultyName(exercise.difficulty)}
-                      </div>
-                    </div>
+                {sortedHistory.map((exercise, index) => {
+                  // Calculate accuracy percentage
+                  const accuracy = exercise.accuracy || 
+                    Math.round((exercise.score / exercise.totalProblems) * 100);
                     
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center">
-                        <Award className="h-5 w-5 text-yellow-500 mr-1" />
-                        <span className="text-yellow-500 font-semibold">
-                          {Math.round((exercise.score / exercise.totalProblems) * 100)}%
-                        </span>
+                  // Format the date nicely
+                  const exerciseDate = exercise.date ? new Date(exercise.date) : new Date();
+                  
+                  return (
+                    <Button 
+                      key={index} 
+                      variant="outline" 
+                      className="flex justify-between items-center h-auto py-3 text-left w-full bg-white hover:bg-gray-50"
+                      onClick={() => setSelectedExercise(exercise)}
+                    >
+                      <div className="flex flex-col justify-start">
+                        <div className="font-medium text-base">
+                          {formatDate(exercise.date || exercise.createdAt)}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Level: {getDifficultyName(exercise.difficulty)}
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <Clock className="h-5 w-5 text-blue-500 mr-1" />
-                        <span className="text-blue-500 font-semibold">{formatTime(exercise.timeSpent)}</span>
+                      
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center">
+                          <Award className="h-5 w-5 text-yellow-500 mr-1" />
+                          <span className="text-yellow-500 font-semibold">
+                            {accuracy}%
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <Clock className="h-5 w-5 text-blue-500 mr-1" />
+                          <span className="text-blue-500 font-semibold">
+                            {exercise.extra_data?.screenshot?.scoreData?.totalTime || formatTime(exercise.timeSpent)}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </Button>
-                ))}
+                    </Button>
+                  );
+                })}
               </div>
             )}
           </>
