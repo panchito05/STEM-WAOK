@@ -261,12 +261,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                     {isModuleFavorite ? (
                       <>
                         <StarOff className="h-4 w-4 mr-2 text-amber-500" />
-                        Quitar de favoritos
+                        {isSpanish ? "Quitar de favoritos" : "Remove from favorites"}
                       </>
                     ) : (
                       <>
                         <Star className="h-4 w-4 mr-2 text-amber-500" />
-                        Añadir a favoritos
+                        {isSpanish ? "Añadir a favoritos" : "Add to favorites"}
                       </>
                     )}
                   </div>
@@ -276,12 +276,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                     {isHidden ? (
                       <>
                         <Eye className="h-4 w-4 mr-2 text-purple-500" />
-                        Restaurar módulo
+                        {isSpanish ? "Restaurar módulo" : "Restore module"}
                       </>
                     ) : (
                       <>
                         <EyeOff className="h-4 w-4 mr-2 text-purple-500" />
-                        Ocultar módulo
+                        {isSpanish ? "Ocultar módulo" : "Hide module"}
                       </>
                     )}
                   </div>
