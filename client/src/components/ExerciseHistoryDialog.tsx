@@ -47,11 +47,23 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
     }
   };
   
-  // Formatear fecha según el idioma
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const locale = language === 'es' ? es : enUS;
-    return format(date, 'PPpp', { locale });
+  // Formatear fecha según el idioma con validación
+  const formatDate = (dateString: string | Date | null) => {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+      // Verificar que la fecha sea válida
+      if (isNaN(date.getTime())) {
+        return 'Fecha inválida';
+      }
+      
+      const locale = language === 'es' ? es : enUS;
+      return format(date, 'PPpp', { locale });
+    } catch (error) {
+      console.error('Error al formatear fecha:', dateString, error);
+      return 'Fecha inválida';
+    }
   };
   
   return (
