@@ -282,34 +282,26 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                   <Button 
                     key={index} 
                     variant="outline" 
-                    className="flex justify-between items-center h-auto py-3 text-left"
+                    className="flex justify-between items-center h-auto py-3 text-left w-full bg-white hover:bg-gray-50"
                     onClick={() => setSelectedExercise(exercise)}
                   >
                     <div className="flex flex-col">
                       <div className="font-medium">
-                        {exercise.date ? 
-                          // Formato simplificado como en la imagen
-                          new Date(exercise.date).toLocaleDateString(language === 'es' ? 'es-ES' : 'en-US', { 
-                            month: 'numeric', 
-                            day: 'numeric',
-                            hour: '2-digit', 
-                            minute: '2-digit'
-                          }) : 'N/A'
-                        }
+                        N/A
                       </div>
                       <div className="text-sm text-gray-500">
                         Level: {getDifficultyName(exercise.difficulty)}
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <div className="flex items-center">
                         <Award className="h-4 w-4 text-yellow-500 mr-1" />
-                        <span>{exercise.score}/{exercise.totalProblems}</span>
+                        <span className="text-yellow-500">{exercise.score}/{exercise.totalProblems}</span>
                       </div>
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 text-blue-500 mr-1" />
-                        <span>{formatTime(exercise.timeSpent)}</span>
+                        <span className="text-blue-500">{formatTime(exercise.timeSpent)}</span>
                       </div>
                     </div>
                   </Button>
