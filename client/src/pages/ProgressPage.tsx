@@ -89,11 +89,12 @@ export default function ProgressPage() {
 
   // Module comparison data
   const moduleComparisonData = operationModules
-    .filter(module => !module.comingSoon)
+    .filter(module => !module.comingSoon && module.id)
     .map(module => {
-      const progress = moduleProgress[module.id];
+      // Verificación de seguridad para asegurar que existe moduleProgress y tiene el id del módulo
+      const progress = moduleProgress && module.id ? moduleProgress[module.id] : undefined;
       return {
-        name: module.displayName,
+        name: module.displayName || module.id,
         completed: progress?.totalCompleted || 0,
         accuracy: progress?.averageScore ? Math.round(progress.averageScore * 100) : 0,
         color: getModuleColor(module.id)
