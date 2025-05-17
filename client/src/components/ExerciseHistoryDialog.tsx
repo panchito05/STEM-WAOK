@@ -281,7 +281,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                   >
                     <div className="flex flex-col justify-start">
                       <div className="font-medium text-base">
-                        5/17, 4:48 AM
+                        Mayo 17, 4:48 AM
                       </div>
                       <div className="text-sm text-gray-500">
                         Level: {getDifficultyName(exercise.difficulty)}
