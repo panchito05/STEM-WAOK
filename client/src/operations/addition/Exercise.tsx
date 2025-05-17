@@ -851,13 +851,125 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }
   if (exerciseCompleted) {
     const finalScore = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    const accuracy = problemsList.length > 0 ? Math.round((finalScore / problemsList.length) * 100) : 0;
+    
+    // Cálculo de tiempo promedio por problema
+    const avgTimePerProblem = problemsList.length > 0 ? Math.round(timer / problemsList.length) : 0;
+    
+    // Cálculo de intentos promedio
+    let totalAttempts = 0;
+    userAnswersHistory.forEach(answer => {
+      if (answer) {
+        // Sumamos 1 a cada respuesta, asumiendo al menos 1 intento por problema respondido
+        totalAttempts++;
+      }
+    });
+    const avgAttempts = userAnswersHistory.filter(a => a !== null).length > 0 
+      ? (totalAttempts / userAnswersHistory.filter(a => a !== null).length).toFixed(1) 
+      : "0";
+    
+    // Contar respuestas reveladas
+    const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
+    
+    // Nivel final
+    const finalLevel = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+    
     return (
-      <div className="px-4 py-5 sm:p-6 text-center">
-        <Trophy className="h-20 w-20 text-yellow-500 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900">{t('Congratulations, You Have Completed The Established Exercises15')}</h2>
-        <p className="text-gray-700 mt-2">{t('Your Score Is')} {finalScore}/{problemsList.length}</p>
-        <p className="text-gray-600">{t('exercises.timeTaken')}: {formatTime(timer)}</p>
-        <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-3">
+      <div className="px-4 py-5 sm:p-6">
+        <h2 className="text-2xl font-bold text-gray-900 text-center mb-4">
+          {t('Addition Exercise Complete!')}
+        </h2>
+        
+        {/* Grid de estadísticas */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+            <div className="text-sm text-gray-500 mb-1">Score</div>
+            <div className="text-xl text-indigo-600 font-semibold">{finalScore} / {problemsList.length}</div>
+          </div>
+          
+          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+            <div className="text-sm text-gray-500 mb-1">Accuracy</div>
+            <div className="text-xl text-indigo-600 font-semibold">{accuracy}%</div>
+          </div>
+          
+          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+            <div className="text-sm text-gray-500 mb-1">Avg. Time</div>
+            <div className="text-xl text-indigo-600 font-semibold">{avgTimePerProblem}s</div>
+          </div>
+          
+          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+            <div className="text-sm text-gray-500 mb-1">Avg. Attempts</div>
+            <div className="text-xl text-indigo-600 font-semibold">{avgAttempts}</div>
+          </div>
+          
+          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+            <div className="text-sm text-gray-500 mb-1">Revealed</div>
+            <div className="text-xl text-indigo-600 font-semibold">{revealedAnswers}</div>
+          </div>
+          
+          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+            <div className="text-sm text-gray-500 mb-1">Final Level</div>
+            <div className="text-xl text-indigo-600 font-semibold">{finalLevel === "beginner" ? "1" : 
+                                                          finalLevel === "elementary" ? "2" : 
+                                                          finalLevel === "intermediate" ? "3" : 
+                                                          finalLevel === "advanced" ? "4" : "5"}</div>
+          </div>
+        </div>
+        
+        {/* Sección de revisión de problemas */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
+          <div className="space-y-2">
+            {userAnswersHistory.map((answer, index) => {
+              if (!answer) return null;
+              
+              const problem = problemsList[index];
+              if (!problem) return null;
+              
+              // Formato para mostrar el problema resuelto
+              let problemDisplay = '';
+              if (problem.operands && problem.operands.length > 0) {
+                if (problem.operands.length === 2) {
+                  problemDisplay = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+                  if (answer.userAnswer !== problem.correctAnswer && !isNaN(answer.userAnswer)) {
+                    problemDisplay += ` (${answer.userAnswer})`;
+                  }
+                }
+              }
+              
+              // Información adicional sobre el intento
+              let attemptInfo = `Lvl: ${finalLevel === "beginner" ? "1" : 
+                                 finalLevel === "elementary" ? "2" : 
+                                 finalLevel === "intermediate" ? "3" : 
+                                 finalLevel === "advanced" ? "4" : "5"}, Att: 1, T: ${avgTimePerProblem}s`;
+              
+              return (
+                <div 
+                  key={index} 
+                  className={`p-3 rounded-lg ${answer.isCorrect 
+                    ? 'bg-green-100 border border-green-200' 
+                    : 'bg-red-100 border border-red-200'}`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-medium">(#{index + 1})</span> {problemDisplay}
+                    </div>
+                    <div>
+                      {answer.isCorrect 
+                        ? <Check className="h-5 w-5 text-green-600" /> 
+                        : <span className="text-red-600">✕</span>}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    {attemptInfo}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
           <Button onClick={generateNewProblemSet} className="w-full sm:w-auto">
             {t('exercises.tryAgain')}
           </Button>
