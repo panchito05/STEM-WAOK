@@ -13,7 +13,7 @@ import { useTranslations } from "@/hooks/use-translations";
 import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus from '@/lib/eventBus'; // Eliminado 'on', 'off' ya que no se usan directamente aquí
 import LevelUpHandler from "@/components/LevelUpHandler";
-import { useRewardsStore, awardReward, getRewardProbability } from '@/lib/rewards-system';
+import { useRewardsStore, awardReward, getRewardProbability, selectRandomReward } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
 
 interface ExerciseProps {
@@ -76,6 +76,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveIncorrectAnswers') || '0', 10));
   const [currentAttempts, setCurrentAttempts] = useState(0);
   const [showLevelUpReward, setShowLevelUpReward] = useState(false);
+  
+  // Estado para rastrear cuándo se mostró la última recompensa (para el sistema progresivo)
+  const [lastRewardShownIndex, setLastRewardShownIndex] = useState<number>(-1);
 
   const [viewingPrevious, setViewingPrevious] = useState(false);
   const [actualActiveProblemIndexBeforeViewingPrevious, setActualActiveProblemIndexBeforeViewingPrevious] = useState<number>(0);
