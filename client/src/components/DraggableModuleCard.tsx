@@ -5,7 +5,7 @@ import { useAccessibleDnd } from "./AccessibleDndContext";
 import { useModuleStore, useModuleFavorites } from "@/store/moduleStore";
 import { Module } from "@/utils/operationComponents";
 import { 
-  GripVertical, MoreVertical, Star, StarOff, Plus, Minus, X, 
+  GripVertical, MoreVertical, Star, StarOff, Plus, Minus, X,
   DivideIcon, PieChart, BookOpen, Hash, Calculator, 
   ArrowLeftRight, Square, Percent, Triangle, LucideIcon,
   Eye, EyeOff, MapIcon
@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSettings } from "@/context/SettingsContext";
+import { useTranslations } from "@/hooks/use-translations";
 
 interface DraggableModuleCardProps {
   module: Module;
