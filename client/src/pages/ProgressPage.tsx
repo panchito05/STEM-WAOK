@@ -50,14 +50,15 @@ export default function ProgressPage() {
   }).reverse();
 
   const recentProgressData = last7Days.map(day => {
-    const dayResults = exerciseHistory.filter(result => {
+    const dayResults = exerciseHistory ? exerciseHistory.filter(result => {
+      if (!result || !result.date) return false;
       const resultDate = parseISO(result.date);
       return (
         resultDate.getDate() === day.dateObj.getDate() &&
         resultDate.getMonth() === day.dateObj.getMonth() &&
         resultDate.getFullYear() === day.dateObj.getFullYear()
       );
-    });
+    }) : [];
 
     const dayData: any = {
       date: day.date,
