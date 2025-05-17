@@ -1061,11 +1061,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             Guardar resultados
           </h3>
           <p className="text-sm text-gray-600 mb-3">
-            Puedes guardar estos resultados en un archivo PDF para revisarlos más tarde o compartirlos.
+            Puedes guardar estos resultados en un archivo para revisarlos más tarde o compartirlos.
           </p>
           <Button 
             onClick={() => {
-              // Utilizaremos una solución más simple para generar un reporte
               try {
                 // Datos para exportar
                 const reportData = {
@@ -1115,115 +1114,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   document.body.removeChild(a);
                   URL.revokeObjectURL(url);
                 }, 0);
-                      startY: 35,
-                      head: [['', '']],
-                      body: [
-                        ['Operación:', 'Adición'],
-                        ['Fecha:', new Date().toLocaleDateString()],
-                        ['Tiempo Total:', formatTime(timer)],
-                        ['Puntuación:', `${finalScore} / ${problemsList.length}`],
-                        ['Precisión:', `${accuracy}%`],
-                        ['Tiempo Promedio:', `${avgTimePerProblem}s`],
-                        ['Intentos Promedio:', avgAttempts],
-                        ['Respuestas Reveladas:', revealedAnswers.toString()],
-                        ['Nivel Final:', finalLevel],
-                      ],
-                      theme: 'striped',
-                      headStyles: {
-                        fillColor: [41, 128, 185],
-                        textColor: [255, 255, 255],
-                      },
-                      columnStyles: {
-                        0: { fontStyle: 'bold', cellWidth: 50 },
-                        1: { cellWidth: 'auto' },
-                      },
-                      margin: { left: 30, right: 30 },
-                    });
-                    
-                    // Tabla de problemas
-                    const problemsTableData = problemsList.map((problem, index) => {
-                      const answer = userAnswersHistory[index];
-                      if (!answer) return null;
-                      
-                      return [
-                        `${index + 1}`,
-                        `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
-                        answer.isCorrect ? 'Sí' : 'No',
-                        answer.userAnswer?.toString() || '-',
-                        problem.correctAnswer.toString(),
-                        (answer.attempts || 1).toString(),
-                        `${avgTimePerProblem}s`,
-                        finalLevel,
-                      ];
-                    }).filter(Boolean);
-                    
-                    if (problemsTableData.length > 0) {
-                      // Título de la sección
-                      doc.setFontSize(14);
-                      // @ts-ignore - Sabemos que lastAutoTable puede existir
-                      const finalY = doc.lastAutoTable?.finalY || 35;
-                      doc.text("Revisión de Problemas", pageWidth / 2, finalY + 15, { align: 'center' });
-                      
-                      // Tabla de problemas
-                      // @ts-ignore - Usamos @ts-ignore porque sabemos que autoTable está disponible
-                      doc.autoTable({
-                        startY: finalY + 20,
-                        head: [[
-                          '#', 
-                          'Problema', 
-                          'Correcto', 
-                          'Tu Respuesta', 
-                          'Respuesta Correcta', 
-                          'Intentos', 
-                          'Tiempo', 
-                          'Nivel'
-                        ]],
-                        body: problemsTableData,
-                        theme: 'grid',
-                        headStyles: {
-                          fillColor: [41, 128, 185],
-                          textColor: [255, 255, 255],
-                        },
-                        styles: { fontSize: 9 },
-                        columnStyles: {
-                          0: { cellWidth: 10 },
-                          1: { cellWidth: 40 },
-                        },
-                        margin: { left: 15, right: 15 },
-                      });
-                    }
-                    
-                    // Pie de página
-                    // @ts-ignore - Sabemos que getNumberOfPages existe
-                    const pageCount = doc.internal.getNumberOfPages();
-                    for (let i = 1; i <= pageCount; i++) {
-                      doc.setPage(i);
-                      doc.setFontSize(8);
-                      doc.text(`Plataforma de Aprendizaje Matemático - ${new Date().toLocaleDateString()}`, 
-                               pageWidth / 2, 
-                               doc.internal.pageSize.getHeight() - 10, 
-                               { align: 'center' });
-                    }
-                    
-                    // Guardar el PDF
-                    doc.save(`resultados_suma_${new Date().toISOString().slice(0, 10)}.pdf`);
-                  } catch (err) {
-                    console.error("Error cargando las librerías:", err);
-                    alert("Error al generar el PDF. No se pudieron cargar las librerías necesarias.");
-                  }
-                };
-                
-                // Ejecutar la función
-                loadJsPDF();
               } catch (error) {
-                console.error("Error al generar PDF:", error);
-                alert("Error al generar el PDF. Por favor intenta de nuevo.");
+                console.error("Error al guardar:", error);
+                alert("Error al guardar el reporte. Por favor intenta de nuevo.");
               }
             }}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Download className="mr-2 h-4 w-4" />
-            Guardar como PDF
+            Guardar resultados
           </Button>
         </div>
         

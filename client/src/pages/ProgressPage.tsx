@@ -144,7 +144,11 @@ export default function ProgressPage() {
           </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="mt-4 md:mt-0" disabled={isClearing || exerciseHistory.length === 0}>
+              <Button 
+                variant="outline" 
+                className="mt-4 md:mt-0" 
+                disabled={isClearing || !exerciseHistory || !Array.isArray(exerciseHistory) || exerciseHistory.length === 0}
+              >
                 {isClearing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -170,7 +174,7 @@ export default function ProgressPage() {
           </AlertDialog>
         </div>
         
-        {exerciseHistory.length === 0 ? (
+        {!exerciseHistory || !Array.isArray(exerciseHistory) || exerciseHistory.length === 0 ? (
           <Card>
             <CardContent className="py-10">
               <div className="text-center">
