@@ -221,7 +221,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               {getModuleIcon()}
             </div>
             <h3 className="text-xl font-bold text-white text-shadow">
-              {module.displayName}
+              {moduleTranslations[module.id as keyof typeof moduleTranslations]
+                ? isSpanish 
+                  ? moduleTranslations[module.id as keyof typeof moduleTranslations].displayName.spanish
+                  : moduleTranslations[module.id as keyof typeof moduleTranslations].displayName.english
+                : module.displayName
+              }
             </h3>
           </div>
         </div>
@@ -236,7 +241,10 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             }`}
             onClick={(e) => !module.comingSoon && handleToggleFavorite(e)}
             disabled={module.comingSoon}
-            aria-label={isModuleFavorite ? "Remove from favorites" : "Add to favorites"}
+            aria-label={isModuleFavorite 
+              ? (isSpanish ? "Quitar de favoritos" : "Remove from favorites") 
+              : (isSpanish ? "Añadir a favoritos" : "Add to favorites")
+            }
           >
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
@@ -285,7 +293,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       </div>
       <div className="p-5 bg-gradient-to-b from-white to-blue-50">
         <p className={`text-sm mb-5 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
-          {module.description}
+          {moduleTranslations[module.id as keyof typeof moduleTranslations]
+            ? isSpanish 
+              ? moduleTranslations[module.id as keyof typeof moduleTranslations].description.spanish
+              : moduleTranslations[module.id as keyof typeof moduleTranslations].description.english
+            : module.description
+          }
         </p>
         <div className="flex justify-between items-center">
           <div className="flex items-center">
