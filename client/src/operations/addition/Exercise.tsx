@@ -121,12 +121,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   useEffect(() => {
     waitingRef.current = waitingForContinue;
-    // Si estamos esperando a que el usuario haga clic en continuar y hay un botón en la referencia, enfocarlo
-    if (waitingForContinue && continueButtonRef.current) {
-      setTimeout(() => {
-        continueButtonRef.current?.focus();
-      }, 100); // Pequeño retraso para asegurar que el DOM se ha actualizado
-    }
+    // Ya no enfocamos el botón aquí, se hace directamente en cada punto donde se llama a setWaitingForContinue(true)
   }, [waitingForContinue]);
 
   useEffect(() => {
@@ -269,6 +264,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
       setWaitingForContinue(true); // Pone waitingRef.current = true via useEffect
       if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+      
+      // Programar un enfoque inmediato en el botón Continuar para evitar problemas con el flujo de renderizado
+      setTimeout(() => {
+        try {
+          // Intentar enfocar el botón Continuar directamente
+          if (continueButtonRef.current) {
+            continueButtonRef.current.focus();
+            console.log("Enfocando botón Continuar después de respuesta correcta");
+          }
+        } catch (e) {
+          console.error("Error al enfocar botón Continuar:", e);
+        }
+      }, 50);
 
       if (autoContinue && !blockAutoAdvance) {
         if (autoContinueTimerRef.current) clearTimeout(autoContinueTimerRef.current);
@@ -326,6 +334,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         setWaitingForContinue(true); // Pone waitingRef.current = true via useEffect
         if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+        
+        // También enfocar el botón Continuar cuando se muestra la respuesta correcta después de intentos agotados
+        setTimeout(() => {
+          try {
+            if (continueButtonRef.current) {
+              continueButtonRef.current.focus();
+              console.log("Enfocando botón Continuar después de respuesta incorrecta (intentos agotados)");
+            }
+          } catch (e) {
+            console.error("Error al enfocar botón Continuar:", e);
+          }
+        }, 50);
         return true; // Problema resuelto (sin más intentos)
       }
       // Respuesta incorrecta, pero aún quedan intentos
@@ -436,6 +456,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }
         
         setWaitingForContinue(true);
+        
+        // Enfocar el botón Continuar cuando se agota el tiempo
+        setTimeout(() => {
+          try {
+            if (continueButtonRef.current) {
+              continueButtonRef.current.focus();
+              console.log("Enfocando botón Continuar después de tiempo agotado");
+            }
+          } catch (e) {
+            console.error("Error al enfocar botón Continuar:", e);
+          }
+        }, 50);
       } else {
         setFeedbackMessage(t('exercises.timeUpNoAnswer', {attemptsMade: newAttempts, maxAttempts: settings.maxAttempts}));
         setFeedbackColor("red");
