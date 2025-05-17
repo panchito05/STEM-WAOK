@@ -5,15 +5,29 @@ import { useCallback } from "react";
 // Proporcionar traducciones fallback para tests y desarrollo
 const FALLBACK_LANGUAGE: SupportedLanguage = "en";
 
+// Función para convertir los idiomas de la configuración al formato de traducciones
+export function mapConfigLanguageToSupported(configLang: string): SupportedLanguage {
+  const langMap: Record<string, SupportedLanguage> = {
+    "english": "en",
+    "spanish": "es",
+    // Añadir más mapeos según se añadan idiomas
+  };
+  
+  return langMap[configLang] || FALLBACK_LANGUAGE;
+}
+
 // Hook para obtener traducciones basadas en el idioma seleccionado
-export function useTranslations() {
+export function useTranslations(moduleLanguage?: SupportedLanguage) {
   const { globalSettings } = useSettings();
   
   // Asegurarse de que el idioma seleccionado es uno de los soportados
-  // Si no, por defecto usar inglés
-  const language = (globalSettings.language as SupportedLanguage) in translations 
-    ? (globalSettings.language as SupportedLanguage) 
-    : FALLBACK_LANGUAGE;
+  // Si se proporciona un idioma específico para el módulo, usarlo
+  // Si no, usar el idioma global, y si no está soportado, usar inglés como fallback
+  const language = moduleLanguage 
+    ? moduleLanguage 
+    : ((globalSettings.language as SupportedLanguage) in translations 
+      ? (globalSettings.language as SupportedLanguage) 
+      : FALLBACK_LANGUAGE);
   
   // Función para obtener una traducción usando una clave compuesta (por ejemplo "exercises.start")
   // y reemplazar parámetros en el formato { paramName }

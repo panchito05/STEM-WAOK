@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useMemo } from "react";
 import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { useAccessibleDnd } from "./AccessibleDndContext";
@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSettings } from "@/context/SettingsContext";
 import { useTranslations } from "@/hooks/use-translations";
+import { SupportedLanguage } from "@/utils/translations";
 
 interface DraggableModuleCardProps {
   module: Module;
@@ -41,15 +42,30 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   // Obtenemos la configuración personalizada del módulo y la configuración global
   const { moduleSettings, globalSettings } = useSettings();
   
-  // Obtenemos las traducciones - usamos el lenguaje de la configuración global directamente
+  // Obtenemos la configuración específica para este módulo (si existe)
+  const moduleConfig = moduleSettings[module.id];
+  
+  // Determinar el idioma a usar para este módulo:
+  // 1. Si el módulo tiene un idioma configurado, usamos ese
+  // 2. Si no, usamos el idioma global
+  const moduleLanguage = useMemo(() => {
+    if (moduleConfig?.language) {
+      // Convertir el idioma del módulo al formato que usa el sistema de traducciones
+      const langMap: Record<string, SupportedLanguage> = {
+        "english": "en",
+        "spanish": "es"
+      };
+      return langMap[moduleConfig.language] || globalSettings.language;
+    }
+    return globalSettings.language;
+  }, [moduleConfig, globalSettings.language]);
+  
+  // Obtenemos las traducciones para el idioma específico del módulo
   const { t } = useTranslations();
-  const language = globalSettings.language;
+  const language = moduleLanguage;
 
   const isModuleFavorite = isFavorite(module.id);
   const isHidden = hiddenModules.includes(module.id);
-  
-  // Obtener la configuración específica para este módulo (si existe)
-  const moduleConfig = moduleSettings[module.id];
 
   const [{ isDragging }, drag] = useDragItem(() => ({
     type: "MODULE_CARD",
