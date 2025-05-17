@@ -76,7 +76,13 @@ export const progressEntries = pgTable("progress_entries", {
   totalProblems: integer("total_problems").notNull(),
   timeSpent: integer("time_spent").notNull(),
   difficulty: text("difficulty").notNull(),
-  extraData: jsonb("extra_data"), // Para almacenar detalles de problemas y estadísticas adicionales
+  // Campos adicionales para estadísticas
+  accuracy: integer("accuracy"), // Porcentaje de precisión
+  avgTimePerProblem: integer("avg_time_per_problem"), // Tiempo promedio por problema en segundos
+  avgAttempts: integer("avg_attempts"), // Promedio de intentos por problema
+  revealedAnswers: integer("revealed_answers"), // Cantidad de respuestas reveladas
+  // Guardar los detalles de los problemas como JSON
+  problemDetails: jsonb("problem_details"), // Detalles detallados de cada problema
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -126,12 +132,20 @@ export interface ExerciseProgress {
   totalProblems: number;
   timeSpent: number;
   difficulty: string;
-  date?: string;
   accuracy?: number;
-  avgTimePerProblem?: number; 
+  avgTimePerProblem?: number;
   avgAttempts?: number;
   revealedAnswers?: number;
-  problemDetails?: Array<any>;
+  problemDetails?: Array<{
+    problemNumber: number;
+    problem: string;
+    isCorrect: boolean;
+    userAnswer?: string | number;
+    correctAnswer: string | number;
+    attempts: number;
+    timeSpent: number;
+    level: string;
+  }>;
 }
 
 export interface ModuleSettingsData {
@@ -152,12 +166,30 @@ export interface ModuleSettingsData {
 }
 
 // Validation schemas
+// Definir el schema para los detalles del problema
+const problemDetailSchema = z.object({
+  problemNumber: z.number().int().min(1),
+  problem: z.string(),
+  isCorrect: z.boolean(),
+  userAnswer: z.union([z.string(), z.number()]).optional(),
+  correctAnswer: z.union([z.string(), z.number()]),
+  attempts: z.number().int().min(1),
+  timeSpent: z.number().int().min(0),
+  level: z.string()
+});
+
 export const exerciseProgressSchema = z.object({
   operationId: z.string(),
   score: z.number().int().min(0),
   totalProblems: z.number().int().min(1),
   timeSpent: z.number().int().min(0),
   difficulty: z.string(),
+  // Campos adicionales opcionales
+  accuracy: z.number().int().min(0).max(100).optional(),
+  avgTimePerProblem: z.number().int().min(0).optional(),
+  avgAttempts: z.number().min(0).optional(),
+  revealedAnswers: z.number().int().min(0).optional(),
+  problemDetails: z.array(problemDetailSchema).optional(),
 });
 
 export const moduleSettingsSchema = z.object({
