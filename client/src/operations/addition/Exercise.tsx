@@ -1065,58 +1065,43 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </p>
           <Button 
             onClick={() => {
+              // Enviamos los resultados al servidor para guardarlos
+              const progressData = {
+                operationId: "addition",
+                date: new Date().toISOString(),
+                score: finalScore,
+                totalProblems: problemsList.length,
+                timeSpent: timer,
+                difficulty: finalLevel,
+                accuracy: accuracy,
+                avgTimePerProblem: avgTimePerProblem,
+                avgAttempts: avgAttempts,
+                revealedAnswers: revealedAnswers,
+                problemDetails: problemsList.map((problem, index) => {
+                  const answer = userAnswersHistory[index];
+                  if (!answer) return null;
+                  
+                  return {
+                    problemNumber: index + 1,
+                    problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+                    isCorrect: answer.isCorrect,
+                    userAnswer: answer.userAnswer,
+                    correctAnswer: problem.correctAnswer,
+                    attempts: answer.attempts || 1,
+                    timeSpent: avgTimePerProblem,
+                    level: finalLevel
+                  };
+                }).filter(Boolean)
+              };
+              
+              // Guardar en localStorage para acceso rápido
               try {
-                // Datos para exportar
-                const reportData = {
-                  title: "Resultados del Ejercicio de Suma",
-                  date: new Date().toLocaleDateString(),
-                  resumen: {
-                    operacion: "Adición",
-                    tiempoTotal: formatTime(timer),
-                    puntuacion: `${finalScore} / ${problemsList.length}`,
-                    precision: `${accuracy}%`,
-                    tiempoPromedio: `${avgTimePerProblem}s`,
-                    intentosPromedio: avgAttempts,
-                    respuestasReveladas: revealedAnswers,
-                    nivelFinal: finalLevel
-                  },
-                  problemas: problemsList.map((problem, index) => {
-                    const answer = userAnswersHistory[index];
-                    if (!answer) return null;
-                    
-                    return {
-                      numero: index + 1,
-                      problema: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
-                      correcto: answer.isCorrect ? 'Sí' : 'No',
-                      respuestaUsuario: answer.userAnswer?.toString() || '-',
-                      respuestaCorrecta: problem.correctAnswer.toString(),
-                      intentos: (answer.attempts || 1).toString(),
-                      tiempo: `${avgTimePerProblem}s`,
-                      nivel: finalLevel
-                    };
-                  }).filter(Boolean)
-                };
-                
-                // Crear un elemento temporal para guardar el texto del reporte
-                const reportText = JSON.stringify(reportData, null, 2);
-                const blob = new Blob([reportText], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                
-                // Crear un enlace de descarga y simulamos un clic
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `resultados_suma_${new Date().toISOString().slice(0, 10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                
-                // Limpiar
-                setTimeout(() => {
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }, 0);
+                const storageKey = `math_results_${new Date().toISOString().slice(0, 10)}`;
+                localStorage.setItem(storageKey, JSON.stringify(progressData));
+                alert("Resultados guardados correctamente");
               } catch (error) {
                 console.error("Error al guardar:", error);
-                alert("Error al guardar el reporte. Por favor intenta de nuevo.");
+                alert("Error al guardar los resultados. Por favor intenta de nuevo.");
               }
             }}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white"
