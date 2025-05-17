@@ -255,10 +255,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
 
       if (settings.enableRewards) {
-          const rewardContext = { streak: newConsecutive, difficulty: adaptiveDifficulty, problemIndex: currentProblemIndex, totalProblems: problemsList.length };
-          if (Math.random() < getRewardProbability(rewardContext as any)) {
-              awardReward('some_reward_id_correct' as any, { module: 'addition' });
-              setShowRewardAnimation(true);
+          const rewardContext = { 
+              streak: newConsecutive, 
+              difficulty: adaptiveDifficulty, 
+              problemIndex: currentProblemIndex, 
+              totalProblems: problemsList.length,
+              previousRewardShown: lastRewardShownIndex
+          };
+          
+          // Calcular probabilidad con el sistema progresivo
+          const probability = getRewardProbability(rewardContext as any);
+          console.log(`🎯 Probabilidad calculada: ${(probability * 100).toFixed(1)}%`);
+          
+          if (Math.random() < probability) {
+              // Seleccionar una recompensa aleatoria según la dificultad
+              const rewardId = selectRandomReward('common', 'addition');
+              
+              if (rewardId) {
+                  console.log(`🏆 Otorgando recompensa: ${rewardId}`);
+                  awardReward(rewardId, { theme: 'addition', module: 'addition' });
+                  setShowRewardAnimation(true);
+                  setLastRewardShownIndex(currentProblemIndex);
+              } else {
+                  // Si no hay recompensa específica, usar una genérica de racha
+                  const streakRewardId = newConsecutive >= 8 ? 'streak-20' : 
+                                         newConsecutive >= 5 ? 'streak-10' : 'streak-5';
+                  
+                  console.log(`🔥 Otorgando recompensa de racha: ${streakRewardId}`);
+                  awardReward(streakRewardId, { theme: 'general', module: 'addition' });
+                  setShowRewardAnimation(true);
+                  setLastRewardShownIndex(currentProblemIndex);
+              }
           }
       }
 
