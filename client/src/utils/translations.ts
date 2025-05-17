@@ -10,7 +10,6 @@ type TranslationKeys = {
     reset: string;
     prev: string;
     next: string;
-    start: string;
   };
   exercises: {
     start: string;
@@ -60,20 +59,6 @@ type TranslationKeys = {
     resetToDefault: string;
     resetConfirmation: string;
   };
-  modules: {
-    addition: {
-      name: string;
-      description: string;
-    };
-    fractions: {
-      name: string;
-      description: string;
-    };
-    counting: {
-      name: string;
-      description: string;
-    };
-  };
 };
 
 // Traducciones en inglés (idioma por defecto)
@@ -86,7 +71,6 @@ export const enTranslations: TranslationKeys = {
     reset: "Reset",
     prev: "Previous",
     next: "Next",
-    start: "Start",
   },
   exercises: {
     start: "Start Exercise",
@@ -136,20 +120,6 @@ export const enTranslations: TranslationKeys = {
     resetToDefault: "Reset to Default Settings",
     resetConfirmation: "This will reset all settings to default values. Are you sure?",
   },
-  modules: {
-    addition: {
-      name: "Addition",
-      description: "Practice addition with various difficulty levels"
-    },
-    fractions: {
-      name: "Fractions",
-      description: "Learn to add, subtract, and compare fractions"
-    },
-    counting: {
-      name: "Counting Numbers",
-      description: "Practice counting with fun visualization"
-    }
-  },
 };
 
 // Traducciones en español
@@ -162,7 +132,6 @@ export const esTranslations: TranslationKeys = {
     reset: "Restablecer",
     prev: "Anterior",
     next: "Siguiente",
-    start: "Iniciar",
   },
   exercises: {
     start: "Comenzar Ejercicio",
@@ -211,20 +180,6 @@ export const esTranslations: TranslationKeys = {
     extendedTime: "Tiempo Extendido",
     resetToDefault: "Restablecer Configuración Predeterminada",
     resetConfirmation: "Esto restablecerá todos los ajustes a los valores predeterminados. ¿Estás seguro?",
-  },
-  modules: {
-    addition: {
-      name: "Suma",
-      description: "Practica sumas con varios niveles de dificultad"
-    },
-    fractions: {
-      name: "Fracciones",
-      description: "Aprende a sumar, restar y comparar fracciones"
-    },
-    counting: {
-      name: "Conteo de Números",
-      description: "Practica conteo con visualización divertida"
-    }
   },
 };
 
