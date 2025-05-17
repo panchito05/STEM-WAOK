@@ -50,14 +50,23 @@ export default function ProgressPage() {
   }).reverse();
 
   const recentProgressData = last7Days.map(day => {
-    const dayResults = exerciseHistory.filter(result => {
-      const resultDate = parseISO(result.date);
-      return (
-        resultDate.getDate() === day.dateObj.getDate() &&
-        resultDate.getMonth() === day.dateObj.getMonth() &&
-        resultDate.getFullYear() === day.dateObj.getFullYear()
-      );
-    });
+    // Asegurarnos de que exerciseHistory existe y es un array antes de filtrar
+    const dayResults = exerciseHistory && Array.isArray(exerciseHistory) 
+      ? exerciseHistory.filter(result => {
+          if (!result || !result.date) return false;
+          try {
+            const resultDate = parseISO(result.date);
+            return (
+              resultDate.getDate() === day.dateObj.getDate() &&
+              resultDate.getMonth() === day.dateObj.getMonth() &&
+              resultDate.getFullYear() === day.dateObj.getFullYear()
+            );
+          } catch (error) {
+            console.error("Error al procesar fecha:", error, result);
+            return false;
+          }
+        }) 
+      : [];
 
     const dayData: any = {
       date: day.date,
