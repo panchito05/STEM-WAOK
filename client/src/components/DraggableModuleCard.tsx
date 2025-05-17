@@ -227,23 +227,31 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           
           {/* Botón de historial con diálogo integrado */}
           {!module.comingSoon && (
-            <ExerciseHistoryDialog 
-              moduleId={module.id} 
-              exerciseHistory={exerciseHistory}
-              trigger={
-                <div 
-                  className={`focus:outline-none p-1.5 rounded-full transition-all cursor-pointer ${
-                    hasHistory 
-                      ? "text-blue-400 hover:text-white bg-white/20 hover:bg-white/10" 
-                      : "text-white/50 opacity-50 cursor-not-allowed"
-                  }`}
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label={hasHistory ? t('progress.viewHistory') || "Ver historial" : t('progress.noHistory') || "Sin historial"}
-                >
-                  <History className={`h-5 w-5`} />
-                </div>
-              }
-            />
+            hasHistory ? (
+              <ExerciseHistoryDialog 
+                moduleId={module.id} 
+                exerciseHistory={exerciseHistory}
+                trigger={
+                  <div 
+                    className="focus:outline-none p-1.5 rounded-full transition-all cursor-pointer 
+                      text-blue-400 hover:text-white bg-white/20 hover:bg-white/10"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={t('progress.viewHistory') || "Ver historial"}
+                  >
+                    <History className="h-5 w-5" />
+                  </div>
+                }
+              />
+            ) : (
+              <div 
+                className="focus:outline-none p-1.5 rounded-full transition-all 
+                  text-white/50 opacity-50 cursor-not-allowed"
+                onClick={(e) => e.stopPropagation()}
+                aria-label={t('progress.noHistory') || "Sin historial"}
+              >
+                <History className="h-5 w-5" />
+              </div>
+            )
           )}
           
           {!module.comingSoon && (
