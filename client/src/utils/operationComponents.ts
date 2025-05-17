@@ -76,69 +76,12 @@ export const operationModules: Module[] = [
     icon: "Hash",
   },
   {
-    id: "combinedOperations",
-    displayName: "Combined Operations",
-    description: "Practice operations with PEMDAS/BODMAS rules",
-    difficulty: "advanced",
-    color: "#10b981", // Verde como en la imagen
-    icon: "Calculator",
-  },
-  {
-    id: "numberConversions",
-    displayName: "Number Conversions",
-    description: "Convert between fractions, decimals, and percentages",
-    difficulty: "intermediate",
-    color: "#8b5cf6", // Púrpura
-    icon: "ArrowLeftRight",
-  },
-  {
     id: "geometry",
     displayName: "Geometry",
     description: "Calculate area and perimeter of shapes",
     difficulty: "intermediate",
     color: "#6b7280", // Gris
     icon: "Square",
-  },
-  {
-    id: "equivalentFractions",
-    displayName: "Equivalent Fractions",
-    description: "Find equivalent fractions with specified denominators",
-    difficulty: "intermediate",
-    color: "#10b981", // Verde
-    icon: "Percent",
-  },
-  {
-    id: "fractionReducer",
-    displayName: "Fraction Reducer",
-    description: "Reduce fractions to their simplest form",
-    difficulty: "intermediate",
-    color: "#ff7900", // Naranja como en la imagen
-    icon: "Percent",
-  },
-  {
-    id: "factFamilies",
-    displayName: "Fact Families",
-    description: "Practice related addition/subtraction and multiplication/division facts",
-    difficulty: "intermediate",
-    color: "#f59e0b", // Amarillo/Naranja como en la imagen
-    icon: "Triangle",
-  },
-  {
-    id: "fractionTypes",
-    displayName: "Fraction Types",
-    description: "Learn to identify and differentiate between proper fractions, improper fractions, and mixed numbers",
-    difficulty: "intermediate",
-    color: "#10b981", // Verde como en la imagen
-    icon: "Percent",
-  },
-  {
-    id: "decimals",
-    displayName: "Decimals",
-    description: "Coming soon! Decimal operations and conversions",
-    difficulty: "coming-soon",
-    comingSoon: true,
-    color: "#6b7280", // Gris
-    icon: "Percent",
   },
 ];
 
