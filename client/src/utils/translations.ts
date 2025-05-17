@@ -31,6 +31,8 @@ type TranslationKeys = {
     activateShowAnswer: string;
     maxAttemptsPerProblem: string;
     autoContinue: string;
+    rewardsCollected: string;
+    exerciseHistory: string;
   };
   levelUp: {
     previousLevel: string;
