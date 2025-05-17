@@ -51,6 +51,7 @@ interface ProgressContextType {
   saveExerciseResult: (result: ExerciseResult) => Promise<void>;
   getModuleProgress: (operationId: string) => ModuleProgress | undefined;
   clearProgress: () => Promise<void>;
+  refreshProgress: () => Promise<void>;
 }
 
 const ProgressContext = createContext<ProgressContextType | null>(null);
@@ -235,6 +236,23 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     }
   };
 
+  // Función para refrescar datos de progreso manualmente
+  const refreshProgress = async () => {
+    try {
+      setIsLoading(true);
+      await fetchProgress();
+    } catch (error) {
+      console.error("Error refreshing progress data:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron actualizar los datos de progreso",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <ProgressContext.Provider
       value={{
@@ -244,6 +262,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         saveExerciseResult,
         getModuleProgress,
         clearProgress,
+        refreshProgress,
       }}
     >
       {children}

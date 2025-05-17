@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Helmet } from "react-helmet";
 import { useProgress, ExerciseResult } from "@/context/ProgressContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,11 +8,50 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format, parseISO, subDays } from "date-fns";
 import { operationModules } from "@/utils/operationComponents";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 
 export default function ProgressPage() {
-  const { exerciseHistory, moduleProgress, clearProgress, isLoading } = useProgress();
+  const { exerciseHistory, moduleProgress, clearProgress, refreshProgress, isLoading } = useProgress();
   const [isClearing, setIsClearing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
+
+  // Función para refrescar los datos manualmente
+  const handleRefresh = useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      await refreshProgress();
+      setLastUpdateTime(new Date());
+    } catch (error) {
+      console.error("Error al refrescar datos:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refreshProgress]);
+
+  // Actualización automática cada 15 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleRefresh();
+    }, 15000); // 15 segundos
+    
+    return () => clearInterval(interval);
+  }, [handleRefresh]);
+
+  // También actualizar cuando la página gane foco
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        handleRefresh();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [handleRefresh]);
 
   if (isLoading) {
     return (
@@ -123,33 +162,57 @@ export default function ProgressPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Your Progress</h1>
             <p className="text-gray-600">Track your math learning journey</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Last updated: {format(lastUpdateTime, "MMM dd, yyyy HH:mm:ss")}
+            </p>
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" className="mt-4 md:mt-0" disabled={isClearing || exerciseHistory.length === 0}>
-                {isClearing ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Clearing...
-                  </>
-                ) : (
-                  "Clear All Progress"
-                )}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete all your progress data.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleClearProgress}>Continue</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <div className="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+              className="flex items-center"
+            >
+              {isRefreshing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Refresh Data
+                </>
+              )}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" disabled={isClearing || exerciseHistory.length === 0}>
+                  {isClearing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Clearing...
+                    </>
+                  ) : (
+                    "Clear All Progress"
+                  )}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete all your progress data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearProgress}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
         
         {exerciseHistory.length === 0 ? (
