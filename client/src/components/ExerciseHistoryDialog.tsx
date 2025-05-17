@@ -30,20 +30,19 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
     ? exerciseHistory.filter(entry => entry && entry.operationId === moduleId)
     : [];
   
-  // Ordenar por fecha - más reciente primero
+  // Ordenar por fecha de creación - más reciente primero
   const sortedHistory = [...moduleHistory].sort((a, b) => {
     try {
-      // Manejar fechas inválidas con valores por defecto
-      const dateA = a.date ? new Date(a.date).getTime() : 0;
-      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      // Usar createdAt para ordenar, o date como respaldo
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 
+                   (a.date ? new Date(a.date).getTime() : 0);
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 
+                   (b.date ? new Date(b.date).getTime() : 0);
       
-      if (isNaN(dateA) || isNaN(dateB)) {
-        return 0;
-      }
-      
+      // Ordenar en orden descendente (más reciente primero)
       return dateB - dateA;
     } catch (error) {
-      console.error("Error ordenando fechas:", error);
+      console.error("Error ordenando ejercicios:", error);
       return 0;
     }
   });
@@ -60,11 +59,12 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
     }
   };
   
-  // Formatear fecha según el idioma con validación robusta
+  // Formatear fecha según el idioma con validación robusta y formato fijo
   const formatDate = (dateString: string | Date | null | undefined) => {
     if (!dateString) return 'N/A';
     
     try {
+      // Para asegurar que se use la fecha almacenada en el servidor y no cambie con cada refresh
       const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
       
       // Verificar que la fecha sea válida
@@ -72,8 +72,12 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
         return 'N/A';
       }
       
+      // Obtener el locale según el idioma del usuario
       const locale = language === 'es' ? es : enUS;
-      return format(date, 'PPpp', { locale });
+      
+      // Usar un formato consistente que incluya el mes en texto, día y hora exacta
+      // Por ejemplo: "Mayo 17 a las 6:30 AM"
+      return format(date, language === 'es' ? "MMMM d 'a las' h:mm a" : "MMMM d 'at' h:mm a", { locale });
     } catch (error) {
       console.error('Error formateando fecha:', dateString, error);
       return 'N/A';
@@ -196,9 +200,9 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                   const problems = [];
                   
                   for (let i = 0; i < totalProblems; i++) {
-                    // Mantener ejemplos consistentes basados en el ID del ejercicio y el número del problema
+                    // Mantener ejemplos consistentes basados en algún valor del ejercicio
                     // Esto garantiza que siempre se muestren los mismos problemas para el mismo ejercicio
-                    const seed = selectedExercise.id * 100 + i;
+                    const seed = selectedExercise.score * selectedExercise.totalProblems * 100 + i;
                     const random = () => {
                       const x = Math.sin(seed + i) * 10000;
                       return Math.floor((x - Math.floor(x)) * 9) + 1; // Números del 1-9

@@ -3,12 +3,14 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export interface ExerciseResult {
+  id?: number;            // ID del registro en la base de datos
   operationId: string;
   date: string;
   score: number;
   totalProblems: number;
   timeSpent: number; // in seconds
   difficulty: string;
+  createdAt?: string;     // Fecha de creación del registro
   
   // Campos adicionales para estadísticas detalladas
   accuracy?: number;
