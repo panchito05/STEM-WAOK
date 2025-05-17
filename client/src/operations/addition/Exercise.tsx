@@ -856,23 +856,34 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Cálculo de tiempo promedio por problema
     const avgTimePerProblem = problemsList.length > 0 ? Math.round(timer / problemsList.length) : 0;
     
-    // Cálculo de intentos promedio
+    // Cálculo de intentos promedio - corrección para contar los intentos reales por problema
     let totalAttempts = 0;
+    const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
+    
     userAnswersHistory.forEach(answer => {
       if (answer) {
-        // Sumamos 1 a cada respuesta, asumiendo al menos 1 intento por problema respondido
-        totalAttempts++;
+        // Usando la propiedad attempts del objeto answer si existe, de lo contrario asumimos 1
+        totalAttempts += answer.attempts || 1;
+        
+        // Si la respuesta fue revelada, contamos un intento adicional
+        if (answer.status === 'revealed') {
+          totalAttempts++;
+        }
       }
     });
-    const avgAttempts = userAnswersHistory.filter(a => a !== null).length > 0 
-      ? (totalAttempts / userAnswersHistory.filter(a => a !== null).length).toFixed(1) 
+    
+    const avgAttempts = attemptedProblemsCount > 0 
+      ? (totalAttempts / attemptedProblemsCount).toFixed(1) 
       : "0";
     
     // Contar respuestas reveladas
     const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
     
-    // Nivel final
-    const finalLevel = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+    // Nivel final - actualizamos para detectar posibles cambios de nivel durante el ejercicio
+    // Si se usa dificultad adaptativa, el nivel mostrado será el último alcanzado
+    const finalLevel = settings.enableAdaptiveDifficulty 
+      ? localStorage.getItem('addition_adaptiveDifficulty') || adaptiveDifficulty 
+      : settings.difficulty;
     
     return (
       <div className="px-4 py-5 sm:p-6">
