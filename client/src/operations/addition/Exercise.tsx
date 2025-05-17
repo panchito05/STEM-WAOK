@@ -880,36 +880,42 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {t('Addition Exercise Complete!')}
         </h2>
         
+        {/* Tiempo total */}
+        <div className="bg-gray-100 p-3 rounded-lg mb-4 text-center">
+          <div className="text-sm text-gray-600 mb-1">Total Time</div>
+          <div className="text-xl font-bold">{formatTime(timer)}</div>
+        </div>
+        
         {/* Grid de estadísticas */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
-            <div className="text-sm text-gray-500 mb-1">Score</div>
+          <div className="bg-blue-50 p-3 rounded-lg shadow-sm text-center border border-blue-100">
+            <div className="text-sm text-gray-600 mb-1">Score</div>
             <div className="text-xl text-indigo-600 font-semibold">{finalScore} / {problemsList.length}</div>
           </div>
           
-          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
-            <div className="text-sm text-gray-500 mb-1">Accuracy</div>
-            <div className="text-xl text-indigo-600 font-semibold">{accuracy}%</div>
+          <div className="bg-green-50 p-3 rounded-lg shadow-sm text-center border border-green-100">
+            <div className="text-sm text-gray-600 mb-1">Accuracy</div>
+            <div className="text-xl text-green-600 font-semibold">{accuracy}%</div>
           </div>
           
-          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
-            <div className="text-sm text-gray-500 mb-1">Avg. Time</div>
-            <div className="text-xl text-indigo-600 font-semibold">{avgTimePerProblem}s</div>
+          <div className="bg-purple-50 p-3 rounded-lg shadow-sm text-center border border-purple-100">
+            <div className="text-sm text-gray-600 mb-1">Avg. Time</div>
+            <div className="text-xl text-purple-600 font-semibold">{avgTimePerProblem}s</div>
           </div>
           
-          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
-            <div className="text-sm text-gray-500 mb-1">Avg. Attempts</div>
-            <div className="text-xl text-indigo-600 font-semibold">{avgAttempts}</div>
+          <div className="bg-amber-50 p-3 rounded-lg shadow-sm text-center border border-amber-100">
+            <div className="text-sm text-gray-600 mb-1">Avg. Attempts</div>
+            <div className="text-xl text-amber-600 font-semibold">{avgAttempts}</div>
           </div>
           
-          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
-            <div className="text-sm text-gray-500 mb-1">Revealed</div>
-            <div className="text-xl text-indigo-600 font-semibold">{revealedAnswers}</div>
+          <div className="bg-red-50 p-3 rounded-lg shadow-sm text-center border border-red-100">
+            <div className="text-sm text-gray-600 mb-1">Revealed</div>
+            <div className="text-xl text-red-600 font-semibold">{revealedAnswers}</div>
           </div>
           
-          <div className="bg-white p-3 rounded-lg shadow-sm text-center">
-            <div className="text-sm text-gray-500 mb-1">Final Level</div>
-            <div className="text-xl text-indigo-600 font-semibold">{finalLevel === "beginner" ? "1" : 
+          <div className="bg-teal-50 p-3 rounded-lg shadow-sm text-center border border-teal-100">
+            <div className="text-sm text-gray-600 mb-1">Final Level</div>
+            <div className="text-xl text-teal-600 font-semibold">{finalLevel === "beginner" ? "1" : 
                                                           finalLevel === "elementary" ? "2" : 
                                                           finalLevel === "intermediate" ? "3" : 
                                                           finalLevel === "advanced" ? "4" : "5"}</div>
