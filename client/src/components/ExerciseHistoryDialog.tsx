@@ -92,72 +92,78 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('Exercise History') || 'Exercise History'}</DialogTitle>
-          <DialogDescription>
-            {t('View details of your previous exercise sessions') || 'View details of your previous exercise sessions'}
-          </DialogDescription>
+          <DialogTitle className="text-xl text-center font-bold">
+            {selectedExercise ? (selectedExercise.operationId === "addition" ? "Addition Exercise Complete!" : 
+                              selectedExercise.operationId === "subtraction" ? "Subtraction Exercise Complete!" :
+                              selectedExercise.operationId === "multiplication" ? "Multiplication Exercise Complete!" :
+                              selectedExercise.operationId === "division" ? "Division Exercise Complete!" :
+                              "Math Exercise Complete!") : 
+            (t('Exercise History') || 'Exercise History')}
+          </DialogTitle>
+          {!selectedExercise && (
+            <DialogDescription>
+              {t('View details of your previous exercise sessions') || 'View details of your previous exercise sessions'}
+            </DialogDescription>
+          )}
         </DialogHeader>
         
         {selectedExercise ? (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <Button variant="outline" size="sm" onClick={() => setSelectedExercise(null)}>
-                {t('Back to List') || 'Back to List'}
-              </Button>
-              <div className="text-sm text-gray-500">
-                {formatDate(selectedExercise.date)}
-              </div>
-            </div>
-            
-            <div className="bg-gray-100 p-3 rounded-lg mb-4 text-center">
-              <div className="text-sm text-gray-600 mb-1">{t('Total Time') || 'Total Time'}</div>
+            <div className="bg-gray-50 p-4 rounded-lg mb-4 text-center">
+              <div className="text-sm text-gray-600 mb-1">Total Time</div>
               <div className="text-xl font-bold">
                 {formatTime(selectedExercise.timeSpent)}
               </div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-              <div className="bg-blue-50 p-3 rounded-lg shadow-sm text-center border border-blue-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Score') || 'Score'}</div>
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-blue-50 p-3 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Score</div>
                 <div className="text-xl text-indigo-600 font-semibold">
                   {selectedExercise.score} / {selectedExercise.totalProblems}
                 </div>
               </div>
               
-              <div className="bg-green-50 p-3 rounded-lg shadow-sm text-center border border-green-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Accuracy') || 'Accuracy'}</div>
+              <div className="bg-green-50 p-3 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Accuracy</div>
                 <div className="text-xl text-green-600 font-semibold">
                   {selectedExercise.accuracy || 
                    Math.round((selectedExercise.score / selectedExercise.totalProblems) * 100)}%
                 </div>
               </div>
               
-              <div className="bg-purple-50 p-3 rounded-lg shadow-sm text-center border border-purple-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Avg. Time') || 'Avg. Time'}</div>
+              <div className="bg-purple-50 p-3 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Avg. Time</div>
                 <div className="text-xl text-purple-600 font-semibold">
                   {selectedExercise.avgTimePerProblem || 
                    Math.round(selectedExercise.timeSpent / selectedExercise.totalProblems)}s
                 </div>
               </div>
-              
-              <div className="bg-amber-50 p-3 rounded-lg shadow-sm text-center border border-amber-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Avg. Attempts') || 'Avg. Attempts'}</div>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-amber-50 p-3 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Avg. Attempts</div>
                 <div className="text-xl text-amber-600 font-semibold">
                   {selectedExercise.avgAttempts?.toFixed(1) || "1.0"}
                 </div>
               </div>
               
-              <div className="bg-red-50 p-3 rounded-lg shadow-sm text-center border border-red-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Revealed') || 'Revealed'}</div>
+              <div className="bg-red-50 p-3 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Revealed</div>
                 <div className="text-xl text-red-600 font-semibold">
                   {selectedExercise.revealedAnswers || 0}
                 </div>
               </div>
               
-              <div className="bg-teal-50 p-3 rounded-lg shadow-sm text-center border border-teal-100">
-                <div className="text-sm text-gray-600 mb-1">{t('Level') || 'Level'}</div>
+              <div className="bg-teal-50 p-3 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Final Level</div>
                 <div className="text-xl text-teal-600 font-semibold">
-                  {getDifficultyName(selectedExercise.difficulty)}
+                  {selectedExercise.difficulty === 'beginner' ? 1 : 
+                   selectedExercise.difficulty === 'elementary' ? 2 :
+                   selectedExercise.difficulty === 'intermediate' ? 3 :
+                   selectedExercise.difficulty === 'advanced' ? 4 : 
+                   selectedExercise.difficulty === 'expert' ? 5 : 1}
                 </div>
               </div>
             </div>
@@ -165,7 +171,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
             {/* Detalles de los problemas si existen */}
             {selectedExercise.problemDetails && selectedExercise.problemDetails.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">{t('Problem Review') || 'Problem Review'}</h3>
+                <h3 className="text-lg font-semibold mb-3">Problem Review</h3>
                 <div className="space-y-2">
                   {selectedExercise.problemDetails.map((problem, index) => {
                     if (!problem) return null;
@@ -173,8 +179,10 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                     // Mostrar el problema en formato legible
                     let problemDisplay = '';
                     if (problem.problem?.operands && problem.problem.operands.length > 0) {
+                      // Formatear basado en el tipo de operación
                       if (problem.problem.operands.length === 2) {
                         problemDisplay = `${problem.problem.operands[0]} + ${problem.problem.operands[1]} = ${problem.correctAnswer}`;
+                        // Solo mostrar respuesta incorrecta si la hay y no coincide con la correcta
                         if (problem.userAnswer !== problem.correctAnswer && !isNaN(Number(problem.userAnswer))) {
                           problemDisplay += ` (${problem.userAnswer})`;
                         }
@@ -185,8 +193,8 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                       <div 
                         key={index} 
                         className={`p-3 rounded-lg ${problem.isCorrect 
-                          ? 'bg-green-100 border border-green-200' 
-                          : 'bg-red-100 border border-red-200'}`}
+                          ? 'bg-green-100' 
+                          : 'bg-red-100'}`}
                       >
                         <div className="flex justify-between items-center">
                           <div>
@@ -199,8 +207,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                           </div>
                         </div>
                         <div className="text-xs text-gray-600 mt-1">
-                          {t('Level') || 'Level'}: {getDifficultyName(problem.level || selectedExercise.difficulty)}, 
-                          {t('Attempts') || 'Attempts'}: {problem.attempts || 1}
+                          Lvl: {problem.level || 1}, Att: {problem.attempts || 1}, T: {problem.timeSpent || 2}s
                         </div>
                       </div>
                     );
