@@ -110,17 +110,17 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     
     switch (difficulty) {
       case "beginner":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">Beginner</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">{t('difficulty.beginner')}</Badge>;
       case "elementary":
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">Elementary</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">{t('difficulty.elementary')}</Badge>;
       case "intermediate":
-        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">Intermediate</Badge>;
+        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">{t('difficulty.intermediate')}</Badge>;
       case "advanced":
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">Advanced</Badge>;
+        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">{t('difficulty.advanced')}</Badge>;
       case "expert":
-        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">Expert</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">{t('difficulty.expert')}</Badge>;
       default:
-        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">Coming Soon</Badge>;
+        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">{language === 'en' ? 'Coming Soon' : 'Próximamente'}</Badge>;
     }
   };
 
@@ -192,7 +192,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             }`}
             onClick={(e) => !module.comingSoon && handleToggleFavorite(e)}
             disabled={module.comingSoon}
-            aria-label={isModuleFavorite ? "Remove from favorites" : "Add to favorites"}
+            aria-label={isModuleFavorite ? (language === 'en' ? "Remove from favorites" : "Quitar de favoritos") : (language === 'en' ? "Add to favorites" : "Añadir a favoritos")}
           >
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
@@ -209,12 +209,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                     {isModuleFavorite ? (
                       <>
                         <StarOff className="h-4 w-4 mr-2 text-amber-500" />
-                        Quitar de favoritos
+                        {language === 'en' ? 'Remove from favorites' : 'Quitar de favoritos'}
                       </>
                     ) : (
                       <>
                         <Star className="h-4 w-4 mr-2 text-amber-500" />
-                        Añadir a favoritos
+                        {language === 'en' ? 'Add to favorites' : 'Añadir a favoritos'}
                       </>
                     )}
                   </div>
@@ -224,12 +224,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                     {isHidden ? (
                       <>
                         <Eye className="h-4 w-4 mr-2 text-purple-500" />
-                        Restaurar módulo
+                        {language === 'en' ? 'Restore module' : 'Restaurar módulo'}
                       </>
                     ) : (
                       <>
                         <EyeOff className="h-4 w-4 mr-2 text-purple-500" />
-                        Ocultar módulo
+                        {language === 'en' ? 'Hide module' : 'Ocultar módulo'}
                       </>
                     )}
                   </div>
@@ -249,7 +249,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           </div>
           {module.comingSoon ? (
             <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-5">
-              Coming Soon
+              {language === 'en' ? 'Coming Soon' : 'Próximamente'}
             </Button>
           ) : (
             <Link href={`/operation/${module.id}`}>
