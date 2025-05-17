@@ -25,13 +25,15 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   const [selectedExercise, setSelectedExercise] = useState<ExerciseResult | null>(null);
   const { t, language } = useTranslations();
   
-  // Filtrar solo el historial relacionado con este módulo
-  const moduleHistory = exerciseHistory.filter(entry => entry.operationId === moduleId);
+  // Filtrar solo el historial relacionado con este módulo (asegurando que exerciseHistory existe)
+  const moduleHistory = exerciseHistory ? exerciseHistory.filter(entry => entry.operationId === moduleId) : [];
   
-  // Ordenar por fecha - más reciente primero
-  const sortedHistory = [...moduleHistory].sort((a, b) => {
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
+  // Ordenar por fecha - más reciente primero (protegerse contra moduleHistory vacío)
+  const sortedHistory = moduleHistory && moduleHistory.length > 0 
+    ? [...moduleHistory].sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      }) 
+    : [];
   
   // Función para obtener el nombre de dificultad localizado
   const getDifficultyName = (difficultyCode: string) => {
