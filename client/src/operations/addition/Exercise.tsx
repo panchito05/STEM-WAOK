@@ -52,7 +52,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [feedbackColor, setFeedbackColor] = useState<"green" | "red" | "blue" | null>(null);
   const [waitingForContinue, setWaitingForContinue] = useState(false);
   const waitingRef = useRef(waitingForContinue); // Ref para el estado de waitingForContinue
-
+  const continueButtonRef = useRef<HTMLButtonElement | null>(null); // Ref para el botón Continuar
+  
   const [blockAutoAdvance, setBlockAutoAdvance] = useState(false);
   const [autoContinue, setAutoContinue] = useState(() => {
     try {
@@ -120,6 +121,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   useEffect(() => {
     waitingRef.current = waitingForContinue;
+    // Si estamos esperando a que el usuario haga clic en continuar y hay un botón en la referencia, enfocarlo
+    if (waitingForContinue && continueButtonRef.current) {
+      setTimeout(() => {
+        continueButtonRef.current?.focus();
+      }, 100); // Pequeño retraso para asegurar que el DOM se ha actualizado
+    }
   }, [waitingForContinue]);
 
   useEffect(() => {
@@ -985,7 +992,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')} 
             </Button>
           ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
-            <Button onClick={handleContinue} className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs mx-auto">
+            <Button 
+                ref={continueButtonRef}
+                onClick={handleContinue} 
+                className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs mx-auto"
+            >
                 <span className="flex-grow text-center font-medium">{t('Continue')}</span>
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
