@@ -324,7 +324,7 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500">Average Score</p>
                                 <p className="text-2xl font-bold">
                                   {progress?.averageScore 
-                                    ? `${Math.round(progress.averageScore * 100)}%` 
+                                    ? `${Math.min(100, Math.round(progress.averageScore * 100))}%` 
                                     : "N/A"}
                                 </p>
                               </div>
