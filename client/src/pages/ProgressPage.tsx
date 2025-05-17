@@ -263,9 +263,9 @@ export default function ProgressPage() {
             <TabsContent value="detailed">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {operationModules
-                  .filter(module => !module.comingSoon)
+                  .filter(module => !module.comingSoon && module.id)
                   .map(module => {
-                    const progress = moduleProgress[module.id];
+                    const progress = safeModuleProgress[module.id || ""];
                     return (
                       <Card key={module.id}>
                         <CardHeader>
