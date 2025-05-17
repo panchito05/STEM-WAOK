@@ -225,34 +225,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
-          {/* Botón de historial con diálogo integrado */}
-          {!module.comingSoon && (
-            hasHistory ? (
-              <ExerciseHistoryDialog 
-                moduleId={module.id} 
-                exerciseHistory={exerciseHistory}
-                trigger={
-                  <div 
-                    className="focus:outline-none p-1.5 rounded-full transition-all cursor-pointer 
-                      text-blue-400 hover:text-white bg-white/20 hover:bg-white/10"
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label={t('progress.viewHistory') || "Ver historial"}
-                  >
-                    <History className="h-5 w-5" />
-                  </div>
-                }
-              />
-            ) : (
-              <div 
-                className="focus:outline-none p-1.5 rounded-full transition-all 
-                  text-white/50 opacity-50 cursor-not-allowed"
-                onClick={(e) => e.stopPropagation()}
-                aria-label={t('progress.noHistory') || "Sin historial"}
-              >
-                <History className="h-5 w-5" />
-              </div>
-            )
-          )}
+          {/* History button removed */}
           
           {!module.comingSoon && (
             <DropdownMenu>
@@ -278,19 +251,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                   </div>
                 </DropdownMenuItem>
                 
-                {/* Opción de historial en el menú */}
-                <DropdownMenuItem 
-                  onClick={handleViewHistory} 
-                  disabled={!hasHistory}
-                  className={`cursor-pointer ${!hasHistory ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <div className="flex items-center">
-                    <ListChecks className="h-4 w-4 mr-2 text-blue-500" />
-                    {hasHistory 
-                      ? (t('progress.viewHistory') || "Ver historial") 
-                      : (t('progress.noHistory') || "Sin historial")}
-                  </div>
-                </DropdownMenuItem>
+                {/* History option removed */}
                 
                 <DropdownMenuItem onClick={() => toggleHidden(module.id)} className="cursor-pointer">
                   <div className="flex items-center">
@@ -358,11 +319,6 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       {isModuleFavorite && (
         <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1.5 shadow-md z-20">
           <Star className="h-4 w-4 text-white fill-current" />
-        </div>
-      )}
-      {hasHistory && (
-        <div className="absolute top-2 -right-2 bg-blue-500 rounded-full p-1.5 shadow-md z-20">
-          <History className="h-4 w-4 text-white" />
         </div>
       )}
       {isHidden && (
