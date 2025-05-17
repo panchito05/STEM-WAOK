@@ -19,6 +19,41 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSettings } from "@/context/SettingsContext";
+import { useGlobalLanguage } from "@/hooks/useGlobalLanguage";
+
+// Traducciones de los módulos
+const moduleTranslations = {
+  addition: {
+    displayName: {
+      english: "Addition",
+      spanish: "Suma"
+    },
+    description: {
+      english: "Practice addition with various difficulty levels",
+      spanish: "Practica sumas con varios niveles de dificultad"
+    }
+  },
+  fractions: {
+    displayName: {
+      english: "Fractions",
+      spanish: "Fracciones"
+    },
+    description: {
+      english: "Learn to add, subtract, and compare fractions",
+      spanish: "Aprende a sumar, restar y comparar fracciones"
+    }
+  },
+  counting: {
+    displayName: {
+      english: "Counting Numbers",
+      spanish: "Conteo de Números"
+    },
+    description: {
+      english: "Practice counting with fun visualization",
+      spanish: "Practica conteo con visualización divertida"
+    }
+  }
+};
 
 interface DraggableModuleCardProps {
   module: Module;
@@ -39,6 +74,9 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   
   // Obtenemos la configuración personalizada del módulo
   const { moduleSettings } = useSettings();
+  
+  // Obtenemos el idioma actual
+  const { isSpanish } = useGlobalLanguage();
 
   const isModuleFavorite = isFavorite(module.id);
   const isHidden = hiddenModules.includes(module.id);
@@ -104,19 +142,29 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     // Si el módulo tiene configuración personalizada, mostrar esa dificultad en lugar de la predeterminada
     const difficulty = moduleConfig?.difficulty || defaultDifficulty;
     
+    // Traducciones de dificultad
+    const difficultyLabels = {
+      beginner: isSpanish ? "Principiante" : "Beginner",
+      elementary: isSpanish ? "Elemental" : "Elementary",
+      intermediate: isSpanish ? "Intermedio" : "Intermediate",
+      advanced: isSpanish ? "Avanzado" : "Advanced",
+      expert: isSpanish ? "Experto" : "Expert",
+      comingSoon: isSpanish ? "Próximamente" : "Coming Soon"
+    };
+    
     switch (difficulty) {
       case "beginner":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">Beginner</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.beginner}</Badge>;
       case "elementary":
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">Elementary</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.elementary}</Badge>;
       case "intermediate":
-        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">Intermediate</Badge>;
+        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.intermediate}</Badge>;
       case "advanced":
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">Advanced</Badge>;
+        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.advanced}</Badge>;
       case "expert":
-        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">Expert</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.expert}</Badge>;
       default:
-        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">Coming Soon</Badge>;
+        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">{difficultyLabels.comingSoon}</Badge>;
     }
   };
 
@@ -245,7 +293,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           </div>
           {module.comingSoon ? (
             <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-5">
-              Coming Soon
+              {isSpanish ? "Próximamente" : "Coming Soon"}
             </Button>
           ) : (
             <Link href={`/operation/${module.id}`}>
@@ -253,7 +301,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
                 variant="default" 
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-5"
               >
-                Start
+                {isSpanish ? "Iniciar" : "Start"}
               </Button>
             </Link>
           )}
