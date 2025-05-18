@@ -486,16 +486,22 @@ export const useRewardsStore = create<RewardsState>()(
         }
       },
       
-      // Método para reiniciar todos los contadores
+      // Método para reiniciar todos los contadores y limpiar todas las recompensas
       resetProblemCounters: () => {
         set({
           problemCounters: {
             addition: 0,
             fractions: 0,
             countingNumbers: 0
-          }
+          },
+          // También reiniciar las recompensas obtenidas para evitar que se mantengan después del borrado
+          earnedRewards: [],
+          collections: [],
+          totalRewardsCount: 0,
+          newRewardsCount: 0,
+          recentReward: null
         });
-        console.log("🔄 Contadores de problemas reiniciados");
+        console.log("🔄 Contadores de problemas y recompensas reiniciados completamente");
       }
     }),
     {
@@ -504,7 +510,8 @@ export const useRewardsStore = create<RewardsState>()(
         earnedRewards: state.earnedRewards,
         collections: state.collections,
         totalRewardsCount: state.totalRewardsCount,
-        newRewardsCount: state.newRewardsCount
+        newRewardsCount: state.newRewardsCount,
+        problemCounters: state.problemCounters // Persistir los contadores de problemas completados
       }),
     }
   )
