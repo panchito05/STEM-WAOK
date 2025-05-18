@@ -368,21 +368,41 @@ export async function getProgressForChildProfile(childProfileId: number) {
 }
 
 export async function insertProgressForChildProfile(childProfileId: number, progressData: ExerciseProgress) {
+  console.log("Insertando progreso para perfil:", childProfileId, "- Datos:", 
+    `Score: ${progressData.score}/${progressData.totalProblems}`,
+    `Accuracy: ${progressData.accuracy}%`);
+  
+  // Garantizar que los datos de score sean correctos (nunca mayor que el total)
+  const validatedScore = Math.min(progressData.score, progressData.totalProblems);
+  
+  // Calcular accuracy basada en los valores validados
+  const calculatedAccuracy = progressData.totalProblems > 0 
+    ? Math.round((validatedScore / progressData.totalProblems) * 100) 
+    : 0;
+    
+  // Usar la precisión proporcionada o la calculada
+  const finalAccuracy = progressData.accuracy || calculatedAccuracy;
+  
+  console.log("Datos validados para perfil:", 
+    `Score: ${validatedScore}/${progressData.totalProblems}`,
+    `Accuracy: ${finalAccuracy}%`);
+  
   // Guardar todos los datos enviados, incluyendo los detalles de los problemas
   const progressDataToSave = {
     childProfileId,
     operationId: progressData.operationId,
-    score: progressData.score,
+    score: validatedScore,                // Puntaje validado
     totalProblems: progressData.totalProblems,
     timeSpent: progressData.timeSpent,
     difficulty: progressData.difficulty,
     // Guardamos todos los campos adicionales como un objeto JSON en el campo extraData
-    extraData: JSON.stringify({
-      accuracy: progressData.accuracy,
+    extraData: JSON.stringify({           // Guardar datos adicionales incluyendo accuracy
+      accuracy: finalAccuracy,            // Precisión validada
       avgTimePerProblem: progressData.avgTimePerProblem,
       avgAttempts: progressData.avgAttempts,
       revealedAnswers: progressData.revealedAnswers,
-      problemDetails: progressData.problemDetails || []
+      problemDetails: progressData.problemDetails || [],
+      extra_data: progressData.extra_data || {}
     })
   };
   
