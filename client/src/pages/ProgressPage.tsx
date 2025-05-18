@@ -532,7 +532,9 @@ export default function ProgressPage() {
                                     <div className="bg-teal-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Final Level</p>
                                       <p className="text-center text-lg font-bold text-teal-600">
-                                        {(exercise.difficulty || 'beginner').charAt(0).toUpperCase()}
+                                        {exercise.difficulty === 'beginner' ? 'Principiante' : 
+                                         exercise.difficulty === 'intermediate' ? 'Intermedio' : 
+                                         exercise.difficulty === 'advanced' ? 'Avanzado' : 'Principiante'}
                                       </p>
                                     </div>
                                   </div>
