@@ -167,6 +167,11 @@ export async function clearProgressForUser(userId: number) {
     .where(eq(progressEntries.userId, userId));
 }
 
+export async function clearProgressForChildProfile(childProfileId: number) {
+  return db.delete(progressEntries)
+    .where(eq(progressEntries.childProfileId, childProfileId));
+}
+
 // Module settings operations
 export async function getModuleSettingsForUser(userId: number, moduleId?: string) {
   if (moduleId) {

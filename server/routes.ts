@@ -383,6 +383,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Borrar el progreso de un perfil de niño específico
+  app.delete("/api/child-profiles/:id/progress", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const profileId = parseInt(req.params.id);
+      
+      // Verificar que el perfil pertenezca al usuario
+      const profiles = await storage.getChildProfilesForUser(userId);
+      const isOwner = profiles.some(profile => profile.id === profileId);
+      
+      if (!isOwner) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      
+      await storage.clearProgressForChildProfile(profileId);
+      
+      return res.json({ 
+        success: true, 
+        message: "All progress data for this profile has been completely removed" 
+      });
+    } catch (error) {
+      console.error("Error clearing child profile progress:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Rutas para perfiles de niños
   app.get("/api/child-profiles", isAuthenticated, async (req: any, res) => {
     try {

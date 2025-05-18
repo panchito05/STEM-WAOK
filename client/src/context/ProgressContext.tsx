@@ -323,19 +323,56 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     if (!isAuthenticated) return;
     
     try {
-      // Clear server data
-      await apiRequest("DELETE", "/api/progress", {});
+      // Primero, verificamos si hay un perfil de niño activo
+      const activeProfileRes = await fetch("/api/child-profiles/active", {
+        credentials: "include"
+      });
       
-      // Clear state
+      let clearResult;
+      
+      if (activeProfileRes.ok) {
+        const activeProfile = await activeProfileRes.json();
+        
+        if (activeProfile && activeProfile.id) {
+          console.log("Borrando progreso para el perfil activo:", activeProfile.name, "ID:", activeProfile.id);
+          
+          // Borrar progreso del perfil activo
+          clearResult = await apiRequest("DELETE", `/api/child-profiles/${activeProfile.id}/progress`, {});
+        }
+      }
+      
+      // Si no hay perfil activo o hubo un error, intentar borrar el progreso del usuario principal
+      if (!clearResult || !clearResult.ok) {
+        console.log("Borrando todo el progreso del usuario principal");
+        clearResult = await apiRequest("DELETE", "/api/progress", {});
+      }
+      
+      // Borrar datos de estado
       setExerciseHistory([]);
       setModuleProgress({});
       
-      // Clear local storage data
-      localStorage.clear();
+      // Borrar datos específicos del progreso en localStorage
+      // En lugar de usar localStorage.clear() que borraría todas las configuraciones,
+      // borramos solo las entradas relacionadas con el progreso
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (
+            key.includes('progress') || 
+            key.includes('exercise') || 
+            key.includes('history') ||
+            key.includes('completed')
+          )) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      // Eliminar las claves encontradas
+      keysToRemove.forEach(key => localStorage.removeItem(key));
       
       toast({
         title: "Progress Cleared",
-        description: "All progress data has been completely removed",
+        description: "All progress data has been completely removed from both server and local storage",
       });
     } catch (error) {
       toast({
