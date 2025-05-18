@@ -148,14 +148,41 @@ export async function getProgressForUser(userId: number) {
 }
 
 export async function insertProgress(userId: number, progressData: ExerciseProgress) {
+  console.log("Insertando progreso para usuario:", userId, "- Datos:", 
+    `Score: ${progressData.score}/${progressData.totalProblems}`,
+    `Accuracy: ${progressData.accuracy}%`);
+  
+  // Garantizar que los datos de score sean correctos (nunca mayor que el total)
+  const validatedScore = Math.min(progressData.score, progressData.totalProblems);
+  
+  // Calcular accuracy basada en los valores validados
+  const calculatedAccuracy = progressData.totalProblems > 0 
+    ? Math.round((validatedScore / progressData.totalProblems) * 100) 
+    : 0;
+    
+  // Usar la precisión proporcionada o la calculada
+  const finalAccuracy = progressData.accuracy || calculatedAccuracy;
+  
+  console.log("Datos validados:", 
+    `Score: ${validatedScore}/${progressData.totalProblems}`,
+    `Accuracy: ${finalAccuracy}%`);
+  
   const [newProgress] = await db.insert(progressEntries)
     .values({
       userId,
       operationId: progressData.operationId,
-      score: progressData.score,
+      score: validatedScore,                // Puntaje validado
       totalProblems: progressData.totalProblems,
       timeSpent: progressData.timeSpent,
-      difficulty: progressData.difficulty
+      difficulty: progressData.difficulty,
+      extraData: JSON.stringify({           // Guardar datos adicionales incluyendo accuracy
+        accuracy: finalAccuracy,
+        avgTimePerProblem: progressData.avgTimePerProblem,
+        avgAttempts: progressData.avgAttempts,
+        revealedAnswers: progressData.revealedAnswers,
+        problemDetails: progressData.problemDetails || [],
+        extra_data: progressData.extra_data || {}
+      })
     })
     .returning();
   
