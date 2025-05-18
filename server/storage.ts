@@ -168,8 +168,15 @@ export async function clearProgressForUser(userId: number) {
 }
 
 export async function clearProgressForChildProfile(childProfileId: number) {
-  return db.delete(progressEntries)
+  console.log(`Borrando todos los datos de progreso para el perfil ${childProfileId}`);
+  
+  // Borrado principal con el ORM
+  const result = await db.delete(progressEntries)
     .where(eq(progressEntries.childProfileId, childProfileId));
+  
+  console.log(`Borrado inicial completado para el perfil ${childProfileId}`);
+  
+  return result;
 }
 
 // Module settings operations

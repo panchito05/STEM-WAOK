@@ -370,6 +370,10 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       // Eliminar las claves encontradas
       keysToRemove.forEach(key => localStorage.removeItem(key));
       
+      // Forzar recarga directa de los datos desde el servidor
+      // Esto garantiza que no se estén usando datos en caché
+      await fetchProgress();
+      
       toast({
         title: "Progress Cleared",
         description: "All progress data has been completely removed from both server and local storage",
