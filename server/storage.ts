@@ -351,6 +351,7 @@ export async function insertProgressForChildProfile(childProfileId: number, prog
     difficulty: progressData.difficulty,
     // Guardamos todos los campos adicionales como un objeto JSON en el campo extraData
     extraData: JSON.stringify({
+      date: progressData.date || new Date().toISOString(),
       accuracy: progressData.accuracy,
       avgTimePerProblem: progressData.avgTimePerProblem,
       avgAttempts: progressData.avgAttempts,
