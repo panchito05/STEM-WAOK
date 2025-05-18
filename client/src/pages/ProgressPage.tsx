@@ -145,29 +145,48 @@ export default function ProgressPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Your Progress</h1>
             <p className="text-gray-600">Track your math learning journey</p>
-            <p className="text-xs text-gray-500 mt-1">
-              Last updated: {format(lastUpdateTime, "MMM dd, yyyy HH:mm:ss")}
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-xs text-gray-500">
+                Last updated: {format(lastUpdateTime, "MMM dd, yyyy HH:mm:ss")}
+              </p>
+              {isRefreshing ? 
+                <Loader2 className="h-3 w-3 animate-spin text-gray-500" /> : 
+                <Check className="h-3 w-3 text-green-500" />
+              }
+            </div>
           </div>
-          <div className="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+          <div className="flex items-center gap-2 mt-4 md:mt-0">
             <Button 
               variant="outline" 
-              size="sm"
               onClick={handleRefresh} 
               disabled={isRefreshing}
-              className="flex items-center"
+              className="flex items-center gap-1"
             >
               {isRefreshing ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Actualizando...
                 </>
               ) : (
                 <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Refresh Data
+                  <RefreshCw className="h-4 w-4" />
+                  Actualizar Datos
                 </>
               )}
+            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="destructive" disabled={isClearing || isLoading}>
+                  {isClearing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Limpiando...
+                    </>
+                  ) : (
+                    "Borrar Progreso"
+                  )}
+                </Button>
+              </DialogTrigger>
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -548,42 +567,54 @@ export default function ProgressPage() {
                                         // Intenta obtener los detalles del problema de varias fuentes
                                         let problemsToShow = null;
                                         
-                                        // Primero intentar recuperar datos del extraData (que es donde se guardan todos los detalles)
-                                        if (exercise.extra_data) {
+                                        // MÉTODO 1: Verificar primero si hay problemDetails directamente en el ejercicio
+                                        if (exercise.problemDetails && exercise.problemDetails.length > 0) {
+                                          console.log("✅ MÉTODO 1: Usando problemDetails directos:", 
+                                            exercise.problemDetails.length, "problemas para ejercicio ID:", exercise.id);
+                                          problemsToShow = exercise.problemDetails;
+                                        } 
+                                        // MÉTODO 2: Si no hay problemDetails, intentar extraer de extra_data
+                                        else if (exercise.extra_data) {
                                           try {
                                             // Convertir extraData de string a objeto si es necesario
                                             const extraData = typeof exercise.extra_data === 'string' 
                                               ? JSON.parse(exercise.extra_data) 
                                               : exercise.extra_data;
                                             
-                                            // Revisar si hay problemDetails en extraData
+                                            // MÉTODO 2A: Verificar problemDetails en extra_data
                                             if (extraData.problemDetails && extraData.problemDetails.length > 0) {
-                                              console.log("✅ Encontrados detalles de problemas en extraData:", 
+                                              console.log("✅ MÉTODO 2A: Encontrados detalles de problemas en extraData:", 
                                                 extraData.problemDetails.length, "problemas para ejercicio ID:", exercise.id);
                                               problemsToShow = extraData.problemDetails;
                                             }
-                                            // Si no hay problemDetails, intentar extraer de screenshot
+                                            // MÉTODO 2B: Verificar problems en extra_data
+                                            else if (extraData.problems && extraData.problems.length > 0) {
+                                              console.log("✅ MÉTODO 2B: Encontrados problems en extraData:", 
+                                                extraData.problems.length, "problemas para ejercicio ID:", exercise.id);
+                                              problemsToShow = extraData.problems;
+                                            }
+                                            // MÉTODO 2C: Buscar en el screenshot
                                             else if (extraData.screenshot) {
                                               const screenshot = typeof extraData.screenshot === 'string'
                                                 ? JSON.parse(extraData.screenshot)
                                                 : extraData.screenshot;
-                                                
-                                              if (screenshot && screenshot.problems) {
-                                                console.log("✅ Encontrados detalles en screenshot:", 
+                                              
+                                              // MÉTODO 2C-1: Verificar si hay problemReview en el screenshot
+                                              if (screenshot && screenshot.problemReview) {
+                                                console.log("✅ MÉTODO 2C-1: Encontrados problemReview en screenshot:", 
+                                                  screenshot.problemReview.length, "problemas para ejercicio ID:", exercise.id);
+                                                problemsToShow = screenshot.problemReview;
+                                              }
+                                              // MÉTODO 2C-2: Verificar si hay problems en el screenshot
+                                              else if (screenshot && screenshot.problems) {
+                                                console.log("✅ MÉTODO 2C-2: Encontrados problems en screenshot:", 
                                                   screenshot.problems.length, "problemas para ejercicio ID:", exercise.id);
                                                 problemsToShow = screenshot.problems;
                                               }
                                             }
                                           } catch (e) {
-                                            console.log("Error parsing extraData:", e);
+                                            console.error("❌ Error al procesar extraData:", e);
                                           }
-                                        }
-                                        
-                                        // Si no se encontró en extraData, buscar en problemDetails directamente
-                                        if (!problemsToShow && exercise.problemDetails && exercise.problemDetails.length > 0) {
-                                          console.log("✅ Usando problemDetails directos:", 
-                                            exercise.problemDetails.length, "problemas para ejercicio ID:", exercise.id);
-                                          problemsToShow = exercise.problemDetails;
                                         }
                                         
                                         // 3. Si no hay problemas disponibles, mostrar un mensaje informativo

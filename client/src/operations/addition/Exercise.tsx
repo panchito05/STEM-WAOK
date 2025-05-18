@@ -1299,13 +1299,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // Guardar los detalles usando el formato simplificado
-      problemDetails: problemsForStorage,
+      // Guardar solo los detalles en el campo principal, no en extra_data
+      // Esto evitará duplicidades y problemas de formato
+      problemDetails: userAnswersHistory.map((answer, index) => {
+        if (!answer) return null;
+        const problem = problemsList[index];
+        if (!problem) return null;
+        
+        // Formato simple y directo que es fácil de mostrar
+        return {
+          problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+          isCorrect: answer.isCorrect,
+          attempts: answer.attempts || 1,
+          timeSpent: answer.timeSpent || avgTimePerProblem,
+          level: finalLevel
+        };
+      }).filter(Boolean),
       
-      // También incluir los detalles en extra_data para redundancia
+      // No almacenamos problemDetails en extra_data para evitar duplicación
       extra_data: {
-        screenshot: screenshotData,
-        problemDetails: problemsForStorage,
         timestamp: Date.now()
       }
     });
