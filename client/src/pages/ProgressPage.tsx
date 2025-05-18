@@ -369,7 +369,7 @@ export default function ProgressPage() {
                                       ? `${Math.round(progress.averageTime)}s` 
                                       : "N/A"}
                                   </span>
-                                  <span className="text-gray-600"> : Per Exercise</span>
+                                  <span className="text-gray-600"> : For Each Exercise Block Completed</span>
                                 </p>
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
