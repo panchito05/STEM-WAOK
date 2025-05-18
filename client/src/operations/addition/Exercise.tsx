@@ -723,22 +723,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
     
-    // Obtener la referencia al sistema de recompensas
-    import("@/lib/rewards-system").then(({ useRewardsStore }) => {
-      // Actualizar el contador de problemas de suma completados
-      const { updateProblemCounter, resetProblemCounters } = useRewardsStore.getState();
-      
-      // Para propósitos de diagnóstico, mostrar el contador antes de actualizar
-      const { problemCounters } = useRewardsStore.getState();
-      console.log(`🧮 Estado actual de contadores:`, problemCounters);
-      
-      // Registrar la cantidad de problemas completados en este ejercicio (limitado a 1 para depuración)
-      updateProblemCounter("addition", 1);
-      console.log(`🧮 Registrando 1 problema de suma completado`);
-    }).catch(err => {
-      console.error("Error al actualizar contador de recompensas:", err);
-    });
-    
     const correctCount = userAnswersHistory.filter(a => a && a.isCorrect).length;
     const accuracy = problemsList.length > 0 ? Math.round((correctCount / problemsList.length) * 100) : 0;
     

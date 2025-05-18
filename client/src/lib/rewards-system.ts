@@ -306,39 +306,6 @@ export function checkRewardCondition(
 }
 
 // Hook para mantener el estado y lógica de las recompensas
-// Contador persistente para problemas completados por tipo
-interface ProblemCounters {
-  addition: number;
-  fractions: number;
-  countingNumbers: number;
-  // Añadir otros tipos según sea necesario
-}
-
-// Extender la interfaz RewardsState para incluir contadores persistentes
-interface RewardsState {
-  earnedRewards: Reward[];
-  collections: RewardCollection[];
-  totalRewardsCount: number;
-  newRewardsCount: number;
-  recentReward: Reward | null;
-  showRewardAnimation: boolean;
-  rewardsAlbumOpened: boolean;
-  problemCounters: ProblemCounters; // Agregar contadores persistentes
-  
-  // Métodos existentes...
-  addReward: (reward: Reward) => void;
-  markRewardAsSeen: (rewardId: string) => void;
-  updateCollection: (collectionId: string) => void;
-  setShowRewardAnimation: (show: boolean) => void;
-  setRewardsAlbumOpened: (opened: boolean) => void;
-  resetNewRewardsCount: () => void;
-  
-  // Nuevo método para actualizar contadores
-  updateProblemCounter: (operationId: string, count: number) => void;
-  // Nuevo método para reiniciar contadores
-  resetProblemCounters: () => void;
-}
-
 export const useRewardsStore = create<RewardsState>()(
   persist(
     (set, get) => ({
@@ -349,12 +316,6 @@ export const useRewardsStore = create<RewardsState>()(
       recentReward: null,
       showRewardAnimation: false,
       rewardsAlbumOpened: false,
-      // Inicializar contadores de problemas en cero
-      problemCounters: {
-        addition: 0,
-        fractions: 0,
-        countingNumbers: 0
-      },
       
       addReward: (reward: Reward) => {
         // No añadir recompensas duplicadas
@@ -461,47 +422,6 @@ export const useRewardsStore = create<RewardsState>()(
           newRewardsCount: 0,
           earnedRewards: state.earnedRewards.map(r => ({ ...r, isNew: false }))
         }));
-      },
-      
-      // Método para actualizar contadores de problemas resueltos
-      updateProblemCounter: (operationId: string, count: number) => {
-        const validOperations = ['addition', 'fractions', 'countingNumbers'];
-        if (!validOperations.includes(operationId)) return;
-        
-        set(state => ({
-          problemCounters: {
-            ...state.problemCounters,
-            [operationId]: (state.problemCounters[operationId as keyof ProblemCounters] || 0) + count
-          }
-        }));
-        
-        // Si es una operación de suma, verificar recompensas basadas en problemas completados
-        if (operationId === 'addition') {
-          const totalProblems = get().problemCounters.addition;
-          checkAndAwardRewards(
-            { problemsCompleted: totalProblems },
-            { theme: 'addition', module: 'addition' }
-          );
-          console.log(`📊 Contador de problemas de suma actualizado: ${totalProblems}`);
-        }
-      },
-      
-      // Método para reiniciar todos los contadores y limpiar todas las recompensas
-      resetProblemCounters: () => {
-        set({
-          problemCounters: {
-            addition: 0,
-            fractions: 0,
-            countingNumbers: 0
-          },
-          // También reiniciar las recompensas obtenidas para evitar que se mantengan después del borrado
-          earnedRewards: [],
-          collections: [],
-          totalRewardsCount: 0,
-          newRewardsCount: 0,
-          recentReward: null
-        });
-        console.log("🔄 Contadores de problemas y recompensas reiniciados completamente");
       }
     }),
     {
@@ -510,8 +430,7 @@ export const useRewardsStore = create<RewardsState>()(
         earnedRewards: state.earnedRewards,
         collections: state.collections,
         totalRewardsCount: state.totalRewardsCount,
-        newRewardsCount: state.newRewardsCount,
-        problemCounters: state.problemCounters // Persistir los contadores de problemas completados
+        newRewardsCount: state.newRewardsCount
       }),
     }
   )

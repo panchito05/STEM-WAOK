@@ -366,18 +366,6 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       localStorage.removeItem('rewards-storage');
       console.log(`🏆 Borrada información del Álbum de Recompensas`);
       
-      // Reiniciar los contadores del sistema de recompensas
-      try {
-        // Importar de forma dinámica para evitar dependencias circulares
-        import('../lib/rewards-system').then(({ useRewardsStore }) => {
-          const { resetProblemCounters } = useRewardsStore.getState();
-          resetProblemCounters();
-          console.log("🔄 Contadores de problemas de recompensas reiniciados");
-        });
-      } catch (error) {
-        console.error("Error al reiniciar contadores de recompensas:", error);
-      }
-      
       // PASO 2: BORRAR DATOS DEL SERVIDOR DE FORMA AGRESIVA
       console.log("🔥 BORRADO RADICAL - Paso 2: Borrado en el servidor");
       
