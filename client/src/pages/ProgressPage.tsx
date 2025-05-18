@@ -559,45 +559,49 @@ export default function ProgressPage() {
                                           }];
                                         };
                                         
-                                        // Ahora vamos a hacer una solicitud directa a la API para obtener los detalles exactos
-                                        // Verificamos si los datos de extra_data están presentes en formato string
+                                        // SOLUCIÓN DIRECTA: Extraer la información de los problemas del campo extra_data
+                                        let foundProblems = false;
+                                        
                                         try {
-                                          // Si tenemos datos extra, intentamos extraer los problemDetails
-                                          if (exercise.extra_data) {
-                                            // Convertir a objeto si es string
-                                            const extraData = typeof exercise.extra_data === 'string' 
-                                              ? JSON.parse(exercise.extra_data) 
-                                              : exercise.extra_data;
+                                          // Paso 1: Intentar extraer de extra_data como string JSON
+                                          if (exercise.extra_data && typeof exercise.extra_data === 'string') {
+                                            const extraDataJson = JSON.parse(exercise.extra_data);
+                                            
+                                            // Revisar si tenemos screenshot.problemReview (donde se guarda el listado de problemas)
+                                            if (extraDataJson.screenshot && extraDataJson.screenshot.problemReview && 
+                                                Array.isArray(extraDataJson.screenshot.problemReview)) {
                                               
-                                            // Si tenemos problemDetails directamente en el objeto
-                                            if (extraData && extraData.problemDetails && extraData.problemDetails.length > 0) {
-                                              console.log("✅ Usando problemDetails directamente del extra_data:", exercise.id);
-                                              problemsToShow = extraData.problemDetails;
+                                              const problemReview = extraDataJson.screenshot.problemReview;
+                                              if (problemReview.length > 0) {
+                                                console.log("✅ Encontrados problemas reales en screenshot.problemReview:", exercise.id);
+                                                problemsToShow = problemReview;
+                                                foundProblems = true;
+                                              }
                                             }
-                                            // Si tenemos problemDetails en screenshot.problemReview
-                                            else if (extraData && extraData.screenshot && extraData.screenshot.problemReview) {
-                                              console.log("✅ Usando problemReview de screenshot:", exercise.id);
-                                              problemsToShow = extraData.screenshot.problemReview;
-                                            }
-                                            // Si tenemos problemDetails en otra estructura
-                                            else if (extraData && extraData.screenshot && extraData.screenshot.problems) {
-                                              console.log("✅ Usando problems de screenshot:", exercise.id);
-                                              problemsToShow = extraData.screenshot.problems;
+                                          }
+                                          // Paso 2: Intentar extraer de extra_data como objeto
+                                          else if (exercise.extra_data && typeof exercise.extra_data === 'object') {
+                                            const extraDataObj = exercise.extra_data;
+                                            
+                                            // Revisar si tenemos screenshot.problemReview (donde se guarda el listado de problemas)
+                                            if (extraDataObj.screenshot && extraDataObj.screenshot.problemReview && 
+                                                Array.isArray(extraDataObj.screenshot.problemReview)) {
+                                              
+                                              const problemReview = extraDataObj.screenshot.problemReview;
+                                              if (problemReview.length > 0) {
+                                                console.log("✅ Encontrados problemas reales en objeto screenshot.problemReview:", exercise.id);
+                                                problemsToShow = problemReview;
+                                                foundProblems = true;
+                                              }
                                             }
                                           }
                                         } catch (error) {
-                                          console.error("Error al analizar extra_data:", error);
+                                          console.error("Error al extraer problemas:", error);
                                         }
                                         
-                                        // Si no encontramos problemDetails en extra_data, chequeamos en el objeto principal
-                                        if (!problemsToShow && exercise.problemDetails && exercise.problemDetails.length > 0) {
-                                          console.log("✅ Usando problemDetails del objeto principal:", exercise.id);
-                                          problemsToShow = exercise.problemDetails;
-                                        }
-                                        
-                                        // Si aún no tenemos los problemas, mostrar mensaje descriptivo en vez de datos ficticios
-                                        if (!problemsToShow || problemsToShow.length === 0) {
-                                          console.log("⚠️ No se encontraron detalles de problemas para ejercicio ID:", exercise.id);
+                                        // Si no se encontraron problemas en los pasos anteriores, usar mensaje descriptivo
+                                        if (!foundProblems) {
+                                          console.log("⚠️ No se encontraron problemas para el ejercicio ID:", exercise.id);
                                           problemsToShow = getProblemDescription();
                                         }
                                         
