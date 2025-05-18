@@ -439,6 +439,7 @@ export default function ProgressPage() {
                           <th className="text-left py-3 px-4">Difficulty</th>
                           <th className="text-left py-3 px-4">Score</th>
                           <th className="text-left py-3 px-4">Time</th>
+                          <th className="text-left py-3 px-4">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -459,6 +460,11 @@ export default function ProgressPage() {
                                 "N/A"}
                             </td>
                             <td className="py-3 px-4">{exercise.timeSpent !== undefined ? `${exercise.timeSpent}s` : "N/A"}</td>
+                            <td className="py-3 px-4">
+                              <Button variant="outline" size="sm">
+                                Ver detalles
+                              </Button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
