@@ -7,8 +7,11 @@ import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
 import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useTranslations } from "@/hooks/use-translations";
 import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus from '@/lib/eventBus'; // Eliminado 'on', 'off' ya que no se usan directamente aquí
@@ -29,6 +32,96 @@ const digitBoxDisabledStyle = "bg-gray-100 text-gray-500 border-gray-200 cursor-
 const verticalOperandStyle = "font-mono text-2xl sm:text-3xl text-right tracking-wider";
 const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
+
+// Componente para gestionar videos explicativos de YouTube
+const YoutubeVideoDialog = ({ 
+  isOpen, 
+  onClose,
+  videos,
+  onSave
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  videos: string[];
+  onSave: (newVideos: string[]) => void;
+}) => {
+  const [videoLinks, setVideoLinks] = useState<string[]>([...videos]);
+  
+  const handleVideoChange = (index: number, value: string) => {
+    const newLinks = [...videoLinks];
+    newLinks[index] = value;
+    setVideoLinks(newLinks);
+  };
+  
+  const addVideoInput = () => {
+    if (videoLinks.length < 2) {
+      setVideoLinks([...videoLinks, '']);
+    }
+  };
+  
+  const removeVideo = (index: number) => {
+    const newLinks = [...videoLinks];
+    newLinks.splice(index, 1);
+    setVideoLinks(newLinks);
+  };
+  
+  const handleSave = () => {
+    // Filtrar enlaces vacíos
+    const filteredLinks = videoLinks.filter(link => link.trim() !== '');
+    onSave(filteredLinks);
+    onClose();
+  };
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Añadir Videos Explicativos</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="text-sm text-gray-600 mb-2">
+            Añade hasta 2 enlaces de YouTube para videos explicativos de este ejercicio.
+          </div>
+          
+          {videoLinks.map((link, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <Input
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={link}
+                onChange={(e) => handleVideoChange(index, e.target.value)}
+                className="flex-1"
+              />
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => removeVideo(index)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          
+          {videoLinks.length < 2 && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={addVideoInput}
+              type="button"
+              className="mt-2"
+            >
+              <Plus className="h-4 w-4 mr-2" /> Añadir Video
+            </Button>
+          )}
+        </div>
+        <DialogFooter>
+          <Button type="button" onClick={onClose} variant="outline">Cancelar</Button>
+          <Button type="button" onClick={handleSave}>Guardar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Acceder a la información de historial mediante el contexto de progreso
@@ -84,6 +177,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   
   // Estado para rastrear cuándo se mostró la última recompensa (para el sistema progresivo)
   const [lastRewardShownIndex, setLastRewardShownIndex] = useState<number>(-1);
+  
+  // Estados para manejar los videos explicativos de YouTube
+  const [showVideoDialog, setShowVideoDialog] = useState(false);
+  const [youtubeVideos, setYoutubeVideos] = useState<string[]>(() => {
+    try {
+      const storedVideos = localStorage.getItem('addition_youtubeVideos');
+      return storedVideos ? JSON.parse(storedVideos) : [];
+    } catch (e) {
+      console.error('Error loading YouTube videos from localStorage:', e);
+      return [];
+    }
+  });
 
   const [viewingPrevious, setViewingPrevious] = useState(false);
   const [actualActiveProblemIndexBeforeViewingPrevious, setActualActiveProblemIndexBeforeViewingPrevious] = useState<number>(0);
