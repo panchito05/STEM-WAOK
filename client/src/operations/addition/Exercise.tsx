@@ -1380,6 +1380,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1 text-red-600 border-red-200 bg-red-50 hover:bg-red-100 hover:text-red-700"
+                  onClick={() => setShowVideoDialog(true)}
+                >
+                  <Youtube className="h-4 w-4" />
+                  Ver videos explicativos
+                </Button>
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
