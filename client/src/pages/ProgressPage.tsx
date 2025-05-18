@@ -648,11 +648,7 @@ export default function ProgressPage() {
                       </tbody>
                     </table>
                   </div>
-                  <div className="mt-6 text-center">
-                    <Button variant="outline" className="w-full">
-                      Block Of Completed Exercises
-                    </Button>
-                  </div>
+
                 </CardContent>
               </Card>
             </TabsContent>
