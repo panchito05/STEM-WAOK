@@ -363,22 +363,28 @@ export default function ProgressPage() {
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Average Time</p>
-                                <div>
-                                  <p className="text-xl font-bold">
-                                    {progress?.averageTime 
-                                      ? `${Math.round(progress.averageTime)}s/ejercicio` 
-                                      : "N/A"}
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-xl">
+                                    <span className="font-bold">
+                                      {progress?.averageTime 
+                                        ? `${Math.round(progress.averageTime)}s` 
+                                        : "N/A"}
+                                    </span>
+                                    <span className="text-gray-600"> : Per Exercise</span>
                                   </p>
-                                  <p className="text-md font-semibold text-gray-600">
-                                    {(() => {
-                                      const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                      const totalProblems = moduleExercises.reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
-                                      const totalTime = moduleExercises.reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-                                      
-                                      return totalProblems > 0 
-                                        ? `${Math.round(totalTime / totalProblems)}s/problema` 
-                                        : "N/A";
-                                    })()}
+                                  <p className="text-xl">
+                                    <span className="font-bold">
+                                      {(() => {
+                                        const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                        const totalProblems = moduleExercises.reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
+                                        const totalTime = moduleExercises.reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
+                                        
+                                        return totalProblems > 0 
+                                          ? `${Math.round(totalTime / totalProblems)}s` 
+                                          : "N/A";
+                                      })()}
+                                    </span>
+                                    <span className="text-gray-600"> : Per Problem</span>
                                   </p>
                                 </div>
                               </div>
