@@ -363,30 +363,14 @@ export default function ProgressPage() {
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Average Time</p>
-                                <div className="mt-2 space-y-1">
-                                  <p className="text-xl">
-                                    <span className="font-bold">
-                                      {progress?.averageTime 
-                                        ? `${Math.round(progress.averageTime)}s` 
-                                        : "N/A"}
-                                    </span>
-                                    <span className="text-gray-600"> : Per Exercise</span>
-                                  </p>
-                                  <p className="text-xl">
-                                    <span className="font-bold">
-                                      {(() => {
-                                        const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                        const totalProblems = moduleExercises.reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
-                                        const totalTime = moduleExercises.reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-                                        
-                                        return totalProblems > 0 
-                                          ? `${Math.round(totalTime / totalProblems)}s` 
-                                          : "N/A";
-                                      })()}
-                                    </span>
-                                    <span className="text-gray-600"> : Per Problem</span>
-                                  </p>
-                                </div>
+                                <p className="text-xl mt-2">
+                                  <span className="font-bold">
+                                    {progress?.averageTime 
+                                      ? `${Math.round(progress.averageTime)}s` 
+                                      : "N/A"}
+                                  </span>
+                                  <span className="text-gray-600"> : Per Exercise</span>
+                                </p>
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Total Time</p>
@@ -412,6 +396,22 @@ export default function ProgressPage() {
                                   })()}
                                 </p>
                               </div>
+                            </div>
+                            <div className="bg-white shadow p-3 rounded-lg border border-gray-100 w-full mb-3">
+                              <p className="text-xl">
+                                <span className="font-bold">
+                                  {(() => {
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    const totalProblems = moduleExercises.reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
+                                    const totalTime = moduleExercises.reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
+                                    
+                                    return totalProblems > 0 
+                                      ? `${Math.round(totalTime / totalProblems)}s` 
+                                      : "N/A";
+                                  })()}
+                                </span>
+                                <span className="text-gray-600"> : Per Problem</span>
+                              </p>
                             </div>
                             <Button variant="default" className="w-full bg-blue-500 hover:bg-blue-600" asChild>
                               <a href={`/operation/${module.id}`}>Practice Again</a>
