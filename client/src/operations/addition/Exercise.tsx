@@ -1284,7 +1284,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas directamente de la UI
     const uiCapturedProblems = captureProblemsFromUI();
     
-    // Guardar el resultado utilizando el nuevo enfoque
+    // ENFOQUE DE CAPTURA DOM CON INDEXEDB
+    
+    try {
+      // Importar el servicio de snapshots
+      // (Se importa dinámicamente para evitar problemas si no existe el archivo)
+      import('../../services/SnapshotService').then(async ({ snapshotService }) => {
+        console.log("📸 USANDO DOM SNAPSHOT SERVICE");
+        
+        // Capturar el DOM después de renderizar la interfaz
+        // (pequeño delay para asegurar que todo esté renderizado)
+        setTimeout(async () => {
+          const snapshotId = await snapshotService.captureExerciseSnapshot("addition");
+          console.log("✅ DOM snapshot guardado con ID:", snapshotId);
+        }, 200);
+      }).catch(error => {
+        console.error("❌ Error importando SnapshotService:", error);
+      });
+    } catch (error) {
+      console.error("❌ Error capturando DOM snapshot:", error);
+    }
+    
+    // Guardar el resultado incluyendo referencia a los snapshots
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
@@ -1299,24 +1320,32 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // NUEVO ENFOQUE: Guardar los problemas capturados directamente de la UI
-      // Estructura simplificada y clara
+      // TERCER ENFOQUE: DOM SNAPSHOTS
       extra_data: {
-        // Campo principal donde se buscarán los problemas
-        uiProblems: uiCapturedProblems,
+        // Datos para el nuevo sistema de DOM Snapshots
+        domSnapshot: {
+          timestamp: Date.now(),
+          snapshotId: `addition_${Date.now()}` // ID predecible para poder encontrarlo después
+        },
         
-        // Para compatibilidad con el código existente, incluir en lugares alternativos
-        exactProblems: uiCapturedProblems,
-        capturedProblems: uiCapturedProblems,
+        // Mantener compatibilidad con enfoques anteriores
+        uiProblems: problemsList.map((problem, index) => {
+          const answer = userAnswersHistory[index];
+          if (!answer) return null;
+          
+          return {
+            problemNumber: index + 1,
+            problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+            isCorrect: answer.isCorrect,
+            info: `Lvl: ${finalLevel === "beginner" ? "1" : 
+                  finalLevel === "elementary" ? "2" : 
+                  finalLevel === "intermediate" ? "3" : 
+                  finalLevel === "advanced" ? "4" : "5"}, Att: ${answer.attempts || 1}, T: ${Math.round(timer / problemsList.length)}s`
+          };
+        }).filter(Boolean),
         
-        // También guardar la fecha de captura para poder relacionar con localStorage
+        // Fecha de captura para poder relacionar
         captureTimestamp: Date.now(),
-        
-        // Incluir capturas anteriores para mayor compatibilidad
-        screenshot: { 
-          ...screenshotData,
-          problemReview: uiCapturedProblems 
-        }
       }
     });
   };
