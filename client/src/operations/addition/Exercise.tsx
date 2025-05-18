@@ -1587,11 +1587,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   onClick={() => setShowVideoDialog(true)} 
                   title="Videos explicativos"
                 >
-                  <Youtube className="h-10 w-10 sm:h-12 sm:w-12" />
+                  <Youtube className="h-4 w-4" />
                   {youtubeVideos.length > 0 && (
-                    <span className="absolute -bottom-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {youtubeVideos.length}
-                    </span>
+                    <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
                   )}
                 </Button>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
