@@ -949,29 +949,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     console.log(`Total de respuestas correctas: ${correctCount}`);
     console.log(`Total de problemas: ${totalCount}`);
     
-    // Construir detalles de los problemas (para historial)
-    const problemDetails = [];
-    for (let i = 0; i < userAnswersHistory.length; i++) {
-      const answer = userAnswersHistory[i];
-      const problem = problemsList[i];
-      
-      if (answer && problem) {
-        problemDetails.push({
-          problemId: i,
-          problem: {
-            operands: problem.operands,
-            correctAnswer: problem.correctAnswer,
-            layout: problem.layout || 'horizontal'
-          },
-          isCorrect: answer.isCorrect,
-          userAnswer: answer.userAnswer,
-          correctAnswer: problem.correctAnswer,
-          attempts: answer.attempts || 1,
-          status: answer.status || 'unknown',
-          level: finalLevel as string
-        });
-      }
-    }
+    // Usamos los problemDetails ya definidos anteriormente
+    // No necesitamos redeclararlos aquí
     
     // Guardar resultado utilizando el conteo directo
     saveExerciseResult({
