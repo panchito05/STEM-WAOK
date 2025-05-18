@@ -288,19 +288,48 @@ export default function ProgressPage() {
                   .map(module => {
                     const progress = moduleProgress[module.id];
                     return (
-                      <Card key={module.id}>
-                        <CardHeader>
-                          <CardTitle>{module.displayName}</CardTitle>
-                          <CardDescription>Module performance details</CardDescription>
-                        </CardHeader>
-                        <CardContent>
+                      <Card key={module.id} className="overflow-hidden transition-all">
+                        <div 
+                          className="flex justify-between items-center p-4 border-b border-gray-200 relative overflow-hidden"
+                          style={{ 
+                            backgroundColor: module.color || '#4287f5',
+                            color: 'white'
+                          }}
+                        >
+                          {/* Background pattern */}
+                          <div className="absolute inset-0 opacity-10">
+                            <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                              <defs>
+                                <pattern id={`grid-${module.id}`} width="10" height="10" patternUnits="userSpaceOnUse">
+                                  <circle cx="2" cy="2" r="1" fill="white" />
+                                </pattern>
+                              </defs>
+                              <rect width="100%" height="100%" fill={`url(#grid-${module.id})`} />
+                            </svg>
+                          </div>
+                          
+                          <div className="flex items-center relative z-10">
+                            <div className="flex items-center">
+                              <div className="mr-3 bg-white/25 p-2 rounded-lg shadow-inner">
+                                {module.icon === "Plus" && <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
+                                {module.icon === "PieChart" && <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>}
+                                {module.icon === "Hash" && <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" /></svg>}
+                                {!module.icon && <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
+                              </div>
+                              <h3 className="text-xl font-bold text-white">
+                                {module.displayName}
+                              </h3>
+                            </div>
+                          </div>
+                        </div>
+                        <CardContent className="p-5 bg-gradient-to-b from-white to-blue-50">
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                              <div className="bg-gray-50 p-4 rounded-lg">
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Exercises Completed</p>
                                 <p className="text-2xl font-bold">{progress?.totalCompleted || 0}</p>
                               </div>
-                              <div className="bg-gray-50 p-4 rounded-lg">
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Average Score</p>
                                 <p className="text-2xl font-bold">
                                   {progress?.averageScore 
@@ -308,7 +337,7 @@ export default function ProgressPage() {
                                     : "N/A"}
                                 </p>
                               </div>
-                              <div className="bg-gray-50 p-4 rounded-lg">
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Best Score</p>
                                 <p className="text-2xl font-bold">
                                   {progress?.bestScore 
@@ -316,7 +345,7 @@ export default function ProgressPage() {
                                     : "N/A"}
                                 </p>
                               </div>
-                              <div className="bg-gray-50 p-4 rounded-lg">
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Average Time</p>
                                 <p className="text-2xl font-bold">
                                   {progress?.averageTime 
@@ -325,7 +354,7 @@ export default function ProgressPage() {
                                 </p>
                               </div>
                             </div>
-                            <Button variant="outline" className="w-full" asChild>
+                            <Button variant="default" className="w-full bg-blue-500 hover:bg-blue-600" asChild>
                               <a href={`/operation/${module.id}`}>Practice Again</a>
                             </Button>
                           </div>
