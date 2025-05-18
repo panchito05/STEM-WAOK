@@ -547,90 +547,58 @@ export default function ProgressPage() {
                                         // Intenta obtener los detalles del problema de varias fuentes
                                         let problemsToShow = null;
                                         
-                                        // Crear problemas basados en los datos que tenemos del ejercicio
-                                        // Esta forma garantiza que siempre tengamos datos significativos para mostrar
-                                        const getFormattedProblems = () => {
-                                          // Para problemas de tipo addition, podemos reconstruir el formato de los problemas
-                                          if (exercise.operationId === 'addition') {
-                                            // Crear datos básicos basados en la puntuación registrada
-                                            const problems = [];
-                                            const totalProblems = exercise.totalProblems || 5;
-                                            const correctOnes = exercise.score || 0;
-                                            
-                                            // Crear problemas genéricos basados en el módulo
-                                            for (let i = 0; i < totalProblems; i++) {
-                                              const isCorrect = i < correctOnes;
-                                              const num1 = Math.floor(Math.random() * 9) + 1;
-                                              const num2 = Math.floor(Math.random() * 9) + 1;
-                                              
-                                              problems.push({
-                                                problem: `${num1} + ${num2} = ${num1 + num2}`,
-                                                isCorrect: isCorrect,
-                                                attempts: 1,
-                                                timeSpent: 2,
-                                                level: 1
-                                              });
-                                            }
-                                            return problems;
-                                          }
-                                          
-                                          // Si no es addition, crear otros tipos genéricos
-                                          const problems = [];
-                                          const totalProblems = exercise.totalProblems || 3;
-                                          const correctOnes = exercise.score || 0;
-                                          
-                                          for (let i = 0; i < totalProblems; i++) {
-                                            problems.push({
-                                              problem: `Problema #${i+1}`,
-                                              isCorrect: i < correctOnes,
-                                              attempts: 1,
-                                              timeSpent: 2
-                                            });
-                                          }
-                                          return problems;
+                                        // En lugar de crear problemas aleatorios, mostraremos un mensaje claro
+                                        // indicando que estos son los problemas específicos del ejercicio seleccionado
+                                        const getProblemDescription = () => {
+                                          return [{
+                                            isPlaceholder: true,
+                                            problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' : 
+                                                       exercise.operationId === 'fractions' ? 'Fracciones' :
+                                                       exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} completado con puntuación ${exercise.score}/${exercise.totalProblems}`,
+                                            isCorrect: true
+                                          }];
                                         };
                                         
-                                        // Intenta obtener de extraData primero
+                                        // Ahora vamos a hacer una solicitud directa a la API para obtener los detalles exactos
+                                        // Verificamos si los datos de extra_data están presentes en formato string
                                         try {
+                                          // Si tenemos datos extra, intentamos extraer los problemDetails
                                           if (exercise.extra_data) {
-                                            // Si extraData es un string, parsearlo a objeto
-                                            const extraDataObj = typeof exercise.extra_data === 'string'
-                                              ? JSON.parse(exercise.extra_data)
+                                            // Convertir a objeto si es string
+                                            const extraData = typeof exercise.extra_data === 'string' 
+                                              ? JSON.parse(exercise.extra_data) 
                                               : exercise.extra_data;
                                               
-                                            if (extraDataObj) {
-                                              // Buscar problemDetails dentro de extraData
-                                              if (extraDataObj.problemDetails && extraDataObj.problemDetails.length > 0) {
-                                                problemsToShow = extraDataObj.problemDetails;
-                                                console.log("✅ Usando problemDetails de extraData:", exercise.id);
-                                              } 
-                                              // Buscar en el screenshot si existe
-                                              else if (extraDataObj.screenshot) {
-                                                const screenshotData = typeof extraDataObj.screenshot === 'string'
-                                                  ? JSON.parse(extraDataObj.screenshot)
-                                                  : extraDataObj.screenshot;
-                                                  
-                                                if (screenshotData && screenshotData.problems) {
-                                                  problemsToShow = screenshotData.problems;
-                                                  console.log("✅ Usando problemas de screenshot:", exercise.id);
-                                                }
-                                              }
+                                            // Si tenemos problemDetails directamente en el objeto
+                                            if (extraData && extraData.problemDetails && extraData.problemDetails.length > 0) {
+                                              console.log("✅ Usando problemDetails directamente del extra_data:", exercise.id);
+                                              problemsToShow = extraData.problemDetails;
+                                            }
+                                            // Si tenemos problemDetails en screenshot.problemReview
+                                            else if (extraData && extraData.screenshot && extraData.screenshot.problemReview) {
+                                              console.log("✅ Usando problemReview de screenshot:", exercise.id);
+                                              problemsToShow = extraData.screenshot.problemReview;
+                                            }
+                                            // Si tenemos problemDetails en otra estructura
+                                            else if (extraData && extraData.screenshot && extraData.screenshot.problems) {
+                                              console.log("✅ Usando problems de screenshot:", exercise.id);
+                                              problemsToShow = extraData.screenshot.problems;
                                             }
                                           }
                                         } catch (error) {
-                                          console.log("Error al procesar extraData:", error);
+                                          console.error("Error al analizar extra_data:", error);
                                         }
                                         
-                                        // Si todavía no tenemos problemas, usar problemDetails si existe
+                                        // Si no encontramos problemDetails en extra_data, chequeamos en el objeto principal
                                         if (!problemsToShow && exercise.problemDetails && exercise.problemDetails.length > 0) {
+                                          console.log("✅ Usando problemDetails del objeto principal:", exercise.id);
                                           problemsToShow = exercise.problemDetails;
-                                          console.log("✅ Usando problemDetails directos:", exercise.id);
                                         }
                                         
-                                        // Si aún no tenemos problemas, crear unos genéricos basados en los datos disponibles
+                                        // Si aún no tenemos los problemas, mostrar mensaje descriptivo en vez de datos ficticios
                                         if (!problemsToShow || problemsToShow.length === 0) {
-                                          problemsToShow = getFormattedProblems();
-                                          console.log("✅ Usando problemas generados para:", exercise.id);
+                                          console.log("⚠️ No se encontraron detalles de problemas para ejercicio ID:", exercise.id);
+                                          problemsToShow = getProblemDescription();
                                         }
                                         
                                         // 3. Si no hay problemas disponibles, mostrar un mensaje informativo
