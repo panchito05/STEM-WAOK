@@ -84,7 +84,7 @@ export default function ProgressPage() {
     const date = subDays(new Date(), 29 - index);
     const dateStr = format(date, 'yyyy-MM-dd');
     const dayExercises = exerciseHistory.filter(ex => 
-      ex.date.startsWith(dateStr)
+      ex.date && typeof ex.date === 'string' && ex.date.startsWith(dateStr)
     );
     
     return {
