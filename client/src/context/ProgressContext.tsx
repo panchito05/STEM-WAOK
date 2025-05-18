@@ -323,68 +323,142 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     if (!isAuthenticated) return;
     
     try {
-      // Primero, verificamos si hay un perfil de niño activo
-      const activeProfileRes = await fetch("/api/child-profiles/active", {
-        credentials: "include"
-      });
-      
-      let clearResult;
-      
-      if (activeProfileRes.ok) {
-        const activeProfile = await activeProfileRes.json();
-        
-        if (activeProfile && activeProfile.id) {
-          console.log("Borrando progreso para el perfil activo:", activeProfile.name, "ID:", activeProfile.id);
-          
-          // Borrar progreso del perfil activo
-          clearResult = await apiRequest("DELETE", `/api/child-profiles/${activeProfile.id}/progress`, {});
-        }
-      }
-      
-      // Si no hay perfil activo o hubo un error, intentar borrar el progreso del usuario principal
-      if (!clearResult || !clearResult.ok) {
-        console.log("Borrando todo el progreso del usuario principal");
-        clearResult = await apiRequest("DELETE", "/api/progress", {});
-      }
-      
-      // Borrar datos de estado
       setExerciseHistory([]);
       setModuleProgress({});
       
-      // Borrar datos específicos del progreso en localStorage
-      // En lugar de usar localStorage.clear() que borraría todas las configuraciones,
-      // borramos solo las entradas relacionadas con el progreso
-      const keysToRemove = [];
+      // PASO 1: BORRADO COMPLETO DE LOCALSTORAGE PRIMERO
+      console.log("🧨 BORRADO RADICAL - Paso 1: Limpiando localStorage");
+      
+      // Enfoque agresivo: borrar cualquier cosa que tenga que ver con datos
+      const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && (
             key.includes('progress') || 
             key.includes('exercise') || 
             key.includes('history') ||
-            key.includes('completed')
+            key.includes('completed') ||
+            key.includes('score') ||
+            key.includes('result') ||
+            key.includes('data')
           )) {
           keysToRemove.push(key);
+          console.log(`🗑️ Borrando clave de localStorage: ${key}`);
         }
       }
       
-      // Eliminar las claves encontradas
+      // Eliminar todas las claves identificadas
       keysToRemove.forEach(key => localStorage.removeItem(key));
+      console.log(`✅ Borradas ${keysToRemove.length} claves de localStorage`);
       
-      // Forzar recarga directa de los datos desde el servidor
-      // Esto garantiza que no se estén usando datos en caché
+      // PASO 2: BORRAR DATOS DEL SERVIDOR DE FORMA AGRESIVA
+      console.log("🔥 BORRADO RADICAL - Paso 2: Borrado en el servidor");
+      
+      // Obtener perfil activo para borrado específico
+      const activeProfileRes = await fetch("/api/child-profiles/active", {
+        credentials: "include",
+        cache: "no-store",
+        headers: { 'Pragma': 'no-cache' }
+      });
+      
+      // Variable para rastrear si el borrado tuvo éxito
+      let serverDeleteSuccess = false;
+      
+      if (activeProfileRes.ok) {
+        const activeProfile = await activeProfileRes.json();
+        
+        if (activeProfile && activeProfile.id) {
+          console.log("🎯 Borrando progreso para el perfil:", activeProfile.name, "ID:", activeProfile.id);
+          
+          // Múltiples intentos de borrado
+          for (let attempt = 1; attempt <= 3; attempt++) {
+            console.log(`Intento ${attempt} de borrado para perfil ${activeProfile.id}...`);
+            
+            try {
+              // Usar cache: no-store para asegurarnos que no haya caching
+              const response = await fetch(`/api/child-profiles/${activeProfile.id}/progress`, {
+                method: "DELETE",
+                credentials: "include",
+                cache: "no-store",
+                headers: {
+                  'Cache-Control': 'no-cache, no-store, must-revalidate',
+                  'Pragma': 'no-cache'
+                }
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                console.log(`✅ Borrado exitoso en intento ${attempt}:`, result);
+                serverDeleteSuccess = true;
+                break; // Salir del bucle de intentos
+              } else {
+                console.log(`❌ Falló intento ${attempt}, código:`, response.status);
+              }
+            } catch (err) {
+              console.error(`❌ Error en intento ${attempt}:`, err);
+            }
+            
+            // Pequeña pausa entre intentos
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+      }
+      
+      // Si el borrado para el perfil falló o no hay perfil, intentar borrado general
+      if (!serverDeleteSuccess) {
+        console.log("🔄 Intentando borrado de progreso de usuario principal");
+        try {
+          const response = await fetch("/api/progress", {
+            method: "DELETE",
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache'
+            }
+          });
+          
+          if (response.ok) {
+            console.log("✅ Borrado de progreso de usuario principal exitoso");
+            serverDeleteSuccess = true;
+          }
+        } catch (err) {
+          console.error("❌ Error al borrar progreso de usuario principal:", err);
+        }
+      }
+      
+      // PASO 3: FORZAR RECARGA COMPLETA DE DATOS
+      console.log("🔄 BORRADO RADICAL - Paso 3: Forzar recarga de datos");
+      
+      // Pequeña pausa para asegurarnos que los cambios en el servidor se propaguen
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Forzar recarga de datos desde el servidor con banderas anti-caché
       await fetchProgress();
       
+      // Verificación final
+      if (exerciseHistory.length === 0 && Object.keys(moduleProgress).length === 0) {
+        console.log("✅✅✅ BORRADO COMPLETO EXITOSO - No se encontraron datos después del borrado");
+      } else {
+        console.log("⚠️ ADVERTENCIA: Aún hay datos después del borrado:", 
+          exerciseHistory.length, "ejercicios,", 
+          Object.keys(moduleProgress).length, "módulos");
+      }
+      
       toast({
-        title: "Progress Cleared",
-        description: "All progress data has been completely removed from both server and local storage",
+        title: serverDeleteSuccess ? "Progreso Eliminado" : "Borrado Parcial",
+        description: serverDeleteSuccess 
+          ? "Todos los datos han sido eliminados completamente del servidor y almacenamiento local" 
+          : "Los datos locales fueron borrados pero hubo un problema con el servidor",
+        variant: serverDeleteSuccess ? "default" : "destructive",
       });
     } catch (error) {
+      console.error("Error catastrófico al borrar progreso:", error);
       toast({
-        title: "Failed to Clear Progress",
-        description: "Please try again later",
+        title: "Error al Borrar Progreso",
+        description: "Se produjo un error inesperado. Por favor intenta nuevamente.",
         variant: "destructive",
       });
-      console.error("Error clearing progress:", error);
     }
   };
 
