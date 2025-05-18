@@ -601,17 +601,7 @@ export default function ProgressPage() {
                                           problemsToShow = getProblemDescription();
                                         }
                                         
-                                        // 3. Si no hay problemas disponibles, mostrar un mensaje informativo
-                                        if (!problemsToShow || problemsToShow.length === 0) {
-                                          console.log("No hay detalles de problemas disponibles para ejercicio ID:", exercise.id);
-                                          
-                                          // Creamos un único elemento que indica que no hay datos disponibles
-                                          problemsToShow = [{
-                                            isCorrect: true,
-                                            problem: "La información detallada de este ejercicio no está disponible",
-                                            isPlaceholder: true
-                                          }];
-                                        }
+                                        // Ya no necesitamos esta sección ya que la hemos reemplazado arriba
                                         
                                         return problemsToShow.map((problem, idx) => {
                                           // Intentar determinar si el problema es correcto
