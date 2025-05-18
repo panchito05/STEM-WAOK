@@ -1626,7 +1626,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 title="Videos explicativos"
               >
                 <span className="text-xs font-medium mr-1">
-                  {t('common.language') === 'en' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
+                  {settings.language === 'english' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
                 </span>
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
