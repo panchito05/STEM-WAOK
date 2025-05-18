@@ -397,7 +397,8 @@ export default function ProgressPage() {
                               </div>
                             </div>
                             <div className="bg-white shadow p-3 rounded-lg border border-gray-100 w-full mb-3">
-                              <p className="text-xl">
+                              <p className="text-sm text-gray-500">Average Time For Each Individual Exercise</p>
+                              <p className="text-xl mt-2">
                                 <span className="font-bold">
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
@@ -409,7 +410,6 @@ export default function ProgressPage() {
                                       : "N/A";
                                   })()}
                                 </span>
-                                <span className="text-gray-600"> : Per Problem</span>
                               </p>
                             </div>
                             <Button variant="default" className="w-full bg-blue-500 hover:bg-blue-600" asChild>
