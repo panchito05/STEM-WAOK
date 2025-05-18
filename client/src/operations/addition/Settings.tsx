@@ -434,8 +434,13 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               />
             </div>
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="enable-adaptive-difficulty" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">📈</span>{isEnglish ? "Enable Adaptive Difficulty" : "Habilitar Dificultad Adaptativa"}
+              <Label htmlFor="enable-adaptive-difficulty" className={`cursor-pointer ${theme.accent} flex items-center flex-col items-start`}>
+                <span className="flex items-center"><span className="mr-2">📈</span>{isEnglish ? "Enable Adaptive Difficulty" : "Habilitar Dificultad Adaptativa"}</span>
+                <span className="text-xs ml-5 opacity-80">
+                  {isEnglish 
+                    ? "If active, the module will automatically increase difficulty after 10 consecutive correct exercises, even across different sessions." 
+                    : "Si está activa, el módulo aumentará de nivel automáticamente al resolver 10 ejercicios correctos consecutivos, incluso entre diferentes sesiones."}
+                </span>
               </Label>
               <Switch
                 id="enable-adaptive-difficulty"
