@@ -183,7 +183,7 @@ export default function ProgressPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete all your progress data.
+                    This action cannot be undone. This will permanently delete all your progress data and your rewards collection.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

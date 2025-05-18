@@ -350,7 +350,8 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
             key.includes('completed') ||
             key.includes('score') ||
             key.includes('result') ||
-            key.includes('data')
+            key.includes('data') ||
+            key.includes('rewards') // Incluir las claves de recompensas
           )) {
           keysToRemove.push(key);
           console.log(`🗑️ Borrando clave de localStorage: ${key}`);
@@ -360,6 +361,10 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       // Eliminar todas las claves identificadas
       keysToRemove.forEach(key => localStorage.removeItem(key));
       console.log(`✅ Borradas ${keysToRemove.length} claves de localStorage`);
+      
+      // Borrar específicamente la clave del store de recompensas
+      localStorage.removeItem('rewards-storage');
+      console.log(`🏆 Borrada información del Álbum de Recompensas`);
       
       // PASO 2: BORRAR DATOS DEL SERVIDOR DE FORMA AGRESIVA
       console.log("🔥 BORRADO RADICAL - Paso 2: Borrado en el servidor");
