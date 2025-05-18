@@ -210,7 +210,7 @@ export default function ProgressPage() {
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue="overview">
+          <Tabs defaultValue="detailed">
             <TabsList className="mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="detailed">Detailed Progress</TabsTrigger>
