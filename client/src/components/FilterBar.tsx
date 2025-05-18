@@ -58,7 +58,7 @@ export default function FilterBar({ searchQuery, setSearchQuery }: FilterBarProp
             variant={showHidden ? "default" : "outline"}
             className={`text-sm rounded-full px-4 transition-all ${
               showHidden 
-                ? "bg-purple-500 hover:bg-purple-600 text-white shadow-md" 
+                ? "bg-purple-500 hover:bg-purple-600 text-white shadow-md animate-flash" 
                 : "border-purple-200 text-purple-600 hover:border-purple-400"
             }`}
             onClick={toggleShowHidden}
