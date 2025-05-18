@@ -1587,7 +1587,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   onClick={() => setShowVideoDialog(true)} 
                   title="Videos explicativos"
                 >
-                  <Youtube className="h-4 w-4" />
+                  <Youtube className="h-6 w-6 sm:h-6 sm:w-6" />
                   {youtubeVideos.length > 0 && (
                     <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
                   )}
