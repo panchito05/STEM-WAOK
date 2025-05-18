@@ -1549,41 +1549,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         onSave={handleSaveYoutubeVideos}
       />
       
-      {/* Menú para ver los videos (solo mostrar si hay videos) */}
-      {youtubeVideos.length > 0 && (
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="absolute top-2 right-2 z-10"
-            >
-              <Youtube className="h-4 w-4 text-red-600 mr-2" />
-              Ver videos explicativos
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Videos Explicativos</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {youtubeVideos.map((video, index) => (
-                <div key={index} className="flex flex-col">
-                  <p className="text-sm mb-2">Video {index + 1}:</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => openYoutubeVideo(video)}
-                    className="flex items-center"
-                  >
-                    <Youtube className="h-4 w-4 text-red-600 mr-2" />
-                    Ver video
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* El botón de YouTube ahora se muestra en la barra superior junto a los otros controles */}
 
       {showLevelUpReward && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
