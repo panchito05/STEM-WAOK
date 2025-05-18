@@ -925,37 +925,65 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }).filter(Boolean)
     };
     
-    // PASO CRÍTICO: Garantizar que los datos de ejercicio son correctos
-    // Estos son los valores validados que debemos usar
-    const finalCorrectCount = correctCount; // Ya validado en el proceso anterior
-    const finalTotalCount = problemsList.length;
+    // SOLUCIÓN SIMPLIFICADA PARA EL PROBLEMA DE CONTEO
+    // Conteo directo para mayor precisión
+    let correctResponsesCount = 0;
     
-    // Calcular la precisión basada en los valores verificados
-    const finalAccuracy = finalTotalCount > 0 
-      ? Math.round((finalCorrectCount / finalTotalCount) * 100) 
-      : 0;
-      
-    // INFORMACIÓN DE DEPURACIÓN DETALLADA
-    console.log("=== REPORTE FINAL DE PUNTAJE ===");
-    console.log(`Correctas (verificado): ${finalCorrectCount}/${finalTotalCount}`);
-    console.log(`Accuracy (verificado): ${finalAccuracy}%`);
-    console.log("Detalle de respuestas:", correctAnswersDetailed);
-    console.log("===========================");
-      
-    // SOLUCIÓN FINAL: Guardar con verificación triple
-    console.log(`💾 GUARDANDO PROGRESO (SOLUCIÓN ROBUSTA): ${finalCorrectCount}/${finalTotalCount} (${finalAccuracy}%)`);
+    // Contar manualmente las respuestas correctas
+    for (let i = 0; i < userAnswersHistory.length; i++) {
+      const answer = userAnswersHistory[i];
+      if (answer && answer.isCorrect === true) {
+        correctResponsesCount++;
+      }
+    }
     
-    // Guardar resultado usando los valores verificados
+    // Para mayor seguridad, forzar que nunca sea mayor que el total de problemas
+    const correctCount = Math.min(correctResponsesCount, problemsList.length);
+    const totalCount = problemsList.length;
+    
+    // Calcular precisión con los conteos correctos
+    const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+    
+    // Mostrar información detallada para verificación
+    console.log(`=== SCORE FINAL: ${correctCount}/${totalCount} (${accuracy}%) ===`);
+    console.log(`Total de respuestas correctas: ${correctCount}`);
+    console.log(`Total de problemas: ${totalCount}`);
+    
+    // Construir detalles de los problemas (para historial)
+    const problemDetails = [];
+    for (let i = 0; i < userAnswersHistory.length; i++) {
+      const answer = userAnswersHistory[i];
+      const problem = problemsList[i];
+      
+      if (answer && problem) {
+        problemDetails.push({
+          problemId: i,
+          problem: {
+            operands: problem.operands,
+            correctAnswer: problem.correctAnswer,
+            layout: problem.layout || 'horizontal'
+          },
+          isCorrect: answer.isCorrect,
+          userAnswer: answer.userAnswer,
+          correctAnswer: problem.correctAnswer,
+          attempts: answer.attempts || 1,
+          status: answer.status || 'unknown',
+          level: finalLevel as string
+        });
+      }
+    }
+    
+    // Guardar resultado utilizando el conteo directo
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
-      score: finalCorrectCount,         // Valor verificado
-      totalProblems: finalTotalCount,   // Total real de problemas
+      score: correctCount,         // Conteo directo verificado
+      totalProblems: totalCount,   // Total real de problemas
       timeSpent: timer,
       difficulty: finalLevel as string,
       
-      // Campos adicionales detallados (también verificados)
-      accuracy: finalAccuracy,           // Accuracy verificada
+      // Campos adicionales detallados
+      accuracy: accuracy,          // Precisión calculada
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
