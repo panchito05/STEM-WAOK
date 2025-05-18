@@ -1394,6 +1394,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                       {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                   </span>
                   
+                  {youtubeVideos.length > 0 && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setShowVideoDialog(true)}
+                      className="mt-1 flex items-center"
+                    >
+                      <Youtube className="h-8 w-8 text-red-600 mr-1" />
+                      <span className="text-xs">Ver videos explicativos</span>
+                    </Button>
+                  )}
+                  
                   <Button 
                     variant="link" 
                     size="sm" 
