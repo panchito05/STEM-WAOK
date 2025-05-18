@@ -330,6 +330,14 @@ export default function ProgressPage() {
                                 <p className="text-2xl font-bold">{progress?.totalCompleted || 0}</p>
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Problems Solved</p>
+                                <p className="text-2xl font-bold">
+                                  {exerciseHistory
+                                    .filter(ex => ex.operationId === module.id)
+                                    .reduce((sum, ex) => sum + (ex.score || 0), 0)}
+                                </p>
+                              </div>
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Average Score</p>
                                 <p className="text-2xl font-bold">
                                   {progress?.averageScore 
@@ -351,6 +359,30 @@ export default function ProgressPage() {
                                   {progress?.averageTime 
                                     ? `${Math.round(progress.averageTime)}s` 
                                     : "N/A"}
+                                </p>
+                              </div>
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Total Time</p>
+                                <p className="text-2xl font-bold">
+                                  {(() => {
+                                    const totalSeconds = exerciseHistory
+                                      .filter(ex => ex.operationId === module.id)
+                                      .reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
+                                    
+                                    // Formatear tiempo: para minutos:segundos si es menos de una hora
+                                    if (totalSeconds < 3600) {
+                                      const minutes = Math.floor(totalSeconds / 60);
+                                      const seconds = totalSeconds % 60;
+                                      return `${minutes}m ${seconds}s`;
+                                    } 
+                                    // Para horas:minutos:segundos si es más de una hora
+                                    else {
+                                      const hours = Math.floor(totalSeconds / 3600);
+                                      const minutes = Math.floor((totalSeconds % 3600) / 60);
+                                      const seconds = totalSeconds % 60;
+                                      return `${hours}h ${minutes}m ${seconds}s`;
+                                    }
+                                  })()}
                                 </p>
                               </div>
                             </div>
