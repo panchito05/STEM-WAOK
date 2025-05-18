@@ -723,64 +723,93 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
     
-    // ============================================================
-    // SOLUCIÓN ROBUSTA AL PROBLEMA DE CONTEO DE RESPUESTAS CORRECTAS
-    // ============================================================
+    // ========================================================
+    // SOLUCIÓN COMPLETAMENTE NUEVA PARA CONTAR RESPUESTAS
+    // ========================================================
     
-    // 1. CONTEO DIRECTO MANUAL - Primera fuente
-    let correctAnswersCount = 0;
-    let correctAnswersDetailed = [];
+    // Ignoramos completamente el sistema actual de conteo de respuestas
+    // en favor de un enfoque directo que usa un contador independiente
     
-    console.log("🔍 ANÁLISIS DETALLADO DE RESPUESTAS:");
-    userAnswersHistory.forEach((answer, index) => {
-      // Registrar cada respuesta con su estado
+    // 1. Primero, vamos a obtener un conteo exacto verificando directamente las respuestas
+    const directCountingResults = {
+      correct: 0,
+      incorrect: 0,
+      revealed: 0,
+      total: problemsList.length
+    };
+    
+    // Este array almacenará los resultados verificados de cada problema
+    const verifiedAnswers = [];
+    
+    console.log("🧠 VERIFICACIÓN DIRECTA DE CADA PROBLEMA:");
+    // Verificar cada problema individualmente
+    problemsList.forEach((problem, index) => {
+      const answer = userAnswersHistory[index];
+      
+      // Estado verificado para este problema
+      const verifiedState = {
+        problemIndex: index,
+        problemOperands: problem.operands,
+        correctAnswer: problem.correctAnswer,
+        userAnswerProvided: false,
+        userAnswerValue: null,
+        isCorrect: false,
+        wasRevealed: false
+      };
+      
+      // Si hay una respuesta para este problema
       if (answer) {
-        console.log(`Problema ${index+1}: ${answer.isCorrect ? '✓ CORRECTO' : '✗ INCORRECTO'} - Estado: ${answer.status || 'desconocido'}`);
-        correctAnswersDetailed.push({
-          index: index,
-          isCorrect: answer.isCorrect,
-          status: answer.status
-        });
+        verifiedState.userAnswerProvided = true;
+        verifiedState.userAnswerValue = answer.userAnswer;
+        verifiedState.isCorrect = answer.isCorrect;
+        verifiedState.wasRevealed = answer.status === 'revealed';
         
-        // Contar solo respuestas correctas
-        if (answer.isCorrect) {
-          correctAnswersCount++;
+        // Contar basado en el estado verificado
+        if (verifiedState.isCorrect) {
+          directCountingResults.correct++;
+          console.log(`✅ Problema ${index+1}: CORRECTO - ${problem.operands.join(' + ')} = ${problem.correctAnswer}`);
+        } else if (verifiedState.wasRevealed) {
+          directCountingResults.revealed++;
+          console.log(`👁️ Problema ${index+1}: REVELADO - ${problem.operands.join(' + ')} = ${problem.correctAnswer}`);
+        } else {
+          directCountingResults.incorrect++;
+          console.log(`❌ Problema ${index+1}: INCORRECTO - ${problem.operands.join(' + ')} = ${problem.correctAnswer}, respuesta: ${answer.userAnswer}`);
         }
       } else {
-        console.log(`Problema ${index+1}: No contestado`);
+        console.log(`⚪ Problema ${index+1}: SIN RESPUESTA - ${problem.operands.join(' + ')} = ${problem.correctAnswer}`);
       }
+      
+      verifiedAnswers.push(verifiedState);
     });
     
-    // 2. CONTEO POR FILTRO - Segunda fuente (validación)
-    const filteredCorrectCount = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    // 2. CALCULAR VALORES FINALES VERIFICADOS
+    // Valores a usar en toda la aplicación
+    const scoreCounts = {
+      correct: directCountingResults.correct,
+      total: directCountingResults.total,
+      accuracy: directCountingResults.total > 0 
+        ? Math.round((directCountingResults.correct / directCountingResults.total) * 100) 
+        : 0
+    };
     
-    // 3. CONTEO DIRECTO EN EL ARREGLO DE PROBLEMAS - Tercera fuente (validación adicional)
-    const solvedProblemsCount = problemsList.length;
+    // LOGS DETALLADOS PARA VERIFICACIÓN
+    console.log("=== REPORTE VERIFICADO DE RESULTADOS ===");
+    console.log(`Problemas totales: ${scoreCounts.total}`);
+    console.log(`Respuestas correctas: ${scoreCounts.correct}`);
+    console.log(`Respuestas incorrectas: ${directCountingResults.incorrect}`);
+    console.log(`Respuestas reveladas: ${directCountingResults.revealed}`);
+    console.log(`Precisión calculada: ${scoreCounts.accuracy}%`);
+    console.log("=======================================");
     
-    // VALIDACIÓN: Si hay discrepancia, registrar y usar el mayor valor
-    if (correctAnswersCount !== filteredCorrectCount) {
-      console.warn("⚠️ DISCREPANCIA DE CONTEO: Conteo directo =", correctAnswersCount, 
-                   "vs Filtro =", filteredCorrectCount);
-      // Usar el conteo más alto para garantizar que se registren todas las respuestas correctas
-      correctAnswersCount = Math.max(correctAnswersCount, filteredCorrectCount);
-    }
-    
-    // GARANTÍA FINAL: Verificar que nunca sea mayor que el total de problemas
-    correctAnswersCount = Math.min(correctAnswersCount, solvedProblemsCount);
-    
-    console.log("✅ CUENTA FINAL DE RESPUESTAS CORRECTAS:", correctAnswersCount, "de", solvedProblemsCount);
-    console.log("📋 Resumen de respuestas:", correctAnswersDetailed);
-    
-    // Usar el valor validado
-    const correctCount = correctAnswersCount;
-    
-    // Calcular precisión con el conteo verificado
-    const accuracy = solvedProblemsCount > 0 ? Math.round((correctCount / solvedProblemsCount) * 100) : 0;
+    // Guardar explícitamente estos resultados ya verificados
+    const verifiedCorrectCount = scoreCounts.correct;
+    const verifiedTotalCount = scoreCounts.total;
+    const verifiedAccuracy = scoreCounts.accuracy;
     
     // Cálculo de tiempo promedio por problema
-    const avgTimePerProblem = solvedProblemsCount > 0 ? Math.round(timer / solvedProblemsCount) : 0;
+    const avgTimePerProblem = verifiedTotalCount > 0 ? Math.round(timer / verifiedTotalCount) : 0;
     
-    // Cálculo de intentos promedio con verificación
+    // Cálculo de intentos promedio usando el conteo verificado
     let totalAttempts = 0;
     const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
     
@@ -788,7 +817,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (answer) {
         const attempts = (answer.attempts || 1);
         totalAttempts += attempts;
-        // Añadir intento adicional para respuestas reveladas
         if (answer.status === 'revealed') {
           totalAttempts++;
         }
@@ -799,8 +827,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       ? parseFloat((totalAttempts / attemptedProblemsCount).toFixed(1))
       : 0;
     
-    // Contar respuestas reveladas con verificación
-    const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
+    // Contar respuestas reveladas usando la verificación
+    const revealedAnswers = directCountingResults.revealed;
     
     // Nivel final - usamos el último nivel alcanzado
     const finalLevel = settings.enableAdaptiveDifficulty 
