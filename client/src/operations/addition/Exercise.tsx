@@ -1580,18 +1580,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className={`p-1 h-auto flex items-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500"}`}
-                  onClick={() => setShowVideoDialog(true)} 
-                  title="Videos explicativos"
-                >
-                  <Youtube className="h-4 w-4" />
-                  {youtubeVideos.length > 0 && (
-                    <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
-                  )}
-                </Button>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
                     P: {problemTimerValue}s
@@ -1631,7 +1619,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
             <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
-            <span className="font-semibold">{t('exercises.score')}: {score}</span>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`p-0.5 h-auto flex items-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"}`}
+                onClick={() => setShowVideoDialog(true)} 
+                title="Videos explicativos"
+              >
+                <Youtube className="h-5 w-5 sm:h-6 sm:w-6" />
+                {youtubeVideos.length > 0 && (
+                  <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
+                )}
+              </Button>
+              <span className="font-semibold">{t('exercises.score')}: {score}</span>
+            </div>
         </div>
 
         <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-center justify-center`}>
