@@ -1298,41 +1298,59 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         onSave={handleSaveYoutubeVideos}
       />
       
-      {/* Menú para ver los videos (solo mostrar si hay videos) */}
-      {youtubeVideos.length > 0 && (
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="absolute top-2 right-2 z-10"
-            >
-              <Youtube className="h-4 w-4 text-red-600 mr-2" />
-              Ver videos explicativos
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Videos Explicativos</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {youtubeVideos.map((video, index) => (
-                <div key={index} className="flex flex-col">
-                  <p className="text-sm mb-2">Video {index + 1}:</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => openYoutubeVideo(video)}
-                    className="flex items-center"
-                  >
-                    <Youtube className="h-4 w-4 text-red-600 mr-2" />
-                    Ver video
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Botón de YouTube para añadir videos y menú para verlos */}
+      <div className="absolute bottom-20 left-4 flex items-center gap-2 z-10">
+        <Button 
+          variant="ghost" 
+          size="lg" 
+          className="p-2 h-auto flex flex-col items-center bg-white bg-opacity-90 rounded-lg shadow-md" 
+          onClick={() => setShowVideoDialog(true)} 
+          title="Añadir videos explicativos"
+        >
+          <Youtube className="h-7 w-7 text-red-600" />
+          <span className="text-xs mt-1 font-medium">Añadir videos</span>
+          {youtubeVideos.length > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+              {youtubeVideos.length}
+            </span>
+          )}
+        </Button>
+        
+        {youtubeVideos.length > 0 && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="p-2 h-auto flex flex-col items-center bg-white bg-opacity-90 rounded-lg shadow-md"
+              >
+                <Youtube className="h-7 w-7 text-red-600" />
+                <span className="text-xs mt-1 font-medium">Ver videos</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Videos Explicativos</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                {youtubeVideos.map((video, index) => (
+                  <div key={index} className="flex flex-col">
+                    <p className="text-sm mb-2">Video {index + 1}:</p>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => openYoutubeVideo(video)}
+                      className="flex items-center"
+                    >
+                      <Youtube className="h-5 w-5 text-red-600 mr-2" />
+                      Ver video
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
 
       {showLevelUpReward && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -1382,33 +1400,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </Tooltip>
                   </TooltipProvider>
                 )}
-                <div className="flex flex-col items-start">
-                  <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
-                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" : 
-                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" : 
-                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
-                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
-                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
-                    "bg-indigo-100 text-indigo-800"
-                  }`}>
-                      {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
-                  </span>
-                  
-                  <Button 
-                    variant="link" 
-                    size="sm" 
-                    className="text-red-600 hover:text-red-800 p-0 h-auto text-xs flex items-center mt-1" 
-                    onClick={() => setShowVideoDialog(true)}
-                  >
-                    <Youtube className="h-3.5 w-3.5 mr-1" />
-                    Ver videos explicativos
-                    {youtubeVideos.length > 0 && (
-                      <span className="ml-1 bg-red-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-                        {youtubeVideos.length}
-                      </span>
-                    )}
-                  </Button>
-                </div>
+                <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" : 
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" : 
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
+                  "bg-indigo-100 text-indigo-800"
+                }`}>
+                    {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
+                </span>
                 {/* Rewards button removed */}
                 {/* History button removed */}
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
