@@ -1298,59 +1298,41 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         onSave={handleSaveYoutubeVideos}
       />
       
-      {/* Botón de YouTube para añadir videos y menú para verlos */}
-      <div className="absolute bottom-20 left-4 flex items-center gap-2 z-10">
-        <Button 
-          variant="ghost" 
-          size="lg" 
-          className="p-2 h-auto flex flex-col items-center bg-white bg-opacity-90 rounded-lg shadow-md" 
-          onClick={() => setShowVideoDialog(true)} 
-          title="Añadir videos explicativos"
-        >
-          <Youtube className="h-7 w-7 text-red-600" />
-          <span className="text-xs mt-1 font-medium">Añadir videos</span>
-          {youtubeVideos.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-              {youtubeVideos.length}
-            </span>
-          )}
-        </Button>
-        
-        {youtubeVideos.length > 0 && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="p-2 h-auto flex flex-col items-center bg-white bg-opacity-90 rounded-lg shadow-md"
-              >
-                <Youtube className="h-7 w-7 text-red-600" />
-                <span className="text-xs mt-1 font-medium">Ver videos</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Videos Explicativos</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                {youtubeVideos.map((video, index) => (
-                  <div key={index} className="flex flex-col">
-                    <p className="text-sm mb-2">Video {index + 1}:</p>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => openYoutubeVideo(video)}
-                      className="flex items-center"
-                    >
-                      <Youtube className="h-5 w-5 text-red-600 mr-2" />
-                      Ver video
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
+      {/* Menú para ver los videos (solo mostrar si hay videos) */}
+      {youtubeVideos.length > 0 && (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="absolute top-2 right-2 z-10"
+            >
+              <Youtube className="h-4 w-4 text-red-600 mr-2" />
+              Ver videos explicativos
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Videos Explicativos</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {youtubeVideos.map((video, index) => (
+                <div key={index} className="flex flex-col">
+                  <p className="text-sm mb-2">Video {index + 1}:</p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => openYoutubeVideo(video)}
+                    className="flex items-center"
+                  >
+                    <Youtube className="h-4 w-4 text-red-600 mr-2" />
+                    Ver video
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {showLevelUpReward && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -1380,16 +1362,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1 text-red-600 border-red-200 bg-red-50 hover:bg-red-100 hover:text-red-700"
-                  onClick={() => setShowVideoDialog(true)}
-                >
-                  <Youtube className="h-4 w-4" />
-                  Ver videos explicativos
-                </Button>
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="p-1 h-auto" 
+                  onClick={() => setShowVideoDialog(true)} 
+                  title="Videos explicativos"
+                >
+                  <Youtube className="h-4 w-4 text-red-600" />
+                  {youtubeVideos.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {youtubeVideos.length}
+                    </span>
+                  )}
+                </Button>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
                     P: {problemTimerValue}s
