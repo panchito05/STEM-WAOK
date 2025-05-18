@@ -1284,25 +1284,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas directamente de la UI
     const uiCapturedProblems = captureProblemsFromUI();
     
-    // ENFOQUE DE CAPTURA DOM CON INDEXEDB
+    // ENFOQUE DE CAPTURA DOM DIRECTA
+    
+    // Variable para almacenar la clave del snapshot
+    let domSnapshotKey = `addition_dom_${Date.now()}`;
     
     try {
-      // Importar el servicio de snapshots
-      // (Se importa dinámicamente para evitar problemas si no existe el archivo)
-      import('../../services/SnapshotService').then(async ({ snapshotService }) => {
-        console.log("📸 USANDO DOM SNAPSHOT SERVICE");
+      // Usar el nuevo servicio simplificado de captura de DOM
+      import('../../services/DOMCapture').then(({ captureDOMSnapshot }) => {
+        console.log("📸 USANDO NUEVO SERVICIO DOM CAPTURE");
         
-        // Capturar el DOM después de renderizar la interfaz
-        // (pequeño delay para asegurar que todo esté renderizado)
-        setTimeout(async () => {
-          const snapshotId = await snapshotService.captureExerciseSnapshot("addition");
-          console.log("✅ DOM snapshot guardado con ID:", snapshotId);
+        // Pequeño retraso para asegurar que todo esté renderizado
+        setTimeout(() => {
+          const key = captureDOMSnapshot("addition", {
+            score: finalScore,
+            totalProblems: problemsList.length,
+            timeSpent: timer,
+            difficulty: finalLevel
+          });
+          
+          if (key) {
+            console.log("✅ Ejercicio guardado con clave:", key);
+            domSnapshotKey = key;
+          }
         }, 200);
       }).catch(error => {
-        console.error("❌ Error importando SnapshotService:", error);
+        console.error("❌ Error importando DOMCapture:", error);
       });
     } catch (error) {
-      console.error("❌ Error capturando DOM snapshot:", error);
+      console.error("❌ Error al capturar DOM:", error);
     }
     
     // Guardar el resultado incluyendo referencia a los snapshots
