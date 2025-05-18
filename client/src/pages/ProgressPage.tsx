@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format, parseISO, subDays } from "date-fns";
 import { operationModules } from "@/utils/operationComponents";
-import { Loader2, RefreshCw, Check } from "lucide-react";
+import { Loader2, RefreshCw, Check, X } from "lucide-react";
 
 export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, refreshProgress, isLoading } = useProgress();
@@ -156,6 +156,7 @@ export default function ProgressPage() {
             </div>
           </div>
           <div className="flex items-center gap-2 mt-4 md:mt-0">
+            {/* Botón para actualizar los datos */}
             <Button 
               variant="outline" 
               onClick={handleRefresh} 
@@ -174,8 +175,10 @@ export default function ProgressPage() {
                 </>
               )}
             </Button>
-            <Dialog>
-              <DialogTrigger asChild>
+            
+            {/* Botón para borrar todo el progreso */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
                 <Button variant="destructive" disabled={isClearing || isLoading}>
                   {isClearing ? (
                     <>
@@ -186,31 +189,17 @@ export default function ProgressPage() {
                     "Borrar Progreso"
                   )}
                 </Button>
-              </DialogTrigger>
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isClearing || exerciseHistory.length === 0}>
-                  {isClearing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Clearing...
-                    </>
-                  ) : (
-                    "Clear All Progress"
-                  )}
-                </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogTitle>¿Estás completamente seguro?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete all your progress data and your rewards collection.
+                    Esta acción no se puede deshacer. Eliminará permanentemente todos tus datos de progreso y tu colección de recompensas.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleClearProgress}>Continue</AlertDialogAction>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearProgress}>Continuar</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -629,7 +618,7 @@ export default function ProgressPage() {
                                           }];
                                         }
                                         
-                                        return problemsToShow.map((problem, idx) => {
+                                        return problemsToShow.map((problem: any, idx: number) => {
                                           // Intentar determinar si el problema es correcto
                                           const isCorrect = 
                                             problem.isCorrect !== undefined ? problem.isCorrect :
