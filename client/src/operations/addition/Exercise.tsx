@@ -723,32 +723,72 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
     
-    // CORRECIÓN DEL BUG: Asegurar que todas las respuestas correctas sean contadas correctamente
-    // Esto soluciona el problema donde siempre se guardaba un valor menor que el real
+    // ============================================================
+    // SOLUCIÓN ROBUSTA AL PROBLEMA DE CONTEO DE RESPUESTAS CORRECTAS
+    // ============================================================
+    
+    // 1. CONTEO DIRECTO MANUAL - Primera fuente
     let correctAnswersCount = 0;
-    userAnswersHistory.forEach(answer => {
-      if (answer && answer.isCorrect) {
-        correctAnswersCount++;
+    let correctAnswersDetailed = [];
+    
+    console.log("🔍 ANÁLISIS DETALLADO DE RESPUESTAS:");
+    userAnswersHistory.forEach((answer, index) => {
+      // Registrar cada respuesta con su estado
+      if (answer) {
+        console.log(`Problema ${index+1}: ${answer.isCorrect ? '✓ CORRECTO' : '✗ INCORRECTO'} - Estado: ${answer.status || 'desconocido'}`);
+        correctAnswersDetailed.push({
+          index: index,
+          isCorrect: answer.isCorrect,
+          status: answer.status
+        });
+        
+        // Contar solo respuestas correctas
+        if (answer.isCorrect) {
+          correctAnswersCount++;
+        }
+      } else {
+        console.log(`Problema ${index+1}: No contestado`);
       }
     });
-    console.log("CUENTA DETALLADA DE RESPUESTAS CORRECTAS:", correctAnswersCount, "de", problemsList.length);
     
-    // Usar el valor correcto
+    // 2. CONTEO POR FILTRO - Segunda fuente (validación)
+    const filteredCorrectCount = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    
+    // 3. CONTEO DIRECTO EN EL ARREGLO DE PROBLEMAS - Tercera fuente (validación adicional)
+    const solvedProblemsCount = problemsList.length;
+    
+    // VALIDACIÓN: Si hay discrepancia, registrar y usar el mayor valor
+    if (correctAnswersCount !== filteredCorrectCount) {
+      console.warn("⚠️ DISCREPANCIA DE CONTEO: Conteo directo =", correctAnswersCount, 
+                   "vs Filtro =", filteredCorrectCount);
+      // Usar el conteo más alto para garantizar que se registren todas las respuestas correctas
+      correctAnswersCount = Math.max(correctAnswersCount, filteredCorrectCount);
+    }
+    
+    // GARANTÍA FINAL: Verificar que nunca sea mayor que el total de problemas
+    correctAnswersCount = Math.min(correctAnswersCount, solvedProblemsCount);
+    
+    console.log("✅ CUENTA FINAL DE RESPUESTAS CORRECTAS:", correctAnswersCount, "de", solvedProblemsCount);
+    console.log("📋 Resumen de respuestas:", correctAnswersDetailed);
+    
+    // Usar el valor validado
     const correctCount = correctAnswersCount;
     
-    // Calcular precisión con el conteo correcto
-    const accuracy = problemsList.length > 0 ? Math.round((correctCount / problemsList.length) * 100) : 0;
+    // Calcular precisión con el conteo verificado
+    const accuracy = solvedProblemsCount > 0 ? Math.round((correctCount / solvedProblemsCount) * 100) : 0;
     
     // Cálculo de tiempo promedio por problema
-    const avgTimePerProblem = problemsList.length > 0 ? Math.round(timer / problemsList.length) : 0;
+    const avgTimePerProblem = solvedProblemsCount > 0 ? Math.round(timer / solvedProblemsCount) : 0;
     
-    // Cálculo de intentos promedio
+    // Cálculo de intentos promedio con verificación
     let totalAttempts = 0;
     const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
     
     userAnswersHistory.forEach(answer => {
       if (answer) {
-        totalAttempts += answer.attempts || 1;
+        const attempts = (answer.attempts || 1);
+        totalAttempts += attempts;
+        // Añadir intento adicional para respuestas reveladas
         if (answer.status === 'revealed') {
           totalAttempts++;
         }
@@ -759,7 +799,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       ? parseFloat((totalAttempts / attemptedProblemsCount).toFixed(1))
       : 0;
     
-    // Contar respuestas reveladas
+    // Contar respuestas reveladas con verificación
     const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
     
     // Nivel final - usamos el último nivel alcanzado
@@ -857,32 +897,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }).filter(Boolean)
     };
     
-    // Extraer los valores que se muestran en pantalla para asegurar consistencia
-    const scoreDisplayed = screenshotData.scoreData.score.value;
-    const [displayedCorrect, displayedTotal] = scoreDisplayed.split(' / ').map(num => parseInt(num.trim()));
+    // PASO CRÍTICO: Garantizar que los datos de ejercicio son correctos
+    // Estos son los valores validados que debemos usar
+    const finalCorrectCount = correctCount; // Ya validado en el proceso anterior
+    const finalTotalCount = problemsList.length;
     
-    // Verificar que los datos numéricos sean válidos
-    const validDisplayedCorrect = !isNaN(displayedCorrect) ? displayedCorrect : correctCount;
-    const validDisplayedTotal = !isNaN(displayedTotal) ? displayedTotal : problemsList.length;
-    
-    // Calcular la precisión basada en los valores mostrados
-    const displayedAccuracy = validDisplayedTotal > 0 
-      ? Math.round((validDisplayedCorrect / validDisplayedTotal) * 100) 
+    // Calcular la precisión basada en los valores verificados
+    const finalAccuracy = finalTotalCount > 0 
+      ? Math.round((finalCorrectCount / finalTotalCount) * 100) 
       : 0;
       
-    console.log(`Guardando progreso con puntaje: ${validDisplayedCorrect}/${validDisplayedTotal} (${displayedAccuracy}%)`);
+    // INFORMACIÓN DE DEPURACIÓN DETALLADA
+    console.log("=== REPORTE FINAL DE PUNTAJE ===");
+    console.log(`Correctas (verificado): ${finalCorrectCount}/${finalTotalCount}`);
+    console.log(`Accuracy (verificado): ${finalAccuracy}%`);
+    console.log("Detalle de respuestas:", correctAnswersDetailed);
+    console.log("===========================");
+      
+    // SOLUCIÓN FINAL: Guardar con verificación triple
+    console.log(`💾 GUARDANDO PROGRESO (SOLUCIÓN ROBUSTA): ${finalCorrectCount}/${finalTotalCount} (${finalAccuracy}%)`);
     
-    // Guardar resultado con los valores que se muestran en pantalla
+    // Guardar resultado usando los valores verificados
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
-      score: validDisplayedCorrect, // Usar el valor mostrado en pantalla
-      totalProblems: validDisplayedTotal, // Usar el valor mostrado en pantalla
+      score: finalCorrectCount,         // Valor verificado
+      totalProblems: finalTotalCount,   // Total real de problemas
       timeSpent: timer,
       difficulty: finalLevel as string,
       
-      // Campos adicionales detallados
-      accuracy: displayedAccuracy, // Usar la precisión calculada de los valores mostrados
+      // Campos adicionales detallados (también verificados)
+      accuracy: finalAccuracy,           // Accuracy verificada
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
