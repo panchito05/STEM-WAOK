@@ -325,68 +325,55 @@ export default function ProgressPage() {
                         <CardContent className="p-5 bg-gradient-to-b from-white to-blue-50">
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                              <div className="bg-white shadow p-4 rounded-lg border border-purple-100">
-                                <p className="text-sm font-medium text-purple-600 mb-3">Exercises Completed</p>
-                                <div className="bg-purple-50 rounded-md p-3 border-l-4 border-purple-500">
-                                  <p className="text-2xl font-bold text-purple-700">{progress?.totalCompleted || 0}</p>
-                                  <p className="text-sm text-purple-600 mt-1">Total exercise sessions</p>
-                                </div>
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Exercises Completed</p>
+                                <p className="text-2xl font-bold">{progress?.totalCompleted || 0}</p>
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-orange-100">
-                                <p className="text-sm font-medium text-orange-600 mb-3">Problems Solved</p>
-                                <div className="bg-orange-50 rounded-md p-3 border-l-4 border-orange-500">
-                                  <p className="text-2xl font-bold text-orange-700">
-                                    {(() => {
-                                      const problemsSolved = exerciseHistory
-                                        .filter(ex => ex.operationId === module.id)
-                                        .reduce((sum, ex) => sum + (ex.score || 0), 0);
-                                      
-                                      const totalProblems = exerciseHistory
-                                        .filter(ex => ex.operationId === module.id)
-                                        .reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
-                                      
-                                      return `${problemsSolved} of ${totalProblems}`;
-                                    })()}
-                                  </p>
-                                  <p className="text-sm text-orange-600 mt-1">Individual problems completed</p>
-                                </div>
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Problems Solved</p>
+                                <p className="text-2xl font-bold">
+                                  {(() => {
+                                    const problemsSolved = exerciseHistory
+                                      .filter(ex => ex.operationId === module.id)
+                                      .reduce((sum, ex) => sum + (ex.score || 0), 0);
+                                    
+                                    const totalProblems = exerciseHistory
+                                      .filter(ex => ex.operationId === module.id)
+                                      .reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
+                                    
+                                    return `${problemsSolved} de ${totalProblems}`;
+                                  })()}
+                                </p>
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-teal-100">
-                                <p className="text-sm font-medium text-teal-600 mb-3">Average Score</p>
-                                <div className="bg-teal-50 rounded-md p-3 border-l-4 border-teal-500">
-                                  <p className="text-2xl font-bold text-teal-700">
-                                    {progress?.averageScore 
-                                      ? `${Math.min(100, Math.round(progress.averageScore * 100))}%` 
-                                      : "N/A"}
-                                  </p>
-                                  <p className="text-sm text-teal-600 mt-1">Average accuracy across all sessions</p>
-                                </div>
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Average Score</p>
+                                <p className="text-2xl font-bold">
+                                  {progress?.averageScore 
+                                    ? `${Math.min(100, Math.round(progress.averageScore * 100))}%` 
+                                    : "N/A"}
+                                </p>
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-pink-100">
-                                <p className="text-sm font-medium text-pink-600 mb-3">Best Score</p>
-                                <div className="bg-pink-50 rounded-md p-3 border-l-4 border-pink-500">
-                                  <p className="text-2xl font-bold text-pink-700">
-                                    {progress?.bestScore 
-                                      ? `${Math.min(100, Math.round(progress.bestScore * 100))}%` 
-                                      : "N/A"}
-                                  </p>
-                                  <p className="text-sm text-pink-600 mt-1">Highest accuracy achieved</p>
-                                </div>
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Best Score</p>
+                                <p className="text-2xl font-bold">
+                                  {progress?.bestScore 
+                                    ? `${Math.min(100, Math.round(progress.bestScore * 100))}%` 
+                                    : "N/A"}
+                                </p>
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-blue-100">
-                                <p className="text-sm font-medium text-blue-600 mb-3">Average Time</p>
-                                <div className="space-y-3">
-                                  <div className="bg-blue-50 rounded-md p-3 border-l-4 border-blue-500">
-                                    <p className="text-2xl font-bold text-blue-700">
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Average Time</p>
+                                <div className="mt-2 space-y-1">
+                                  <p className="text-xl">
+                                    <span className="font-bold">
                                       {progress?.averageTime 
                                         ? `${Math.round(progress.averageTime)}s` 
                                         : "N/A"}
-                                    </p>
-                                    <p className="text-sm text-blue-600 mt-1">For each Exercise Block Completed</p>
-                                  </div>
-                                  
-                                  <div className="bg-indigo-50 rounded-md p-3 border-l-4 border-indigo-500">
-                                    <p className="text-2xl font-bold text-indigo-700">
+                                    </span>
+                                    <span className="text-gray-600"> : Per Exercise</span>
+                                  </p>
+                                  <p className="text-xl">
+                                    <span className="font-bold">
                                       {(() => {
                                         const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                         const totalProblems = moduleExercises.reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
@@ -396,37 +383,34 @@ export default function ProgressPage() {
                                           ? `${Math.round(totalTime / totalProblems)}s` 
                                           : "N/A";
                                       })()}
-                                    </p>
-                                    <p className="text-sm text-indigo-600 mt-1">For each Individual Exercise</p>
-                                  </div>
+                                    </span>
+                                    <span className="text-gray-600"> : Per Problem</span>
+                                  </p>
                                 </div>
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-green-100">
-                                <p className="text-sm font-medium text-green-600 mb-3">Total Time</p>
-                                <div className="bg-green-50 rounded-md p-3 border-l-4 border-green-500">
-                                  <p className="text-2xl font-bold text-green-700">
-                                    {(() => {
-                                      const totalSeconds = exerciseHistory
-                                        .filter(ex => ex.operationId === module.id)
-                                        .reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-                                      
-                                      // Formatear tiempo: para minutos:segundos si es menos de una hora
-                                      if (totalSeconds < 3600) {
-                                        const minutes = Math.floor(totalSeconds / 60);
-                                        const seconds = totalSeconds % 60;
-                                        return `${minutes}m ${seconds}s`;
-                                      } 
-                                      // Para horas:minutos:segundos si es más de una hora
-                                      else {
-                                        const hours = Math.floor(totalSeconds / 3600);
-                                        const minutes = Math.floor((totalSeconds % 3600) / 60);
-                                        const seconds = totalSeconds % 60;
-                                        return `${hours}h ${minutes}m ${seconds}s`;
-                                      }
-                                    })()}
-                                  </p>
-                                  <p className="text-sm text-green-600 mt-1">Total practice time in this module</p>
-                                </div>
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Total Time</p>
+                                <p className="text-2xl font-bold">
+                                  {(() => {
+                                    const totalSeconds = exerciseHistory
+                                      .filter(ex => ex.operationId === module.id)
+                                      .reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
+                                    
+                                    // Formatear tiempo: para minutos:segundos si es menos de una hora
+                                    if (totalSeconds < 3600) {
+                                      const minutes = Math.floor(totalSeconds / 60);
+                                      const seconds = totalSeconds % 60;
+                                      return `${minutes}m ${seconds}s`;
+                                    } 
+                                    // Para horas:minutos:segundos si es más de una hora
+                                    else {
+                                      const hours = Math.floor(totalSeconds / 3600);
+                                      const minutes = Math.floor((totalSeconds % 3600) / 60);
+                                      const seconds = totalSeconds % 60;
+                                      return `${hours}h ${minutes}m ${seconds}s`;
+                                    }
+                                  })()}
+                                </p>
                               </div>
                             </div>
                             <Button variant="default" className="w-full bg-blue-500 hover:bg-blue-600" asChild>
