@@ -1262,6 +1262,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
     
+    // Capturar los problemas directamente desde la UI
+    console.log("📸 Capturando DOM de ejercicio addition...");
+    
     // Guardar resultado detallado con los datos de la captura y el puntaje forzado
     saveExerciseResult({
       operationId: "addition",
@@ -1276,11 +1279,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
+      
+      // Guardar los detalles de problemas en ambos formatos para garantizar compatibilidad
       problemDetails: problemDetails,
       
-      // Include the screenshot-like data
+      // Incluir datos de captura en extra_data
       extra_data: {
-        screenshot: screenshotData
+        screenshot: screenshotData,
+        problems: problemDetails, // Usar problemDetails para asegurar compatibilidad
+        captureTimestamp: Date.now()
       }
     });
   };
