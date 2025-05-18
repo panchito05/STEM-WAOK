@@ -547,25 +547,42 @@ export default function ProgressPage() {
                                         // Intenta obtener los detalles del problema de varias fuentes
                                         let problemsToShow = null;
                                         
-                                        // 1. Primero verificar si existe problemDetails directamente
-                                        if (exercise.problemDetails && exercise.problemDetails.length > 0) {
-                                          problemsToShow = exercise.problemDetails;
-                                        } 
-                                        // 2. Si no, intentar extraer de extra_data.screenshot
-                                        else if (exercise.extra_data && exercise.extra_data.screenshot) {
-                                          // Intentar extraer de la estructura de la captura de pantalla
+                                        // Primero intentar recuperar datos del extraData (que es donde se guardan todos los detalles)
+                                        if (exercise.extra_data) {
                                           try {
-                                            const screenshot = 
-                                              typeof exercise.extra_data.screenshot === 'string' 
-                                                ? JSON.parse(exercise.extra_data.screenshot) 
-                                                : exercise.extra_data.screenshot;
+                                            // Convertir extraData de string a objeto si es necesario
+                                            const extraData = typeof exercise.extra_data === 'string' 
+                                              ? JSON.parse(exercise.extra_data) 
+                                              : exercise.extra_data;
+                                            
+                                            // Revisar si hay problemDetails en extraData
+                                            if (extraData.problemDetails && extraData.problemDetails.length > 0) {
+                                              console.log("✅ Encontrados detalles de problemas en extraData:", 
+                                                extraData.problemDetails.length, "problemas para ejercicio ID:", exercise.id);
+                                              problemsToShow = extraData.problemDetails;
+                                            }
+                                            // Si no hay problemDetails, intentar extraer de screenshot
+                                            else if (extraData.screenshot) {
+                                              const screenshot = typeof extraData.screenshot === 'string'
+                                                ? JSON.parse(extraData.screenshot)
+                                                : extraData.screenshot;
                                                 
-                                            if (screenshot && screenshot.problems) {
-                                              problemsToShow = screenshot.problems;
+                                              if (screenshot && screenshot.problems) {
+                                                console.log("✅ Encontrados detalles en screenshot:", 
+                                                  screenshot.problems.length, "problemas para ejercicio ID:", exercise.id);
+                                                problemsToShow = screenshot.problems;
+                                              }
                                             }
                                           } catch (e) {
-                                            console.log("Error parsing screenshot data:", e);
+                                            console.log("Error parsing extraData:", e);
                                           }
+                                        }
+                                        
+                                        // Si no se encontró en extraData, buscar en problemDetails directamente
+                                        if (!problemsToShow && exercise.problemDetails && exercise.problemDetails.length > 0) {
+                                          console.log("✅ Usando problemDetails directos:", 
+                                            exercise.problemDetails.length, "problemas para ejercicio ID:", exercise.id);
+                                          problemsToShow = exercise.problemDetails;
                                         }
                                         
                                         // 3. Si no hay problemas disponibles, mostrar un mensaje informativo
