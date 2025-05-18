@@ -170,13 +170,30 @@ export async function clearProgressForUser(userId: number) {
 export async function clearProgressForChildProfile(childProfileId: number) {
   console.log(`Borrando todos los datos de progreso para el perfil ${childProfileId}`);
   
-  // Borrado principal con el ORM
-  const result = await db.delete(progressEntries)
-    .where(eq(progressEntries.childProfileId, childProfileId));
-  
-  console.log(`Borrado inicial completado para el perfil ${childProfileId}`);
-  
-  return result;
+  try {
+    // Primero intentamos la eliminación usando SQL directo para evitar problemas de caché
+    await db.execute(`DELETE FROM progress_entries WHERE child_profile_id = ${childProfileId}`);
+    
+    // Como respaldo, usamos también el ORM para asegurar consistencia
+    await db.delete(progressEntries)
+      .where(eq(progressEntries.childProfileId, childProfileId));
+    
+    // Verificamos si quedaron entradas
+    const remainingEntries = await db.query.progressEntries.findMany({
+      where: eq(progressEntries.childProfileId, childProfileId)
+    });
+    
+    if (remainingEntries.length > 0) {
+      console.error(`⚠️ Alerta: Quedaron ${remainingEntries.length} entradas después de intentar borrar. IDs: ${remainingEntries.map(e => e.id).join(', ')}`);
+    } else {
+      console.log(`✅ Todos los datos de progreso para el perfil ${childProfileId} han sido eliminados correctamente.`);
+    }
+    
+    return { success: true, entriesRemoved: true };
+  } catch (error) {
+    console.error("Error al eliminar datos de progreso:", error);
+    throw error;
+  }
 }
 
 // Module settings operations

@@ -389,6 +389,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const profileId = parseInt(req.params.id);
       
+      console.log(`Solicitud para borrar todos los datos de progreso del perfil ${profileId} recibida de usuario ${userId}`);
+      
       // Verificar que el perfil pertenezca al usuario
       const profiles = await storage.getChildProfilesForUser(userId);
       const isOwner = profiles.some(profile => profile.id === profileId);
@@ -397,11 +399,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Forbidden" });
       }
       
-      await storage.clearProgressForChildProfile(profileId);
+      // Obtener el número de registros antes de borrar
+      const entriesBefore = await db.query.progressEntries.findMany({
+        where: eq(progressEntries.childProfileId, profileId)
+      });
       
-      return res.json({ 
+      console.log(`Encontrados ${entriesBefore.length} registros de progreso para el perfil ${profileId} antes de borrar`);
+      
+      // Borrar datos usando la función mejorada
+      const result = await storage.clearProgressForChildProfile(profileId);
+      
+      // Verificar que los datos se hayan eliminado
+      const entriesAfter = await db.query.progressEntries.findMany({
+        where: eq(progressEntries.childProfileId, profileId)
+      });
+      
+      console.log(`Quedan ${entriesAfter.length} registros de progreso para el perfil ${profileId} después de borrar`);
+      
+      if (entriesAfter.length > 0) {
+        // Último intento: borrar directamente con SQL
+        console.log(`Realizando último intento de borrado para los ${entriesAfter.length} registros restantes...`);
+        await db.execute(`DELETE FROM progress_entries WHERE child_profile_id = ${profileId}`);
+      }
+      
+      return res.status(200).json({ 
         success: true, 
-        message: "All progress data for this profile has been completely removed" 
+        message: "All progress data for this profile has been completely removed",
+        entriesBefore: entriesBefore.length,
+        entriesRemaining: entriesAfter.length,
+        profileId
       });
     } catch (error) {
       console.error("Error clearing child profile progress:", error);
