@@ -361,19 +361,21 @@ export default function ProgressPage() {
                                     : "N/A"}
                                 </p>
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Average Time</p>
-                                <div className="mt-2 space-y-1">
-                                  <p className="text-xl">
-                                    <span className="font-bold">
+                              <div className="bg-blue-50 shadow p-4 rounded-lg border border-blue-100">
+                                <p className="text-sm text-blue-600 font-medium mb-3">Average Time</p>
+                                <div className="bg-white p-3 rounded-md shadow-sm mb-2 border border-gray-100">
+                                  <p className="text-xl flex justify-between items-center">
+                                    <span className="font-bold text-blue-700">
                                       {progress?.averageTime 
                                         ? `${Math.round(progress.averageTime)}s` 
                                         : "N/A"}
                                     </span>
-                                    <span className="text-gray-600"> : Per Exercise</span>
+                                    <span className="text-gray-600 text-sm"> : For each Exercise Block Completed</span>
                                   </p>
-                                  <p className="text-xl">
-                                    <span className="font-bold">
+                                </div>
+                                <div className="bg-white p-3 rounded-md shadow-sm border border-gray-100">
+                                  <p className="text-xl flex justify-between items-center">
+                                    <span className="font-bold text-blue-700">
                                       {(() => {
                                         const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                         const totalProblems = moduleExercises.reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
@@ -384,7 +386,7 @@ export default function ProgressPage() {
                                           : "N/A";
                                       })()}
                                     </span>
-                                    <span className="text-gray-600"> : Per Problem</span>
+                                    <span className="text-gray-600 text-sm"> : For each Individual Exercise</span>
                                   </p>
                                 </div>
                               </div>
