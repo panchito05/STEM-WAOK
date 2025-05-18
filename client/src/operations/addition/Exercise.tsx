@@ -1265,6 +1265,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas directamente desde la UI
     console.log("📸 Capturando DOM de ejercicio addition...");
     
+    // Crear un formato más simple y estable para los problemas
+    const problemsForStorage = userAnswersHistory.map((answer, index) => {
+      if (!answer) return null;
+      
+      const problem = problemsList[index];
+      if (!problem) return null;
+      
+      // Crear estructuras de datos simples que sean fáciles de serializar/deserializar
+      return {
+        problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+        isCorrect: answer.isCorrect,
+        userAnswer: answer.userAnswer,
+        correctAnswer: problem.correctAnswer,
+        attempts: answer.attempts || 1,
+        timeSpent: answer.timeSpent || avgTimePerProblem,
+        level: finalLevel
+      };
+    }).filter(Boolean);
+    
     // Guardar resultado detallado con los datos de la captura y el puntaje forzado
     saveExerciseResult({
       operationId: "addition",
@@ -1280,14 +1299,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // Guardar los detalles de problemas en ambos formatos para garantizar compatibilidad
-      problemDetails: problemDetails,
+      // Guardar los detalles usando el formato simplificado
+      problemDetails: problemsForStorage,
       
-      // Incluir datos de captura en extra_data
+      // También incluir los detalles en extra_data para redundancia
       extra_data: {
         screenshot: screenshotData,
-        problems: problemDetails, // Usar problemDetails para asegurar compatibilidad
-        captureTimestamp: Date.now()
+        problemDetails: problemsForStorage,
+        timestamp: Date.now()
       }
     });
   };

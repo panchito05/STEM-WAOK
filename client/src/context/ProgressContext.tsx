@@ -286,9 +286,8 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       if (res.ok) {
         const data = await res.json();
         
-        // Actualizamos los datos en el estado
-        // Necesitamos volver a cargar los datos para ver el ejercicio actualizado
-        fetchProgress();
+        // NO llamamos automáticamente a fetchProgress() para evitar duplicación
+        // Ahora esperamos a que la página de progreso se actualice mediante un botón manual
         
         // Verificar si el puntaje parece correcto
         console.log(`📊 Verificando puntaje guardado:
