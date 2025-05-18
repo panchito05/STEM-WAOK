@@ -1284,38 +1284,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas directamente de la UI
     const uiCapturedProblems = captureProblemsFromUI();
     
-    // ENFOQUE DE CAPTURA DOM DIRECTA
-    
-    // Variable para almacenar la clave del snapshot
-    let domSnapshotKey = `addition_dom_${Date.now()}`;
-    
-    try {
-      // Usar el nuevo servicio simplificado de captura de DOM
-      import('../../services/DOMCapture').then(({ captureDOMSnapshot }) => {
-        console.log("📸 USANDO NUEVO SERVICIO DOM CAPTURE");
-        
-        // Pequeño retraso para asegurar que todo esté renderizado
-        setTimeout(() => {
-          const key = captureDOMSnapshot("addition", {
-            score: finalScore,
-            totalProblems: problemsList.length,
-            timeSpent: timer,
-            difficulty: finalLevel
-          });
-          
-          if (key) {
-            console.log("✅ Ejercicio guardado con clave:", key);
-            domSnapshotKey = key;
-          }
-        }, 200);
-      }).catch(error => {
-        console.error("❌ Error importando DOMCapture:", error);
-      });
-    } catch (error) {
-      console.error("❌ Error al capturar DOM:", error);
-    }
-    
-    // Guardar el resultado incluyendo referencia a los snapshots
+    // Guardar el resultado utilizando el nuevo enfoque
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
@@ -1330,32 +1299,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // TERCER ENFOQUE: DOM SNAPSHOTS
+      // NUEVO ENFOQUE: Guardar los problemas capturados directamente de la UI
+      // Estructura simplificada y clara
       extra_data: {
-        // Datos para el nuevo sistema de DOM Snapshots
-        domSnapshot: {
-          timestamp: Date.now(),
-          snapshotId: `addition_${Date.now()}` // ID predecible para poder encontrarlo después
-        },
+        // Campo principal donde se buscarán los problemas
+        uiProblems: uiCapturedProblems,
         
-        // Mantener compatibilidad con enfoques anteriores
-        uiProblems: problemsList.map((problem, index) => {
-          const answer = userAnswersHistory[index];
-          if (!answer) return null;
-          
-          return {
-            problemNumber: index + 1,
-            problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
-            isCorrect: answer.isCorrect,
-            info: `Lvl: ${finalLevel === "beginner" ? "1" : 
-                  finalLevel === "elementary" ? "2" : 
-                  finalLevel === "intermediate" ? "3" : 
-                  finalLevel === "advanced" ? "4" : "5"}, Att: ${answer.attempts || 1}, T: ${Math.round(timer / problemsList.length)}s`
-          };
-        }).filter(Boolean),
+        // Para compatibilidad con el código existente, incluir en lugares alternativos
+        exactProblems: uiCapturedProblems,
+        capturedProblems: uiCapturedProblems,
         
-        // Fecha de captura para poder relacionar
+        // También guardar la fecha de captura para poder relacionar con localStorage
         captureTimestamp: Date.now(),
+        
+        // Incluir capturas anteriores para mayor compatibilidad
+        screenshot: { 
+          ...screenshotData,
+          problemReview: uiCapturedProblems 
+        }
       }
     });
   };
