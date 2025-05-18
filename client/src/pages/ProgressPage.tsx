@@ -17,6 +17,7 @@ export default function ProgressPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
   const [selectedExercise, setSelectedExercise] = useState<ExerciseResult | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Función para refrescar los datos manualmente
   const handleRefresh = useCallback(async () => {
