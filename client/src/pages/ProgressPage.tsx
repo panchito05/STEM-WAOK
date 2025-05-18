@@ -332,9 +332,17 @@ export default function ProgressPage() {
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Problems Solved</p>
                                 <p className="text-2xl font-bold">
-                                  {exerciseHistory
-                                    .filter(ex => ex.operationId === module.id)
-                                    .reduce((sum, ex) => sum + (ex.score || 0), 0)}
+                                  {(() => {
+                                    const problemsSolved = exerciseHistory
+                                      .filter(ex => ex.operationId === module.id)
+                                      .reduce((sum, ex) => sum + (ex.score || 0), 0);
+                                    
+                                    const totalProblems = exerciseHistory
+                                      .filter(ex => ex.operationId === module.id)
+                                      .reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
+                                    
+                                    return `${problemsSolved} de ${totalProblems}`;
+                                  })()}
                                 </p>
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
