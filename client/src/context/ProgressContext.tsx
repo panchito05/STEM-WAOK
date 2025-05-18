@@ -323,13 +323,19 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     if (!isAuthenticated) return;
     
     try {
+      // Clear server data
       await apiRequest("DELETE", "/api/progress", {});
+      
+      // Clear state
       setExerciseHistory([]);
       setModuleProgress({});
       
+      // Clear local storage data
+      localStorage.clear();
+      
       toast({
         title: "Progress Cleared",
-        description: "All progress data has been reset",
+        description: "All progress data has been completely removed",
       });
     } catch (error) {
       toast({
