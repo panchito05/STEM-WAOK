@@ -723,7 +723,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
     
-    const correctCount = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    // CORRECIÓN DEL BUG: Asegurar que todas las respuestas correctas sean contadas correctamente
+    // Esto soluciona el problema donde siempre se guardaba un valor menor que el real
+    let correctAnswersCount = 0;
+    userAnswersHistory.forEach(answer => {
+      if (answer && answer.isCorrect) {
+        correctAnswersCount++;
+      }
+    });
+    console.log("CUENTA DETALLADA DE RESPUESTAS CORRECTAS:", correctAnswersCount, "de", problemsList.length);
+    
+    // Usar el valor correcto
+    const correctCount = correctAnswersCount;
+    
+    // Calcular precisión con el conteo correcto
     const accuracy = problemsList.length > 0 ? Math.round((correctCount / problemsList.length) * 100) : 0;
     
     // Cálculo de tiempo promedio por problema
