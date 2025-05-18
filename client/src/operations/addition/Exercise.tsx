@@ -1223,6 +1223,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
     
+    // SOLUCIÓN DEFINITIVA: Capturar exactamente los problemas que se muestran en la pantalla
+    // Crear un array con los problemas formateados exactamente como aparecen en Problem Review
+    const exactProblemsCaptured = userAnswersHistory.map((answer, index) => {
+      if (!answer) return null;
+      
+      const problem = problemsList[index];
+      if (!problem) return null;
+      
+      // Formatear exactamente como aparece en la UI
+      const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+      
+      return {
+        problem: problemText,
+        isCorrect: answer.isCorrect,
+        attempts: (answer.attempts || 1).toString(),
+        timeSpent: Math.round(timer / problemsList.length),
+        level: finalLevel === "beginner" ? "1" : 
+               finalLevel === "elementary" ? "2" : 
+               finalLevel === "intermediate" ? "3" : 
+               finalLevel === "advanced" ? "4" : "5"
+      };
+    }).filter(Boolean); // Eliminar los null
+    
+    console.log("🔍 PROBLEMAS CAPTURADOS EXACTAMENTE:", exactProblemsCaptured);
+    
     // Guardar resultado detallado con los datos de la captura y el puntaje forzado
     saveExerciseResult({
       operationId: "addition",
@@ -1239,11 +1264,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       revealedAnswers: revealedAnswers,
       problemDetails: problemDetails,
       
-      // Incluir TODOS los datos necesarios para mostrar exactamente los mismos problemas
+      // SOLUCIÓN DEFINITIVA: Guardar los problemas exactos en CADA campo donde podrían buscarse
       extra_data: {
-        screenshot: screenshotData,
-        // GUARDAR LOS PROBLEMAS EXACTOS para que se muestren en el modal
-        exactProblems: screenshotData.exactProblems
+        screenshot: {...screenshotData, exactProblems: exactProblemsCaptured},
+        exactProblems: exactProblemsCaptured,
+        capturedProblems: exactProblemsCaptured,
+        problemReview: exactProblemsCaptured
       }
     });
   };
