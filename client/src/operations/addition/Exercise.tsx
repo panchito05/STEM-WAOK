@@ -33,6 +33,15 @@ const verticalOperandStyle = "font-mono text-2xl sm:text-3xl text-right tracking
 const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
+// Interface para los metadatos de videos de YouTube
+interface YoutubeVideoMetadata {
+  url: string;
+  title: string;
+  thumbnailUrl: string;
+  loading: boolean;
+  error: boolean;
+}
+
 // Componente para gestionar videos explicativos de YouTube
 const YoutubeVideoDialog = ({ 
   isOpen, 
@@ -46,6 +55,74 @@ const YoutubeVideoDialog = ({
   onSave: (newVideos: string[]) => void;
 }) => {
   const [videoLinks, setVideoLinks] = useState<string[]>([...videos]);
+  const [videosMetadata, setVideosMetadata] = useState<YoutubeVideoMetadata[]>([]);
+  const [isEditMode, setIsEditMode] = useState(videos.length === 0);
+  
+  // Función para extraer el ID de video de YouTube de una URL
+  const extractYoutubeId = (url: string): string | null => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  // Cargar los metadatos de los videos cuando se abre el diálogo
+  useEffect(() => {
+    if (isOpen && videos.length > 0 && !isEditMode) {
+      const fetchVideoMetadata = async () => {
+        const metadata: YoutubeVideoMetadata[] = [];
+        
+        for (const videoUrl of videos) {
+          const videoId = extractYoutubeId(videoUrl);
+          if (!videoId) {
+            metadata.push({
+              url: videoUrl,
+              title: "Video no válido",
+              thumbnailUrl: "",
+              loading: false,
+              error: true
+            });
+            continue;
+          }
+          
+          try {
+            // Usamos la API de oEmbed de YouTube para obtener metadatos
+            const response = await fetch(`https://www.youtube.com/oembed?url=${videoUrl}&format=json`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              metadata.push({
+                url: videoUrl,
+                title: data.title || "Video de YouTube",
+                thumbnailUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+                loading: false,
+                error: false
+              });
+            } else {
+              metadata.push({
+                url: videoUrl,
+                title: "Video no encontrado",
+                thumbnailUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+                loading: false,
+                error: true
+              });
+            }
+          } catch (error) {
+            metadata.push({
+              url: videoUrl,
+              title: "Error al cargar información",
+              thumbnailUrl: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : "",
+              loading: false,
+              error: true
+            });
+          }
+        }
+        
+        setVideosMetadata(metadata);
+      };
+      
+      fetchVideoMetadata();
+    }
+  }, [isOpen, videos, isEditMode]);
   
   const handleVideoChange = (index: number, value: string) => {
     const newLinks = [...videoLinks];
@@ -69,55 +146,115 @@ const YoutubeVideoDialog = ({
     // Filtrar enlaces vacíos
     const filteredLinks = videoLinks.filter(link => link.trim() !== '');
     onSave(filteredLinks);
-    onClose();
+    setIsEditMode(false);
+    if (filteredLinks.length === 0) {
+      onClose();
+    }
+  };
+  
+  const handleEnterEditMode = () => {
+    setIsEditMode(true);
+    setVideoLinks([...videos]);
   };
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Añadir Videos Explicativos</DialogTitle>
+          <DialogTitle>{isEditMode ? "Añadir Videos Explicativos" : "Videos Explicativos"}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="text-sm text-gray-600 mb-2">
-            Añade hasta 2 enlaces de YouTube para videos explicativos de este ejercicio.
-          </div>
-          
-          {videoLinks.map((link, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                placeholder="https://www.youtube.com/watch?v=..."
-                value={link}
-                onChange={(e) => handleVideoChange(index, e.target.value)}
-                className="flex-1"
-              />
+        
+        {isEditMode ? (
+          // Modo de edición
+          <div className="space-y-4 py-4">
+            <div className="text-sm text-gray-600 mb-2">
+              Añade hasta 2 enlaces de YouTube para videos explicativos de este ejercicio.
+            </div>
+            
+            {videoLinks.map((link, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={link}
+                  onChange={(e) => handleVideoChange(index, e.target.value)}
+                  className="flex-1"
+                />
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={() => removeVideo(index)}
+                  type="button"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            
+            {videoLinks.length < 2 && (
               <Button 
                 variant="outline" 
-                size="icon" 
-                onClick={() => removeVideo(index)}
+                size="sm" 
+                onClick={addVideoInput}
                 type="button"
+                className="mt-2"
               >
-                <X className="h-4 w-4" />
+                <Plus className="h-4 w-4 mr-2" /> Añadir Video
               </Button>
-            </div>
-          ))}
-          
-          {videoLinks.length < 2 && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={addVideoInput}
-              type="button"
-              className="mt-2"
-            >
-              <Plus className="h-4 w-4 mr-2" /> Añadir Video
-            </Button>
-          )}
-        </div>
-        <DialogFooter>
-          <Button type="button" onClick={onClose} variant="outline">Cancelar</Button>
-          <Button type="button" onClick={handleSave}>Guardar</Button>
-        </DialogFooter>
+            )}
+            
+            <DialogFooter className="mt-4">
+              <Button type="button" onClick={() => {
+                setIsEditMode(false);
+                if (videos.length === 0) onClose();
+              }} variant="outline">
+                Cancelar
+              </Button>
+              <Button type="button" onClick={handleSave}>Guardar</Button>
+            </DialogFooter>
+          </div>
+        ) : (
+          // Modo de visualización
+          <div className="space-y-6 py-4">
+            {videosMetadata.map((video, index) => (
+              <div key={index} className="border rounded-lg overflow-hidden">
+                <div className="relative aspect-video bg-gray-100">
+                  {video.thumbnailUrl ? (
+                    <img 
+                      src={video.thumbnailUrl} 
+                      alt={video.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                      <Youtube className="h-12 w-12 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 p-2">
+                    <h3 className="text-white text-sm font-medium truncate">{video.title}</h3>
+                  </div>
+                </div>
+                <div className="p-3 flex justify-between items-center">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => window.open(video.url, '_blank')}
+                  >
+                    <Youtube className="h-4 w-4 text-red-600 mr-2" />
+                    Ver video
+                  </Button>
+                </div>
+              </div>
+            ))}
+            
+            <DialogFooter>
+              <Button type="button" onClick={handleEnterEditMode} variant="outline">
+                <Cog className="h-4 w-4 mr-2" />
+                Editar videos
+              </Button>
+              <Button type="button" onClick={onClose}>Cerrar</Button>
+            </DialogFooter>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
