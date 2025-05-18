@@ -1392,11 +1392,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     onClick={() => { 
                         if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) { 
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-                            // Formateamos la respuesta correcta para mostrar los decimales cuando corresponda
-                            const formattedAnswer = currentProblem.answerDecimalPosition && currentProblem.answerDecimalPosition > 0
-                                ? currentProblem.correctAnswer.toFixed(currentProblem.answerDecimalPosition)
-                                : currentProblem.correctAnswer.toString();
-                            setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: formattedAnswer }));
+                            // Usamos la respuesta correcta del problema directamente
+                            setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
                             setFeedbackColor("blue");
                             setWaitingForContinue(true); // Pone waitingRef.current = true
                             const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;

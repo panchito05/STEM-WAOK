@@ -226,43 +226,31 @@ export default function ProgressPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="h-80">
-                      {/* Verifica si hay datos para mostrar */}
-                      {recentProgressData.some(day => 
-                        operationModules
-                          .filter(module => !module.comingSoon)
-                          .some(module => day[module.id] > 0)
-                      ) ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart
-                            data={recentProgressData}
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="date" />
-                            <YAxis unit="%" domain={[0, 100]} />
-                            <Tooltip formatter={(value) => [`${value}%`, ""]} />
-                            <Legend />
-                            {operationModules
-                              .filter(module => !module.comingSoon)
-                              .map(module => (
-                                <Line
-                                  key={module.id}
-                                  type="monotone"
-                                  dataKey={module.id}
-                                  name={module.displayName}
-                                  stroke={getModuleColor(module.id)}
-                                  activeDot={{ r: 8 }}
-                                />
-                              ))
-                            }
-                          </LineChart>
-                        </ResponsiveContainer>
-                      ) : (
-                        <div className="flex items-center justify-center h-full flex-col">
-                          <p className="text-gray-500 text-center">No hay datos disponibles para mostrar.</p>
-                          <p className="text-gray-500 text-center mt-2">Completa algunos ejercicios para ver tu progreso aquí.</p>
-                        </div>
-                      )}
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                          data={recentProgressData}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis unit="%" domain={[0, 100]} />
+                          <Tooltip formatter={(value) => [`${value}%`, ""]} />
+                          <Legend />
+                          {operationModules
+                            .filter(module => !module.comingSoon)
+                            .map(module => (
+                              <Line
+                                key={module.id}
+                                type="monotone"
+                                dataKey={module.id}
+                                name={module.displayName}
+                                stroke={getModuleColor(module.id)}
+                                activeDot={{ r: 8 }}
+                              />
+                            ))
+                          }
+                        </LineChart>
+                      </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
@@ -274,26 +262,19 @@ export default function ProgressPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="h-80">
-                      {moduleComparisonData.some(module => module.accuracy > 0) ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                          <BarChart
-                            data={moduleComparisonData}
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                          >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis unit="%" domain={[0, 100]} />
-                            <Tooltip formatter={(value) => [`${value}%`, ""]} />
-                            <Legend />
-                            <Bar dataKey="accuracy" name="Accuracy" fill="#3B82F6" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      ) : (
-                        <div className="flex items-center justify-center h-full flex-col">
-                          <p className="text-gray-500 text-center">No hay datos disponibles para mostrar.</p>
-                          <p className="text-gray-500 text-center mt-2">Completa algunos ejercicios para ver tu comparación de módulos aquí.</p>
-                        </div>
-                      )}
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart
+                          data={moduleComparisonData}
+                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis unit="%" domain={[0, 100]} />
+                          <Tooltip formatter={(value) => [`${value}%`, ""]} />
+                          <Legend />
+                          <Bar dataKey="accuracy" name="Accuracy" fill="#3B82F6" />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
                   </CardContent>
                 </Card>
