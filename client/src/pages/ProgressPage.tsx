@@ -10,8 +10,9 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { format, parseISO, subDays } from "date-fns";
 import { operationModules } from "@/utils/operationComponents";
 import { Loader2, RefreshCw, Check, X } from "lucide-react";
-// Importar el nuevo componente de modal de detalles
+// Importar el componente de modal de detalles
 import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
+import { clearAllDOMSnapshots } from "@/services/DOMCapture";
 
 export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, refreshProgress, isLoading } = useProgress();
@@ -48,634 +49,282 @@ export default function ProgressPage() {
 
   const handleClearProgress = async () => {
     setIsClearing(true);
-    await clearProgress();
-    setIsClearing(false);
-  };
-
-  // Prepare data for charts
-  const getModuleColor = (moduleId: string) => {
-    const colorMap: Record<string, string> = {
-      addition: "#3B82F6", // primary
-      subtraction: "#8B5CF6", // secondary
-      multiplication: "#10B981", // success
-      division: "#F59E0B", // amber-500
-      fractions: "#EF4444", // error
-    };
-    return colorMap[moduleId] || "#6B7280"; // gray-500 as default
-  };
-
-  // Recent progress data - last 7 days
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const date = subDays(new Date(), i);
-    return {
-      date: format(date, "MMM dd"),
-      dateObj: date,
-    };
-  }).reverse();
-
-  const recentProgressData = last7Days.map(day => {
-    const dayResults = exerciseHistory ? exerciseHistory.filter(result => {
-      if (!result || !result.date) return false;
-      const resultDate = parseISO(result.date);
-      return (
-        resultDate.getDate() === day.dateObj.getDate() &&
-        resultDate.getMonth() === day.dateObj.getMonth() &&
-        resultDate.getFullYear() === day.dateObj.getFullYear()
-      );
-    }) : [];
-
-    const dayData: any = {
-      date: day.date,
-    };
-
-    operationModules.forEach(module => {
-      if (!module.comingSoon) {
-        const moduleResults = dayResults.filter(result => result.operationId === module.id);
-        if (moduleResults.length > 0) {
-          const avgScore = moduleResults.reduce((sum, result) => sum + (result.score / result.totalProblems), 0) / moduleResults.length;
-          dayData[module.id] = Math.round(avgScore * 100);
-        } else {
-          dayData[module.id] = 0;
-        }
-      }
-    });
-
-    return dayData;
-  });
-
-  // Module comparison data
-  const moduleComparisonData = operationModules
-    .filter(module => !module.comingSoon)
-    .map(module => {
-      const progress = moduleProgress[module.id];
-      return {
-        name: module.displayName,
-        completed: progress?.totalCompleted || 0,
-        accuracy: progress?.averageScore ? Math.round(progress.averageScore * 100) : 0,
-        color: getModuleColor(module.id)
-      };
-    });
-
-  // Recent exercises list
-  const recentExercises = [...exerciseHistory]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 10);
-
-  const getDifficultyBadgeClass = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner": return "bg-green-100 text-green-800";
-      case "intermediate": return "bg-yellow-100 text-yellow-800";
-      case "advanced": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+    try {
+      // Limpiar también los snapshots DOM guardados
+      clearAllDOMSnapshots();
+      
+      // Limpiar todo el progreso
+      await clearProgress();
+      setLastUpdateTime(new Date());
+    } catch (error) {
+      console.error("Error al borrar progreso:", error);
+    } finally {
+      setIsClearing(false);
     }
   };
 
-  const getModuleName = (id: string) => {
-    const module = operationModules.find(m => m.id === id);
-    return module?.displayName || id;
+  const handleOpenExerciseDetails = (exercise: ExerciseResult) => {
+    setSelectedExercise(exercise);
+    setIsModalOpen(true);
   };
+
+  // Filtrar los ejercicios recientes para la vista de tabla
+  const recentExercises = [...exerciseHistory].sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  ).slice(0, 20);
+  
+  // Preparar datos para el gráfico
+  const getOperationName = (id: string) => {
+    const module = operationModules.find(m => m.id === id);
+    return module?.name || id;
+  };
+
+  // Obtener los últimos 30 días para el gráfico de tendencia
+  const last30DaysData = Array.from({ length: 30 }).map((_, index) => {
+    const date = subDays(new Date(), 29 - index);
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const dayExercises = exerciseHistory.filter(ex => 
+      ex.date.startsWith(dateStr)
+    );
+    
+    return {
+      date: dateStr,
+      count: dayExercises.length,
+      avgScore: dayExercises.length > 0 
+        ? Math.round(dayExercises.reduce((sum, ex) => sum + (ex.score / ex.totalProblems * 100), 0) / dayExercises.length) 
+        : 0
+    };
+  });
+
+  // Datos por operación
+  const operationStatsData = operationModules.map(module => {
+    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+    const totalExercises = moduleExercises.length;
+    const totalProblems = moduleExercises.reduce((sum, ex) => sum + ex.totalProblems, 0);
+    const totalCorrect = moduleExercises.reduce((sum, ex) => sum + ex.score, 0);
+    const accuracy = totalProblems > 0 ? Math.round((totalCorrect / totalProblems) * 100) : 0;
+    
+    return {
+      name: module.name,
+      exerciseCount: totalExercises,
+      problemCount: totalProblems,
+      accuracy
+    };
+  }).filter(stats => stats.exerciseCount > 0);
 
   return (
     <>
       <Helmet>
-        <title>Your Progress - Math W+A+O+K</title>
-        <meta name="description" content="Track your math learning progress and view your performance statistics." />
+        <title>Tu Progreso - Math W.A.O.K.</title>
       </Helmet>
-      
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Your Progress</h1>
-            <p className="text-gray-600">Track your math learning journey</p>
-            <p className="text-xs text-gray-500 mt-1">
-              Last updated: {format(lastUpdateTime, "MMM dd, yyyy HH:mm:ss")}
-            </p>
-          </div>
-          <div className="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+
+      <div className="container py-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Tu Progreso</h1>
+          <div className="flex items-center gap-2">
             <Button 
               variant="outline" 
-              size="sm"
-              onClick={handleRefresh} 
+              size="sm" 
               disabled={isRefreshing}
-              className="flex items-center"
+              onClick={handleRefresh}
+              className="flex items-center gap-1"
             >
-              {isRefreshing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Refresh Data
-                </>
-              )}
+              {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              Actualizar Datos
             </Button>
+            
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isClearing || exerciseHistory.length === 0}>
-                  {isClearing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Clearing...
-                    </>
-                  ) : (
-                    "Clear All Progress"
-                  )}
-                </Button>
+                <Button variant="destructive" size="sm">Borrar Todo el Progreso</Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete all your progress data and your rewards collection.
+                    Esta acción no se puede deshacer. Borrará todo tu historial de ejercicios y recompensas.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleClearProgress}>Continue</AlertDialogAction>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={handleClearProgress}
+                    disabled={isClearing}
+                  >
+                    {isClearing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Borrar Todo'}
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           </div>
         </div>
-        
+
+        <p className="text-sm text-gray-500 mb-6">
+          Última actualización: {lastUpdateTime.toLocaleString()}
+        </p>
+
         {exerciseHistory.length === 0 ? (
           <Card>
-            <CardContent className="py-10">
-              <div className="text-center">
-                <h3 className="text-lg font-medium text-gray-900">No progress data yet</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Complete exercises to start tracking your progress
-                </p>
-                <Button className="mt-4" asChild>
-                  <a href="/">Start an Exercise</a>
-                </Button>
-              </div>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <p className="text-lg text-gray-500 mb-4">No tienes ejercicios completados todavía.</p>
+              <p className="text-sm text-gray-400">¡Completa algunos ejercicios para comenzar a ver tu progreso!</p>
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue="detailed">
-            <TabsList className="mb-6">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="detailed">Detailed Progress</TabsTrigger>
-              <TabsTrigger value="recent">Recent Exercises</TabsTrigger>
+          <Tabs defaultValue="recent">
+            <TabsList className="mb-4">
+              <TabsTrigger value="recent">Ejercicios Recientes</TabsTrigger>
+              <TabsTrigger value="trends">Tendencias</TabsTrigger>
+              <TabsTrigger value="stats">Estadísticas</TabsTrigger>
             </TabsList>
-            
-            <TabsContent value="overview">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Progress</CardTitle>
-                    <CardDescription>Your performance over the last 7 days</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                          data={recentProgressData}
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="date" />
-                          <YAxis unit="%" domain={[0, 100]} />
-                          <Tooltip formatter={(value) => [`${value}%`, ""]} />
-                          <Legend />
-                          {operationModules
-                            .filter(module => !module.comingSoon)
-                            .map(module => (
-                              <Line
-                                key={module.id}
-                                type="monotone"
-                                dataKey={module.id}
-                                name={module.displayName}
-                                stroke={getModuleColor(module.id)}
-                                activeDot={{ r: 8 }}
-                              />
-                            ))
-                          }
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Module Comparison</CardTitle>
-                    <CardDescription>Comparing your performance across modules</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-80">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={moduleComparisonData}
-                          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis unit="%" domain={[0, 100]} />
-                          <Tooltip formatter={(value) => [`${value}%`, ""]} />
-                          <Legend />
-                          <Bar dataKey="accuracy" name="Accuracy" fill="#3B82F6" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="detailed">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {operationModules
-                  .filter(module => !module.comingSoon)
-                  .map(module => {
-                    const progress = moduleProgress[module.id];
-                    return (
-                      <Card key={module.id} className="overflow-hidden transition-all">
-                        <div 
-                          className="flex justify-between items-center p-4 border-b border-gray-200 relative overflow-hidden"
-                          style={{ 
-                            backgroundColor: module.color || '#4287f5',
-                            color: 'white'
-                          }}
-                        >
-                          {/* Background pattern */}
-                          <div className="absolute inset-0 opacity-10">
-                            <svg className="w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                              <defs>
-                                <pattern id={`grid-${module.id}`} width="10" height="10" patternUnits="userSpaceOnUse">
-                                  <circle cx="2" cy="2" r="1" fill="white" />
-                                </pattern>
-                              </defs>
-                              <rect width="100%" height="100%" fill={`url(#grid-${module.id})`} />
-                            </svg>
-                          </div>
-                          
-                          <div className="flex items-center relative z-10">
-                            <div className="flex items-center">
-                              <div className="mr-3 bg-white/25 p-2 rounded-lg shadow-inner">
-                                {module.icon === "Plus" && <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
-                                {module.icon === "PieChart" && <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>}
-                                {module.icon === "Hash" && <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" /></svg>}
-                                {!module.icon && <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
-                              </div>
-                              <h3 className="text-xl font-bold text-white">
-                                {module.displayName}
-                              </h3>
-                            </div>
-                          </div>
-                        </div>
-                        <CardContent className="p-5 bg-gradient-to-b from-white to-blue-50">
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Exercises Completed</p>
-                                <p className="text-2xl font-bold">{progress?.totalCompleted || 0}</p>
-                              </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Problems Solved</p>
-                                <p className="text-2xl font-bold">
-                                  {(() => {
-                                    const problemsSolved = exerciseHistory
-                                      .filter(ex => ex.operationId === module.id)
-                                      .reduce((sum, ex) => sum + (ex.score || 0), 0);
-                                    
-                                    const totalProblems = exerciseHistory
-                                      .filter(ex => ex.operationId === module.id)
-                                      .reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
-                                    
-                                    return `${problemsSolved} de ${totalProblems}`;
-                                  })()}
-                                </p>
-                              </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Average Score</p>
-                                <p className="text-2xl font-bold">
-                                  {progress?.averageScore 
-                                    ? `${Math.min(100, Math.round(progress.averageScore * 100))}%` 
-                                    : "N/A"}
-                                </p>
-                              </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Best Score</p>
-                                <p className="text-2xl font-bold">
-                                  {progress?.bestScore 
-                                    ? `${Math.min(100, Math.round(progress.bestScore * 100))}%` 
-                                    : "N/A"}
-                                </p>
-                              </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Average Time For Each Exercise Block Completed</p>
-                                <p className="text-xl mt-2">
-                                  <span className="font-bold">
-                                    {progress?.averageTime 
-                                      ? `${Math.round(progress.averageTime)}s` 
-                                      : "N/A"}
-                                  </span>
-                                </p>
-                              </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Total Time</p>
-                                <p className="text-2xl font-bold">
-                                  {(() => {
-                                    const totalSeconds = exerciseHistory
-                                      .filter(ex => ex.operationId === module.id)
-                                      .reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-                                    
-                                    // Formatear tiempo: para minutos:segundos si es menos de una hora
-                                    if (totalSeconds < 3600) {
-                                      const minutes = Math.floor(totalSeconds / 60);
-                                      const seconds = totalSeconds % 60;
-                                      return `${minutes}m ${seconds}s`;
-                                    } 
-                                    // Para horas:minutos:segundos si es más de una hora
-                                    else {
-                                      const hours = Math.floor(totalSeconds / 3600);
-                                      const minutes = Math.floor((totalSeconds % 3600) / 60);
-                                      const seconds = totalSeconds % 60;
-                                      return `${hours}h ${minutes}m ${seconds}s`;
-                                    }
-                                  })()}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="bg-white shadow p-3 rounded-lg border border-gray-100 w-full mb-3">
-                              <p className="text-sm text-gray-500">Average Time For Each Individual Exercise</p>
-                              <p className="text-xl mt-2">
-                                <span className="font-bold">
-                                  {(() => {
-                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    const totalProblems = moduleExercises.reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
-                                    const totalTime = moduleExercises.reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-                                    
-                                    return totalProblems > 0 
-                                      ? `${Math.round(totalTime / totalProblems)}s` 
-                                      : "N/A";
-                                  })()}
-                                </span>
-                              </p>
-                            </div>
-                            <Button variant="default" className="w-full bg-blue-500 hover:bg-blue-600" asChild>
-                              <a href={`/operation/${module.id}`}>Practice Again</a>
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-              </div>
-            </TabsContent>
             
             <TabsContent value="recent">
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Exercise History</CardTitle>
-                  <CardDescription>Your last 10 completed exercises</CardDescription>
+                  <CardTitle>Ejercicios Recientes</CardTitle>
+                  <CardDescription>
+                    Los últimos {recentExercises.length} ejercicios que has completado
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="w-full border-collapse">
                       <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-4">Date</th>
-                          <th className="text-left py-3 px-4">Module</th>
-                          <th className="text-left py-3 px-4">Difficulty</th>
-                          <th className="text-left py-3 px-4">Score</th>
-                          <th className="text-left py-3 px-4">Time</th>
-                          <th className="text-left py-3 px-4">Actions</th>
+                        <tr className="bg-gray-100 dark:bg-gray-800">
+                          <th className="px-4 py-2 text-left">Fecha</th>
+                          <th className="px-4 py-2 text-left">Operación</th>
+                          <th className="px-4 py-2 text-left">Dificultad</th>
+                          <th className="px-4 py-2 text-left">Puntuación</th>
+                          <th className="px-4 py-2 text-left">Tiempo</th>
+                          <th className="px-4 py-2 text-left">Acciones</th>
                         </tr>
                       </thead>
                       <tbody>
                         {recentExercises.map((exercise: ExerciseResult, index: number) => (
-                          <tr key={index} className="border-b">
-                            <td className="py-3 px-4">
-                              {format(new Date(exercise.date || exercise.createdAt || new Date()), "MMMM dd, yyyy h:mm a")}
+                          <tr key={index} className="border-b hover:bg-gray-50 dark:hover:bg-gray-900">
+                            <td className="px-4 py-3">
+                              {new Date(exercise.date).toLocaleString('es-ES', { 
+                                dateStyle: 'medium', 
+                                timeStyle: 'short' 
+                              })}
                             </td>
-                            <td className="py-3 px-4">{getModuleName(exercise.operationId)}</td>
-                            <td className="py-3 px-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyBadgeClass(exercise.difficulty || 'beginner')}`}>
-                                {(exercise.difficulty || 'beginner').charAt(0).toUpperCase() + (exercise.difficulty || 'beginner').slice(1)}
+                            <td className="px-4 py-3">{getOperationName(exercise.operationId)}</td>
+                            <td className="px-4 py-3">
+                              {exercise.difficulty === 'beginner' && 'Principiante'}
+                              {exercise.difficulty === 'elementary' && 'Elemental'}
+                              {exercise.difficulty === 'intermediate' && 'Intermedio'}
+                              {exercise.difficulty === 'advanced' && 'Avanzado'}
+                              {exercise.difficulty === 'expert' && 'Experto'}
+                            </td>
+                            <td className="px-4 py-3">
+                              {exercise.score}/{exercise.totalProblems}
+                              <span className="ml-2 text-xs text-gray-500">
+                                ({Math.round(exercise.score / exercise.totalProblems * 100)}%)
                               </span>
                             </td>
-                            <td className="py-3 px-4">
-                              {exercise.score !== undefined && exercise.totalProblems ? 
-                                `${exercise.score}/${exercise.totalProblems} (${Math.round((exercise.score / exercise.totalProblems) * 100)}%)` : 
-                                "N/A"}
+                            <td className="px-4 py-3">
+                              {Math.round(exercise.timeSpent)}s
                             </td>
-                            <td className="py-3 px-4">{exercise.timeSpent !== undefined ? `${exercise.timeSpent}s` : "N/A"}</td>
-                            <td className="py-3 px-4">
+                            <td className="px-4 py-3">
                               <Button 
                                 variant="outline" 
-                                size="sm" 
-                                onClick={() => {
-                                  setSelectedExercise(exercise);
-                                  setIsModalOpen(true);
-                                }}
+                                size="sm"
+                                onClick={() => handleOpenExerciseDetails(exercise)}
                               >
-                                Ver detalles
+                                Ver Detalles
                               </Button>
-                            </td>
-                                      {(() => {
-                                        // Intenta obtener los detalles del problema de varias fuentes
-                                        let problemsToShow = null;
-                                        
-                                        // En lugar de crear problemas aleatorios, mostraremos un mensaje claro
-                                        // indicando que estos son los problemas específicos del ejercicio seleccionado
-                                        const getProblemDescription = () => {
-                                          return [{
-                                            isPlaceholder: true,
-                                            problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' : 
-                                                       exercise.operationId === 'fractions' ? 'Fracciones' :
-                                                       exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} completado con puntuación ${exercise.score}/${exercise.totalProblems}`,
-                                            isCorrect: true
-                                          }];
-                                        };
-                                        
-                                        // SOLUCIÓN DEFINITIVA: Ver qué campos están disponibles en el ejercicio
-                                        console.log(`DEBUG ID ${exercise.id}:`, exercise);
-                                        
-                                        if (!exercise) {
-                                          console.log("No hay ejercicio seleccionado");
-                                          return [{
-                                            problem: "No hay ejercicio seleccionado",
-                                            isCorrect: true,
-                                            isPlaceholder: true
-                                          }];
-                                        }
-                                        
-                                        let problems = [];
-                                        
-                                        try {
-                                          // Extraer datos de extra_data primero
-                                          if (exercise.extra_data) {
-                                            let extraData = exercise.extra_data;
-                                            
-                                            // Si es string, intentar parsearlo como JSON
-                                            if (typeof extraData === 'string') {
-                                              try {
-                                                extraData = JSON.parse(extraData);
-                                              } catch (error) {
-                                                console.log("Error al parsear extra_data:", error);
-                                              }
-                                            }
-                                            
-                                            // Verificar si existe screenshot.problemReview
-                                            if (extraData.screenshot && 
-                                                extraData.screenshot.problemReview && 
-                                                Array.isArray(extraData.screenshot.problemReview)) {
-                                              problems = extraData.screenshot.problemReview;
-                                              console.log("✅ Encontrados problemas en extra_data.screenshot.problemReview");
-                                            }
-                                          }
-                                          
-                                          // NUEVO ENFOQUE: Buscar problemas capturados de la UI
-                                          if (problems.length === 0 && exercise.extra_data && typeof exercise.extra_data === 'object') {
-                                            console.log("🔍 Buscando problemas capturados con el nuevo enfoque...");
-                                            
-                                            // 1. Intentar obtener problemas del campo principal uiProblems
-                                            if (exercise.extra_data.uiProblems && Array.isArray(exercise.extra_data.uiProblems)) {
-                                              problems = exercise.extra_data.uiProblems;
-                                              console.log("✅ ENCONTRADOS PROBLEMAS UI en extra_data.uiProblems:", problems);
-                                            }
-                                            // 2. Intentar buscar en localStorage (respaldo local)
-                                            else {
-                                              const timestamp = exercise.extra_data.captureTimestamp;
-                                              if (timestamp) {
-                                                const exerciseKey = `exercise_${timestamp}`;
-                                                const storedData = localStorage.getItem(exerciseKey);
-                                                if (storedData) {
-                                                  try {
-                                                    const parsedData = JSON.parse(storedData);
-                                                    if (parsedData.problems && Array.isArray(parsedData.problems)) {
-                                                      problems = parsedData.problems;
-                                                      console.log("✅ PROBLEMAS RECUPERADOS DE LOCALSTORAGE:", problems);
-                                                    }
-                                                  } catch (error) {
-                                                    console.error("Error parseando datos de localStorage:", error);
-                                                  }
-                                                }
-                                              }
-                                            }
-                                            
-                                            // 3. FALLBACKS PARA COMPATIBILIDAD
-                                            if (problems.length === 0) {
-                                              // Intentar campos alternativos
-                                              if (exercise.extra_data.exactProblems && Array.isArray(exercise.extra_data.exactProblems)) {
-                                                problems = exercise.extra_data.exactProblems;
-                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.exactProblems");
-                                              }
-                                              else if (exercise.extra_data.capturedProblems && Array.isArray(exercise.extra_data.capturedProblems)) {
-                                                problems = exercise.extra_data.capturedProblems;
-                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.capturedProblems");
-                                              }
-                                              // Intentar obtener de problemDetails (FALLBACK LEGACY)
-                                              else if (exercise.extra_data.problemDetails) {
-                                                problems = exercise.extra_data.problemDetails;
-                                                console.log("✅ Encontrados problemas en exercise.extra_data.problemDetails");
-                                              }
-                                              // Intentar en screenshot.problemReview
-                                              else if (exercise.extra_data.screenshot && 
-                                                    exercise.extra_data.screenshot.problemReview && 
-                                                    Array.isArray(exercise.extra_data.screenshot.problemReview)) {
-                                                problems = exercise.extra_data.screenshot.problemReview;
-                                                console.log("✅ Encontrados problemas en screenshot.problemReview");
-                                              }
-                                            }
-                                          }
-                                          
-                                          // Si aún no hay problemas, usar datos básicos disponibles
-                                          if (problems.length === 0) {
-                                            console.log("⚠️ No se encontraron problemas en ninguna estructura conocida");
-                                            problems = [{
-                                              problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' : 
-                                                         exercise.operationId === 'fractions' ? 'Fracciones' :
-                                                         exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} 
-                                                       completado con puntuación ${exercise.score}/${exercise.totalProblems}`,
-                                              isCorrect: true,
-                                              isPlaceholder: true
-                                            }];
-                                          }
-                                        } catch (error) {
-                                          console.error("Error al procesar problemas:", error);
-                                          problems = [{
-                                            problem: "Error al procesar detalles del ejercicio",
-                                            isCorrect: true,
-                                            isPlaceholder: true
-                                          }];
-                                        }
-                                        
-                                        problemsToShow = problems;
-                                        
-                                        // Ya no necesitamos esta sección ya que la hemos reemplazado arriba
-                                        
-                                        return problemsToShow.map((problem, idx) => {
-                                          // Intentar determinar si el problema es correcto
-                                          const isCorrect = 
-                                            problem.isCorrect !== undefined ? problem.isCorrect :
-                                            problem.status === 'correct';
-                                          
-                                          // Intentar extraer información del problema
-                                          let problemText = '';
-                                          if (typeof problem.problem === 'string') {
-                                            problemText = problem.problem;
-                                          } else if (problem.problem && problem.problem.operands) {
-                                            // Para problemas de suma
-                                            problemText = problem.problem.operands.join(' + ') + ' = ' + problem.problem.correctAnswer;
-                                          } else if (problem.text) {
-                                            problemText = problem.text;
-                                          } else {
-                                            // Fallback si no hay texto de problema disponible
-                                            problemText = `Problem ${idx + 1}`;
-                                          }
-                                          
-                                          // Si es un placeholder, mostrar mensaje especial
-                                          if (problem.isPlaceholder) {
-                                            return (
-                                              <div key={idx} className="bg-gray-50 p-3 rounded-md">
-                                                <p className="text-center text-gray-500 italic">
-                                                  {problemText}
-                                                </p>
-                                                <p className="text-xs text-center text-gray-400 mt-1">
-                                                  Los detalles completos no se guardaron para este ejercicio anterior
-                                                </p>
-                                              </div>
-                                            );
-                                          }
-                                          
-                                          // Para problemas normales
-                                          return (
-                                            <div key={idx} className={`${isCorrect ? 'bg-green-50' : 'bg-red-50'} p-3 rounded-md relative`}>
-                                              <p className="font-medium">
-                                                (#{idx + 1}) {problemText}
-                                              </p>
-                                              <p className="text-xs text-gray-500">
-                                                {problem.level ? `Lvl: ${problem.level}, ` : ''}
-                                                {problem.attempts ? `Att: ${problem.attempts}, ` : ''}
-                                                {problem.timeSpent ? `T: ${problem.timeSpent}s` : ''}
-                                              </p>
-                                              <span className="absolute right-3 top-3">
-                                                {isCorrect ? 
-                                                  <Check size={16} className="text-green-500" /> : 
-                                                  <X size={16} className="text-red-500" />
-                                                }
-                                              </span>
-                                            </div>
-                                          );
-                                        });
-                                      })()}
-                                    </div>
-                                  </div>
-                                </DialogContent>
-                              </Dialog>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
+            <TabsContent value="trends">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tendencias de Práctica</CardTitle>
+                  <CardDescription>
+                    Tu actividad y desempeño durante los últimos 30 días
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={last30DaysData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 30 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="date"
+                          tickFormatter={(value) => format(parseISO(value), 'dd/MM')}
+                          tick={{ fontSize: 12 }}
+                        />
+                        <YAxis yAxisId="left" />
+                        <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
+                        <Tooltip 
+                          formatter={(value, name) => {
+                            if (name === 'avgScore') return [`${value}%`, 'Precisión'];
+                            return [value, 'Ejercicios'];
+                          }}
+                          labelFormatter={(label) => format(parseISO(label), 'dd/MM/yyyy')}
+                        />
+                        <Legend />
+                        <Line 
+                          yAxisId="left"
+                          type="monotone" 
+                          dataKey="count" 
+                          name="Ejercicios" 
+                          stroke="#8884d8" 
+                          activeDot={{ r: 8 }} 
+                        />
+                        <Line 
+                          yAxisId="right"
+                          type="monotone" 
+                          dataKey="avgScore" 
+                          name="Precisión" 
+                          stroke="#82ca9d" 
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="stats">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Estadísticas por Operación</CardTitle>
+                  <CardDescription>
+                    Tu desempeño en diferentes tipos de operaciones
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={operationStatsData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 30 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="name"
+                          tick={{ fontSize: 12 }}
+                        />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="exerciseCount" name="Ejercicios" fill="#8884d8" />
+                        <Bar dataKey="problemCount" name="Problemas" fill="#82ca9d" />
+                        <Bar dataKey="accuracy" name="Precisión (%)" fill="#ffc658" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
