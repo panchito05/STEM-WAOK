@@ -5,16 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format, parseISO, subDays } from "date-fns";
 import { operationModules } from "@/utils/operationComponents";
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw, Check } from "lucide-react";
 
 export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, refreshProgress, isLoading } = useProgress();
   const [isClearing, setIsClearing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
+  const [selectedExercise, setSelectedExercise] = useState<ExerciseResult | null>(null);
 
   // Función para refrescar los datos manualmente
   const handleRefresh = useCallback(async () => {
@@ -461,9 +463,105 @@ export default function ProgressPage() {
                             </td>
                             <td className="py-3 px-4">{exercise.timeSpent !== undefined ? `${exercise.timeSpent}s` : "N/A"}</td>
                             <td className="py-3 px-4">
-                              <Button variant="outline" size="sm">
-                                Ver detalles
-                              </Button>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => setSelectedExercise(exercise)}
+                                  >
+                                    Ver detalles
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-center text-xl font-bold">
+                                      {getModuleName(exercise.operationId)} Exercise Complete!
+                                    </DialogTitle>
+                                  </DialogHeader>
+                                  
+                                  <div className="bg-gray-50 p-4 rounded-md mb-4">
+                                    <p className="text-center text-sm text-gray-500">Total Time</p>
+                                    <p className="text-center text-2xl font-bold">
+                                      {exercise.timeSpent ? 
+                                        exercise.timeSpent < 60 ? 
+                                          `00:${exercise.timeSpent.toString().padStart(2, '0')}` : 
+                                          `${Math.floor(exercise.timeSpent / 60).toString().padStart(2, '0')}:${(exercise.timeSpent % 60).toString().padStart(2, '0')}` 
+                                        : '00:00'}
+                                    </p>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-3 gap-2">
+                                    <div className="bg-blue-50 p-3 rounded-md">
+                                      <p className="text-center text-sm text-gray-600">Score</p>
+                                      <p className="text-center text-lg font-bold text-blue-600">
+                                        {exercise.score}/{exercise.totalProblems}
+                                      </p>
+                                    </div>
+                                    <div className="bg-green-50 p-3 rounded-md">
+                                      <p className="text-center text-sm text-gray-600">Accuracy</p>
+                                      <p className="text-center text-lg font-bold text-green-600">
+                                        {exercise.score && exercise.totalProblems ? 
+                                          `${Math.round((exercise.score / exercise.totalProblems) * 100)}%` : 
+                                          '0%'}
+                                      </p>
+                                    </div>
+                                    <div className="bg-purple-50 p-3 rounded-md">
+                                      <p className="text-center text-sm text-gray-600">Avg. Time</p>
+                                      <p className="text-center text-lg font-bold text-purple-600">
+                                        {exercise.timeSpent && exercise.totalProblems ? 
+                                          `${Math.round(exercise.timeSpent / exercise.totalProblems)}s` : 
+                                          'N/A'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="grid grid-cols-3 gap-2 mt-2">
+                                    <div className="bg-yellow-50 p-3 rounded-md">
+                                      <p className="text-center text-sm text-gray-600">Avg. Attempts</p>
+                                      <p className="text-center text-lg font-bold text-yellow-600">
+                                        {exercise.avgAttempts ? exercise.avgAttempts.toFixed(1) : '1.0'}
+                                      </p>
+                                    </div>
+                                    <div className="bg-red-50 p-3 rounded-md">
+                                      <p className="text-center text-sm text-gray-600">Revealed</p>
+                                      <p className="text-center text-lg font-bold text-red-600">
+                                        {exercise.revealedAnswers || 0}
+                                      </p>
+                                    </div>
+                                    <div className="bg-teal-50 p-3 rounded-md">
+                                      <p className="text-center text-sm text-gray-600">Final Level</p>
+                                      <p className="text-center text-lg font-bold text-teal-600">
+                                        {(exercise.difficulty || 'beginner').charAt(0).toUpperCase()}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  
+                                  {exercise.problemDetails && exercise.problemDetails.length > 0 && (
+                                    <div className="mt-4">
+                                      <h3 className="font-medium mb-2">Problem Review</h3>
+                                      <div className="space-y-2">
+                                        {exercise.problemDetails.map((problem, idx) => (
+                                          <div key={idx} className="bg-green-50 p-3 rounded-md relative">
+                                            <p className="font-medium">
+                                              (#{idx + 1}) {problem.problem ? problem.problem.toString() : 'N/A'}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                              {problem.timeSpent ? `Time: ${problem.timeSpent}s` : ''}
+                                              {problem.attempts ? `, Att: ${problem.attempts}` : ''}
+                                            </p>
+                                            {problem.isCorrect && (
+                                              <span className="absolute right-3 top-3 text-green-500">
+                                                <Check size={16} />
+                                              </span>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </DialogContent>
+                              </Dialog>
                             </td>
                           </tr>
                         ))}
