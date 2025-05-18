@@ -1179,8 +1179,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           textColor: "text-teal-600" 
         }
       },
-      // SOLUCIÓN DEFINITIVA: Crear un array con los problemas exactos como se muestran visualmente
-      problemReview: userAnswersHistory.map((answer, index) => {
+      // CAPTURA DEFINITIVA DE LOS PROBLEMAS EXACTOS RESUELTOS
+      exactProblems: userAnswersHistory.map((answer, index) => {
         if (!answer) return null;
         const problem = problemsList[index];
         if (!problem) return null;
@@ -1188,18 +1188,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Este es el formato EXACTO que se muestra en la pantalla final
         const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
         
+        // Objeto con la información completa del problema tal como se muestra en la UI
         return {
-          // Datos que se muestran en la UI
           problem: problemText,
           isCorrect: answer.isCorrect,
           attempts: (answer.attempts || 1).toString(),
-          timeSpent: avgTimePerProblem,
+          timeSpent: Math.round(timer / problemsList.length),
           level: finalLevel === "beginner" ? "1" : 
                  finalLevel === "elementary" ? "2" : 
                  finalLevel === "intermediate" ? "3" : 
                  finalLevel === "advanced" ? "4" : "5"
         };
-      }).filter(Boolean) // Eliminar nulos
+      }).filter(Boolean)
     };
     
     // Mostrar en consola para verificar
@@ -1239,9 +1239,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       revealedAnswers: revealedAnswers,
       problemDetails: problemDetails,
       
-      // Include the screenshot-like data
+      // Incluir TODOS los datos necesarios para mostrar exactamente los mismos problemas
       extra_data: {
-        screenshot: screenshotData
+        screenshot: screenshotData,
+        // GUARDAR LOS PROBLEMAS EXACTOS para que se muestren en el modal
+        exactProblems: screenshotData.exactProblems
       }
     });
   };

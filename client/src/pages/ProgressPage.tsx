@@ -596,10 +596,15 @@ export default function ProgressPage() {
                                             }
                                           }
                                           
-                                          // Si no encontramos problemas en extra_data, verificar si hay problemDetails en el ejercicio
+                                          // Verificar si hay exactProblems en extra_data (NUEVA FUNCIÓN ESPECIALIZADA)
                                           if (problems.length === 0 && exercise.extra_data && typeof exercise.extra_data === 'object') {
-                                            // Intentar obtener de problemDetails
-                                            if (exercise.extra_data.problemDetails) {
+                                            // Intentar obtener los problemas exactos capturados por la nueva función
+                                            if (exercise.extra_data.exactProblems && Array.isArray(exercise.extra_data.exactProblems)) {
+                                              problems = exercise.extra_data.exactProblems;
+                                              console.log("✅ ENCONTRADOS PROBLEMAS EXACTOS en extra_data.exactProblems:", problems);
+                                            }
+                                            // Intentar obtener de problemDetails (FALLBACK LEGACY)
+                                            else if (exercise.extra_data.problemDetails) {
                                               problems = exercise.extra_data.problemDetails;
                                               console.log("✅ Encontrados problemas en exercise.extra_data.problemDetails");
                                             }
