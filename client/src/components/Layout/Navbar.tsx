@@ -36,7 +36,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/progress", label: "Progress" },
+    { href: "/progress", label: "Progress and History" },
     { href: "/settings", label: "Settings" },
   ];
 
