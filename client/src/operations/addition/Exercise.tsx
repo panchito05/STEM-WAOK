@@ -937,24 +937,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }).filter(Boolean)
     };
     
-    // SOLUCIÓN SIMPLIFICADA PARA EL PROBLEMA DE CONTEO
-    // Conteo directo para mayor precisión
-    let correctResponsesCount = 0;
-    
-    // Contar manualmente las respuestas correctas
-    for (let i = 0; i < userAnswersHistory.length; i++) {
-      const answer = userAnswersHistory[i];
-      if (answer && answer.isCorrect === true) {
-        correctResponsesCount++;
-      }
-    }
-    
-    // Para mayor seguridad, forzar que nunca sea mayor que el total de problemas
-    const correctCount = Math.min(correctResponsesCount, problemsList.length);
-    const totalCount = problemsList.length;
-    
-    // Calcular precisión con los conteos correctos
-    const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+    // SOLUCIÓN SIMPLIFICADA: Eliminamos esta sección ya que tenemos una
+    // declaración de correctCount más arriba que ya está siendo usada
     
     // Mostrar información detallada para verificación
     console.log(`=== SCORE FINAL: ${correctCount}/${totalCount} (${accuracy}%) ===`);
