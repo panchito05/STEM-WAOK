@@ -1620,18 +1620,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
             <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
             <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className={`px-2 py-1 h-auto flex items-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border rounded-md`}
+              <button 
+                className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7 w-12`}
                 onClick={() => setShowVideoDialog(true)} 
                 title="Videos explicativos"
               >
-                <Youtube className="h-5 w-6 sm:h-6 sm:w-8" />
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  viewBox="0 0 24 16" 
+                  fill="currentColor" 
+                  className="h-5 w-8"
+                >
+                  <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
+                  <polygon points="9,5 16,8 9,11" fill="currentColor" />
+                </svg>
                 {youtubeVideos.length > 0 && (
                   <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
                 )}
-              </Button>
+              </button>
               <span className="font-semibold">{t('exercises.score')}: {score}</span>
             </div>
         </div>
