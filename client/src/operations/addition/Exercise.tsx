@@ -1625,7 +1625,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 onClick={() => setShowVideoDialog(true)} 
                 title="Videos explicativos"
               >
-                <span className="text-xs font-medium mr-1">Ver Video Explicativo</span>
+                <span className="text-xs font-medium mr-1">
+                  {t('common.language') === 'en' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
+                </span>
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
                   viewBox="0 0 24 16" 
