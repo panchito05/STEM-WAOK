@@ -859,12 +859,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }).filter(item => item !== null);
     
     // Create screenshot-like data structure that matches our template
+    // Calcular primero las estadísticas para evitar errores de referencia
+    let correctCount = 0;
+    userAnswersHistory.forEach(answer => {
+      if (answer && answer.isCorrect) {
+        correctCount++;
+      }
+    });
+    
+    const totalCount = problemsList.length;
+    const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+    
+    // Ahora podemos usar estas variables con seguridad
     const screenshotData = {
       title: "Addition Exercise Complete!",
       scoreData: {
         totalTime: formatTime(timer),
         score: { 
-          value: `${correctCount} / ${problemsList.length}`, 
+          value: `${correctCount} / ${totalCount}`, 
           bgColor: "bg-blue-50", 
           textColor: "text-indigo-600" 
         },
