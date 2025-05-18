@@ -568,39 +568,16 @@ export default function ProgressPage() {
                                           }
                                         }
                                         
-                                        // 3. Si aún no tenemos problemas, crear ejemplos basados en el score y operationId
+                                        // 3. Si no hay problemas disponibles, mostrar un mensaje informativo
                                         if (!problemsToShow || problemsToShow.length === 0) {
-                                          const totalProblems = exercise.totalProblems || 3; // Default a 3 si no está disponible
-                                          problemsToShow = [];
+                                          console.log("No hay detalles de problemas disponibles para ejercicio ID:", exercise.id);
                                           
-                                          // Asumimos que todos son correctos si el score coincide con totalProblems
-                                          const allCorrect = exercise.score === totalProblems;
-                                          
-                                          // Determinar qué tipo de operación es para crear problemas de ejemplo apropiados
-                                          for (let i = 0; i < totalProblems; i++) {
-                                            // Para problemas de suma
-                                            if (exercise.operationId === 'addition') {
-                                              const operand1 = Math.floor(Math.random() * 10);
-                                              const operand2 = Math.floor(Math.random() * 10);
-                                              const result = operand1 + operand2;
-                                              
-                                              problemsToShow.push({
-                                                isCorrect: allCorrect || i < exercise.score,
-                                                problem: `${operand1} + ${operand2} = ${result}`,
-                                                timeSpent: Math.floor(Math.random() * 3) + 1, // 1-3 segundos
-                                                attempts: 1
-                                              });
-                                            } 
-                                            // Para otros tipos de problemas
-                                            else {
-                                              problemsToShow.push({
-                                                isCorrect: allCorrect || i < exercise.score,
-                                                problem: `Problem ${i+1}`,
-                                                timeSpent: Math.floor(Math.random() * 3) + 1, // 1-3 segundos
-                                                attempts: 1
-                                              });
-                                            }
-                                          }
+                                          // Creamos un único elemento que indica que no hay datos disponibles
+                                          problemsToShow = [{
+                                            isCorrect: true,
+                                            problem: "La información detallada de este ejercicio no está disponible",
+                                            isPlaceholder: true
+                                          }];
                                         }
                                         
                                         return problemsToShow.map((problem, idx) => {
@@ -623,16 +600,36 @@ export default function ProgressPage() {
                                             problemText = `Problem ${idx + 1}`;
                                           }
                                           
+                                          // Si es un placeholder, mostrar mensaje especial
+                                          if (problem.isPlaceholder) {
+                                            return (
+                                              <div key={idx} className="bg-gray-50 p-3 rounded-md">
+                                                <p className="text-center text-gray-500 italic">
+                                                  {problemText}
+                                                </p>
+                                                <p className="text-xs text-center text-gray-400 mt-1">
+                                                  Los detalles completos no se guardaron para este ejercicio anterior
+                                                </p>
+                                              </div>
+                                            );
+                                          }
+                                          
+                                          // Para problemas normales
                                           return (
-                                            <div key={idx} className="bg-green-50 p-3 rounded-md relative">
+                                            <div key={idx} className={`${isCorrect ? 'bg-green-50' : 'bg-red-50'} p-3 rounded-md relative`}>
                                               <p className="font-medium">
                                                 (#{idx + 1}) {problemText}
                                               </p>
                                               <p className="text-xs text-gray-500">
-                                                Lvl: 1, Att: 1, T: 2s
+                                                {problem.level ? `Lvl: ${problem.level}, ` : ''}
+                                                {problem.attempts ? `Att: ${problem.attempts}, ` : ''}
+                                                {problem.timeSpent ? `T: ${problem.timeSpent}s` : ''}
                                               </p>
-                                              <span className="absolute right-3 top-3 text-green-500">
-                                                <Check size={16} />
+                                              <span className="absolute right-3 top-3">
+                                                {isCorrect ? 
+                                                  <Check size={16} className="text-green-500" /> : 
+                                                  <X size={16} className="text-red-500" />
+                                                }
                                               </span>
                                             </div>
                                           );
