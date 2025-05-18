@@ -6,7 +6,8 @@ import {
   moduleSettingsSchema, 
   insertChildProfileSchema,
   users,
-  ModuleSettingsData
+  ModuleSettingsData,
+  progressEntries
 } from "@shared/schema";
 import { z } from "zod";
 import alphabet2Routes from "./routes-alphabet2";
@@ -383,13 +384,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Borrar el progreso de un perfil de niño específico
+  // Borrar el progreso de un perfil de niño específico - VERSIÓN RADICAL
   app.delete("/api/child-profiles/:id/progress", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.session.userId;
       const profileId = parseInt(req.params.id);
       
-      console.log(`Solicitud para borrar todos los datos de progreso del perfil ${profileId} recibida de usuario ${userId}`);
+      console.log(`⚡ BORRADO RADICAL: Solicitud para borrar progreso del perfil ${profileId} (usuario ${userId})`);
       
       // Verificar que el perfil pertenezca al usuario
       const profiles = await storage.getChildProfilesForUser(userId);
@@ -399,39 +400,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Forbidden" });
       }
       
-      // Obtener el número de registros antes de borrar
-      const entriesBefore = await db.query.progressEntries.findMany({
-        where: eq(progressEntries.childProfileId, profileId)
-      });
-      
-      console.log(`Encontrados ${entriesBefore.length} registros de progreso para el perfil ${profileId} antes de borrar`);
-      
-      // Borrar datos usando la función mejorada
-      const result = await storage.clearProgressForChildProfile(profileId);
-      
-      // Verificar que los datos se hayan eliminado
-      const entriesAfter = await db.query.progressEntries.findMany({
-        where: eq(progressEntries.childProfileId, profileId)
-      });
-      
-      console.log(`Quedan ${entriesAfter.length} registros de progreso para el perfil ${profileId} después de borrar`);
-      
-      if (entriesAfter.length > 0) {
-        // Último intento: borrar directamente con SQL
-        console.log(`Realizando último intento de borrado para los ${entriesAfter.length} registros restantes...`);
-        await db.execute(`DELETE FROM progress_entries WHERE child_profile_id = ${profileId}`);
+      // SOLUCIÓN RADICAL: Usar SQL directo para un borrado completo
+      try {
+        // 1. Obtener todos los IDs de entradas para este perfil
+        const entriesQuery = await db.query.progressEntries.findMany({
+          where: eq(progressEntries.childProfileId, profileId),
+          columns: { id: true }
+        });
+        
+        const entryIds = entriesQuery.map(entry => entry.id);
+        console.log(`🔍 Encontrados ${entryIds.length} registros para borrar`);
+        
+        if (entryIds.length === 0) {
+          console.log("✅ No hay datos que borrar");
+          return res.json({ 
+            success: true, 
+            message: "No progress data to delete"
+          });
+        }
+        
+        // 2. Borrado usando el ORM primero
+        console.log(`🧨 Ejecutando borrado ORM para el perfil ${profileId}`);
+        await db.delete(progressEntries)
+          .where(eq(progressEntries.childProfileId, profileId));
+        
+        // 3. Verificar si quedaron registros
+        const remainingRecords = await db.query.progressEntries.findMany({
+          where: eq(progressEntries.childProfileId, profileId),
+        });
+        
+        if (remainingRecords.length > 0) {
+          console.log(`⚠️ Aún quedan ${remainingRecords.length} registros, intentando SQL directo...`);
+          
+          // 4. Intento extremo con SQL directo - usando solo SQL sin parámetros
+          await db.execute(
+            `DELETE FROM progress_entries WHERE child_profile_id = ${profileId}`
+          );
+          
+          // 5. Verificación final
+          const finalRecords = await db.query.progressEntries.findMany({
+            where: eq(progressEntries.childProfileId, profileId),
+          });
+          
+          if (finalRecords.length > 0) {
+            console.error(`❌ FALLO CRÍTICO: Aún quedan ${finalRecords.length} registros`);
+            return res.status(500).json({
+              success: false,
+              message: "Failed to remove all progress data despite extreme measures",
+              initialCount: entryIds.length,
+              remainingCount: finalRecords.length
+            });
+          }
+        }
+        
+        console.log("✅ BORRADO EXITOSO: Todos los datos de progreso han sido eliminados");
+        
+        return res.json({
+          success: true,
+          message: "All progress data completely removed",
+          count: entryIds.length
+        });
+        
+      } catch (sqlError: any) {
+        console.error("Error crítico en borrado SQL:", sqlError?.message || "Unknown SQL error");
+        throw sqlError;
       }
       
-      return res.status(200).json({ 
-        success: true, 
-        message: "All progress data for this profile has been completely removed",
-        entriesBefore: entriesBefore.length,
-        entriesRemaining: entriesAfter.length,
-        profileId
+    } catch (error: any) {
+      console.error("Error catastrófico al borrar progreso:", error?.message || "Unknown error");
+      return res.status(500).json({ 
+        error: "Critical error while clearing progress data", 
+        details: error?.message || "Unknown error" 
       });
-    } catch (error) {
-      console.error("Error clearing child profile progress:", error);
-      return res.status(500).json({ error: "Internal server error" });
     }
   });
 
