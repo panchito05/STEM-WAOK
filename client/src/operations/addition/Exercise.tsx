@@ -1133,50 +1133,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       };
     }).filter(item => item !== null);
     
-    // Capturar los problemas directamente de la UI para guardarlos
-    console.log("📸 Capturando problemas directamente de la UI...");
-    
-    // Extraer datos de los problemas de forma más estructurada para asegurar su persistencia
-    const uiProblems = userAnswersHistory.map((answer, index) => {
-      if (!answer) return null;
-      
-      const problem = problemsList[index];
-      if (!problem) return null;
-      
-      // Formato para mostrar el problema exactamente como se ve en la UI
-      let problemText = '';
-      if (problem.operands && problem.operands.length > 0) {
-        problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
-      }
-      
-      // Nivel mostrado como texto para mejor comprensión
-      const levelText = finalLevel === "beginner" ? "1" : 
-                        finalLevel === "elementary" ? "2" : 
-                        finalLevel === "intermediate" ? "3" : 
-                        finalLevel === "advanced" ? "4" : "5";
-      
-      return {
-        problemNumber: index + 1,
-        problem: problemText,
-        isCorrect: answer.isCorrect,
-        info: `Lvl: ${levelText}, Att: ${answer.attempts || 1}, T: ${answer.timeSpent || avgTimePerProblem}s`,
-        attempts: String(answer.attempts || 1),
-        timeSpent: answer.timeSpent || avgTimePerProblem,
-        level: levelText
-      };
-    }).filter(Boolean);
-    
-    // Guardar captura en localStorage para referencia
-    const captureId = `exercise_${Date.now()}`;
-    localStorage.setItem(captureId, JSON.stringify(uiProblems));
-    console.log("✅ Problemas guardados en localStorage con clave:", captureId);
-    console.log("📊 Total de problemas capturados:", uiProblems.length);
-    console.log("🔍 PROBLEMAS CAPTURADOS DESDE UI:", uiProblems);
-    
-    // Create screenshot-like data structure that includes our captured problems
+    // Create screenshot-like data structure that matches our template
     const screenshotData = {
       title: "Addition Exercise Complete!",
-      timestamp: Date.now(),
       scoreData: {
         totalTime: formatTime(timer),
         score: { 
@@ -1220,23 +1179,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           textColor: "text-teal-600" 
         }
       },
-      problemReview: problemDetails.map(detail => {
-        if (!detail) return null;
+      // CAPTURA DEFINITIVA DE LOS PROBLEMAS EXACTOS RESUELTOS
+      exactProblems: userAnswersHistory.map((answer, index) => {
+        if (!answer) return null;
+        const problem = problemsList[index];
+        if (!problem) return null;
         
-        // Format the problem nicely for display
-        const { operands, correctAnswer } = detail.problem;
-        const problemText = `${operands[0]} + ${operands[1]} = ${correctAnswer}`;
+        // Este es el formato EXACTO que se muestra en la pantalla final
+        const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
         
+        // Objeto con la información completa del problema tal como se muestra en la UI
         return {
           problem: problemText,
-          level: settings.difficulty === 'beginner' ? '1' 
-              : settings.difficulty === 'elementary' ? '2'
-              : settings.difficulty === 'intermediate' ? '3'
-              : settings.difficulty === 'advanced' ? '4'
-              : settings.difficulty === 'expert' ? '5' : '1',
-          attempts: detail.attempts?.toString() || "1",
-          time: `${detail.timeSpent || avgTimePerProblem}s`,
-          isCorrect: detail.isCorrect
+          isCorrect: answer.isCorrect,
+          attempts: (answer.attempts || 1).toString(),
+          timeSpent: Math.round(timer / problemsList.length),
+          level: finalLevel === "beginner" ? "1" : 
+                 finalLevel === "elementary" ? "2" : 
+                 finalLevel === "intermediate" ? "3" : 
+                 finalLevel === "advanced" ? "4" : "5"
         };
       }).filter(Boolean)
     };
@@ -1262,29 +1223,99 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
     
-    // Capturar los problemas directamente desde la UI
-    console.log("📸 Capturando DOM de ejercicio addition...");
-    
-    // Crear un formato más simple y estable para los problemas
-    const problemsForStorage = userAnswersHistory.map((answer, index) => {
-      if (!answer) return null;
+    // NUEVO ENFOQUE: Capturar problemas directamente desde la UI
+    function captureProblemsFromUI() {
+      console.log("📸 Capturando problemas directamente de la UI...");
       
-      const problem = problemsList[index];
-      if (!problem) return null;
+      // Array para almacenar los problemas capturados
+      const uiProblems = [];
       
-      // Crear estructuras de datos simples que sean fáciles de serializar/deserializar
-      return {
-        problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
-        isCorrect: answer.isCorrect,
-        userAnswer: answer.userAnswer,
-        correctAnswer: problem.correctAnswer,
-        attempts: answer.attempts || 1,
-        timeSpent: answer.timeSpent || avgTimePerProblem,
-        level: finalLevel
-      };
-    }).filter(Boolean);
+      // Para cada problema en userAnswersHistory, crear un objeto con el formato exacto
+      for (let i = 0; i < problemsList.length; i++) {
+        const answer = userAnswersHistory[i];
+        const problem = problemsList[i];
+        
+        if (!answer || !problem) continue;
+        
+        // Formatear el problema exactamente como se muestra en la UI
+        const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+        
+        // Información adicional que se muestra debajo
+        const levelText = finalLevel === "beginner" ? "1" : 
+                         finalLevel === "elementary" ? "2" : 
+                         finalLevel === "intermediate" ? "3" : 
+                         finalLevel === "advanced" ? "4" : "5";
+                         
+        const infoText = `Lvl: ${levelText}, Att: ${answer.attempts || 1}, T: ${Math.round(timer / problemsList.length)}s`;
+        
+        // Construir el objeto completo con todos los detalles
+        uiProblems.push({
+          problemNumber: i + 1,
+          problem: problemText,
+          isCorrect: answer.isCorrect,
+          info: infoText,
+          // Datos técnicos adicionales que pueden ser útiles
+          attempts: (answer.attempts || 1).toString(),
+          timeSpent: Math.round(timer / problemsList.length),
+          level: levelText,
+          // La respuesta del usuario si es diferente de la correcta
+          userAnswer: answer.userAnswer !== problem.correctAnswer ? answer.userAnswer : undefined
+        });
+      }
+      
+      // Guardar en localStorage como respaldo
+      try {
+        const exerciseKey = `exercise_${Date.now()}`;
+        localStorage.setItem(exerciseKey, JSON.stringify({
+          date: new Date().toISOString(),
+          problems: uiProblems
+        }));
+        console.log(`✅ Problemas guardados en localStorage con clave: ${exerciseKey}`);
+      } catch (error) {
+        console.error("Error al guardar en localStorage:", error);
+      }
+      
+      console.log("📊 Total de problemas capturados:", uiProblems.length);
+      console.log("🔍 PROBLEMAS CAPTURADOS DESDE UI:", uiProblems);
+      
+      return uiProblems;
+    }
     
-    // Guardar resultado detallado con los datos de la captura y el puntaje forzado
+    // Capturar los problemas directamente de la UI
+    const uiCapturedProblems = captureProblemsFromUI();
+    
+    // ENFOQUE DE CAPTURA DOM DIRECTA
+    
+    // Variable para almacenar la clave del snapshot
+    let domSnapshotKey = `addition_dom_${Date.now()}`;
+    
+    try {
+      // Usar el nuevo servicio simplificado de captura de DOM
+      import('../../services/DOMCapture').then(({ captureDOMSnapshot }) => {
+        console.log("📸 USANDO NUEVO SERVICIO DOM CAPTURE");
+        
+        // Pequeño retraso para asegurar que todo esté renderizado
+        setTimeout(() => {
+          const key = captureDOMSnapshot("addition", {
+            score: finalScore,
+            totalProblems: problemsList.length,
+            timeSpent: timer,
+            difficulty: finalLevel
+          });
+          
+          if (key) {
+            console.log("✅ Ejercicio guardado con clave:", key);
+            domSnapshotKey = key;
+          }
+        }, 200);
+      }).catch(error => {
+        console.error("❌ Error importando DOMCapture:", error);
+      });
+    } catch (error) {
+      console.error("❌ Error al capturar DOM:", error);
+    }
+    
+    // Guardar el resultado incluyendo referencia a los snapshots
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
@@ -1299,26 +1330,32 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // Guardar solo los detalles en el campo principal, no en extra_data
-      // Esto evitará duplicidades y problemas de formato
-      problemDetails: userAnswersHistory.map((answer, index) => {
-        if (!answer) return null;
-        const problem = problemsList[index];
-        if (!problem) return null;
-        
-        // Formato simple y directo que es fácil de mostrar
-        return {
-          problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
-          isCorrect: answer.isCorrect,
-          attempts: answer.attempts || 1,
-          timeSpent: answer.timeSpent || avgTimePerProblem,
-          level: finalLevel
-        };
-      }).filter(Boolean),
-      
-      // No almacenamos problemDetails en extra_data para evitar duplicación
+      // TERCER ENFOQUE: DOM SNAPSHOTS
       extra_data: {
-        timestamp: Date.now()
+        // Datos para el nuevo sistema de DOM Snapshots
+        domSnapshot: {
+          timestamp: Date.now(),
+          snapshotId: `addition_${Date.now()}` // ID predecible para poder encontrarlo después
+        },
+        
+        // Mantener compatibilidad con enfoques anteriores
+        uiProblems: problemsList.map((problem, index) => {
+          const answer = userAnswersHistory[index];
+          if (!answer) return null;
+          
+          return {
+            problemNumber: index + 1,
+            problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+            isCorrect: answer.isCorrect,
+            info: `Lvl: ${finalLevel === "beginner" ? "1" : 
+                  finalLevel === "elementary" ? "2" : 
+                  finalLevel === "intermediate" ? "3" : 
+                  finalLevel === "advanced" ? "4" : "5"}, Att: ${answer.attempts || 1}, T: ${Math.round(timer / problemsList.length)}s`
+          };
+        }).filter(Boolean),
+        
+        // Fecha de captura para poder relacionar
+        captureTimestamp: Date.now(),
       }
     });
   };

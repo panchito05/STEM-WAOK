@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import WebSocketStatus from "../WebSocketStatus";
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,9 +14,6 @@ export default function Layout({ children }: LayoutProps) {
         {children}
       </main>
       <Footer />
-      
-      {/* Componente de estado de WebSocket */}
-      <WebSocketStatus />
     </div>
   );
 }

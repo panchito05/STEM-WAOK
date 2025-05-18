@@ -13,7 +13,6 @@ import { z } from "zod";
 import alphabet2Routes from "./routes-alphabet2";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
-import { WebSocketServer, WebSocket } from "ws";
 
 // Verificar si el usuario está autenticado
 const isAuthenticated = (req: any, res: Response, next: NextFunction) => {
@@ -867,65 +866,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/alphabet2', alphabet2Routes);
 
   const httpServer = createServer(app);
-  
-  // Configurar el servidor WebSocket en una ruta distinta para no interferir con HMR de Vite
-  const wss = new WebSocketServer({ 
-    server: httpServer, 
-    path: '/ws' 
-  });
-  
-  // Manejar conexiones WebSocket
-  wss.on('connection', (ws) => {
-    console.log('Nueva conexión WebSocket establecida');
-    
-    // Enviar mensaje de bienvenida
-    ws.send(JSON.stringify({
-      type: 'connection',
-      message: 'Conectado al servidor WebSocket de Math WAOK',
-      timestamp: new Date().toISOString()
-    }));
-    
-    // Escuchar mensajes entrantes
-    ws.on('message', (message) => {
-      try {
-        const data = JSON.parse(message.toString());
-        console.log('Mensaje WebSocket recibido:', data);
-        
-        // Procesar el mensaje según su tipo
-        switch (data.type) {
-          case 'ping':
-            ws.send(JSON.stringify({
-              type: 'pong',
-              timestamp: new Date().toISOString()
-            }));
-            break;
-            
-          case 'progress_update':
-            // Broadcast a todos los clientes conectados
-            wss.clients.forEach(client => {
-              if (client !== ws && client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify({
-                  type: 'progress_notification',
-                  data: data.data,
-                  timestamp: new Date().toISOString()
-                }));
-              }
-            });
-            break;
-            
-          default:
-            console.log('Tipo de mensaje WebSocket no reconocido:', data.type);
-        }
-      } catch (error) {
-        console.error('Error al procesar mensaje WebSocket:', error);
-      }
-    });
-    
-    // Manejar desconexiones
-    ws.on('close', () => {
-      console.log('Conexión WebSocket cerrada');
-    });
-  });
-  
   return httpServer;
 }
