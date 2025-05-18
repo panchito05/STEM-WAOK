@@ -1298,41 +1298,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         onSave={handleSaveYoutubeVideos}
       />
       
-      {/* Menú para ver los videos (solo mostrar si hay videos) */}
-      {youtubeVideos.length > 0 && (
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="absolute top-2 right-2 z-10"
-            >
-              <Youtube className="h-4 w-4 text-red-600 mr-2" />
-              Ver videos explicativos
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Videos Explicativos</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {youtubeVideos.map((video, index) => (
-                <div key={index} className="flex flex-col">
-                  <p className="text-sm mb-2">Video {index + 1}:</p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => openYoutubeVideo(video)}
-                    className="flex items-center"
-                  >
-                    <Youtube className="h-4 w-4 text-red-600 mr-2" />
-                    Ver video
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Diálogo para ver los videos explicativos (se muestra al hacer clic en el botón) */}
 
       {showLevelUpReward && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -1414,8 +1380,52 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
-        <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+        <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
             <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
+            
+            {/* Botón de videos explicativos */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mx-2 py-1"
+                >
+                  <Youtube className="h-4 w-4 text-red-600 mr-1" />
+                  <span className="text-xs">Ver videos explicativos</span>
+                  {youtubeVideos.length > 0 && (
+                    <span className="ml-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {youtubeVideos.length}
+                    </span>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Videos Explicativos</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  {youtubeVideos.length > 0 ? (
+                    youtubeVideos.map((video, index) => (
+                      <div key={index} className="flex flex-col">
+                        <p className="text-sm mb-2">Video {index + 1}:</p>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => openYoutubeVideo(video)}
+                          className="flex items-center"
+                        >
+                          <Youtube className="h-4 w-4 text-red-600 mr-2" />
+                          Ver video
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No hay videos explicativos disponibles. Haz clic en el icono de YouTube en la parte superior para añadir videos.</p>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+            
             <span className="font-semibold">{t('exercises.score')}: {score}</span>
         </div>
 
