@@ -225,51 +225,21 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
-          {/* History button removed */}
+          {/* History button and dropdown menu removed - only visibility toggle left */}
           
           {!module.comingSoon && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0">
-                  <MoreVertical className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-xl shadow-lg border-blue-100">
-                <DropdownMenuItem onClick={handleToggleFavorite} className="cursor-pointer">
-                  <div className="flex items-center">
-                    {isModuleFavorite ? (
-                      <>
-                        <StarOff className="h-4 w-4 mr-2 text-amber-500" />
-                        {t('favorites.remove')}
-                      </>
-                    ) : (
-                      <>
-                        <Star className="h-4 w-4 mr-2 text-amber-500" />
-                        {t('favorites.add')}
-                      </>
-                    )}
-                  </div>
-                </DropdownMenuItem>
-                
-                {/* History option removed */}
-                
-                <DropdownMenuItem onClick={() => toggleHidden(module.id)} className="cursor-pointer">
-                  <div className="flex items-center">
-                    {isHidden ? (
-                      <>
-                        <Eye className="h-4 w-4 mr-2 text-purple-500" />
-                        {t('modules.visibility.restore')}
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="h-4 w-4 mr-2 text-purple-500" />
-                        {t('modules.visibility.hide')}
-                      </>
-                    )}
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0"
+              onClick={() => toggleHidden(module.id)}
+            >
+              {isHidden ? (
+                <Eye className="h-5 w-5 text-purple-300" />
+              ) : (
+                <EyeOff className="h-5 w-5" />
+              )}
+            </Button>
           )}
         </div>
       </div>
