@@ -1583,15 +1583,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="p-1 h-auto" 
+                  className={`p-1 h-auto flex items-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500"}`}
                   onClick={() => setShowVideoDialog(true)} 
                   title="Videos explicativos"
                 >
-                  <Youtube className="h-4 w-4 text-red-600" />
+                  <Youtube className="h-4 w-4" />
                   {youtubeVideos.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                      {youtubeVideos.length}
-                    </span>
+                    <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
                   )}
                 </Button>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
