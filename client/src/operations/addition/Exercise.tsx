@@ -7,7 +7,7 @@ import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
 import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -38,6 +38,7 @@ interface YoutubeVideoMetadata {
   url: string;
   title: string;
   thumbnailUrl: string;
+  videoId: string;
   loading: boolean;
   error: boolean;
 }
@@ -57,6 +58,8 @@ const YoutubeVideoDialog = ({
   const [videoLinks, setVideoLinks] = useState<string[]>([...videos]);
   const [videosMetadata, setVideosMetadata] = useState<YoutubeVideoMetadata[]>([]);
   const [isEditMode, setIsEditMode] = useState(videos.length === 0);
+  const [currentPlayingVideo, setCurrentPlayingVideo] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Función para extraer el ID de video de YouTube de una URL
   const extractYoutubeId = (url: string): string | null => {
@@ -78,6 +81,7 @@ const YoutubeVideoDialog = ({
               url: videoUrl,
               title: "Video no válido",
               thumbnailUrl: "",
+              videoId: "",
               loading: false,
               error: true
             });
@@ -94,6 +98,7 @@ const YoutubeVideoDialog = ({
                 url: videoUrl,
                 title: data.title || "Video de YouTube",
                 thumbnailUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+                videoId: videoId,
                 loading: false,
                 error: false
               });
@@ -102,6 +107,7 @@ const YoutubeVideoDialog = ({
                 url: videoUrl,
                 title: "Video no encontrado",
                 thumbnailUrl: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,
+                videoId: videoId,
                 loading: false,
                 error: true
               });
@@ -111,6 +117,7 @@ const YoutubeVideoDialog = ({
               url: videoUrl,
               title: "Error al cargar información",
               thumbnailUrl: videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : "",
+              videoId: videoId || "",
               loading: false,
               error: true
             });
@@ -123,6 +130,14 @@ const YoutubeVideoDialog = ({
       fetchVideoMetadata();
     }
   }, [isOpen, videos, isEditMode]);
+  
+  // Limpiar estado cuando se cierra el diálogo
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentPlayingVideo(null);
+      setIsFullscreen(false);
+    }
+  }, [isOpen]);
   
   const handleVideoChange = (index: number, value: string) => {
     const newLinks = [...videoLinks];
@@ -153,18 +168,99 @@ const YoutubeVideoDialog = ({
   };
   
   const handleEnterEditMode = () => {
+    setCurrentPlayingVideo(null);
     setIsEditMode(true);
     setVideoLinks([...videos]);
   };
   
+  const playVideo = (videoId: string) => {
+    setCurrentPlayingVideo(videoId);
+  };
+  
+  const stopVideo = () => {
+    setCurrentPlayingVideo(null);
+  };
+  
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+  
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{isEditMode ? "Añadir Videos Explicativos" : "Videos Explicativos"}</DialogTitle>
-        </DialogHeader>
+    <Dialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (!open) {
+          setCurrentPlayingVideo(null);
+          setIsFullscreen(false);
+          onClose();
+        }
+      }}
+    >
+      <DialogContent 
+        className={`${isFullscreen ? 'sm:max-w-[95vw] sm:h-[90vh] p-0 overflow-hidden' : 'sm:max-w-md'}`}
+      >
+        {!isFullscreen && (
+          <DialogHeader>
+            <DialogTitle>{currentPlayingVideo ? "Reproduciendo video" : (isEditMode ? "Añadir Videos Explicativos" : "Videos Explicativos")}</DialogTitle>
+          </DialogHeader>
+        )}
         
-        {isEditMode ? (
+        {currentPlayingVideo ? (
+          // Modo de reproducción de video
+          <div className={`relative ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}>
+            <iframe
+              className="w-full h-full"
+              src={`https://www.youtube.com/embed/${currentPlayingVideo}?autoplay=1&rel=0`}
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+            
+            <div className="absolute top-2 right-2 flex gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="bg-black bg-opacity-50 text-white border-none h-8 w-8 hover:bg-black hover:bg-opacity-70"
+                onClick={toggleFullscreen}
+              >
+                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+              
+              {isFullscreen && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="bg-black bg-opacity-50 text-white border-none h-8 w-8 hover:bg-black hover:bg-opacity-70"
+                  onClick={stopVideo}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            
+            {!isFullscreen && (
+              <div className="p-3 flex justify-between items-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={stopVideo}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cerrar video
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleEnterEditMode}
+                >
+                  <Cog className="h-4 w-4 mr-2" />
+                  Editar videos
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : isEditMode ? (
           // Modo de edición
           <div className="space-y-4 py-4">
             <div className="text-sm text-gray-600 mb-2">
@@ -213,17 +309,25 @@ const YoutubeVideoDialog = ({
             </DialogFooter>
           </div>
         ) : (
-          // Modo de visualización
+          // Modo de visualización de miniaturas
           <div className="space-y-6 py-4">
             {videosMetadata.map((video, index) => (
               <div key={index} className="border rounded-lg overflow-hidden">
-                <div className="relative aspect-video bg-gray-100">
+                <div 
+                  className="relative aspect-video bg-gray-100 cursor-pointer group"
+                  onClick={() => playVideo(video.videoId)}
+                >
                   {video.thumbnailUrl ? (
-                    <img 
-                      src={video.thumbnailUrl} 
-                      alt={video.title} 
-                      className="w-full h-full object-cover"
-                    />
+                    <>
+                      <img 
+                        src={video.thumbnailUrl} 
+                        alt={video.title} 
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all flex items-center justify-center">
+                        <Play className="text-white opacity-0 group-hover:opacity-100 h-12 w-12 transform scale-75 group-hover:scale-100 transition-all" />
+                      </div>
+                    </>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-200">
                       <Youtube className="h-12 w-12 text-gray-400" />
@@ -237,10 +341,20 @@ const YoutubeVideoDialog = ({
                   <Button 
                     variant="ghost" 
                     size="sm" 
+                    onClick={() => playVideo(video.videoId)}
+                    className="text-red-600"
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Reproducir
+                  </Button>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
                     onClick={() => window.open(video.url, '_blank')}
                   >
-                    <Youtube className="h-4 w-4 text-red-600 mr-2" />
-                    Ver video
+                    <Youtube className="h-4 w-4 mr-2" />
+                    Abrir en YouTube
                   </Button>
                 </div>
               </div>
