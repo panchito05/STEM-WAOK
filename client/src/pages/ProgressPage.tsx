@@ -10,6 +10,8 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { format, parseISO, subDays } from "date-fns";
 import { operationModules } from "@/utils/operationComponents";
 import { Loader2, RefreshCw, Check, X } from "lucide-react";
+// Importar el nuevo componente de modal de detalles
+import ExerciseDetailsModal from "@/components/ExerciseDetailsModal";
 
 export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, refreshProgress, isLoading } = useProgress();
@@ -464,86 +466,17 @@ export default function ProgressPage() {
                             </td>
                             <td className="py-3 px-4">{exercise.timeSpent !== undefined ? `${exercise.timeSpent}s` : "N/A"}</td>
                             <td className="py-3 px-4">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => setSelectedExercise(exercise)}
-                                  >
-                                    Ver detalles
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-md">
-                                  <DialogHeader>
-                                    <DialogTitle className="text-center text-xl font-bold">
-                                      {getModuleName(exercise.operationId)} Exercise Complete!
-                                    </DialogTitle>
-                                  </DialogHeader>
-                                  
-                                  <div className="bg-gray-50 p-4 rounded-md mb-4">
-                                    <p className="text-center text-sm text-gray-500">Total Time</p>
-                                    <p className="text-center text-2xl font-bold">
-                                      {exercise.timeSpent ? 
-                                        exercise.timeSpent < 60 ? 
-                                          `00:${exercise.timeSpent.toString().padStart(2, '0')}` : 
-                                          `${Math.floor(exercise.timeSpent / 60).toString().padStart(2, '0')}:${(exercise.timeSpent % 60).toString().padStart(2, '0')}` 
-                                        : '00:00'}
-                                    </p>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-3 gap-2">
-                                    <div className="bg-blue-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Score</p>
-                                      <p className="text-center text-lg font-bold text-blue-600">
-                                        {exercise.score}/{exercise.totalProblems}
-                                      </p>
-                                    </div>
-                                    <div className="bg-green-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Accuracy</p>
-                                      <p className="text-center text-lg font-bold text-green-600">
-                                        {exercise.score && exercise.totalProblems ? 
-                                          `${Math.round((exercise.score / exercise.totalProblems) * 100)}%` : 
-                                          '0%'}
-                                      </p>
-                                    </div>
-                                    <div className="bg-purple-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Avg. Time</p>
-                                      <p className="text-center text-lg font-bold text-purple-600">
-                                        {exercise.timeSpent && exercise.totalProblems ? 
-                                          `${Math.round(exercise.timeSpent / exercise.totalProblems)}s` : 
-                                          'N/A'}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-3 gap-2 mt-2">
-                                    <div className="bg-yellow-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Avg. Attempts</p>
-                                      <p className="text-center text-lg font-bold text-yellow-600">
-                                        {exercise.avgAttempts ? exercise.avgAttempts.toFixed(1) : '1.0'}
-                                      </p>
-                                    </div>
-                                    <div className="bg-red-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Revealed</p>
-                                      <p className="text-center text-lg font-bold text-red-600">
-                                        {exercise.revealedAnswers || 0}
-                                      </p>
-                                    </div>
-                                    <div className="bg-teal-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Final Level</p>
-                                      <p className="text-center text-lg font-bold text-teal-600">
-                                        {exercise.difficulty === 'beginner' ? 'Principiante' : 
-                                         exercise.difficulty === 'intermediate' ? 'Intermedio' : 
-                                         exercise.difficulty === 'advanced' ? 'Avanzado' : 'Principiante'}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Mostrar Problem Review - siempre mostrar problemas, incluso si generamos datos de ejemplo */}
-                                  <div className="mt-4">
-                                    <h3 className="font-medium mb-2">Problem Review</h3>
-                                    <div className="space-y-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => {
+                                  setSelectedExercise(exercise);
+                                  setIsModalOpen(true);
+                                }}
+                              >
+                                Ver detalles
+                              </Button>
+                            </td>
                                       {(() => {
                                         // Intenta obtener los detalles del problema de varias fuentes
                                         let problemsToShow = null;
@@ -749,6 +682,13 @@ export default function ProgressPage() {
           </Tabs>
         )}
       </div>
+      
+      {/* Componente de detalles del ejercicio */}
+      <ExerciseDetailsModal
+        exercise={selectedExercise}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }
