@@ -362,14 +362,13 @@ export default function ProgressPage() {
                                 </p>
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Average Time</p>
+                                <p className="text-sm text-gray-500">Average Time For Each Exercise Block Completed</p>
                                 <p className="text-xl mt-2">
                                   <span className="font-bold">
                                     {progress?.averageTime 
                                       ? `${Math.round(progress.averageTime)}s` 
                                       : "N/A"}
                                   </span>
-                                  <span className="text-gray-600"> : For Each Exercise Block Completed</span>
                                 </p>
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
