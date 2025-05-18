@@ -1581,16 +1581,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 <Button 
-                  variant={youtubeVideos.length > 0 ? "default" : "outline"}
+                  variant="ghost" 
                   size="sm" 
-                  className={`px-2 py-1 flex items-center gap-1 ${youtubeVideos.length > 0 ? "bg-red-600 hover:bg-red-700 text-white" : "border-red-300 text-gray-500 hover:text-red-600"}`}
+                  className={`p-1 h-auto flex items-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500"}`}
                   onClick={() => setShowVideoDialog(true)} 
                   title="Videos explicativos"
                 >
-                  <Youtube className="h-5 w-5 sm:h-6 sm:w-6" />
-                  <span className={`text-xs sm:text-sm font-medium ${youtubeVideos.length > 0 ? "" : "hidden"}`}>
-                    {youtubeVideos.length > 0 ? youtubeVideos.length : ""}
-                  </span>
+                  <Youtube className="h-10 w-10 sm:h-12 sm:w-12" />
+                  {youtubeVideos.length > 0 && (
+                    <span className="absolute -bottom-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {youtubeVideos.length}
+                    </span>
+                  )}
                 </Button>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
