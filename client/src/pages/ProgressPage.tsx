@@ -559,60 +559,71 @@ export default function ProgressPage() {
                                           }];
                                         };
                                         
-                                        // SOLUCIÓN DIRECTA Y MEJORADA: Imprimir información completa para debug y luego extraer problemReview
-                                        console.log(`DEBUG EXERCISE ID ${exercise.id}:`, exercise);
+                                        // SOLUCIÓN DEFINITIVA: Ver qué campos están disponibles en el ejercicio
+                                        console.log(`DEBUG ID ${exercise.id}:`, exercise);
                                         
-                                        // Paso 1: Verificar si tenemos el campo extra_data
-                                        if (!exercise.extra_data) {
-                                          console.log(`⚠️ No hay extra_data para ejercicio ID ${exercise.id}`);
-                                          problemsToShow = getProblemDescription();
-                                          return problemsToShow;
+                                        if (!exercise) {
+                                          console.log("No hay ejercicio seleccionado");
+                                          return [{
+                                            problem: "No hay ejercicio seleccionado",
+                                            isCorrect: true,
+                                            isPlaceholder: true
+                                          }];
                                         }
+                                        
+                                        let problems = [];
                                         
                                         try {
-                                          // Paso 2: Parsear extra_data si es string
-                                          let extraData = exercise.extra_data;
-                                          if (typeof extraData === 'string') {
-                                            try {
-                                              extraData = JSON.parse(extraData);
-                                              console.log(`✅ extra_data parseado correctamente para ejercicio ID ${exercise.id}`);
-                                            } catch (parseError) {
-                                              console.error(`❌ Error al parsear extra_data:`, parseError);
-                                              problemsToShow = getProblemDescription();
-                                              return problemsToShow;
-                                            }
-                                          }
-                                          
-                                          console.log(`DEBUG extraData para ejercicio ID ${exercise.id}:`, extraData);
-                                          
-                                          // Paso 3: Buscar problemReview en la estructura correcta
-                                          if (extraData.screenshot && extraData.screenshot.problemReview) {
-                                            const problems = extraData.screenshot.problemReview;
-                                            console.log(`✅ Encontrados ${problems.length} problemas en problemReview para ejercicio ID ${exercise.id}:`, problems);
+                                          // Extraer datos de extra_data primero
+                                          if (exercise.extra_data) {
+                                            let extraData = exercise.extra_data;
                                             
-                                            if (Array.isArray(problems) && problems.length > 0) {
-                                              problemsToShow = problems;
-                                              return problemsToShow;
+                                            // Si es string, intentar parsearlo como JSON
+                                            if (typeof extraData === 'string') {
+                                              try {
+                                                extraData = JSON.parse(extraData);
+                                              } catch (error) {
+                                                console.log("Error al parsear extra_data:", error);
+                                              }
+                                            }
+                                            
+                                            // Verificar si existe screenshot.problemReview
+                                            if (extraData.screenshot && 
+                                                extraData.screenshot.problemReview && 
+                                                Array.isArray(extraData.screenshot.problemReview)) {
+                                              problems = extraData.screenshot.problemReview;
+                                              console.log("✅ Encontrados problemas en extra_data.screenshot.problemReview");
                                             }
                                           }
                                           
-                                          // Paso 4: Buscar en otras posibles estructuras
-                                          if (exercise.problemDetails && Array.isArray(exercise.problemDetails) && exercise.problemDetails.length > 0) {
-                                            console.log(`✅ Usando problemDetails desde el objeto principal para ejercicio ID ${exercise.id}`);
-                                            problemsToShow = exercise.problemDetails;
-                                            return problemsToShow;
+                                          // Si no encontramos problemas en extra_data, verificar si hay problemDetails en el ejercicio
+                                          if (problems.length === 0 && exercise.extraData && exercise.extraData.problemDetails) {
+                                            problems = exercise.extraData.problemDetails;
+                                            console.log("✅ Encontrados problemas en exercise.extraData.problemDetails");
                                           }
                                           
-                                          // Si llegamos aquí, no se encontraron problemas en ninguna estructura conocida
-                                          console.log(`⚠️ No se encontraron problemReview para ejercicio ID ${exercise.id}`);
-                                          problemsToShow = getProblemDescription();
-                                          return problemsToShow;
-                                          
+                                          // Si aún no hay problemas, usar datos básicos disponibles
+                                          if (problems.length === 0) {
+                                            console.log("⚠️ No se encontraron problemas en ninguna estructura conocida");
+                                            problems = [{
+                                              problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' : 
+                                                         exercise.operationId === 'fractions' ? 'Fracciones' :
+                                                         exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} 
+                                                       completado con puntuación ${exercise.score}/${exercise.totalProblems}`,
+                                              isCorrect: true,
+                                              isPlaceholder: true
+                                            }];
+                                          }
                                         } catch (error) {
-                                          console.error(`❌ Error general al procesar problemas para ejercicio ID ${exercise.id}:`, error);
-                                          problemsToShow = getProblemDescription();
-                                          return problemsToShow;
+                                          console.error("Error al procesar problemas:", error);
+                                          problems = [{
+                                            problem: "Error al procesar detalles del ejercicio",
+                                            isCorrect: true,
+                                            isPlaceholder: true
+                                          }];
                                         }
+                                        
+                                        problemsToShow = problems;
                                         
                                         // Ya no necesitamos esta sección ya que la hemos reemplazado arriba
                                         
