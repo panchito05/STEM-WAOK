@@ -1363,20 +1363,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="p-1 h-auto" 
-                  onClick={() => setShowVideoDialog(true)} 
-                  title="Videos explicativos"
-                >
-                  <Youtube className="h-4 w-4 text-red-600" />
-                  {youtubeVideos.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                      {youtubeVideos.length}
-                    </span>
-                  )}
-                </Button>
+
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
                     P: {problemTimerValue}s
@@ -1396,16 +1383,33 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </Tooltip>
                   </TooltipProvider>
                 )}
-                <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" : 
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" : 
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
-                  "bg-indigo-100 text-indigo-800"
-                }`}>
-                    {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
-                </span>
+                <div className="flex flex-col items-center">
+                  <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
+                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" : 
+                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" : 
+                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
+                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
+                    (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
+                    "bg-indigo-100 text-indigo-800"
+                  }`}>
+                      {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
+                  </span>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="p-1 h-auto mt-1" 
+                    onClick={() => setShowVideoDialog(true)} 
+                    title="Videos explicativos"
+                  >
+                    <Youtube className="h-8 w-8 text-red-600" />
+                    {youtubeVideos.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {youtubeVideos.length}
+                      </span>
+                    )}
+                  </Button>
+                </div>
                 {/* Rewards button removed */}
                 {/* History button removed */}
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
