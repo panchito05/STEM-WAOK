@@ -597,9 +597,12 @@ export default function ProgressPage() {
                                           }
                                           
                                           // Si no encontramos problemas en extra_data, verificar si hay problemDetails en el ejercicio
-                                          if (problems.length === 0 && exercise.extraData && exercise.extraData.problemDetails) {
-                                            problems = exercise.extraData.problemDetails;
-                                            console.log("✅ Encontrados problemas en exercise.extraData.problemDetails");
+                                          if (problems.length === 0 && exercise.extra_data && typeof exercise.extra_data === 'object') {
+                                            // Intentar obtener de problemDetails
+                                            if (exercise.extra_data.problemDetails) {
+                                              problems = exercise.extra_data.problemDetails;
+                                              console.log("✅ Encontrados problemas en exercise.extra_data.problemDetails");
+                                            }
                                           }
                                           
                                           // Si aún no hay problemas, usar datos básicos disponibles

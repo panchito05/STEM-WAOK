@@ -1179,25 +1179,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           textColor: "text-teal-600" 
         }
       },
-      problemReview: problemDetails.map(detail => {
-        if (!detail) return null;
+      // SOLUCIÓN DEFINITIVA: Crear un array con los problemas exactos como se muestran visualmente
+      problemReview: userAnswersHistory.map((answer, index) => {
+        if (!answer) return null;
+        const problem = problemsList[index];
+        if (!problem) return null;
         
-        // Format the problem nicely for display
-        const { operands, correctAnswer } = detail.problem;
-        const problemText = `${operands[0]} + ${operands[1]} = ${correctAnswer}`;
+        // Este es el formato EXACTO que se muestra en la pantalla final
+        const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
         
         return {
+          // Datos que se muestran en la UI
           problem: problemText,
-          level: settings.difficulty === 'beginner' ? '1' 
-              : settings.difficulty === 'elementary' ? '2'
-              : settings.difficulty === 'intermediate' ? '3'
-              : settings.difficulty === 'advanced' ? '4'
-              : settings.difficulty === 'expert' ? '5' : '1',
-          attempts: detail.attempts?.toString() || "1",
-          time: `${detail.timeSpent || avgTimePerProblem}s`,
-          isCorrect: detail.isCorrect
+          isCorrect: answer.isCorrect,
+          attempts: (answer.attempts || 1).toString(),
+          timeSpent: avgTimePerProblem,
+          level: finalLevel === "beginner" ? "1" : 
+                 finalLevel === "elementary" ? "2" : 
+                 finalLevel === "intermediate" ? "3" : 
+                 finalLevel === "advanced" ? "4" : "5"
         };
-      }).filter(Boolean)
+      }).filter(Boolean) // Eliminar nulos
     };
     
     // Mostrar en consola para verificar
