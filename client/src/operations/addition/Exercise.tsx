@@ -1620,19 +1620,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
             <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
             <div className="flex items-center gap-2">
-              <div
-                className={`cursor-pointer flex flex-col items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"}`}
-                onClick={() => setShowVideoDialog(true)}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`p-0.5 h-auto flex items-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"}`}
+                onClick={() => setShowVideoDialog(true)} 
                 title="Videos explicativos"
-                style={{ padding: "0px", margin: "0 10px" }}
               >
-                <div className="bg-red-600 rounded-lg p-1 text-white">
-                  <Youtube className="h-7 w-7 sm:h-8 sm:w-8" />
-                </div>
+                <Youtube className="h-5 w-5 sm:h-6 sm:w-6" />
                 {youtubeVideos.length > 0 && (
-                  <span className="text-xs font-bold">{youtubeVideos.length}</span>
+                  <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
                 )}
-              </div>
+              </Button>
               <span className="font-semibold">{t('exercises.score')}: {score}</span>
             </div>
         </div>
