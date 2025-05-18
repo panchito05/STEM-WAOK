@@ -650,7 +650,7 @@ export default function ProgressPage() {
                   </div>
                   <div className="mt-6 text-center">
                     <Button variant="outline" className="w-full">
-                      Show All Completed Exercises
+                      Block Of Completed Exercises
                     </Button>
                   </div>
                 </CardContent>
