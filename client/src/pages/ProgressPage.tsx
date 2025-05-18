@@ -445,7 +445,7 @@ export default function ProgressPage() {
                         {recentExercises.map((exercise: ExerciseResult, index: number) => (
                           <tr key={index} className="border-b">
                             <td className="py-3 px-4">
-                              {exercise.date ? format(new Date(exercise.date), "MMM dd, yyyy HH:mm") : "N/A"}
+                              {exercise.date ? format(new Date(exercise.date), "MMMM dd, yyyy") : "N/A"}
                             </td>
                             <td className="py-3 px-4">{getModuleName(exercise.operationId)}</td>
                             <td className="py-3 px-4">
