@@ -596,17 +596,58 @@ export default function ProgressPage() {
                                             }
                                           }
                                           
-                                          // Verificar si hay exactProblems en extra_data (NUEVA FUNCIÓN ESPECIALIZADA)
+                                          // NUEVO ENFOQUE: Buscar problemas capturados de la UI
                                           if (problems.length === 0 && exercise.extra_data && typeof exercise.extra_data === 'object') {
-                                            // Intentar obtener los problemas exactos capturados por la nueva función
-                                            if (exercise.extra_data.exactProblems && Array.isArray(exercise.extra_data.exactProblems)) {
-                                              problems = exercise.extra_data.exactProblems;
-                                              console.log("✅ ENCONTRADOS PROBLEMAS EXACTOS en extra_data.exactProblems:", problems);
+                                            console.log("🔍 Buscando problemas capturados con el nuevo enfoque...");
+                                            
+                                            // 1. Intentar obtener problemas del campo principal uiProblems
+                                            if (exercise.extra_data.uiProblems && Array.isArray(exercise.extra_data.uiProblems)) {
+                                              problems = exercise.extra_data.uiProblems;
+                                              console.log("✅ ENCONTRADOS PROBLEMAS UI en extra_data.uiProblems:", problems);
                                             }
-                                            // Intentar obtener de problemDetails (FALLBACK LEGACY)
-                                            else if (exercise.extra_data.problemDetails) {
-                                              problems = exercise.extra_data.problemDetails;
-                                              console.log("✅ Encontrados problemas en exercise.extra_data.problemDetails");
+                                            // 2. Intentar buscar en localStorage (respaldo local)
+                                            else {
+                                              const timestamp = exercise.extra_data.captureTimestamp;
+                                              if (timestamp) {
+                                                const exerciseKey = `exercise_${timestamp}`;
+                                                const storedData = localStorage.getItem(exerciseKey);
+                                                if (storedData) {
+                                                  try {
+                                                    const parsedData = JSON.parse(storedData);
+                                                    if (parsedData.problems && Array.isArray(parsedData.problems)) {
+                                                      problems = parsedData.problems;
+                                                      console.log("✅ PROBLEMAS RECUPERADOS DE LOCALSTORAGE:", problems);
+                                                    }
+                                                  } catch (error) {
+                                                    console.error("Error parseando datos de localStorage:", error);
+                                                  }
+                                                }
+                                              }
+                                            }
+                                            
+                                            // 3. FALLBACKS PARA COMPATIBILIDAD
+                                            if (problems.length === 0) {
+                                              // Intentar campos alternativos
+                                              if (exercise.extra_data.exactProblems && Array.isArray(exercise.extra_data.exactProblems)) {
+                                                problems = exercise.extra_data.exactProblems;
+                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.exactProblems");
+                                              }
+                                              else if (exercise.extra_data.capturedProblems && Array.isArray(exercise.extra_data.capturedProblems)) {
+                                                problems = exercise.extra_data.capturedProblems;
+                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.capturedProblems");
+                                              }
+                                              // Intentar obtener de problemDetails (FALLBACK LEGACY)
+                                              else if (exercise.extra_data.problemDetails) {
+                                                problems = exercise.extra_data.problemDetails;
+                                                console.log("✅ Encontrados problemas en exercise.extra_data.problemDetails");
+                                              }
+                                              // Intentar en screenshot.problemReview
+                                              else if (exercise.extra_data.screenshot && 
+                                                    exercise.extra_data.screenshot.problemReview && 
+                                                    Array.isArray(exercise.extra_data.screenshot.problemReview)) {
+                                                problems = exercise.extra_data.screenshot.problemReview;
+                                                console.log("✅ Encontrados problemas en screenshot.problemReview");
+                                              }
                                             }
                                           }
                                           
