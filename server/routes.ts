@@ -307,16 +307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validar los datos de progreso con zod
       const validatedProgress = exerciseProgressSchema.parse(req.body);
       
-      // CORRECCIÓN PARA EL PROBLEMA DE CONTEO:
-      // Si el score es exactamente una unidad menos que el total (ejemplo: 2/3)
-      // y hay indicios de que todas las respuestas deberían ser correctas
-      if (validatedProgress.score === validatedProgress.totalProblems - 1 && validatedProgress.totalProblems > 1) {
-        console.log(`✅ CORRECCIÓN DE PUNTUACIÓN: ${validatedProgress.score}/${validatedProgress.totalProblems} → ${validatedProgress.totalProblems}/${validatedProgress.totalProblems}`);
-        // Corregir la puntuación
-        validatedProgress.score = validatedProgress.totalProblems;
-      }
-      
-      // Insertar el progreso (potencialmente corregido)
+      // Insertar el nuevo progreso
       await storage.insertProgress(userId, validatedProgress);
       
       // Obtener el progreso actualizado para devolverlo en el formato esperado

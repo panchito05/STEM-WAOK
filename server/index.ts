@@ -5,9 +5,6 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "@db";
 
-// Importar el corrector de puntaje para arreglar el problema de conteo de respuestas
-import "./fix-score.js";
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

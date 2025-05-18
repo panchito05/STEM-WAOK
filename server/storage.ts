@@ -148,41 +148,14 @@ export async function getProgressForUser(userId: number) {
 }
 
 export async function insertProgress(userId: number, progressData: ExerciseProgress) {
-  console.log("Insertando progreso para usuario:", userId, "- Datos:", 
-    `Score: ${progressData.score}/${progressData.totalProblems}`,
-    `Accuracy: ${progressData.accuracy}%`);
-  
-  // Garantizar que los datos de score sean correctos (nunca mayor que el total)
-  const validatedScore = Math.min(progressData.score, progressData.totalProblems);
-  
-  // Calcular accuracy basada en los valores validados
-  const calculatedAccuracy = progressData.totalProblems > 0 
-    ? Math.round((validatedScore / progressData.totalProblems) * 100) 
-    : 0;
-    
-  // Usar la precisión proporcionada o la calculada
-  const finalAccuracy = progressData.accuracy || calculatedAccuracy;
-  
-  console.log("Datos validados:", 
-    `Score: ${validatedScore}/${progressData.totalProblems}`,
-    `Accuracy: ${finalAccuracy}%`);
-  
   const [newProgress] = await db.insert(progressEntries)
     .values({
       userId,
       operationId: progressData.operationId,
-      score: validatedScore,                // Puntaje validado
+      score: progressData.score,
       totalProblems: progressData.totalProblems,
       timeSpent: progressData.timeSpent,
-      difficulty: progressData.difficulty,
-      extraData: JSON.stringify({           // Guardar datos adicionales incluyendo accuracy
-        accuracy: finalAccuracy,
-        avgTimePerProblem: progressData.avgTimePerProblem,
-        avgAttempts: progressData.avgAttempts,
-        revealedAnswers: progressData.revealedAnswers,
-        problemDetails: progressData.problemDetails || [],
-        extra_data: progressData.extra_data || {}
-      })
+      difficulty: progressData.difficulty
     })
     .returning();
   
@@ -368,41 +341,21 @@ export async function getProgressForChildProfile(childProfileId: number) {
 }
 
 export async function insertProgressForChildProfile(childProfileId: number, progressData: ExerciseProgress) {
-  console.log("Insertando progreso para perfil:", childProfileId, "- Datos:", 
-    `Score: ${progressData.score}/${progressData.totalProblems}`,
-    `Accuracy: ${progressData.accuracy}%`);
-  
-  // Garantizar que los datos de score sean correctos (nunca mayor que el total)
-  const validatedScore = Math.min(progressData.score, progressData.totalProblems);
-  
-  // Calcular accuracy basada en los valores validados
-  const calculatedAccuracy = progressData.totalProblems > 0 
-    ? Math.round((validatedScore / progressData.totalProblems) * 100) 
-    : 0;
-    
-  // Usar la precisión proporcionada o la calculada
-  const finalAccuracy = progressData.accuracy || calculatedAccuracy;
-  
-  console.log("Datos validados para perfil:", 
-    `Score: ${validatedScore}/${progressData.totalProblems}`,
-    `Accuracy: ${finalAccuracy}%`);
-  
   // Guardar todos los datos enviados, incluyendo los detalles de los problemas
   const progressDataToSave = {
     childProfileId,
     operationId: progressData.operationId,
-    score: validatedScore,                // Puntaje validado
+    score: progressData.score,
     totalProblems: progressData.totalProblems,
     timeSpent: progressData.timeSpent,
     difficulty: progressData.difficulty,
     // Guardamos todos los campos adicionales como un objeto JSON en el campo extraData
-    extraData: JSON.stringify({           // Guardar datos adicionales incluyendo accuracy
-      accuracy: finalAccuracy,            // Precisión validada
+    extraData: JSON.stringify({
+      accuracy: progressData.accuracy,
       avgTimePerProblem: progressData.avgTimePerProblem,
       avgAttempts: progressData.avgAttempts,
       revealedAnswers: progressData.revealedAnswers,
-      problemDetails: progressData.problemDetails || [],
-      extra_data: progressData.extra_data || {}
+      problemDetails: progressData.problemDetails || []
     })
   };
   
