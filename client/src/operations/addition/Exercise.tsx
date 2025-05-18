@@ -844,17 +844,32 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }).filter(Boolean)
     };
     
-    // Guardar resultado detallado con los datos de la captura
+    // Extraer los valores que se muestran en pantalla para asegurar consistencia
+    const scoreDisplayed = screenshotData.scoreData.score.value;
+    const [displayedCorrect, displayedTotal] = scoreDisplayed.split(' / ').map(num => parseInt(num.trim()));
+    
+    // Verificar que los datos numéricos sean válidos
+    const validDisplayedCorrect = !isNaN(displayedCorrect) ? displayedCorrect : correctCount;
+    const validDisplayedTotal = !isNaN(displayedTotal) ? displayedTotal : problemsList.length;
+    
+    // Calcular la precisión basada en los valores mostrados
+    const displayedAccuracy = validDisplayedTotal > 0 
+      ? Math.round((validDisplayedCorrect / validDisplayedTotal) * 100) 
+      : 0;
+      
+    console.log(`Guardando progreso con puntaje: ${validDisplayedCorrect}/${validDisplayedTotal} (${displayedAccuracy}%)`);
+    
+    // Guardar resultado con los valores que se muestran en pantalla
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
-      score: correctCount,
-      totalProblems: problemsList.length,
+      score: validDisplayedCorrect, // Usar el valor mostrado en pantalla
+      totalProblems: validDisplayedTotal, // Usar el valor mostrado en pantalla
       timeSpent: timer,
       difficulty: finalLevel as string,
       
       // Campos adicionales detallados
-      accuracy: accuracy,
+      accuracy: displayedAccuracy, // Usar la precisión calculada de los valores mostrados
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
