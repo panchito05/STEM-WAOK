@@ -438,8 +438,8 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 <span className="flex items-center"><span className="mr-2">📈</span>{isEnglish ? "Enable Adaptive Difficulty" : "Habilitar Dificultad Adaptativa"}</span>
                 <span className="text-xs ml-5 opacity-80">
                   {isEnglish 
-                    ? "If active, the module will automatically increase difficulty after 10 consecutive correct exercises, even across different sessions." 
-                    : "Si está activa, el módulo aumentará de nivel automáticamente al resolver 10 ejercicios correctos consecutivos, incluso entre diferentes sesiones."}
+                    ? "Will automatically increase difficulty after 10 consecutive correct exercises, even across different sessions." 
+                    : "Aumentará de nivel automáticamente al resolver 10 ejercicios correctos consecutivos, incluso si fueron entre diferentes sesiones."}
                 </span>
               </Label>
               <Switch
