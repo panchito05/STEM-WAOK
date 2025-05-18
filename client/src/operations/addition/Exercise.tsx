@@ -844,11 +844,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }).filter(Boolean)
     };
     
+    // Mostrar en consola para verificar
+    console.log(`🧠 VERIFICACIÓN DE PUNTUACIÓN PARA GUARDAR:
+    - Puntuación calculada (correctCount): ${correctCount}
+    - Total de problemas: ${problemsList.length}
+    - Precisión: ${accuracy}%
+    - Respuestas correctas: ${userAnswersHistory.filter(a => a && a.isCorrect).length}
+    - Respuestas incorrectas: ${userAnswersHistory.filter(a => a && !a.isCorrect).length}
+    - Respuestas nulas: ${userAnswersHistory.filter(a => a === null).length}`);
+    
+    // Recalcular correctCount para asegurar exactitud
+    const finalScore = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    
     // Guardar resultado detallado con los datos de la captura
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
-      score: correctCount,
+      score: finalScore, // Usar finalScore en lugar de correctCount
       totalProblems: problemsList.length,
       timeSpent: timer,
       difficulty: finalLevel as string,
