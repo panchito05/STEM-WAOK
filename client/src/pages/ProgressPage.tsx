@@ -537,29 +537,80 @@ export default function ProgressPage() {
                                     </div>
                                   </div>
                                   
-                                  {exercise.problemDetails && exercise.problemDetails.length > 0 && (
-                                    <div className="mt-4">
-                                      <h3 className="font-medium mb-2">Problem Review</h3>
-                                      <div className="space-y-2">
-                                        {exercise.problemDetails.map((problem, idx) => (
-                                          <div key={idx} className="bg-green-50 p-3 rounded-md relative">
-                                            <p className="font-medium">
-                                              (#{idx + 1}) {problem.problem ? problem.problem.toString() : 'N/A'}
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                              {problem.timeSpent ? `Time: ${problem.timeSpent}s` : ''}
-                                              {problem.attempts ? `, Att: ${problem.attempts}` : ''}
-                                            </p>
-                                            {problem.isCorrect && (
-                                              <span className="absolute right-3 top-3 text-green-500">
-                                                <Check size={16} />
-                                              </span>
-                                            )}
+                                  {/* Intentar mostrar problemDetails si existe o extraerlo de extra_data */}
+                                  {(() => {
+                                    // Intenta obtener los detalles del problema de varias fuentes
+                                    let problemsToShow = null;
+                                    
+                                    // 1. Primero verificar si existe problemDetails directamente
+                                    if (exercise.problemDetails && exercise.problemDetails.length > 0) {
+                                      problemsToShow = exercise.problemDetails;
+                                    } 
+                                    // 2. Si no, intentar extraer de extra_data.screenshot
+                                    else if (exercise.extra_data && exercise.extra_data.screenshot) {
+                                      // Intentar extraer de la estructura de la captura de pantalla
+                                      const screenshot = 
+                                        typeof exercise.extra_data.screenshot === 'string' 
+                                          ? JSON.parse(exercise.extra_data.screenshot) 
+                                          : exercise.extra_data.screenshot;
+                                          
+                                      if (screenshot && screenshot.problems) {
+                                        problemsToShow = screenshot.problems;
+                                      }
+                                    }
+                                    
+                                    if (problemsToShow && problemsToShow.length > 0) {
+                                      return (
+                                        <div className="mt-4">
+                                          <h3 className="font-medium mb-2">Problem Review</h3>
+                                          <div className="space-y-2">
+                                            {problemsToShow.map((problem, idx) => {
+                                              // Intentar determinar si el problema es correcto
+                                              const isCorrect = 
+                                                problem.isCorrect !== undefined ? problem.isCorrect :
+                                                problem.status === 'correct';
+                                              
+                                              // Intentar extraer información del problema
+                                              let problemText = '';
+                                              if (problem.problem) {
+                                                if (typeof problem.problem === 'string') {
+                                                  problemText = problem.problem;
+                                                } else if (problem.problem.operands) {
+                                                  // Para problemas de suma
+                                                  problemText = problem.problem.operands.join(' + ') + ' = ' + problem.problem.correctAnswer;
+                                                }
+                                              } else if (problem.text) {
+                                                problemText = problem.text;
+                                              }
+                                              
+                                              return (
+                                                <div key={idx} className={`${isCorrect ? 'bg-green-50' : 'bg-red-50'} p-3 rounded-md relative`}>
+                                                  <p className="font-medium">
+                                                    (#{idx + 1}) {problemText || 'Problem ' + (idx + 1)}
+                                                  </p>
+                                                  <p className="text-xs text-gray-500">
+                                                    {problem.timeSpent ? `Time: ${problem.timeSpent}s` : ''}
+                                                    {problem.attempts ? `, Att: ${problem.attempts}` : ''}
+                                                  </p>
+                                                  {isCorrect && (
+                                                    <span className="absolute right-3 top-3 text-green-500">
+                                                      <Check size={16} />
+                                                    </span>
+                                                  )}
+                                                </div>
+                                              );
+                                            })}
                                           </div>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
+                                        </div>
+                                      );
+                                    } else {
+                                      return (
+                                        <div className="mt-4 text-center text-gray-500">
+                                          No hay detalles de problemas disponibles para este ejercicio.
+                                        </div>
+                                      );
+                                    }
+                                  })()}
                                 </DialogContent>
                               </Dialog>
                             </td>
