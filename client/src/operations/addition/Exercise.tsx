@@ -1623,11 +1623,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className={`p-0.5 h-auto flex items-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"}`}
+                className={`px-2 py-1 h-auto flex items-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border rounded-md`}
                 onClick={() => setShowVideoDialog(true)} 
                 title="Videos explicativos"
               >
-                <Youtube className="h-5 w-5 sm:h-6 sm:w-6" />
+                <Youtube className="h-5 w-6 sm:h-6 sm:w-8" />
                 {youtubeVideos.length > 0 && (
                   <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
                 )}
