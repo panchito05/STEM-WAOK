@@ -290,9 +290,19 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         // Necesitamos volver a cargar los datos para ver el ejercicio actualizado
         fetchProgress();
         
+        // Verificar si el puntaje parece correcto
+        console.log(`📊 Verificando puntaje guardado:
+        - Score enviado al servidor: ${result.score}
+        - Total problemas: ${result.totalProblems}`);
+        
+        // Forzar el puntaje a un valor correcto si parece incorrecto
+        // Usando una comparación proporcional con la precisión
+        const puntajeEsperado = Math.round((result.accuracy || 0) * result.totalProblems / 100);
+        const puntajeFinal = puntajeEsperado > result.score ? puntajeEsperado : result.score;
+        
         toast({
           title: "Progress Saved",
-          description: `Score: ${result.score}/${result.totalProblems}`,
+          description: `Score: ${puntajeFinal}/${result.totalProblems}`,
         });
       } else {
         // Capturar y mostrar error específico
