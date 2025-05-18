@@ -1133,9 +1133,50 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       };
     }).filter(item => item !== null);
     
-    // Create screenshot-like data structure that matches our template
+    // Capturar los problemas directamente de la UI para guardarlos
+    console.log("📸 Capturando problemas directamente de la UI...");
+    
+    // Extraer datos de los problemas de forma más estructurada para asegurar su persistencia
+    const uiProblems = userAnswersHistory.map((answer, index) => {
+      if (!answer) return null;
+      
+      const problem = problemsList[index];
+      if (!problem) return null;
+      
+      // Formato para mostrar el problema exactamente como se ve en la UI
+      let problemText = '';
+      if (problem.operands && problem.operands.length > 0) {
+        problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+      }
+      
+      // Nivel mostrado como texto para mejor comprensión
+      const levelText = finalLevel === "beginner" ? "1" : 
+                        finalLevel === "elementary" ? "2" : 
+                        finalLevel === "intermediate" ? "3" : 
+                        finalLevel === "advanced" ? "4" : "5";
+      
+      return {
+        problemNumber: index + 1,
+        problem: problemText,
+        isCorrect: answer.isCorrect,
+        info: `Lvl: ${levelText}, Att: ${answer.attempts || 1}, T: ${answer.timeSpent || avgTimePerProblem}s`,
+        attempts: String(answer.attempts || 1),
+        timeSpent: answer.timeSpent || avgTimePerProblem,
+        level: levelText
+      };
+    }).filter(Boolean);
+    
+    // Guardar captura en localStorage para referencia
+    const captureId = `exercise_${Date.now()}`;
+    localStorage.setItem(captureId, JSON.stringify(uiProblems));
+    console.log("✅ Problemas guardados en localStorage con clave:", captureId);
+    console.log("📊 Total de problemas capturados:", uiProblems.length);
+    console.log("🔍 PROBLEMAS CAPTURADOS DESDE UI:", uiProblems);
+    
+    // Create screenshot-like data structure that includes our captured problems
     const screenshotData = {
       title: "Addition Exercise Complete!",
+      timestamp: Date.now(),
       scoreData: {
         totalTime: formatTime(timer),
         score: { 
