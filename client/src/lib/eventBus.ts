@@ -9,14 +9,23 @@
 // Tipos de eventos soportados por el sistema
 export type EventName = 
   | 'levelUp' 
+  | 'levelChanged'
   | 'levelUpModalClosed'
   | 'exerciseCompleted' 
   | 'streakAchieved' 
-  | 'showReward';
+  | 'showReward'
+  | 'problemCompleted'
+  | 'problemViewed'
+  | 'historyRequested';
 
 // Tipo para los datos específicos de cada evento
 export interface EventData {
   levelUp: {
+    previousLevel: string;
+    newLevel: string;
+    consecutiveCorrectAnswers: number;
+  };
+  levelChanged: {
     previousLevel: string;
     newLevel: string;
     consecutiveCorrectAnswers: number;
@@ -34,6 +43,21 @@ export interface EventData {
   };
   showReward: {
     rewardType: 'medals' | 'trophies' | 'stars';
+  };
+  problemCompleted: {
+    problemId: string;
+    isCorrect: boolean;
+    moduleId: string;
+    userAnswer: number | null;
+    elapsedTime: number;
+  };
+  problemViewed: {
+    problemId: string;
+    moduleId: string;
+    fromHistory: boolean;
+  };
+  historyRequested: {
+    moduleId: string;
   };
 }
 

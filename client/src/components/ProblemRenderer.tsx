@@ -1,91 +1,243 @@
-import React from 'react';
-import { Check, X } from 'lucide-react';
+/**
+ * Componente para renderizar problemas matemáticos de manera estandarizada
+ * 
+ * Este componente facilita la representación uniforme de problemas matemáticos
+ * independientemente del tipo de operación (suma, fracciones, etc.)
+ */
 
-// Definición de tipos para problemas matemáticos
+import React from 'react';
+
+// Tipo estándar para problemas matemáticos en toda la aplicación
 export interface MathProblem {
-  problemNumber?: number;
-  problem: string;
-  isCorrect: boolean;
-  info?: string;
-  attempts?: string;
-  timeSpent?: number;
-  level?: string;
-  userAnswer?: string | number;
+  id: string;
+  moduleId: string;
+  operation: string;
+  operands: number[];
+  expectedAnswer: number;
+  difficulty: string;
+  originalProblem: any; // El problema original para acceder a propiedades específicas
 }
 
 interface ProblemRendererProps {
-  problems: MathProblem[];
-  showProblemNumbers?: boolean;
-  showInfoDetails?: boolean;
+  problem: MathProblem;
+  showAnswer?: boolean;
+  vertical?: boolean;
   className?: string;
 }
 
-/**
- * Componente para renderizar problemas matemáticos con un formato consistente
- */
 const ProblemRenderer: React.FC<ProblemRendererProps> = ({
-  problems,
-  showProblemNumbers = true,
-  showInfoDetails = true,
+  problem,
+  showAnswer = false,
+  vertical = false,
   className = ''
 }) => {
-  if (!problems || problems.length === 0) {
+  // Estilos base para la visualización
+  const baseClassName = 'font-mono text-xl';
+  const finalClassName = `${baseClassName} ${className}`;
+
+  // Generar representación según el tipo de operación
+  const renderProblem = () => {
+    switch (problem.operation) {
+      case '+':
+        return renderAddition();
+      case '-':
+        return renderSubtraction();
+      case '×':
+      case '*':
+        return renderMultiplication();
+      case '÷':
+      case '/':
+        return renderDivision();
+      case 'fraction':
+        return renderFraction();
+      case 'count':
+        return renderCounting();
+      default:
+        return <span>Problema no soportado</span>;
+    }
+  };
+
+  // Renderizar suma
+  const renderAddition = () => {
+    if (vertical) {
+      return (
+        <div className="flex flex-col items-end">
+          <div>{problem.operands[0]}</div>
+          <div className="flex items-center">
+            <span className="mr-2">+</span>
+            <span>{problem.operands[1]}</span>
+          </div>
+          <div className="w-full border-t border-gray-700 mt-1 mb-1"></div>
+          {showAnswer && <div>{problem.expectedAnswer}</div>}
+        </div>
+      );
+    }
+
     return (
-      <div className="p-4 text-center text-gray-500">
-        No hay problemas para mostrar
+      <div>
+        <span>{problem.operands[0]}</span>
+        <span className="mx-1">+</span>
+        <span>{problem.operands[1]}</span>
+        {showAnswer && (
+          <>
+            <span className="mx-1">=</span>
+            <span>{problem.expectedAnswer}</span>
+          </>
+        )}
       </div>
     );
-  }
+  };
 
-  return (
-    <div className={`problems-container space-y-3 ${className}`}>
-      {problems.map((problem, index) => (
-        <div 
-          key={`problem-${index}`}
-          className={`problem-item p-3 rounded-lg border relative ${
-            problem.isCorrect 
-              ? 'bg-green-50 border-green-200' 
-              : 'bg-red-50 border-red-200'
-          }`}
-        >
-          {showProblemNumbers && (
-            <div className="text-sm font-medium text-gray-600 mb-1">
-              Problema #{problem.problemNumber || index + 1}
-            </div>
-          )}
-
-          <div className="problem-text text-lg font-bold">
-            {problem.problem}
+  // Renderizar resta
+  const renderSubtraction = () => {
+    if (vertical) {
+      return (
+        <div className="flex flex-col items-end">
+          <div>{problem.operands[0]}</div>
+          <div className="flex items-center">
+            <span className="mr-2">-</span>
+            <span>{problem.operands[1]}</span>
           </div>
-
-          <div className={`problem-status text-sm mt-1 ${
-            problem.isCorrect ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {problem.isCorrect ? '✓ Correcto' : '✗ Incorrecto'}
-            
-            {!problem.isCorrect && problem.userAnswer !== undefined && (
-              <span className="ml-2">
-                (Respuesta dada: {problem.userAnswer})
-              </span>
-            )}
-          </div>
-
-          {showInfoDetails && problem.info && (
-            <div className="info-text text-xs text-gray-500 mt-1">
-              {problem.info}
-            </div>
-          )}
-          
-          <span className="absolute right-3 top-3">
-            {problem.isCorrect ? 
-              <Check className="h-5 w-5 text-green-500" /> : 
-              <X className="h-5 w-5 text-red-500" />
-            }
-          </span>
+          <div className="w-full border-t border-gray-700 mt-1 mb-1"></div>
+          {showAnswer && <div>{problem.expectedAnswer}</div>}
         </div>
-      ))}
-    </div>
-  );
+      );
+    }
+
+    return (
+      <div>
+        <span>{problem.operands[0]}</span>
+        <span className="mx-1">-</span>
+        <span>{problem.operands[1]}</span>
+        {showAnswer && (
+          <>
+            <span className="mx-1">=</span>
+            <span>{problem.expectedAnswer}</span>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // Renderizar multiplicación
+  const renderMultiplication = () => {
+    if (vertical) {
+      return (
+        <div className="flex flex-col items-end">
+          <div>{problem.operands[0]}</div>
+          <div className="flex items-center">
+            <span className="mr-2">×</span>
+            <span>{problem.operands[1]}</span>
+          </div>
+          <div className="w-full border-t border-gray-700 mt-1 mb-1"></div>
+          {showAnswer && <div>{problem.expectedAnswer}</div>}
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <span>{problem.operands[0]}</span>
+        <span className="mx-1">×</span>
+        <span>{problem.operands[1]}</span>
+        {showAnswer && (
+          <>
+            <span className="mx-1">=</span>
+            <span>{problem.expectedAnswer}</span>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // Renderizar división
+  const renderDivision = () => {
+    if (vertical) {
+      return (
+        <div className="flex items-center">
+          <div className="text-center">
+            <div>{problem.operands[1]}</div>
+            <div className="border-t border-gray-700"></div>
+            <div>{problem.operands[0]}</div>
+          </div>
+          {showAnswer && (
+            <>
+              <span className="mx-2">=</span>
+              <span>{problem.expectedAnswer}</span>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        <span>{problem.operands[0]}</span>
+        <span className="mx-1">÷</span>
+        <span>{problem.operands[1]}</span>
+        {showAnswer && (
+          <>
+            <span className="mx-1">=</span>
+            <span>{problem.expectedAnswer}</span>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // Renderizar fracciones (implementación básica)
+  const renderFraction = () => {
+    // Acceder a propiedades específicas de fracciones a través de originalProblem
+    const { numerator1, denominator1, numerator2, denominator2, operation } = 
+      problem.originalProblem;
+
+    return (
+      <div className="flex items-center justify-center">
+        <div className="flex flex-col items-center mx-1">
+          <div className="border-b border-gray-700">{numerator1}</div>
+          <div>{denominator1}</div>
+        </div>
+        <span className="mx-2">{operation}</span>
+        <div className="flex flex-col items-center mx-1">
+          <div className="border-b border-gray-700">{numerator2}</div>
+          <div>{denominator2}</div>
+        </div>
+        {showAnswer && (
+          <>
+            <span className="mx-2">=</span>
+            <div className="flex flex-col items-center">
+              <div className="border-b border-gray-700">{problem.expectedAnswer}</div>
+              <div>{/* Denominador de respuesta */}</div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // Renderizar problemas de conteo (implementación básica)
+  const renderCounting = () => {
+    // Acceder a propiedades específicas de conteo a través de originalProblem
+    const { itemCount, itemType } = problem.originalProblem;
+
+    return (
+      <div className="flex flex-col items-center">
+        <div className="grid grid-cols-5 gap-2">
+          {Array.from({ length: itemCount }).map((_, i) => (
+            <div key={i} className="w-6 h-6 bg-blue-500 rounded-full"></div>
+          ))}
+        </div>
+        {showAnswer && (
+          <div className="mt-2">
+            Respuesta: {problem.expectedAnswer} {itemType}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Renderizar el componente completo
+  return <div className={finalClassName}>{renderProblem()}</div>;
 };
 
 export default ProblemRenderer;
