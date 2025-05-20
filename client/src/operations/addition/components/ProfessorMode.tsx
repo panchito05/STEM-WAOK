@@ -193,10 +193,31 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           
           {/* Problem display with information about attempts and problem count */}
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
-            {/* Contador de problema e intentos */}
-            <div className="flex justify-between mb-2 text-xs font-medium text-gray-600">
-              <span>Problema {problem.index + 1} de {problem.total}</span>
-              <span>Intentos: {attempts}/{settings.maxAttempts}</span>
+            {/* Contador de problema e intentos - Modificado para coincidir con el formato solicitado */}
+            <div className="flex justify-between mb-2 text-xs font-medium">
+              <div className="flex items-center">
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="#4b5df1" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="mr-1"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="12" y1="12" x2="16" y2="12"></line>
+                  <line x1="12" y1="16" x2="16" y2="16"></line>
+                  <line x1="8" y1="12" x2="8" y2="12"></line>
+                  <line x1="8" y1="16" x2="8" y2="16"></line>
+                </svg>
+                <span className="text-gray-700">Problema {problem.index + 1} de {settings.enableCompensation ? problem.total : problem.total}</span>
+              </div>
+              <span className="text-gray-700">Intentos: {attempts}/{settings.maxAttempts}</span>
             </div>
             {renderProblem()}
           </div>
