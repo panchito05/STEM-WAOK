@@ -1,5 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 
+// Definir los diferentes modos de herramientas
+type ToolMode = 'pen' | 'eraser' | 'highlighter' | 'line';
+
 interface DrawingCanvasProps {
   width?: number;
   height?: number;
@@ -21,6 +24,11 @@ export function DrawingCanvas({
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   
+  // Estado para la herramienta activa y colores
+  const [activeColor, setActiveColor] = useState<string>(strokeColor);
+  const [activeWidth, setActiveWidth] = useState<number>(strokeWidth);
+  const [activeTool, setActiveTool] = useState<ToolMode>('pen');
+  
   // Initialize the canvas context
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,11 +46,17 @@ export function DrawingCanvas({
     
     context.scale(dpr, dpr);
     context.lineCap = 'round';
-    context.strokeStyle = strokeColor;
-    context.lineWidth = strokeWidth;
+    context.strokeStyle = activeColor;
+    context.lineWidth = activeWidth;
+    
+    if (activeTool === 'eraser') {
+      context.globalCompositeOperation = 'destination-out';
+    } else {
+      context.globalCompositeOperation = 'source-over';
+    }
     
     contextRef.current = context;
-  }, [strokeColor, strokeWidth]);
+  }, [activeColor, activeWidth, activeTool]);
   
   // Resize the canvas when window size changes
   useEffect(() => {
@@ -164,6 +178,43 @@ export function DrawingCanvas({
     }
   }, []);
   
+  // Funciones para cambiar herramientas
+  const setTool = (tool: ToolMode) => {
+    setActiveTool(tool);
+    
+    // Si tenemos contexto, actualizamos las propiedades
+    if (contextRef.current) {
+      const context = contextRef.current;
+      
+      if (tool === 'eraser') {
+        context.globalCompositeOperation = 'destination-out';
+        setActiveWidth(20); // Borrador más grande
+      } else {
+        context.globalCompositeOperation = 'source-over';
+        
+        // Ajustar grosor según la herramienta
+        if (tool === 'highlighter') {
+          setActiveWidth(15);
+          setActiveColor('#ffff0080'); // Amarillo transparente
+        } else if (tool === 'pen') {
+          setActiveWidth(3);
+          setActiveColor('#333333');
+        } else if (tool === 'line') {
+          setActiveWidth(2);
+          setActiveColor('#0000ff');
+        }
+      }
+    }
+  };
+  
+  // Función para cambiar color
+  const changeColor = (color: string) => {
+    setActiveColor(color);
+    if (contextRef.current) {
+      contextRef.current.strokeStyle = color;
+    }
+  };
+  
   return (
     <div className={`drawing-canvas-container relative ${className}`}>
       <canvas
@@ -178,6 +229,52 @@ export function DrawingCanvas({
         onTouchEnd={stopDrawing}
         style={{ touchAction: 'none' }}
       />
+      
+      {/* Barra de herramientas */}
+      <div className="absolute top-20 left-4 flex flex-col gap-2 bg-white p-2 rounded-lg shadow">
+        {/* Lápiz */}
+        <button
+          onClick={() => setTool('pen')}
+          className={`p-2 rounded-full ${activeTool === 'pen' ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+          title="Lápiz"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+          </svg>
+        </button>
+        
+        {/* Borrador */}
+        <button
+          onClick={() => setTool('eraser')}
+          className={`p-2 rounded-full ${activeTool === 'eraser' ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+          title="Borrador"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 20h-4v-4h4v4z M4 20v-4h12v4H4z M4 12h4v4H4v-4z M16 12h4v4h-4v-4z"></path>
+          </svg>
+        </button>
+        
+        {/* Marcador */}
+        <button
+          onClick={() => setTool('highlighter')}
+          className={`p-2 rounded-full ${activeTool === 'highlighter' ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+          title="Marcador"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 11l6 6 M6 18l-3 3 M12 6l6 6 M4 18L18 4"></path>
+          </svg>
+        </button>
+      </div>
+      
+      {/* Selector de colores */}
+      <div className="absolute top-4 left-4 flex gap-2 bg-white p-2 rounded-lg shadow">
+        <button onClick={() => changeColor('#333333')} className="w-6 h-6 rounded-full bg-gray-800 border border-gray-300" title="Negro"></button>
+        <button onClick={() => changeColor('#ff0000')} className="w-6 h-6 rounded-full bg-red-500 border border-gray-300" title="Rojo"></button>
+        <button onClick={() => changeColor('#0000ff')} className="w-6 h-6 rounded-full bg-blue-500 border border-gray-300" title="Azul"></button>
+        <button onClick={() => changeColor('#00ff00')} className="w-6 h-6 rounded-full bg-green-500 border border-gray-300" title="Verde"></button>
+      </div>
+      
+      {/* Botón para borrar todo */}
       <button
         onClick={clearCanvas}
         className="absolute bottom-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full"
