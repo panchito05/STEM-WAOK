@@ -132,9 +132,9 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       
       {/* Main layout with drawing area taking most of the screen */}
       <div className="h-full w-full">
-        {/* Full screen drawing canvas as background */}
-        <div className="absolute inset-0">
-          <DrawingCanvas height={window.innerHeight} />
+        {/* Full screen drawing canvas as background - expanded to full screen */}
+        <div className="absolute inset-0 w-full h-full">
+          <DrawingCanvas width={window.innerWidth} height={window.innerHeight} className="w-full h-full" />
         </div>
         
         {/* Problem and keypad container with dynamic positioning */}

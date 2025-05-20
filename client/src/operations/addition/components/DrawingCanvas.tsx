@@ -11,7 +11,7 @@ interface DrawingCanvasProps {
 
 export function DrawingCanvas({
   width = window.innerWidth,
-  height = window.innerHeight * 0.6,
+  height = window.innerHeight,
   strokeColor = '#333333',
   strokeWidth = 3,
   className = '',
@@ -168,7 +168,7 @@ export function DrawingCanvas({
     <div className={`drawing-canvas-container relative ${className}`}>
       <canvas
         ref={canvasRef}
-        className="drawing-canvas border border-gray-200 rounded-lg cursor-crosshair bg-white w-full h-full"
+        className="drawing-canvas cursor-crosshair bg-white w-full h-full"
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
