@@ -373,11 +373,16 @@ export function DrawingCanvas({
     // Comunica el cambio de modo oscuro al documento para que otros componentes puedan reaccionar
     document.documentElement.classList.toggle('canvas-dark-mode', newDarkMode);
     
+    // También añadimos la clase dark para que funcione con Tailwind
+    document.documentElement.classList.toggle('dark', newDarkMode);
+    
     // Emitir un evento personalizado para que componentes padres puedan saber del cambio
     const event = new CustomEvent('canvasDarkModeChange', { 
       detail: { darkMode: newDarkMode } 
     });
     document.dispatchEvent(event);
+    
+    console.log("Modo oscuro cambiado:", newDarkMode ? "ACTIVADO" : "DESACTIVADO");
   };
   
   return (

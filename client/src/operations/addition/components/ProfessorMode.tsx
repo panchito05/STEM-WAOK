@@ -74,7 +74,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             <span className="mr-2">+</span>
             <span>{secondOperand.toFixed(1)}</span>
           </div>
-          <div className="border-t border-black mt-1 w-full"></div>
+          <div className="border-t border-black dark:border-white mt-1 w-full"></div>
         </div>
       );
     } else {
