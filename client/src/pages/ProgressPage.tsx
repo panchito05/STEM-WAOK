@@ -878,7 +878,3 @@ export default function ProgressPage() {
             </TabsContent>
           </Tabs>
         )}
-      </div>
-    </>
-  );
-}
