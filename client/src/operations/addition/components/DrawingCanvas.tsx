@@ -37,8 +37,8 @@ export function DrawingCanvas({
   const [activeTool, setActiveTool] = useState<ToolMode>('pen');
   const [darkMode, setDarkMode] = useState<boolean>(false);
   
-  // Estado para tamaño del borrador
-  const [eraserSize, setEraserSize] = useState<number>(15);
+  // Tamaño fijo aumentado para el borrador (3x más grande)
+  const eraserSize = 45; // Tamaño fijo triplicado
   
   // Referencias para optimización de dibujo
   const lastPoint = useRef<Point | null>(null);
@@ -303,7 +303,7 @@ export function DrawingCanvas({
       
       if (tool === 'eraser') {
         context.globalCompositeOperation = 'destination-out';
-        setActiveWidth(eraserSize); // Usar el tamaño de borrador definido
+        setActiveWidth(eraserSize); // Usar el tamaño de borrador triplicado
       } else {
         context.globalCompositeOperation = 'source-over';
         
@@ -316,11 +316,10 @@ export function DrawingCanvas({
     }
   };
   
-  // Función para cambiar el tamaño del borrador
-  const changeEraserSize = (size: number) => {
-    setEraserSize(size);
-    if (activeTool === 'eraser' && contextRef.current) {
-      setActiveWidth(size);
+  // Actualizar el tamaño de borrado al seleccionar el borrador
+  const updateEraserSize = () => {
+    if (contextRef.current) {
+      setActiveWidth(eraserSize);
     }
   };
   
@@ -381,20 +380,7 @@ export function DrawingCanvas({
           </svg>
         </button>
         
-        {/* Control deslizante para el tamaño del borrador */}
-        {activeTool === 'eraser' && (
-          <div className={`w-full px-1 py-2 ${darkMode ? 'text-white' : 'text-gray-700'}`}>
-            <p className="text-xs mb-1 text-center">Tamaño: {eraserSize}</p>
-            <input 
-              type="range" 
-              min="5" 
-              max="50" 
-              value={eraserSize} 
-              onChange={(e) => changeEraserSize(parseInt(e.target.value))} 
-              className="w-full cursor-pointer"
-            />
-          </div>
-        )}
+
         
 
       </div>
