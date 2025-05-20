@@ -24,8 +24,9 @@ export function DrawingCanvas({
   strokeColor = '#333333',
   strokeWidth = 3,
   className = '',
-  onClear
-}: DrawingCanvasProps) {
+  onClear,
+  position = 'right' // Nueva propiedad para posicionar los controles: 'left' o 'right'
+}: DrawingCanvasProps & { position?: 'left' | 'right' }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -362,7 +363,7 @@ export function DrawingCanvas({
       />
       
       {/* Barra de herramientas */}
-      <div className={`absolute top-20 left-4 flex flex-col gap-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-2 rounded-lg shadow`}>
+      <div className={`absolute top-20 ${position === 'right' ? 'right-4' : 'left-4'} flex flex-col gap-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-2 rounded-lg shadow`}>
         {/* Lápiz */}
         <button
           onClick={() => setTool('pen')}
@@ -414,7 +415,7 @@ export function DrawingCanvas({
       </div>
       
       {/* Selector de colores con modo oscuro integrado */}
-      <div className={`absolute top-4 left-4 flex items-center gap-2 ${darkMode ? 'bg-gray-800' : 'bg-white'} p-2 rounded-lg shadow`}>
+      <div className={`absolute top-4 ${position === 'right' ? 'right-4' : 'left-4'} flex items-center gap-2 ${darkMode ? 'bg-gray-800' : 'bg-white'} p-2 rounded-lg shadow`}>
         {/* Botón de modo oscuro */}
         <button
           onClick={toggleDarkMode}
@@ -457,10 +458,10 @@ export function DrawingCanvas({
         )}
       </div>
       
-      {/* Botón para borrar todo */}
+      {/* Botón para borrar todo - siempre en la esquina opuesta a las herramientas */}
       <button
         onClick={clearCanvas}
-        className={`absolute bottom-4 right-4 p-2 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-full`}
+        className={`absolute bottom-4 ${position === 'right' ? 'left-4' : 'right-4'} p-2 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-full`}
         title="Borrar todo"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
