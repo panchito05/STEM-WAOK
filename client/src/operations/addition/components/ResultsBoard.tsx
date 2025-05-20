@@ -1,123 +1,131 @@
 // ResultsBoard.tsx - Componente para mostrar resultados finales del ejercicio
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { UserAnswer } from '../types';
-import { formatProblemToString } from '../utils/problemGenerator';
+import { Check, X, RotateCcw, Home } from 'lucide-react';
+import { Problem, UserAnswer } from '../types';
 import { useTranslation } from '../hooks/useTranslation';
 
 interface ResultsBoardProps {
-  userAnswers: UserAnswer[];
-  totalProblems: number;
   score: number;
+  problems: Problem[];
+  userAnswers: UserAnswer[];
   onRestart: () => void;
-  onReturn?: () => void;
+  onReturn: () => void;
 }
 
 const ResultsBoard: React.FC<ResultsBoardProps> = ({
-  userAnswers,
-  totalProblems,
   score,
+  problems,
+  userAnswers,
   onRestart,
   onReturn
 }) => {
   const { t } = useTranslation();
   
-  // Calcular estadísticas
-  const accuracy = totalProblems > 0 
-    ? Math.round((score / totalProblems) * 100) 
-    : 0;
+  // Función para formatear problemas para mostrar
+  const formatProblemToString = (problem: Problem): string => {
+    if (problem.displayText) {
+      return problem.displayText;
+    }
     
-  const totalTime = userAnswers.reduce((total, answer) => 
-    total + (answer.timeTaken || 0), 0);
-    
-  const averageTime = totalProblems > 0 
-    ? Math.round((totalTime / totalProblems) * 10) / 10 
-    : 0;
-    
-  const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
-  const incorrectAnswers = totalProblems - correctAnswers;
-
+    // Formato horizontal por defecto
+    return `${problem.operands.join(' + ')} = ${problem.correctAnswer}`;
+  };
+  
+  // Calcular porcentaje de aciertos
+  const percentage = Math.round((score / problems.length) * 100);
+  
+  // Determinar mensaje según porcentaje
+  const getMessage = (): string => {
+    if (percentage >= 90) return t('results.excellent');
+    if (percentage >= 70) return t('results.good');
+    if (percentage >= 50) return t('results.fair');
+    return t('results.needsPractice');
+  };
+  
   return (
-    <div className="results-board">
-      <h2 className="text-2xl font-bold text-center mb-4">
-        {t('exercise.completed')}
-      </h2>
-      
-      {/* Resumen de puntuación */}
-      <div className="score-summary text-center mb-6">
-        <div className="text-4xl font-bold mb-2">
-          {score} / {totalProblems}
-        </div>
-        <div className="text-lg">
-          {t('exercise.accuracy')}: {accuracy}%
-        </div>
-        <div className="text-sm text-muted-foreground">
-          Tiempo promedio: {averageTime}s por problema
+    <div className="results-board flex flex-col gap-6 w-full max-w-4xl mx-auto">
+      <div className="text-center">
+        <h2 className="text-2xl font-semibold mb-2">{t('results.exerciseComplete')}</h2>
+        <p className="text-xl">{getMessage()}</p>
+        
+        <div className="mt-4 text-center">
+          <div className="text-3xl font-bold mb-2">
+            {score} / {problems.length}
+          </div>
+          <div className="text-lg">
+            {percentage}% {t('results.correct')}
+          </div>
         </div>
       </div>
       
-      {/* Detalles de cada problema */}
-      <div className="problem-details mb-6">
-        <h3 className="text-lg font-medium mb-3">Detalles por problema:</h3>
+      <div className="results-list bg-card p-4 rounded-lg shadow">
+        <h3 className="text-xl font-semibold mb-3">{t('results.problemReview')}</h3>
         
-        <div className="space-y-3">
-          {userAnswers.map((answer, index) => {
-            // Asegurar que problem es un objeto de tipo Problem
-            const problem = typeof answer.problem === 'string' 
-              ? { id: answer.problemId, operands: [], correctAnswer: '', displayText: answer.problem }
-              : answer.problem;
-              
+        <div className="space-y-2">
+          {problems.map((problem) => {
+            const userAnswer = userAnswers.find(a => a.problemId === problem.id);
+            const isCorrect = userAnswer?.isCorrect;
+            
             return (
-              <Card key={answer.problemId || index} className={`
-                ${answer.isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}
-                dark:${answer.isCorrect ? 'border-green-800 bg-green-950' : 'border-red-800 bg-red-950'}
-              `}>
-                <CardContent className="p-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-medium">
-                        {problem.displayText || formatProblemToString(problem)}
-                      </div>
-                      <div className="text-sm mt-1">
-                        Tu respuesta: {answer.userAnswer}
-                      </div>
-                      {!answer.isCorrect && (
-                        <div className="text-sm mt-1">
-                          Respuesta correcta: {problem.correctAnswer}
-                        </div>
-                      )}
-                    </div>
-                    <div className={`
-                      px-2 py-1 rounded text-sm
-                      ${answer.isCorrect ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}
-                      dark:${answer.isCorrect ? 'bg-green-700 text-green-100' : 'bg-red-700 text-red-100'}
-                    `}>
-                      {answer.isCorrect ? 'Correcto' : 'Incorrecto'}
-                    </div>
+              <div 
+                key={problem.id} 
+                className={`p-3 rounded-md flex justify-between items-center ${
+                  isCorrect 
+                    ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
+                    : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
+                }`}
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    {isCorrect ? (
+                      <Check className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    ) : (
+                      <X className="h-5 w-5 text-red-600 dark:text-red-400" />
+                    )}
+                    <span className="font-medium">
+                      {formatProblemToString(problem)}
+                    </span>
                   </div>
-                  {answer.timeTaken && (
-                    <div className="text-xs text-muted-foreground mt-2">
-                      Tiempo: {Math.round(answer.timeTaken * 10) / 10}s
+                  
+                  {!isCorrect && (
+                    <div className="mt-1 pl-7 text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        {t('results.yourAnswer')}: {userAnswer?.userAnswer}
+                      </span>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+                
+                <div className="text-right">
+                  <span className="text-lg font-mono">
+                    {problem.correctAnswer}
+                  </span>
+                </div>
+              </div>
             );
           })}
         </div>
       </div>
       
-      {/* Acciones */}
-      <div className="flex justify-center gap-4">
-        <Button onClick={onRestart} className="min-w-[120px]">
-          Reintentar
+      <div className="flex justify-between gap-4">
+        <Button 
+          variant="outline" 
+          className="flex-1" 
+          onClick={onReturn}
+        >
+          <Home className="h-4 w-4 mr-2" />
+          {t('common.returnToMenu')}
         </Button>
-        {onReturn && (
-          <Button variant="outline" onClick={onReturn} className="min-w-[120px]">
-            Volver al menú
-          </Button>
-        )}
+        
+        <Button 
+          variant="default" 
+          className="flex-1" 
+          onClick={onRestart}
+        >
+          <RotateCcw className="h-4 w-4 mr-2" />
+          {t('common.tryAgain')}
+        </Button>
       </div>
     </div>
   );

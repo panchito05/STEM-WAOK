@@ -1,139 +1,119 @@
-// Tipos compartidos para el módulo de suma
+// types.ts - Definición de tipos para el módulo de suma
 
-// Nivel de dificultad
-export type DifficultyLevel = 'beginner' | 'easy' | 'medium' | 'hard' | 'expert';
+// Tipo de nivel de dificultad
+export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'expert';
 
-// Formato de visualización
+// Tipo de formato de visualización del problema
 export type DisplayFormat = 'horizontal' | 'vertical' | 'word';
 
-// Estado de respuesta
-export type AnswerStatus = 'correct' | 'incorrect' | 'timeout' | 'skipped' | 'revealed';
-
-// Estructura de un problema matemático
+// Interfaz para problemas de suma
 export interface Problem {
-  id: string;
-  operands: number[];
-  correctAnswer: number | string;
-  displayFormat?: DisplayFormat;
-  displayText?: string;
-  explanation?: string;
-  difficulty?: DifficultyLevel;
-  imageUrl?: string;
+  id: string;                        // ID único del problema
+  operands: number[];                // Lista de operandos
+  correctAnswer: number;             // Respuesta correcta
+  displayFormat: DisplayFormat;      // Formato de visualización 
+  displayText?: string;              // Texto para problemas de palabra
+  allowDecimals?: boolean;           // Permitir decimales
+  decimalPlaces?: number;            // Número de lugares decimales
 }
 
-// Tipo alias para compatibilidad con código anterior
-export type AdditionProblem = Problem;
-
-// Estructura de una respuesta de usuario
+// Interfaz para respuestas del usuario
 export interface UserAnswer {
-  problemId: string;
-  problem: Problem | string; // Puede ser el problema completo o solo texto
-  userAnswer: string | number;
-  isCorrect: boolean;
-  status?: AnswerStatus;
-  attempts: number;
-  timeTaken?: number;
-  timestamp: number;
+  problemId: string;                 // ID del problema
+  problem: Problem;                  // Referencia al problema completo
+  userAnswer: string | number;       // Respuesta dada por el usuario
+  isCorrect: boolean;                // Si la respuesta es correcta
+  attempts: number;                  // Número de intentos realizados
+  timestamp: number;                 // Timestamp de cuándo se respondió
+  status: 'correct' | 'incorrect' | 'timeout' | 'skipped' | 'revealed';  // Estado de la respuesta
 }
 
-// Resultado de un ejercicio
-export interface ExerciseResult {
-  module: string;
-  score: number;
-  totalProblems: number;
-  timeSpent: number;
-  settings: any;
-  userAnswers: UserAnswer[];
-  timestamp: number;
-}
-
-// Configuración para generar problemas
+// Interfaz para la configuración del generador de problemas
 export interface ProblemGeneratorConfig {
-  count: number;
-  difficulty: DifficultyLevel;
-  format?: DisplayFormat;
-  maxOperands?: number;
-  minValue?: number;
-  maxValue?: number;
-  allowNegatives?: boolean;
-  allowDecimals?: boolean;
-  decimalPlaces?: number;
+  count: number;                      // Número de problemas a generar
+  difficulty: DifficultyLevel;        // Nivel de dificultad
+  minValue: number;                   // Valor mínimo para operandos
+  maxValue: number;                   // Valor máximo para operandos
+  maxOperands: number;                // Máximo número de operandos
+  allowNegatives: boolean;            // Permitir números negativos
+  allowDecimals: boolean;             // Permitir números decimales
+  decimalPlaces: number;              // Lugares decimales (si allowDecimals es true)
+  preferredDisplayFormat: DisplayFormat; // Formato preferido de visualización
 }
 
-// Evento para tracking de ejercicio
-export type ExerciseEvent = 
-  | { type: 'exercise_started'; config: any }
-  | { type: 'problem_displayed'; problem: Problem }
-  | { type: 'answer_submitted'; problem: Problem; answer: string | number; isCorrect: boolean; attemptCount: number }
-  | { type: 'explanation_shown'; problem: Problem }
-  | { type: 'timer_ended'; problem: Problem }
-  | { type: 'exercise_completed'; score: number; totalProblems: number };
-
-// Estado del ejercicio para el contexto
+// Interfaz para el estado del ejercicio
 export interface ExerciseState {
-  // Estado general del ejercicio
-  isActive: boolean;
-  isComplete: boolean;
-  currentProblemIndex: number;
-  score: number;
-  
-  // Problemas y respuestas
-  problems: Problem[];
-  userAnswers: UserAnswer[];
-  
-  // Estado del problema actual
-  currentAnswer: string | number;
-  attempts: number;
-  showExplanation: boolean;
-  
-  // Temporizadores
-  timeRemaining: number;
-  problemTimeRemaining: number;
-  
-  // Configuración
-  settings: ModuleSettings;
+  isActive: boolean;                  // Si el ejercicio está en curso
+  isComplete: boolean;                // Si el ejercicio está completado
+  problems: Problem[];                // Lista de problemas para el ejercicio
+  currentProblemIndex: number;        // Índice del problema actual
+  currentAnswer: string | number;     // Respuesta actual del usuario
+  userAnswers: UserAnswer[];          // Respuestas del usuario
+  score: number;                      // Puntuación del usuario
+  attempts: number;                   // Intentos en el problema actual
+  showExplanation: boolean;           // Si se muestra explicación
+  consecutive: {                      // Seguimiento de respuestas consecutivas
+    correct: number;                  // Correctas consecutivas
+    incorrect: number;                // Incorrectas consecutivas
+  };
+  settings: {                         // Configuración del ejercicio
+    problemCount: number;             // Número de problemas
+    difficulty: DifficultyLevel;      // Nivel de dificultad
+    hasTimeLimit: boolean;            // Si hay límite de tiempo global
+    timeLimit: number;                // Tiempo límite en segundos
+    hasPerProblemTimer: boolean;      // Si hay tiempo por problema
+    problemTimeLimit: number;         // Tiempo por problema en segundos
+    maxOperands: number;              // Máximo número de operandos
+    minValue: number;                 // Valor mínimo para operandos
+    maxValue: number;                 // Valor máximo para operandos
+    allowNegatives: boolean;          // Permitir números negativos
+    allowDecimals: boolean;           // Permitir números decimales
+    decimalPlaces: number;            // Lugares decimales
+    maxAttemptsPerProblem: number;    // Máximo de intentos por problema
+    showHints: boolean;               // Mostrar pistas
+    showExplanations: boolean;        // Mostrar explicaciones
+    preferredDisplayFormat: DisplayFormat; // Formato preferido
+    adaptiveMode: boolean;            // Modo adaptativo
+    language: string;                 // Idioma de la interfaz
+    consecutiveCorrectThreshold: number; // Umbral para aumentar dificultad
+    consecutiveIncorrectThreshold: number; // Umbral para disminuir dificultad
+  };
+  timeRemaining: number;              // Tiempo restante global
+  problemTimeRemaining: number;       // Tiempo restante para problema actual
 }
 
-// Configuración específica del módulo (reutilizada desde settings.ts)
-export interface ModuleSettings {
-  language?: string;
-  problemCount?: number;
-  difficulty?: DifficultyLevel;
-  hasTimeLimit?: boolean;
-  timeLimit?: number;
-  hasPerProblemTimer?: boolean;
-  maxOperands?: number;
-  minValue?: number;
-  maxValue?: number;
-  allowNegatives?: boolean;
-  allowDecimals?: boolean;
-  decimalPlaces?: number;
-  maxAttemptsPerProblem?: number;
-  showHints?: boolean;
-  showExplanations?: boolean;
-  preferredDisplayFormat?: DisplayFormat;
-  adaptiveMode?: boolean;
-  consecutiveCorrectThreshold?: number;
-  consecutiveIncorrectThreshold?: number;
-}
-
-// Tipo para el contexto del ejercicio
+// Interfaz para el contexto del ejercicio
 export interface ExerciseContextType {
-  // Estado
   state: ExerciseState;
-  
-  // Acciones
-  startExercise: (settings: ModuleSettings) => void;
+  startExercise: (settings: any) => void;
   endExercise: () => void;
-  nextProblem: () => void;
   updateAnswer: (value: string | number) => void;
-  submitAnswer: () => void;
+  submitAnswer: () => boolean;
   skipProblem: () => void;
   showSolution: () => void;
-  
-  // Timer
-  startTimer: () => void;
-  pauseTimer: () => void;
-  resumeTimer: () => void;
-  resetTimer: () => void;
+  nextProblem: () => void;
+  updateTimer: (timeRemaining: number) => void;
+  updateProblemTimer: (timeRemaining: number) => void;
+  timerExpired: (timerType: 'global' | 'problem') => void;
+}
+
+// Interfaz para eventos de ejercicio
+export interface ExerciseEvent {
+  type: 'start' | 'end' | 'answer' | 'skip' | 'solution' | 'timer_expired';
+  data?: any;
+}
+
+// Resultado del ejercicio para guardar
+export interface ExerciseResult {
+  id: string;                         // ID único del ejercicio
+  moduleId: string;                   // ID del módulo (ej. 'addition')
+  date: number;                       // Timestamp de la fecha
+  problems: Problem[];                // Lista de problemas
+  userAnswers: UserAnswer[];          // Respuestas del usuario
+  score: number;                      // Puntuación
+  totalProblems: number;              // Total de problemas
+  settings: ExerciseState['settings']; // Configuración usada
+  timeSpent: number;                  // Tiempo total en segundos
+  difficulty: DifficultyLevel;        // Dificultad final
+  initialDifficulty: DifficultyLevel; // Dificultad inicial
 }

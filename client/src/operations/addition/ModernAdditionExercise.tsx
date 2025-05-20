@@ -1,360 +1,248 @@
-// ModernAdditionExercise.tsx - Componente modernizado para ejercicios de suma
-import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+// ModernAdditionExercise.tsx - Componente principal modernizado para ejercicios de suma
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'wouter';
+import { useStore } from '@/store/store';
 import { ModuleSettings } from '@/types/settings';
-import { generateProblems } from './utils/problemGenerator';
-import { Problem, UserAnswer } from './types';
+import { 
+  ExerciseProvider, 
+  useExerciseContext 
+} from './context/ExerciseContext';
 import ProblemDisplay from './components/ProblemDisplay';
 import NumericKeypad from './components/NumericKeypad';
-import ExplanationPanel from './components/ExplanationPanel';
 import ResultsBoard from './components/ResultsBoard';
+import ExplanationPanel from './components/ExplanationPanel';
 import { useTranslation } from './hooks/useTranslation';
-import { useExerciseTimer } from './hooks/useExerciseTimer';
 import { saveExerciseResult } from '@/services/progressService';
 
-function ExerciseContent() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  return (
-    <div className="exercise-content p-4">
-      {loading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p>Cargando ejercicio...</p>
-        </div>
-      ) : error ? (
-        <div className="text-center py-8 text-red-600">
-          <p>Error: {error}</p>
-          <Button className="mt-4" onClick={() => window.location.reload()}>
-            Reintentar
-          </Button>
-        </div>
-      ) : (
-        <p>Contenido del ejercicio</p>
-      )}
-    </div>
-  );
-}
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Hourglass, SkipForward, Eye, Check, X } from 'lucide-react';
 
-// Componente principal
-export default function ModernAdditionExercise({ config }: { config: ModuleSettings }) {
-  // Estado
-  const [problems, setProblems] = useState<Problem[]>([]);
-  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [userAnswer, setUserAnswer] = useState('');
-  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
-  const [exerciseState, setExerciseState] = useState<'ready' | 'in-progress' | 'explanation' | 'completed'>('ready');
-  const [score, setScore] = useState(0);
-  const [remainingAttempts, setRemainingAttempts] = useState(config.maxAttemptsPerProblem || 1);
-  
-  // Referencias
-  const startTimeRef = useRef<number>(Date.now());
-  const problemStartTimeRef = useRef<number>(Date.now());
-  
-  // Hooks personalizados
+// Componente interno que usa el contexto
+const ExerciseContent: React.FC = () => {
+  const { state, updateAnswer, submitAnswer, skipProblem, showSolution, nextProblem } = useExerciseContext();
   const { t } = useTranslation();
-  const { 
-    timeLeft, 
-    startTimer, 
-    pauseTimer, 
-    resetTimer, 
-    isTimerActive 
-  } = useExerciseTimer(config.timeLimit || 0);
+  const navigate = useNavigate();
   
   // Obtener problema actual
-  const currentProblem = problems[currentProblemIndex] || null;
+  const currentProblem = state.problems[state.currentProblemIndex] || null;
   
-  // Cargar problemas al inicio
-  useEffect(() => {
-    async function loadProblems() {
-      try {
-        const generatedProblems = await generateProblems({
-          count: config.problemCount || 5,
-          difficulty: config.difficulty || 'easy',
-          maxOperands: config.maxOperands || 2,
-          allowNegatives: config.allowNegatives || false,
-          allowDecimals: config.allowDecimals || false
-        });
-        
-        setProblems(generatedProblems);
-        startTimeRef.current = Date.now();
-        
-        if (config.hasTimeLimit) {
-          startTimer();
-        }
-        
-        setExerciseState('in-progress');
-      } catch (err) {
-        console.error('Error al generar problemas:', err);
-        setExerciseState('ready');
-      }
-    }
+  // Manejar entrada de número
+  const handleNumberInput = (value: string | number) => {
+    if (state.showExplanation) return; // No permitir entrada durante explicación
     
-    loadProblems();
-    
-    // Limpieza al desmontar
-    return () => {
-      pauseTimer();
-    };
-  }, [config]);
-  
-  // Reset del tiempo al cambiar de problema
-  useEffect(() => {
-    if (exerciseState === 'in-progress' && currentProblem) {
-      problemStartTimeRef.current = Date.now();
-      
-      if (config.hasPerProblemTimer && config.hasTimeLimit) {
-        resetTimer();
-        startTimer();
-      }
-      
-      setRemainingAttempts(config.maxAttemptsPerProblem || 1);
-    }
-  }, [currentProblemIndex, exerciseState, currentProblem]);
-  
-  // Comprobar si se acabó el tiempo
-  useEffect(() => {
-    if (timeLeft === 0 && isTimerActive && exerciseState === 'in-progress') {
-      handleTimerEnd();
-    }
-  }, [timeLeft, isTimerActive, exerciseState]);
-  
-  // Manejo de respuesta del usuario
-  const handleNumberClick = (value: string) => {
-    // Evitar múltiples puntos decimales
-    if (value === '.' && userAnswer.includes('.')) return;
-    
-    // Limitar longitud de la respuesta
-    if (userAnswer.length >= 10) return;
-    
-    setUserAnswer(prev => prev + value);
+    updateAnswer(value);
   };
   
-  const handleBackspaceClick = () => {
-    setUserAnswer(prev => prev.slice(0, -1));
-  };
-  
+  // Manejar envío de respuesta
   const handleSubmitAnswer = () => {
-    if (!currentProblem || userAnswer === '') return;
+    if (state.showExplanation) {
+      nextProblem();
+      return;
+    }
     
-    const timeTaken = (Date.now() - problemStartTimeRef.current) / 1000;
-    const isCorrect = userAnswer === currentProblem.correctAnswer.toString();
+    const isCorrect = submitAnswer();
     
     if (isCorrect) {
-      // Respuesta correcta
-      const newAnswer: UserAnswer = {
-        problemId: currentProblem.id,
-        problem: currentProblem,
-        userAnswer,
-        isCorrect: true,
-        status: 'correct',
-        attempts: config.maxAttemptsPerProblem - remainingAttempts + 1,
-        timeTaken,
-        timestamp: Date.now()
-      };
-      
-      setUserAnswers(prev => [...prev, newAnswer]);
-      setScore(prev => prev + 1);
-      
-      pauseTimer();
-      moveToNextProblem();
-    } else {
-      // Respuesta incorrecta
-      if (remainingAttempts > 1) {
-        // Todavía tiene intentos
-        setRemainingAttempts(prev => prev - 1);
-        
-        // Opcional: Mostrar feedback de error
-        
-      } else {
-        // Se acabaron los intentos
-        const newAnswer: UserAnswer = {
-          problemId: currentProblem.id,
-          problem: currentProblem,
-          userAnswer,
-          isCorrect: false,
-          status: 'incorrect',
-          attempts: config.maxAttemptsPerProblem,
-          timeTaken,
-          timestamp: Date.now()
-        };
-        
-        setUserAnswers(prev => [...prev, newAnswer]);
-        pauseTimer();
-        
-        // Mostrar explicación si está habilitado
-        if (config.showExplanations) {
-          setExerciseState('explanation');
-        } else {
-          moveToNextProblem();
-        }
-      }
+      setTimeout(() => {
+        nextProblem();
+      }, 1000); // Esperar un segundo antes de pasar al siguiente problema
     }
   };
   
-  // Manejo del fin del temporizador
-  const handleTimerEnd = () => {
-    if (!currentProblem) return;
-    
-    const timeTaken = (Date.now() - problemStartTimeRef.current) / 1000;
-    
-    const newAnswer: UserAnswer = {
-      problemId: currentProblem.id,
-      problem: currentProblem,
-      userAnswer: userAnswer || '',
-      isCorrect: false,
-      status: 'timeout',
-      attempts: config.maxAttemptsPerProblem - remainingAttempts + 1,
-      timeTaken,
-      timestamp: Date.now()
-    };
-    
-    setUserAnswers(prev => [...prev, newAnswer]);
-    pauseTimer();
-    
-    // Mostrar explicación si está habilitado
-    if (config.showExplanations) {
-      setExerciseState('explanation');
-    } else {
-      moveToNextProblem();
-    }
+  // Manejar clic en saltar
+  const handleSkip = () => {
+    skipProblem();
   };
   
-  // Continuar después de explicación
-  const handleContinueAfterExplanation = () => {
-    moveToNextProblem();
+  // Manejar clic en mostrar solución
+  const handleShowSolution = () => {
+    showSolution();
   };
   
-  // Avanzar al siguiente problema
-  const moveToNextProblem = () => {
-    if (currentProblemIndex < problems.length - 1) {
-      // Pasar al siguiente problema
-      setCurrentProblemIndex(prev => prev + 1);
-      setUserAnswer('');
-      setExerciseState('in-progress');
-    } else {
-      // Finalizar ejercicio
-      finishExercise();
-    }
+  // Manejar clic en botón "Volver al menú"
+  const handleReturnToMenu = () => {
+    navigate('/');
   };
   
-  // Finalizar el ejercicio
-  const finishExercise = async () => {
-    pauseTimer();
-    
-    // Calcular tiempo total
-    const totalTime = (Date.now() - startTimeRef.current) / 1000;
-    
-    // Guardar resultados
-    try {
-      await saveExerciseResult({
-        module: 'addition',
-        score,
-        totalProblems: problems.length,
-        timeSpent: totalTime,
-        settings: config,
-        userAnswers,
-        timestamp: Date.now()
-      });
-      
-      console.log('Ejercicio guardado correctamente');
-    } catch (err) {
-      console.error('Error al guardar los resultados:', err);
-    }
-    
-    setExerciseState('completed');
-  };
-  
-  // Reiniciar ejercicio
-  const handleRestartExercise = () => {
-    setProblems([]);
-    setCurrentProblemIndex(0);
-    setUserAnswer('');
-    setUserAnswers([]);
-    setScore(0);
-    setExerciseState('ready');
-    
-    // Volver a cargar problemas (se hace mediante el efecto)
-  };
-  
-  // Renderizar contenido según el estado
-  const renderContent = () => {
-    switch (exerciseState) {
-      case 'ready':
-        return (
-          <div className="text-center py-8">
-            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p>Preparando ejercicio...</p>
-          </div>
-        );
-        
-      case 'in-progress':
-        return currentProblem ? (
-          <>
-            <ProblemDisplay 
-              problem={currentProblem}
-              userAnswer={userAnswer}
-              isShowingAnswer={false}
-              timeLeft={config.hasTimeLimit ? timeLeft : null}
-              isTimerActive={isTimerActive}
-              maxTime={config.timeLimit || 0}
-              remainingAttempts={config.maxAttemptsPerProblem > 1 ? remainingAttempts : undefined}
-              showHint={config.showHints && remainingAttempts < config.maxAttemptsPerProblem}
-            />
-            
-            <NumericKeypad 
-              onNumberClick={handleNumberClick}
-              onBackspaceClick={handleBackspaceClick}
-              onSubmitClick={handleSubmitAnswer}
-              currentAnswer={userAnswer}
-              disabled={!currentProblem}
-              showCheckButton={true}
-            />
-            
-            <div className="mt-4 text-center text-sm text-muted-foreground">
-              Problema {currentProblemIndex + 1} de {problems.length}
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-8">
-            <p>No hay problemas disponibles</p>
-          </div>
-        );
-        
-      case 'explanation':
-        return (
-          <ExplanationPanel
-            problem={currentProblem}
-            userAnswer={userAnswer}
-            onContinue={handleContinueAfterExplanation}
-          />
-        );
-        
-      case 'completed':
-        return (
-          <ResultsBoard
-            userAnswers={userAnswers}
-            totalProblems={problems.length}
-            score={score}
-            onRestart={handleRestartExercise}
-            onReturn={() => {
-              // Navegar de vuelta al menú principal (implementar según sea necesario)
-            }}
-          />
-        );
-        
-      default:
-        return <div>Estado desconocido</div>;
-    }
-  };
+  // Renderizar pantalla de resultados cuando el ejercicio está completo
+  if (state.isComplete) {
+    return (
+      <ResultsBoard 
+        score={state.score}
+        problems={state.problems}
+        userAnswers={state.userAnswers}
+        onRestart={() => window.location.reload()}
+        onReturn={handleReturnToMenu}
+      />
+    );
+  }
   
   return (
-    <Card className="addition-exercise-container max-w-4xl mx-auto">
-      <CardContent className="p-6">
-        {renderContent()}
-      </CardContent>
-    </Card>
+    <div className="exercise-container flex flex-col gap-6 w-full max-w-4xl mx-auto">
+      {/* Barra de progreso y temporizador */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex-1">
+          <div className="text-sm text-muted-foreground mb-1">
+            {t('exercise.progress')}: {state.currentProblemIndex + 1} / {state.problems.length}
+          </div>
+          <Progress 
+            value={(state.currentProblemIndex / state.problems.length) * 100} 
+            className="h-2" 
+          />
+        </div>
+        
+        {state.settings.hasTimeLimit && (
+          <div className="flex items-center gap-2">
+            <Hourglass className="h-4 w-4" />
+            <span>{Math.floor(state.timeRemaining / 60)}:{(state.timeRemaining % 60).toString().padStart(2, '0')}</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Panel principal del problema */}
+      <Card className="w-full">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-semibold">
+            {currentProblem?.displayFormat === 'word' 
+              ? t('exercise.wordProblem')
+              : t('exercise.addition')}
+          </CardTitle>
+        </CardHeader>
+        
+        <CardContent>
+          {currentProblem && (
+            <ProblemDisplay 
+              problem={currentProblem}
+              userAnswer={state.currentAnswer}
+            />
+          )}
+          
+          {/* Panel de explicación */}
+          {state.showExplanation && currentProblem && (
+            <ExplanationPanel problem={currentProblem} />
+          )}
+          
+          {/* Información de resultado de intento */}
+          {state.attempts > 0 && !state.showExplanation && (
+            <div className={`mt-4 p-2 rounded-md ${
+              state.userAnswers.find(a => a.problemId === currentProblem?.id)?.isCorrect
+                ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300'
+                : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
+            }`}>
+              {state.userAnswers.find(a => a.problemId === currentProblem?.id)?.isCorrect 
+                ? (
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4" />
+                    <span>{t('common.correct')}</span>
+                  </div>
+                ) 
+                : (
+                  <div className="flex items-center gap-2">
+                    <X className="h-4 w-4" />
+                    <span>{t('common.incorrect')}</span>
+                  </div>
+                )
+              }
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* Teclado numérico */}
+      <NumericKeypad 
+        onNumberClick={handleNumberInput}
+        onSubmit={handleSubmitAnswer}
+        disabled={state.showExplanation}
+        answer={state.currentAnswer.toString()}
+        allowDecimals={state.settings.allowDecimals || false}
+      />
+      
+      {/* Acciones adicionales */}
+      <div className="flex justify-between gap-2">
+        <Button 
+          variant="outline" 
+          onClick={handleSkip}
+          disabled={state.showExplanation}
+        >
+          <SkipForward className="h-4 w-4 mr-2" />
+          {t('common.skip')}
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          onClick={handleShowSolution}
+          disabled={state.showExplanation}
+        >
+          <Eye className="h-4 w-4 mr-2" />
+          {t('common.showSolution')}
+        </Button>
+      </div>
+    </div>
   );
-}
+};
+
+// Componente principal que provee el contexto
+const ModernAdditionExercise: React.FC = () => {
+  const [isReady, setIsReady] = useState(false);
+  const store = useStore();
+  
+  // Obtener configuraciones
+  const settings = store.activeProfile?.moduleSettings?.addition || {};
+  
+  // Asegurar que se carga el perfil
+  useEffect(() => {
+    if (store.activeProfile) {
+      setIsReady(true);
+    }
+  }, [store.activeProfile]);
+  
+  if (!isReady) {
+    return <div>Cargando...</div>;
+  }
+  
+  return (
+    <ExerciseProvider>
+      <ModernExerciseInitializer settings={settings} />
+      <ExerciseContent />
+    </ExerciseProvider>
+  );
+};
+
+// Componente para inicializar el ejercicio con configuraciones
+const ModernExerciseInitializer: React.FC<{ settings: ModuleSettings }> = ({ settings }) => {
+  const { startExercise } = useExerciseContext();
+  
+  useEffect(() => {
+    // Configurar valores por defecto
+    const exerciseSettings: ModuleSettings = {
+      language: settings.language || 'es',
+      problemCount: settings.problemCount || 5,
+      difficulty: settings.difficulty || 'beginner',
+      hasTimeLimit: settings.hasTimeLimit || false,
+      timeLimit: settings.timeLimit || 300,
+      hasPerProblemTimer: settings.hasPerProblemTimer || false,
+      maxOperands: settings.maxOperands || 2,
+      minValue: settings.minValue || 1,
+      maxValue: settings.maxValue || 10,
+      allowNegatives: settings.allowNegatives || false,
+      allowDecimals: settings.allowDecimals || false,
+      decimalPlaces: settings.decimalPlaces || 1,
+      maxAttemptsPerProblem: settings.maxAttemptsPerProblem || 2,
+      showHints: settings.showHints || true,
+      showExplanations: settings.showExplanations || true,
+      preferredDisplayFormat: settings.preferredDisplayFormat || 'horizontal',
+      adaptiveMode: settings.adaptiveMode || false,
+      consecutiveCorrectThreshold: settings.consecutiveCorrectThreshold || 3,
+      consecutiveIncorrectThreshold: settings.consecutiveIncorrectThreshold || 2
+    };
+    
+    // Iniciar ejercicio
+    startExercise(exerciseSettings);
+  }, [startExercise, settings]);
+  
+  return null;
+};
+
+export default ModernAdditionExercise;

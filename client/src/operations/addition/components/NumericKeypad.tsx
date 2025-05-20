@@ -1,97 +1,125 @@
-// NumericKeypad.tsx - Teclado numérico para ingresar respuestas
+// NumericKeypad.tsx - Teclado numérico para el ingreso de respuestas
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Backspace, ArrowRight } from 'lucide-react';
 
 interface NumericKeypadProps {
-  onNumberClick: (value: string) => void;
-  onBackspaceClick: () => void;
-  onSubmitClick?: () => void;
-  currentAnswer: string;
+  onNumberClick: (value: string | number) => void;
+  onEnterClick: () => void;
   disabled?: boolean;
-  showCheckButton?: boolean;
+  answer: string;
+  allowDecimals?: boolean;
 }
 
-const NumericKeypad: React.FC<NumericKeypadProps> = ({
-  onNumberClick,
-  onBackspaceClick,
-  onSubmitClick,
-  currentAnswer,
+const NumericKeypad: React.FC<NumericKeypadProps> = ({ 
+  onNumberClick, 
+  onEnterClick, 
   disabled = false,
-  showCheckButton = false
+  answer,
+  allowDecimals = false
 }) => {
-  // Definir los botones del teclado
-  const keypadButtons = [
-    '7', '8', '9',
-    '4', '5', '6',
-    '1', '2', '3',
-    '0', '.', '<'
-  ];
-  
-  // Gestionar el clic en los botones
-  const handleButtonClick = (value: string) => {
+  // Manejar clic en número
+  const handleNumberClick = (num: number | string) => {
     if (disabled) return;
     
-    if (value === '<') {
-      onBackspaceClick();
+    if (num === 'clear') {
+      onNumberClick('');
+      return;
+    }
+    
+    if (num === 'backspace') {
+      if (answer.length > 0) {
+        onNumberClick(answer.slice(0, -1));
+      }
+      return;
+    }
+    
+    // Evitar múltiples puntos decimales
+    if (num === '.' && (answer.includes('.') || !allowDecimals)) {
+      return;
+    }
+    
+    // Limitar longitud a 10 caracteres para evitar desbordamientos
+    if (answer.length >= 10) {
+      return;
+    }
+    
+    // No permitir cero inicial seguido de otro dígito (excepto después del punto decimal)
+    if (answer === '0' && num !== '.') {
+      onNumberClick(num.toString());
     } else {
-      onNumberClick(value);
+      onNumberClick(answer + num.toString());
     }
   };
   
-  // Gestionar teclas de teclado físico
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (disabled) return;
-      
-      // Permitir números, punto decimal y teclas de borrar/enter
-      if (/^[0-9.]$/.test(e.key)) {
-        onNumberClick(e.key);
-      } else if (e.key === 'Backspace') {
-        onBackspaceClick();
-      } else if (e.key === 'Enter' && onSubmitClick) {
-        onSubmitClick();
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNumberClick, onBackspaceClick, onSubmitClick, disabled]);
-  
   return (
-    <div className="numeric-keypad w-full max-w-xs mx-auto">
-      {/* Cuadrícula de botones */}
+    <div className="numeric-keypad">
       <div className="grid grid-cols-3 gap-2">
-        {keypadButtons.map((btn) => (
+        {/* Números 1-9 */}
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
           <Button
-            key={btn}
-            type="button"
-            variant={btn === '<' ? "outline" : "secondary"}
-            size="lg"
-            className={`h-12 font-bold ${disabled ? 'opacity-50' : ''}`}
-            onClick={() => handleButtonClick(btn)}
+            key={num}
+            variant="outline"
+            className="h-14 text-xl"
+            onClick={() => handleNumberClick(num)}
             disabled={disabled}
           >
-            {btn === '<' ? (
-              <span className="text-lg">⌫</span>
-            ) : (
-              btn
-            )}
+            {num}
           </Button>
         ))}
+        
+        {/* Botón de punto decimal */}
+        <Button
+          variant="outline"
+          className="h-14 text-xl"
+          onClick={() => handleNumberClick('.')}
+          disabled={disabled || !allowDecimals}
+        >
+          .
+        </Button>
+        
+        {/* Número 0 */}
+        <Button
+          variant="outline"
+          className="h-14 text-xl"
+          onClick={() => handleNumberClick(0)}
+          disabled={disabled}
+        >
+          0
+        </Button>
+        
+        {/* Botón de borrar */}
+        <Button
+          variant="outline"
+          className="h-14"
+          onClick={() => handleNumberClick('backspace')}
+          disabled={disabled}
+        >
+          <Backspace className="h-5 w-5" />
+        </Button>
       </div>
       
-      {/* Botón de enviar */}
-      {onSubmitClick && (
+      {/* Fila adicional para acciones */}
+      <div className="grid grid-cols-2 gap-2 mt-2">
         <Button
-          type="button"
-          size="lg"
-          className={`w-full mt-2 h-12 ${disabled ? 'opacity-50' : ''}`}
-          onClick={onSubmitClick}
-          disabled={disabled || (showCheckButton && currentAnswer === '')}
+          variant="secondary"
+          className="h-14"
+          onClick={() => handleNumberClick('clear')}
+          disabled={disabled}
         >
-          {showCheckButton ? 'Comprobar' : 'Enviar'}
+          Borrar
         </Button>
-      )}
+        
+        <Button
+          variant="default"
+          className="h-14"
+          onClick={onEnterClick}
+          disabled={disabled || answer === ''}
+        >
+          <ArrowRight className="h-5 w-5 mr-2" />
+          Enviar
+        </Button>
+      </div>
     </div>
   );
 };
