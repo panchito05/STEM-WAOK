@@ -144,29 +144,23 @@ export function DrawingCanvas({
   const currentTimerRef = useRef<number | null>(null);
   
   // Drawing functions
-  const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    console.log("🖌️ INICIANDO DIBUJO");
-    
-    // Limpiar cualquier temporizador pendiente
-    if (currentTimerRef.current) {
-      console.log("🧹 Cancelando temporizador pendiente:", currentTimerRef.current);
-      clearTimeout(currentTimerRef.current);
-      currentTimerRef.current = null;
+  const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {    
+    // Si se está mostrando la vista previa, ocultarla inmediatamente
+    if (isShowingPreview) {
+      setIsShowingPreview(false);
+      
+      // Cancelar cualquier temporizador pendiente
+      if (currentTimerRef.current) {
+        clearTimeout(currentTimerRef.current);
+        currentTimerRef.current = null;
+      }
     }
-    
-    // Limpia el canvas de cualquier vista previa
-    console.log("🧽 Forzando limpieza del canvas antes de dibujar");
-    forceCleanCanvas();
     
     const canvas = canvasRef.current;
     const context = contextRef.current;
-    if (!canvas || !context) {
-      console.error("❌ Canvas o contexto no disponible en startDrawing");
-      return;
-    }
+    if (!canvas || !context) return;
     
     setIsDrawing(true);
-    console.log("✅ Estado de dibujo activado");
     
     // Get the correct coordinates
     let x: number, y: number;
@@ -176,18 +170,15 @@ export function DrawingCanvas({
       const rect = canvas.getBoundingClientRect();
       x = event.touches[0].clientX - rect.left;
       y = event.touches[0].clientY - rect.top;
-      console.log("👆 Evento táctil en:", x, y);
     } else {
       // Mouse event
       const rect = canvas.getBoundingClientRect();
       x = event.nativeEvent.offsetX;
       y = event.nativeEvent.offsetY;
-      console.log("🖱️ Evento de mouse en:", x, y);
     }
     
     context.beginPath();
     context.moveTo(x, y);
-    console.log("➡️ Comenzando trazo desde:", x, y);
   };
   
   const draw = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -306,71 +297,35 @@ export function DrawingCanvas({
     }
   };
   
+  // Estado para controlar la vista previa del borrador
+  const [isShowingPreview, setIsShowingPreview] = useState(false);
+  
   // Función para cambiar el tamaño del borrador
   const changeEraserSize = (size: number) => {
-    console.log("🔄 CAMBIO DE TAMAÑO DEL BORRADOR:", size);
+    // Actualizar el tamaño del borrador en el estado
+    setEraserSize(size);
     
-    // Guardar una copia del canvas actual antes de dibujar la vista previa
-    if (canvasRef.current && contextRef.current) {
-      try {
-        console.log("📷 Guardando imagen del canvas");
-        // Guardar el estado actual del canvas
-        backupImageDataRef.current = contextRef.current.getImageData(
-          0, 0, canvasRef.current.width, canvasRef.current.height
-        );
-        console.log("📷 Imagen guardada correctamente");
-        
-        // Limpiar completamente el canvas
-        contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        
-        // Restaurar la imagen original
-        if (backupImageDataRef.current) {
-          console.log("🔄 Restaurando la imagen original");
-          contextRef.current.putImageData(backupImageDataRef.current, 0, 0);
-        }
-        
-        // Actualizar el tamaño del borrador
-        setEraserSize(size);
-        
-        // Actualizar el tamaño en el contexto
-        contextRef.current.lineWidth = size;
+    // Actualizar el tamaño en el contexto si está activo el borrador
+    if (contextRef.current) {
+      contextRef.current.lineWidth = size;
+      if (activeTool === 'eraser') {
         setActiveWidth(size);
-        
-        // Guarda el modo de composición original
-        const originalCompositeOperation = contextRef.current.globalCompositeOperation;
-        
-        // Cambiar a modo dibujo normal para la vista previa
-        contextRef.current.globalCompositeOperation = 'source-over';
-        
-        // Configurar estilo de relleno
-        const fillColor = darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
-        console.log("🎨 Color de relleno:", fillColor);
-        contextRef.current.fillStyle = fillColor;
-        
-        // Dibujar círculo de vista previa
-        console.log("⭕ Dibujando círculo de vista previa en posición (100, 50) con radio", size/2);
-        contextRef.current.beginPath();
-        contextRef.current.arc(100, 50, size / 2, 0, Math.PI * 2);
-        contextRef.current.fill();
-        
-        // Restaurar configuración original después de un tiempo
-        console.log("⏱️ Programando limpieza automática en 1 segundo");
-        if (currentTimerRef.current) {
-          console.log("🧹 Cancelando temporizador anterior:", currentTimerRef.current);
-          clearTimeout(currentTimerRef.current);
-        }
-        
-        currentTimerRef.current = window.setTimeout(() => {
-          console.log("⏰ Ejecutando limpieza automática programada");
-          forceCleanCanvas();
-          currentTimerRef.current = null;
-        }, 1000);
-      } catch (error) {
-        console.error("❌ Error durante el cambio de tamaño del borrador:", error);
       }
-    } else {
-      console.error("❌ Canvas o contexto no disponible");
     }
+    
+    // Mostrar vista previa como un elemento HTML separado
+    setIsShowingPreview(true);
+    
+    // Limpiar cualquier temporizador anterior
+    if (currentTimerRef.current) {
+      clearTimeout(currentTimerRef.current);
+    }
+    
+    // Establecer un temporizador para ocultar la vista previa después de 1 segundo
+    currentTimerRef.current = window.setTimeout(() => {
+      setIsShowingPreview(false);
+      currentTimerRef.current = null;
+    }, 1500);
   };
   
   // Asegurarse de limpiar al cambiar herramientas y limpiar temporizadores al desmontar
@@ -428,6 +383,22 @@ export function DrawingCanvas({
         onTouchEnd={stopDrawing}
         style={{ touchAction: 'none' }}
       />
+      
+      {/* Vista previa del tamaño del borrador */}
+      {isShowingPreview && activeTool === 'eraser' && (
+        <div 
+          className="absolute"
+          style={{
+            top: '50px',
+            left: '100px',
+            width: `${eraserSize}px`,
+            height: `${eraserSize}px`,
+            borderRadius: '50%',
+            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+            pointerEvents: 'none' // Para que no interfiera con los eventos del canvas
+          }}
+        />
+      )}
       
       {/* Barra de herramientas */}
       <div className={`absolute top-20 left-4 flex flex-col gap-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-2 rounded-lg shadow`}>
