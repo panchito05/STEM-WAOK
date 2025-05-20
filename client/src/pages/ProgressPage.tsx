@@ -597,36 +597,92 @@ export default function ProgressPage() {
                                             }
                                           }
                                           
-                                          // NUEVO ENFOQUE: Buscar problemas capturados de la UI
+                                          // ESTRATEGIA MEJORADA: Búsqueda completa de problemas en múltiples ubicaciones
                                           if (problems.length === 0 && exercise.extra_data && typeof exercise.extra_data === 'object') {
-                                            console.log("🔍 Buscando problemas capturados con el nuevo enfoque...");
+                                            console.log("🔍 Búsqueda exhaustiva de problemas en todas las estructuras posibles...");
                                             
-                                            // 1. Intentar obtener problemas del campo principal uiProblems
-                                            if (exercise.extra_data.uiProblems && Array.isArray(exercise.extra_data.uiProblems)) {
-                                              problems = exercise.extra_data.uiProblems;
-                                              console.log("✅ ENCONTRADOS PROBLEMAS UI en extra_data.uiProblems:", problems);
+                                            // 1. Verificar todos los formatos posibles en extra_data
+                                            const posiblesCampos = [
+                                              'problems',
+                                              'mathProblems',
+                                              'capturedProblems',
+                                              'uiProblems',
+                                              'problemDetails',
+                                            ];
+                                            
+                                            // Buscar en todos los campos posibles
+                                            for (const campo of posiblesCampos) {
+                                              if (exercise.extra_data[campo] && Array.isArray(exercise.extra_data[campo])) {
+                                                problems = exercise.extra_data[campo];
+                                                console.log(`✅ PROBLEMAS ENCONTRADOS en extra_data.${campo}:`, problems);
+                                                break; // Terminar si encontramos problemas
+                                              }
                                             }
-                                            // 2. Intentar buscar en localStorage (respaldo local)
-                                            else {
-                                              const timestamp = exercise.extra_data.captureTimestamp;
+                                            
+                                            // 2. Buscar en respaldos de localStorage usando el timestamp
+                                            if (problems.length === 0) {
+                                              const timestamp = exercise.extra_data.timestamp || exercise.extra_data.captureTimestamp;
                                               if (timestamp) {
-                                                const exerciseKey = `exercise_${timestamp}`;
-                                                const storedData = localStorage.getItem(exerciseKey);
-                                                if (storedData) {
-                                                  try {
-                                                    const parsedData = JSON.parse(storedData);
-                                                    if (parsedData.problems && Array.isArray(parsedData.problems)) {
-                                                      problems = parsedData.problems;
-                                                      console.log("✅ PROBLEMAS RECUPERADOS DE LOCALSTORAGE:", problems);
+                                                // Buscar en diferentes formatos de clave de respaldo
+                                                const posiblesClaves = [
+                                                  `backup_problemas_${timestamp}`,
+                                                  `exercise_${timestamp}`,
+                                                  `backup_${exercise.operationId}_${timestamp}`
+                                                ];
+                                                
+                                                for (const clave of posiblesClaves) {
+                                                  const storedData = localStorage.getItem(clave);
+                                                  if (storedData) {
+                                                    try {
+                                                      const parsedData = JSON.parse(storedData);
+                                                      // Si es un array directamente, o tiene problemas en alguna propiedad
+                                                      if (Array.isArray(parsedData)) {
+                                                        problems = parsedData;
+                                                        console.log(`✅ PROBLEMAS RECUPERADOS DE LOCALSTORAGE (${clave}):`, problems);
+                                                        break;
+                                                      } else if (parsedData.problems && Array.isArray(parsedData.problems)) {
+                                                        problems = parsedData.problems;
+                                                        console.log(`✅ PROBLEMAS RECUPERADOS DE LOCALSTORAGE (${clave}):`, problems);
+                                                        break;
+                                                      }
+                                                    } catch (error) {
+                                                      console.error(`Error parseando datos de localStorage (${clave}):`, error);
                                                     }
-                                                  } catch (error) {
-                                                    console.error("Error parseando datos de localStorage:", error);
                                                   }
                                                 }
                                               }
                                             }
                                             
-                                            // 3. FALLBACKS PARA COMPATIBILIDAD
+                                            // 3. Buscar en todos los respaldos recientes (últimas 24 horas)
+                                            if (problems.length === 0) {
+                                              console.log("🔍 Buscando en todos los respaldos recientes...");
+                                              const horaActual = Date.now();
+                                              const haceDia = horaActual - (24 * 60 * 60 * 1000);
+                                              
+                                              for (let i = 0; i < localStorage.length; i++) {
+                                                const key = localStorage.key(i);
+                                                if (key && key.startsWith('backup_problemas_')) {
+                                                  try {
+                                                    const keyTimestamp = parseInt(key.split('_').pop() || '0');
+                                                    if (keyTimestamp >= haceDia) {
+                                                      const storedData = localStorage.getItem(key);
+                                                      if (storedData) {
+                                                        const parsedData = JSON.parse(storedData);
+                                                        if (Array.isArray(parsedData) && parsedData.length > 0) {
+                                                          problems = parsedData;
+                                                          console.log(`✅ PROBLEMAS RECUPERADOS DE RESPALDO RECIENTE (${key}):`, problems);
+                                                          break;
+                                                        }
+                                                      }
+                                                    }
+                                                  } catch (error) {
+                                                    console.error(`Error procesando respaldo (${key}):`, error);
+                                                  }
+                                                }
+                                              }
+                                            }
+                                            
+                                            // 4. FALLBACKS PARA COMPATIBILIDAD
                                             if (problems.length === 0) {
                                               // BÚSQUEDA MEJORADA: Intentar todos los campos conocidos
                                               if (exercise.extra_data.problems && Array.isArray(exercise.extra_data.problems)) {

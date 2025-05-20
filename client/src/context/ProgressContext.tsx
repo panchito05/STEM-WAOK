@@ -262,6 +262,30 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     }
 
     try {
+      // MEJORA: Asegurar que los problemas se guarden en un formato consistente
+      if (!result.extra_data) {
+        result.extra_data = {};
+      }
+      
+      // Asegurar que hay una versión para mejor compatibilidad
+      result.extra_data.version = "2.0";
+      result.extra_data.timestamp = Date.now();
+      
+      // Crear respaldo redundante de los problemas para evitar pérdida
+      // Esto permite recuperar los problemas correctamente en la página de historial
+      try {
+        const backupKey = `backup_problemas_${Date.now()}`;
+        if (result.extra_data.problems) {
+          localStorage.setItem(backupKey, JSON.stringify(result.extra_data.problems));
+        } else if (result.extra_data.mathProblems) {
+          localStorage.setItem(backupKey, JSON.stringify(result.extra_data.mathProblems));
+        } else if (result.extra_data.capturedProblems) {
+          localStorage.setItem(backupKey, JSON.stringify(result.extra_data.capturedProblems));
+        }
+      } catch (err) {
+        console.error("Error creando respaldo de problemas:", err);
+      }
+      
       console.log("Enviando progreso al servidor:", result);
       
       // Primero, verificamos si hay un perfil de niño activo
