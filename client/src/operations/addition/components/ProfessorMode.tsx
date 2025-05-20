@@ -160,6 +160,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             height={window.innerHeight} 
             className="w-full h-full" 
             position={position.includes('Right') ? 'left' : 'right'} 
+            currentProblem={problem}
           />
         </div>
         
