@@ -360,11 +360,46 @@ export default function ProgressPage() {
               <div className={`grid ${expandedCard ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} gap-6`}>
                 {operationModules
                   .filter(module => !module.comingSoon)
-                  .filter(module => 
-                    searchTerm === '' || 
-                    module.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    module.id.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
+                  .filter(module => {
+                    if (searchTerm === '') return true;
+                    
+                    const searchLower = searchTerm.toLowerCase();
+                    
+                    // Mapeo de términos en español a inglés
+                    const spanishToEnglish: Record<string, string> = {
+                      'suma': 'addition',
+                      'adición': 'addition',
+                      'sumas': 'addition',
+                      'fracciones': 'fractions',
+                      'fracción': 'fractions',
+                      'conteo': 'counting',
+                      'contar': 'counting',
+                      'números': 'numbers',
+                      'numero': 'numbers',
+                      'resta': 'subtraction',
+                      'restar': 'subtraction',
+                      'restas': 'subtraction',
+                      'multiplicacion': 'multiplication',
+                      'multiplicar': 'multiplication',
+                      'division': 'division',
+                      'dividir': 'division'
+                    };
+                    
+                    // Buscar por nombre y ID directo
+                    const directMatch = module.displayName.toLowerCase().includes(searchLower) ||
+                                        module.id.toLowerCase().includes(searchLower);
+                    
+                    // Buscar por traducción
+                    let translationMatch = false;
+                    for (const [spanish, english] of Object.entries(spanishToEnglish)) {
+                      if (spanish.includes(searchLower) && module.id.toLowerCase().includes(english)) {
+                        translationMatch = true;
+                        break;
+                      }
+                    }
+                    
+                    return directMatch || translationMatch;
+                  })
                   .map(module => {
                     const progress = moduleProgress[module.id];
                     const isExpanded = expandedCard === module.id;
