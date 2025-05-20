@@ -1077,6 +1077,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const completeExercise = () => {
+    // SOLUCIÓN: Al completar el ejercicio, verificamos que el último problema tenga respuesta
+    // Si el problema actual tiene respuesta pero no está en userAnswersHistory, lo añadimos
+    if (currentProblem && currentProblemIndex < problemsList.length) {
+      const currentAnswer = digitAnswers.join("");
+      if (currentAnswer && currentAnswer.length > 0) {
+        // Verificar si ya existe respuesta en el historial
+        const existingAnswer = userAnswersHistory[currentProblemIndex];
+        if (!existingAnswer) {
+          console.log("Último problema sin respuesta registrada - Registrando respuesta actual:", currentAnswer);
+          
+          // Calcular si la respuesta es correcta
+          const isCorrect = parseFloat(currentAnswer) === currentProblem.correctAnswer;
+          
+          // Crear objeto de respuesta
+          const answer: UserAnswerType = {
+            problemId: currentProblem.id,
+            problem: currentProblem,
+            userAnswer: parseFloat(currentAnswer),
+            isCorrect: isCorrect,
+            status: isCorrect ? 'correct' : 'incorrect',
+            attempts: currentAttempts || 1,
+            timestamp: Date.now()
+          };
+          
+          // Actualizar historial de respuestas
+          setUserAnswersHistory(prev => {
+            const newHistory = [...prev];
+            newHistory[currentProblemIndex] = answer;
+            return newHistory;
+          });
+        }
+      }
+    }
+    
     setExerciseCompleted(true);
     if (generalTimerRef.current) clearInterval(generalTimerRef.current);
     if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
