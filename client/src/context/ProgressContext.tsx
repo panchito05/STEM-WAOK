@@ -553,6 +553,25 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         window.dispatchEvent(resetAllEvent);
         
         console.log("🔄 [Fase 5] Emitidos eventos de limpieza para todos los componentes");
+        
+        // IMPORTANTE: Usar directamente la función de Zustand para reiniciar las recompensas
+        try {
+          // Importación dinámica para evitar problemas de circular imports
+          import('@/lib/rewards-system').then(({ useRewardsStore }) => {
+            // Llamar directamente a la función de reseteo del store de recompensas
+            const resetAllRewards = useRewardsStore.getState().resetAllRewards;
+            if (typeof resetAllRewards === 'function') {
+              resetAllRewards();
+              console.log("✅ [Fase 5 - Zustand] Sistema de recompensas reseteado directamente");
+            } else {
+              console.error("❌ La función resetAllRewards no está disponible");
+            }
+          }).catch(err => {
+            console.error("Error al importar el sistema de recompensas:", err);
+          });
+        } catch (error) {
+          console.error("Error crítico al intentar resetear recompensas:", error);
+        }
       }
       
       console.log(`🏆 Borrada toda la información del Álbum de Recompensas y colecciones`);

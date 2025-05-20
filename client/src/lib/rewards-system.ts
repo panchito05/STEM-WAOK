@@ -317,6 +317,20 @@ export const useRewardsStore = create<RewardsState>()(
       showRewardAnimation: false,
       rewardsAlbumOpened: false,
       
+      // Método para resetear completamente todas las recompensas
+      resetAllRewards: () => {
+        console.log("🔄 Reseteando todo el sistema de recompensas");
+        set({
+          earnedRewards: [],
+          collections: [],
+          totalRewardsCount: 0,
+          newRewardsCount: 0,
+          recentReward: null,
+          showRewardAnimation: false,
+          rewardsAlbumOpened: false
+        });
+      },
+      
       addReward: (reward: Reward) => {
         // No añadir recompensas duplicadas
         if (get().earnedRewards.some(r => r.id === reward.id)) {
