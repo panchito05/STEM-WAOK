@@ -360,29 +360,20 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       setExerciseHistory([]);
       setModuleProgress({});
       
-      // PASO 1: BORRADO RADICAL DE LOCALSTORAGE - Versión mejorada
-      console.log("🧨 BORRADO RADICAL MEJORADO 3.0 - Limpieza exhaustiva del localStorage");
+      // PASO 1: BORRADO EXTREMO DE LOCALSTORAGE 
+      console.log("🧨 BORRADO RADICAL MEJORADO - Fase 1: Limpieza completa del localStorage");
       
-      // Crear una copia de todas las claves primero (para evitar problemas durante la iteración)
-      const allKeys: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) allKeys.push(key);
-      }
-      
-      console.log(`📋 Total de ${allKeys.length} claves encontradas en localStorage`);
-      
-      // Lista exhaustiva de palabras clave para detectar datos relacionados
+      // Lista ampliada de palabras clave para detectar datos relacionados
       const palabrasClave = [
         // Progreso y ejercicios
         'progress', 'progreso', 'exercise', 'ejercicio', 'history', 'historial',
         'completed', 'completado', 'score', 'puntaje', 'result', 'resultado', 
         'data', 'datos', 'stats', 'estadisticas', 'timer', 'tiempo',
         
-        // Recompensas y colecciones
+        // Recompensas
         'rewards', 'recompensas', 'trophy', 'trofeo', 'achievement', 'logro',
         'album', 'álbum', 'collection', 'colección', 'unlock', 'desbloqueado',
-        'badge', 'medalla', 'prize', 'premio', 'trophy', 'trofeo',
+        'badge', 'medalla', 'prize', 'premio',
         
         // Respaldos y backups
         'backup', 'respaldo', 'saved', 'guardado', 'math', 'matemáticas',
@@ -392,122 +383,73 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         'mathApp_', 'math_', 'mathwaok_', 'waok_', 'problemDetails'
       ];
       
-      // PRIMERA FASE: Borrado directo por nombre de clave
+      // Enfoque exhaustivo: múltiples pasadas para asegurar borrado total
       let totalBorradas = 0;
       
-      allKeys.forEach(key => {
+      // PRIMERA FASE: Borrado por palabras clave en nombre de clave
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        
         // Verificar si la clave contiene alguna palabra clave
         const matchesKeyword = palabrasClave.some(keyword => 
           key.toLowerCase().includes(keyword.toLowerCase())
         );
         
         if (matchesKeyword) {
-          localStorage.removeItem(key);
-          totalBorradas++;
-          console.log(`🗑️ [Fase 1] Eliminada clave: ${key}`);
+          keysToRemove.push(key);
+          console.log(`🗑️ [Fase 1] Borrar: ${key}`);
         }
+      }
+      
+      // Eliminar todas las claves identificadas
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        totalBorradas++;
       });
       
-      console.log(`✅ [Fase 1] Borradas ${totalBorradas} claves por palabra clave`);
+      console.log(`✅ [Fase 1] Borradas ${keysToRemove.length} claves`);
       
-      // SEGUNDA FASE: Limpieza exhaustiva - borrado específico de recompensas y datos críticos
-      const criticalKeys = [
-        // Recompensas principales
-        'rewards_collection', 'rewardsCollection', 'mathwaok_rewards', 'mathApp_rewards', 
-        'user_rewards', 'userRewards', 'rewards-collection', 'rewards_inventory',
+      // SEGUNDA FASE: Búsqueda en contenido y borrado específico de recompensas
+      // Eliminar explícitamente todas las claves conocidas de recompensas
+      const keysRewards = [
+        // Claves principales conocidas de recompensas
+        'rewards-storage', 'user_rewards', 'user_default_rewards', 
+        'rewards_collection', 'album-rewards', 'rewards-unlocked',
+        'achievements-unlocked', 'trophies-earned', 'badges-collection',
         
-        // Logros y trofeos
-        'achievements', 'completed_achievements', 'trophies', 'badges', 
-        'logros', 'achievementsData', 'achievementsProgress',
+        // Claves de configuración de recompensas
+        'rewards-settings', 'album-config', 'collection-settings',
         
-        // Datos de progreso principal
-        'exercise_history', 'exerciseHistory', 'module_progress', 'moduleProgress',
-        'mathApp_storage', 'mathwaok_storage', 'mathAppStorage',
+        // Claves específicas para cada tipo de recompensa
+        'addition-rewards', 'subtraction-rewards', 'multiplication-rewards',
+        'division-rewards', 'fractions-rewards', 'algebra-rewards',
         
-        // Configuración y estados
-        'rewardsState', 'rewardsProgress', 'rewardsData', 'rewards-state'
+        // Claves de progreso general
+        'all-progress', 'full-history', 'completed-exercises',
+        'learning-path', 'user-journey',
       ];
       
-      // Borrar claves críticas explícitamente (incluso si ya fueron borradas)
-      criticalKeys.forEach(key => {
+      // Borrar claves conocidas explícitamente
+      keysRewards.forEach(key => {
         localStorage.removeItem(key);
-        console.log(`🏆 [Fase 2] Eliminación explícita de clave crítica: ${key}`);
+        console.log(`🏆 [Fase 2] Borrada clave específica: ${key}`);
+        totalBorradas++;
       });
       
-      // TERCERA FASE: Búsqueda en contenido de las claves restantes
-      // Crear una nueva lista de claves restantes después de la limpieza
-      const remainingKeys: string[] = [];
+      // TERCERA FASE: Búsqueda en contenido
+      // Buscar palabras clave dentro del contenido de localStorage
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key) remainingKeys.push(key);
-      }
-      
-      console.log(`🔍 [Fase 3] Analizando contenido de ${remainingKeys.length} claves restantes`);
-      
-      // Analizar el contenido de las claves restantes
-      let contentBorradas = 0;
-      remainingKeys.forEach(key => {
+        if (!key) continue;
+        
         try {
           const value = localStorage.getItem(key);
-          if (!value) return;
+          if (!value) continue;
           
-          // Verificar si el contenido contiene alguna palabra clave
-          const containsKeyword = palabrasClave.some(keyword => 
-            value.toLowerCase().includes(keyword.toLowerCase())
-          );
-          
-          if (containsKeyword) {
-            localStorage.removeItem(key);
-            contentBorradas++;
-            console.log(`🔍 [Fase 3] Eliminada clave por contenido: ${key}`);
-          }
-        } catch (error) {
-          console.error(`Error al analizar el contenido de la clave ${key}:`, error);
-        }
-      });
-      
-      console.log(`✅ [Fase 3] Borradas ${contentBorradas} claves adicionales por contenido`);
-      
-      // PASO 3: Eliminar datos del servidor si está disponible
-      try {
-        // Borrar datos en el servidor
-        const clearServerResponse = await fetch("/api/progress/clear", {
-          method: "POST",
-          credentials: "include",
-        });
-        
-        if (clearServerResponse.ok) {
-          console.log("✅ Datos eliminados del servidor correctamente");
-        } else {
-          console.error("⚠️ Error al eliminar datos del servidor:", await clearServerResponse.text());
-        }
-      } catch (error) {
-        console.error("⚠️ Error de conexión al intentar eliminar datos del servidor:", error);
-      }
-      
-      // PASO 4: Recargar datos desde el servidor para confirmar limpieza
-      console.log("🔄 Recargando datos después de limpieza...");
-      await fetchProgress();
-      
-      // Mensaje de confirmación
-      toast({
-        title: "Progreso borrado",
-        description: "Se ha eliminado todo el historial de ejercicios y recompensas",
-      });
-      
-      console.log(`✅ PROCESO DE LIMPIEZA COMPLETADO CORRECTAMENTE
-        - ${totalBorradas} claves eliminadas por nombre
-        - ${criticalKeys.length} claves críticas eliminadas explícitamente
-        - ${contentBorradas} claves eliminadas por contenido
-        - Total: ${totalBorradas + criticalKeys.length + contentBorradas} elementos eliminados`);
-    } catch (error) {
-      console.error("Error during clearProgress:", error);
-      toast({
-        title: "Error al borrar progreso",
-        description: "No se pudo borrar completamente el progreso. Intente nuevamente.",
-        variant: "destructive",
-      });
-    }
+          // Verificar si el contenido incluye palabras relacionadas con recompensas o progreso
+          const contentMatches = ['reward', 'recompensa', 'progress', 'problem', 'ejercicio', 'score', 'trophy']
             .some(term => value.toLowerCase().includes(term.toLowerCase()));
             
           if (contentMatches) {
