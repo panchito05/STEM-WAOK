@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Backspace, ArrowLeft, ArrowRight, CornerDownLeft } from 'lucide-react';
+import { X, ArrowLeft, ArrowRight, CornerDownLeft } from 'lucide-react';
 
 interface NumericKeypadProps {
   onDigitPress: (digit: string) => void;
@@ -89,7 +89,7 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
         disabled={disabled}
         onClick={onBackspace}
       >
-        <Backspace className="h-4 w-4" />
+        <X className="h-4 w-4" />
       </Button>
       
       <Button

@@ -11,10 +11,10 @@
 import { MathProblem } from '../components/ProblemRenderer';
 import eventBus from './eventBus';
 
-type ProblemStatus = 'correct' | 'incorrect' | 'timeout' | 'revealed' | 'partial' | 'in-progress';
+export type ProblemStatus = 'correct' | 'incorrect' | 'timeout' | 'revealed' | 'partial' | 'in-progress';
 
 // Interface base para los detalles de un problema
-interface ProblemDetails {
+export interface ProblemDetails {
   id: string;
   moduleId: string;
   type: string;

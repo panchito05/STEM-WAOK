@@ -15,6 +15,35 @@ import problemDataManager, { ProblemDetails } from "@/lib/problemDataManager";
 import ProblemRenderer from "./ProblemRenderer";
 import { useTranslations } from "@/hooks/use-translations";
 
+// Traducciones para el historial de ejercicios (para evitar errores de tipos)
+const historyTranslations = {
+  title: "Historial de Ejercicios",
+  correct: "Correcto",
+  incorrect: "Incorrecto",
+  timeout: "Tiempo agotado",
+  revealed: "Respuesta mostrada",
+  view: "Ver",
+  problemDetails: "Detalles del Problema",
+  status: "Estado",
+  attempts: "Intentos",
+  timeElapsed: "Tiempo empleado",
+  seconds: "segundos",
+  difficulty: "Dificultad",
+  yourAnswer: "Tu respuesta",
+  noAnswer: "Sin respuesta",
+  viewInExercise: "Ver en ejercicio",
+  page: "Página",
+  of: "de",
+  allProblems: "Todos",
+  correctOnly: "Correctos",
+  incorrectOnly: "Incorrectos",
+  totalProblems: "Total",
+  accuracy: "Precisión",
+  avgTime: "Tiempo prom.",
+  noHistory: "No hay historial disponible",
+  selectProblem: "Selecciona un problema para ver detalles"
+};
+
 interface EnhancedExerciseHistoryDialogProps {
   open: boolean;
   onClose: () => void;
@@ -36,7 +65,8 @@ const EnhancedExerciseHistoryDialog: React.FC<EnhancedExerciseHistoryDialogProps
   const [filter, setFilter] = useState<'all' | 'correct' | 'incorrect'>('all');
   
   const { t } = useTranslations();
-  const translations = t('exerciseHistory');
+  // Usamos traducciones predefinidas para evitar errores de tipos
+  const translations = historyTranslations;
   
   const PAGE_SIZE = 5;
 
