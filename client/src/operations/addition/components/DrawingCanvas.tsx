@@ -37,8 +37,10 @@ export function DrawingCanvas({
   const [activeTool, setActiveTool] = useState<ToolMode>('pen');
   const [darkMode, setDarkMode] = useState<boolean>(false);
   
-  // Tamaño muy grande para el borrador
-  const eraserSize = 120; // Tamaño extremadamente grande para borrar áreas amplias
+  // Tamaño ajustado para el borrador
+  const eraserSize = 60; // Reducción del 50% según lo solicitado
+  // Estado para mostrar el indicador visual del borrador
+  const [showEraserIndicator, setShowEraserIndicator] = useState<boolean>(false);
   
   // Referencias para optimización de dibujo
   const lastPoint = useRef<Point | null>(null);
@@ -206,6 +208,8 @@ export function DrawingCanvas({
     if (activeTool === 'eraser') {
       context.lineWidth = eraserSize;
       context.globalCompositeOperation = 'destination-out';
+      // Mostrar el indicador visual del borrador
+      setShowEraserIndicator(true);
     } 
     
     // Get the correct coordinates
@@ -260,6 +264,9 @@ export function DrawingCanvas({
       y = event.nativeEvent.offsetY;
     }
     
+    // Actualizar posición del cursor para el indicador visual
+    setCursorPosition({ x, y });
+    
     // Añadimos el punto a la cola para ser dibujado en el próximo frame
     pointsQueue.current.push({ x, y });
     
@@ -267,6 +274,18 @@ export function DrawingCanvas({
     if (!animationFrameId.current) {
       animationFrameId.current = requestAnimationFrame(drawPointsOptimized);
     }
+  };
+  
+  // Función para seguir el movimiento del mouse incluso cuando no se está dibujando
+  const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current) return;
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = event.nativeEvent.offsetX;
+    const y = event.nativeEvent.offsetY;
+    
+    // Actualizar posición del cursor cuando se mueve el mouse
+    setCursorPosition({ x, y });
   };
   
   const stopDrawing = () => {
@@ -285,9 +304,17 @@ export function DrawingCanvas({
     
     setIsDrawing(false);
     
+    // Ocultar el indicador visual del borrador
+    if (activeTool === 'eraser') {
+      setShowEraserIndicator(false);
+    }
+    
     // Guardamos el estado del canvas después de terminar el trazo
     saveCanvasState();
   };
+  
+  // Estado para rastrear la posición del cursor
+  const [cursorPosition, setCursorPosition] = useState<{x: number, y: number} | null>(null);
   
   // Expose clear method
   useEffect(() => {
@@ -363,18 +390,36 @@ export function DrawingCanvas({
   
   return (
     <div className={`drawing-canvas-container relative ${className}`}>
-      <canvas
-        ref={canvasRef}
-        className={`drawing-canvas cursor-crosshair ${darkMode ? 'bg-gray-900' : 'bg-white'} w-full h-full`}
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={stopDrawing}
-        onMouseLeave={stopDrawing}
-        onTouchStart={startDrawing}
-        onTouchMove={draw}
-        onTouchEnd={stopDrawing}
-        style={{ touchAction: 'none' }}
-      />
+      <div className="relative w-full h-full">
+        <canvas
+          ref={canvasRef}
+          className={`drawing-canvas cursor-crosshair ${darkMode ? 'bg-gray-900' : 'bg-white'} w-full h-full`}
+          onMouseDown={startDrawing}
+          onMouseMove={(e) => {
+            draw(e);
+            handleMouseMove(e);
+          }}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+          style={{ touchAction: 'none' }}
+        />
+        
+        {/* Indicador visual del borrador */}
+        {showEraserIndicator && cursorPosition && activeTool === 'eraser' && (
+          <div 
+            className="absolute pointer-events-none border-2 border-red-500 rounded-full transform -translate-x-1/2 -translate-y-1/2 z-10"
+            style={{
+              left: `${cursorPosition.x}px`,
+              top: `${cursorPosition.y}px`,
+              width: `${eraserSize}px`,
+              height: `${eraserSize}px`,
+            }}
+          />
+        )}
+      </div>
       
       {/* Barra de herramientas */}
       <div className={`absolute top-20 ${position === 'right' ? 'right-4' : 'left-4'} flex flex-col gap-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-2 rounded-lg shadow`}>
