@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Check, Trash } from 'lucide-react';
+import { X, Check, Trash, Move } from 'lucide-react';
 import { AdditionProblem } from '../types';
 import { DrawingCanvas } from './DrawingCanvas';
 import NumericKeypad from './SimpleNumericKeypad';
@@ -19,6 +19,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 }) => {
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [position, setPosition] = useState<'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'>('topLeft');
   const canvasRef = useRef<any>(null);
   
   // Reset state when problem changes
@@ -92,32 +93,69 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     }
   };
   
+  // Función para obtener la posición correcta del ejercicio
+  const getPositionStyles = () => {
+    switch (position) {
+      case 'topRight':
+        return { top: '4px', right: '4px', left: 'auto', bottom: 'auto' };
+      case 'bottomRight':
+        return { bottom: '4px', right: '4px', top: 'auto', left: 'auto' };
+      case 'bottomLeft':
+        return { bottom: '4px', left: '4px', top: 'auto', right: 'auto' };
+      case 'topLeft':
+      default:
+        return { top: '4px', left: '4px', right: 'auto', bottom: 'auto' };
+    }
+  };
+
+  // Función para cambiar a la siguiente posición
+  const rotatePosition = () => {
+    const positions: Array<'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'> = [
+      'topLeft', 'topRight', 'bottomRight', 'bottomLeft'
+    ];
+    const currentIndex = positions.indexOf(position);
+    const nextIndex = (currentIndex + 1) % positions.length;
+    setPosition(positions[nextIndex]);
+  };
+
   return (
     <div className="fixed inset-0 bg-white z-50">
-      {/* Close button en la esquina superior derecha */}
+      {/* Close button X en rojo en la parte superior */}
       <button
         onClick={onClose}
-        className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
+        className="absolute top-4 left-1/2 transform -translate-x-1/2 p-3 rounded-full bg-red-100 hover:bg-red-200 transition-colors"
         aria-label="Cerrar modo profesor"
       >
-        <X className="h-5 w-5 text-gray-800" />
+        <X className="h-5 w-5 text-red-600" />
       </button>
       
-      {/* Main layout with everything in top-left and drawing area taking most of the screen */}
+      {/* Main layout with drawing area taking most of the screen */}
       <div className="h-full w-full">
         {/* Full screen drawing canvas as background */}
         <div className="absolute inset-0">
           <DrawingCanvas height={window.innerHeight} />
         </div>
         
-        {/* Problem and keypad container in top-left corner */}
-        <div className="absolute top-4 left-4 z-10 w-[280px]">
+        {/* Problem and keypad container with dynamic positioning */}
+        <div 
+          className="absolute z-10 w-[280px]" 
+          style={getPositionStyles()}
+        >
+          {/* Move button para cambiar la posición */}
+          <button
+            onClick={rotatePosition}
+            className="absolute top-1 right-1 p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
+            title="Cambiar posición"
+          >
+            <Move className="h-4 w-4 text-blue-600" />
+          </button>
+          
           {/* Problem display */}
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             {renderProblem()}
           </div>
           
-          {/* Answer input - now with more space */}
+          {/* Answer input */}
           <div className="flex items-center mb-2">
             <div className="font-medium mr-2">Respuesta:</div>
             <div className="flex-1 flex">
@@ -156,25 +194,14 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             )}
           </button>
           
-          {/* Numeric keypad and close button container */}
-          <div className="flex flex-col">
-            <div className="bg-white shadow-sm border border-gray-200 rounded-md p-2 mb-2">
-              <NumericKeypad
-                onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
-                onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
-                onDotClick={() => setUserAnswer(prev => prev.includes('.') ? prev : `${prev}.`)}
-                hideArrows={true}
-              />
-            </div>
-            
-            {/* Botón X para cerrar pizarra */}
-            <button
-              onClick={onClose}
-              className="py-2 px-4 rounded-md bg-red-100 text-red-700 hover:bg-red-200 font-medium flex items-center justify-center"
-              aria-label="Cerrar pizarra"
-            >
-              <X className="h-4 w-4 mr-1" /> Cerrar pizarra
-            </button>
+          {/* Numeric keypad */}
+          <div className="bg-white shadow-sm border border-gray-200 rounded-md p-2">
+            <NumericKeypad
+              onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
+              onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
+              onDotClick={() => setUserAnswer(prev => prev.includes('.') ? prev : `${prev}.`)}
+              hideArrows={true}
+            />
           </div>
         </div>
       </div>
