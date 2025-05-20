@@ -1,139 +1,155 @@
-// useExerciseTimer.ts - Hook personalizado para gestionar el temporizador del ejercicio
-import { useState, useEffect, useRef } from 'react';
+// useExerciseTimer.ts - Hook para gestionar temporizadores en ejercicios
+import { useState, useEffect, useRef, useCallback } from 'react';
 
-interface TimerConfig {
-  timerType: 'global' | 'per-problem'; // Tipo de temporizador
-  timeValue: number;                   // Valor del tiempo en segundos
-  active: boolean;                     // Si el temporizador está activo
-  onTimerComplete?: () => void;        // Callback cuando el tiempo se acaba
+interface UseExerciseTimerProps {
+  timerType: 'global' | 'per-problem';
+  timeValue: number;
+  active: boolean;
+  onTimerComplete: () => void;
 }
 
-export function useExerciseTimer({ timerType, timeValue, active, onTimerComplete }: TimerConfig) {
-  // Estado principal del temporizador
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [isTimerActive, setIsTimerActive] = useState(false);
-  const [globalTimer, setGlobalTimer] = useState(0);
+/**
+ * Hook personalizado para gestionar temporizadores en ejercicios
+ */
+export function useExerciseTimer({
+  timerType,
+  timeValue,
+  active,
+  onTimerComplete
+}: UseExerciseTimerProps) {
+  // Estado para el tiempo restante
+  const [timeLeft, setTimeLeft] = useState<number>(timeValue);
+  const [isTimerActive, setIsTimerActive] = useState<boolean>(false);
+  const [globalTimer, setGlobalTimer] = useState<number>(0);
   
-  // Referencias para manejar intervalos y timeouts
-  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const globalTimerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Inicializar temporizador
-  const initializeTimer = () => {
-    if (timerType === 'global') {
-      // Si es temporizador global, inicializar con el valor total
-      setTimeLeft(timeValue);
-    } else if (timerType === 'per-problem') {
-      // Si es por problema, inicializar con el tiempo por problema
-      setTimeLeft(timeValue);
-    }
-  };
+  // Referencias para los intervalos
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const globalTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Iniciar temporizador
-  const startTimer = () => {
-    if (!active) return;
+  const startTimer = useCallback(() => {
+    // Limpiar temporizadores existentes
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    if (globalTimerRef.current) {
+      clearInterval(globalTimerRef.current);
+    }
+    
+    // Si no hay límite de tiempo, no iniciar temporizador
+    if (timeValue <= 0) {
+      return;
+    }
     
     setIsTimerActive(true);
     
-    // Iniciar temporizador global para medir el tiempo total
-    if (!globalTimerIntervalRef.current) {
-      globalTimerIntervalRef.current = setInterval(() => {
-        setGlobalTimer(prev => prev + 0.1);
+    // Inicializar timer dependiendo del tipo
+    if (timerType === 'global') {
+      setTimeLeft(timeValue);
+      
+      // Iniciar temporizador global
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          const newTime = prev - 0.1;
+          if (newTime <= 0) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+            }
+            onTimerComplete();
+            return 0;
+          }
+          return newTime;
+        });
+      }, 100);
+    } else {
+      // Timer por problema
+      setTimeLeft(timeValue);
+      
+      // Iniciar temporizador por problema
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          const newTime = prev - 0.1;
+          if (newTime <= 0) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+            }
+            onTimerComplete();
+            return 0;
+          }
+          return newTime;
+        });
       }, 100);
     }
     
-    // Iniciar temporizador específico (global o por problema)
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-    }
-    
-    if (timeLeft === null) {
-      initializeTimer();
-    }
-    
-    timerIntervalRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev === null) return null;
-        
-        // Si el tiempo llega a cero, ejecutar callback y detener
-        if (prev <= 0.1) {
-          if (onTimerComplete) {
-            onTimerComplete();
-          }
-          if (timerIntervalRef.current) {
-            clearInterval(timerIntervalRef.current);
-            timerIntervalRef.current = null;
-          }
-          return 0;
-        }
-        
-        return prev - 0.1;
-      });
+    // Iniciar temporizador global para tracking
+    globalTimerRef.current = setInterval(() => {
+      setGlobalTimer(prev => prev + 0.1);
     }, 100);
-  };
+  }, [timeValue, timerType, onTimerComplete]);
   
   // Pausar temporizador
-  const pauseTimer = () => {
-    setIsTimerActive(false);
+  const pauseTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
     
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-  };
+    setIsTimerActive(false);
+  }, []);
   
-  // Reiniciar temporizador para un nuevo problema
-  const resetProblemTimer = () => {
-    if (timerType === 'per-problem') {
-      setTimeLeft(timeValue);
-      
-      if (active && isTimerActive) {
-        if (timerIntervalRef.current) {
-          clearInterval(timerIntervalRef.current);
-        }
-        startTimer();
-      }
+  // Resetear temporizador para un nuevo problema
+  const resetProblemTimer = useCallback(() => {
+    // Solo aplicable para timer por problema
+    if (timerType !== 'per-problem') return;
+    
+    // Pausar timer actual
+    pauseTimer();
+    
+    // Reiniciar tiempo
+    setTimeLeft(timeValue);
+    
+    // Iniciar timer si está activo
+    if (active) {
+      startTimer();
     }
-  };
+  }, [timerType, timeValue, active, pauseTimer, startTimer]);
   
   // Detener todos los temporizadores
-  const stopAllTimers = () => {
+  const stopAllTimers = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    if (globalTimerRef.current) {
+      clearInterval(globalTimerRef.current);
+      globalTimerRef.current = null;
+    }
+    
     setIsTimerActive(false);
-    
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-    
-    if (globalTimerIntervalRef.current) {
-      clearInterval(globalTimerIntervalRef.current);
-      globalTimerIntervalRef.current = null;
-    }
-  };
+  }, []);
   
-  // Efecto para inicializar el temporizador cuando cambian las propiedades
-  useEffect(() => {
-    initializeTimer();
-    
-    // Limpiar cuando el componente se desmonta
-    return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-      }
-      if (globalTimerIntervalRef.current) {
-        clearInterval(globalTimerIntervalRef.current);
-      }
-    };
-  }, [timerType, timeValue]);
-  
-  // Efecto para manejar activación/desactivación
+  // Efecto para iniciar/detener temporizador cuando cambia el estado de activo
   useEffect(() => {
     if (active) {
       startTimer();
     } else {
       pauseTimer();
     }
-  }, [active]);
+    
+    // Limpiar temporizadores al desmontar
+    return () => {
+      stopAllTimers();
+    };
+  }, [active, startTimer, pauseTimer, stopAllTimers]);
+  
+  // Efecto para actualizar el tiempo cuando cambia el valor del tiempo
+  useEffect(() => {
+    if (!isTimerActive) {
+      setTimeLeft(timeValue);
+    }
+  }, [timeValue, isTimerActive]);
   
   return {
     timeLeft,
