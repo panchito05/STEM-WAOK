@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Problem } from '../types';
 import { Check, X } from 'lucide-react';
+import NumberDuplicator from './NumberDuplicator';
 
 export interface ProblemDisplayProps {
   problem: Problem;
@@ -18,6 +19,14 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   isAnswered = false,
   isCorrect = false
 }) => {
+  const [showDuplicator, setShowDuplicator] = useState(false);
+  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
+  
+  // Función para manejar el clic en un número y duplicarlo
+  const handleNumberClick = (value: number) => {
+    setSelectedNumbers([...problem.operands.map(op => op.value)]);
+    setShowDuplicator(true);
+  };
   // Función para formatear un número
   const formatNumber = (num: number): string => {
     return num.toLocaleString();
@@ -35,7 +44,12 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             ) : (
               <span className="mr-4 border-t border-black dark:border-white pt-1">+</span>
             )}
-            <span>{formatNumber(op.value)}</span>
+            <span 
+              className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-1 rounded transition-colors"
+              onClick={() => handleNumberClick(op.value)}
+            >
+              {formatNumber(op.value)}
+            </span>
           </div>
         ))}
         
@@ -61,7 +75,12 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
           {/* Mostrar operandos separados por + */}
           {problem.operands.map((op, index) => (
             <React.Fragment key={index}>
-              <span className="text-lg">{formatNumber(op.value)}</span>
+              <span 
+                className="text-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-1 rounded transition-colors"
+                onClick={() => handleNumberClick(op.value)}
+              >
+                {formatNumber(op.value)}
+              </span>
               {index < problem.operands.length - 1 && (
                 <span className="mx-2 text-lg">+</span>
               )}
@@ -124,6 +143,13 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             )}
           </div>
         )}
+        
+        {/* Duplicador de números que aparece al hacer clic */}
+        <NumberDuplicator 
+          numbers={selectedNumbers} 
+          visible={showDuplicator} 
+          onClose={() => setShowDuplicator(false)} 
+        />
       </div>
     </div>
   );
