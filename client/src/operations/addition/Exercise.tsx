@@ -8,6 +8,7 @@ import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "
 import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
+import { ProfessorMode } from "./components/ProfessorMode";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -434,6 +435,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Estado para el diálogo de historial de ejercicios recientes
 
+  // Estado para el modo profesor
+  const [isProfessorModeActive, setIsProfessorModeActive] = useState(false);
 
   // Estados para manejar los videos explicativos de YouTube
   const [showVideoDialog, setShowVideoDialog] = useState(false);
@@ -2085,7 +2088,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <div className="flex items-center gap-2">
               <button
                 className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 w-auto hover:bg-indigo-50"
-                onClick={() => alert('Professor Mode activado. Esta funcionalidad estará disponible próximamente.')}
+                onClick={() => setIsProfessorModeActive(true)}
                 title="Modo Profesor"
               >
                 <span className="text-xs font-medium mr-1">
