@@ -3,6 +3,7 @@ import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } f
 // Definir los diferentes modos de herramientas
 type ToolMode = 'pen' | 'eraser' | 'line';
 
+// Props para el componente DrawingCanvas
 interface DrawingCanvasProps {
   width?: number;
   height?: number;
@@ -12,14 +13,23 @@ interface DrawingCanvasProps {
   onClear?: () => void;
 }
 
-export function DrawingCanvas({
-  width = window.innerWidth,
-  height = window.innerHeight,
-  strokeColor = '#333333',
-  strokeWidth = 3,
-  className = '',
-  onClear
-}: DrawingCanvasProps) {
+// Definimos tipo para el handle (métodos expuestos)
+interface DrawingCanvasHandle {
+  clearCanvas: () => void;
+  toggleDarkMode: () => void;
+}
+
+// Utilizamos forwardRef para poder recibir una referencia del componente padre
+export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>((props, ref) => {
+  const {
+    width = window.innerWidth,
+    height = window.innerHeight,
+    strokeColor = '#333333',
+    strokeWidth = 3,
+    className = '',
+    onClear
+  } = props;
+  
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -35,6 +45,16 @@ export function DrawingCanvas({
   
   // Estado para guardar la imagen del canvas antes de cambiar herramientas
   const canvasImageRef = useRef<string | null>(null);
+  
+  // Exponer métodos al componente padre a través de la ref
+  useImperativeHandle(ref, () => ({
+    clearCanvas: () => {
+      clearCanvas();
+    },
+    toggleDarkMode: () => {
+      toggleDarkMode();
+    }
+  }));
   
   // Salvar el estado del canvas
   const saveCanvasState = () => {
@@ -143,6 +163,12 @@ export function DrawingCanvas({
   // Variable para almacenar el ID del temporizador actual
   const currentTimerRef = useRef<number | null>(null);
   
+  // Estado para controlar la vista previa del borrador
+  const [isShowingPreview, setIsShowingPreview] = useState(false);
+  
+  // Estado para controlar la visibilidad del menú de ajuste de tamaño
+  const [showEraserSizeMenu, setShowEraserSizeMenu] = useState(true);
+  
   // Drawing functions
   const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {    
     // Si se está mostrando la vista previa, ocultarla inmediatamente
@@ -223,48 +249,6 @@ export function DrawingCanvas({
     setIsDrawing(false);
   };
   
-  // Expose clear method
-  useEffect(() => {
-    if (canvasRef.current) {
-      (canvasRef.current as any).clear = clearCanvas;
-    }
-  }, []);
-  
-  // Funciones para cambiar herramientas
-  const setTool = (tool: ToolMode) => {
-    // Guardar el estado actual del canvas
-    saveCanvasState();
-    
-    setActiveTool(tool);
-    
-    // Si tenemos contexto, actualizamos las propiedades
-    if (contextRef.current) {
-      const context = contextRef.current;
-      
-      if (tool === 'eraser') {
-        context.globalCompositeOperation = 'destination-out';
-        context.lineWidth = eraserSize; // Asegurar que el borrador use el tamaño correcto
-        setActiveWidth(eraserSize); // Usar el tamaño de borrador definido
-      } else {
-        context.globalCompositeOperation = 'source-over';
-        
-        // Ajustar grosor según la herramienta
-        if (tool === 'pen') {
-          context.lineWidth = 3;
-          setActiveWidth(3);
-          const color = darkMode ? '#ffffff' : '#333333';
-          context.strokeStyle = color;
-          setActiveColor(color);
-        } else if (tool === 'line') {
-          context.lineWidth = 2;
-          setActiveWidth(2);
-          context.strokeStyle = '#0000ff';
-          setActiveColor('#0000ff');
-        }
-      }
-    }
-  };
-  
   // Variable para la imagen de respaldo
   const backupImageDataRef = useRef<ImageData | null>(null);
   
@@ -301,12 +285,6 @@ export function DrawingCanvas({
       console.log("⚠️ No hay imagen de respaldo disponible");
     }
   };
-  
-  // Estado para controlar la vista previa del borrador
-  const [isShowingPreview, setIsShowingPreview] = useState(false);
-  
-  // Estado para controlar la visibilidad del menú de ajuste de tamaño
-  const [showEraserSizeMenu, setShowEraserSizeMenu] = useState(true);
   
   // Función para cambiar el tamaño del borrador
   const changeEraserSize = (size: number) => {
@@ -352,6 +330,41 @@ export function DrawingCanvas({
       }
     };
   }, [activeTool]);
+  
+  // Funciones para cambiar herramientas
+  const setTool = (tool: ToolMode) => {
+    // Guardar el estado actual del canvas
+    saveCanvasState();
+    
+    setActiveTool(tool);
+    
+    // Si tenemos contexto, actualizamos las propiedades
+    if (contextRef.current) {
+      const context = contextRef.current;
+      
+      if (tool === 'eraser') {
+        context.globalCompositeOperation = 'destination-out';
+        context.lineWidth = eraserSize; // Asegurar que el borrador use el tamaño correcto
+        setActiveWidth(eraserSize); // Usar el tamaño de borrador definido
+      } else {
+        context.globalCompositeOperation = 'source-over';
+        
+        // Ajustar grosor según la herramienta
+        if (tool === 'pen') {
+          context.lineWidth = 3;
+          setActiveWidth(3);
+          const color = darkMode ? '#ffffff' : '#333333';
+          context.strokeStyle = color;
+          setActiveColor(color);
+        } else if (tool === 'line') {
+          context.lineWidth = 2;
+          setActiveWidth(2);
+          context.strokeStyle = '#0000ff';
+          setActiveColor('#0000ff');
+        }
+      }
+    }
+  };
   
   // Función para cambiar color
   const changeColor = (color: string) => {
@@ -450,8 +463,6 @@ export function DrawingCanvas({
             />
           </div>
         )}
-        
-
       </div>
       
       {/* Selector de colores con modo oscuro integrado */}
@@ -474,44 +485,45 @@ export function DrawingCanvas({
           )}
         </button>
         
-        {/* Separador vertical */}
-        <div className={`h-6 w-px ${darkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
+        {/* Botón para borrar todo */}
+        <button
+          onClick={clearCanvas}
+          className={`p-1.5 ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-full`}
+          title="Borrar todo"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 6h18"></path>
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+        </button>
         
-        {darkMode ? (
-          // Colores para modo oscuro (pizarra negra)
-          <>
-            <button onClick={() => changeColor('#ffffff')} className="w-6 h-6 rounded-full bg-white border border-gray-300" title="Blanco"></button>
-            <button onClick={() => changeColor('#00ffff')} className="w-6 h-6 rounded-full bg-cyan-400 border border-gray-300" title="Cian"></button>
-            <button onClick={() => changeColor('#ff00ff')} className="w-6 h-6 rounded-full bg-pink-500 border border-gray-300" title="Magenta"></button>
-            <button onClick={() => changeColor('#ffff00')} className="w-6 h-6 rounded-full bg-yellow-400 border border-gray-300" title="Amarillo"></button>
-            <button onClick={() => changeColor('#00ff00')} className="w-6 h-6 rounded-full bg-green-500 border border-gray-300" title="Verde"></button>
-          </>
-        ) : (
-          // Colores para modo claro (pizarra blanca)
-          <>
-            <button onClick={() => changeColor('#333333')} className="w-6 h-6 rounded-full bg-gray-800 border border-gray-300" title="Negro"></button>
-            <button onClick={() => changeColor('#ff0000')} className="w-6 h-6 rounded-full bg-red-500 border border-gray-300" title="Rojo"></button>
-            <button onClick={() => changeColor('#0000ff')} className="w-6 h-6 rounded-full bg-blue-500 border border-gray-300" title="Azul"></button>
-            <button onClick={() => changeColor('#00ff00')} className="w-6 h-6 rounded-full bg-green-500 border border-gray-300" title="Verde"></button>
-            <button onClick={() => changeColor('#ffff00')} className="w-6 h-6 rounded-full bg-yellow-400 border border-gray-300" title="Amarillo"></button>
-          </>
-        )}
+        {/* Selector de colores */}
+        <div className="flex items-center space-x-1">
+          <button 
+            onClick={() => changeColor('#000000')} 
+            className={`w-5 h-5 rounded-full bg-black ${activeColor === '#000000' && activeTool === 'pen' ? 'ring-2 ring-blue-500' : ''}`}
+            title="Negro"
+          />
+          <button 
+            onClick={() => changeColor('#ffffff')} 
+            className={`w-5 h-5 rounded-full bg-white border border-gray-300 ${activeColor === '#ffffff' && activeTool === 'pen' ? 'ring-2 ring-blue-500' : ''}`}
+            title="Blanco"
+          />
+          <button 
+            onClick={() => changeColor('#ff0000')} 
+            className={`w-5 h-5 rounded-full bg-red-600 ${activeColor === '#ff0000' && activeTool === 'pen' ? 'ring-2 ring-blue-500' : ''}`}
+            title="Rojo"
+          />
+          <button 
+            onClick={() => changeColor('#0000ff')} 
+            className={`w-5 h-5 rounded-full bg-blue-600 ${activeColor === '#0000ff' && activeTool === 'pen' ? 'ring-2 ring-blue-500' : ''}`}
+            title="Azul"
+          />
+        </div>
       </div>
-      
-      {/* Botón para borrar todo */}
-      <button
-        onClick={clearCanvas}
-        className={`absolute bottom-4 right-4 p-2 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-full`}
-        title="Borrar todo"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          <line x1="10" y1="11" x2="10" y2="17"></line>
-          <line x1="14" y1="11" x2="14" y2="17"></line>
-        </svg>
-      </button>
     </div>
   );
-}
-
-export default DrawingCanvas;
+});
