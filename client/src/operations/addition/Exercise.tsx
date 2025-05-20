@@ -2147,19 +2147,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-start justify-center relative`}>
-          {/* Información de contador de problemas e intentos - colocada en la esquina superior izquierda */}
-          <div className="absolute top-2 left-2 flex items-center justify-between w-full max-w-[200px]">
-            <div className="text-xs font-medium text-gray-600">
-              Problema {currentProblemIndex + 1} de {problemsList.length}
-            </div>
-            <div className="text-xs font-medium text-gray-600">
-              Intentos: {currentAttempts}/{settings.maxAttempts}
-            </div>
-          </div>
-          
+        <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-center justify-center`}>
           {currentProblem.layout === 'horizontal' ? (
-            <div className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap mx-auto mt-5">
+            <div className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
               <span>{currentProblem.operands[0]}</span>
               <span className="text-gray-600 mx-1">+</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
@@ -2172,7 +2162,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <span className="text-gray-600 mx-1">=</span>
             </div>
           ) : (
-            <div className="inline-block text-right my-1 sm:my-2 mx-auto mt-5">
+            <div className="inline-block text-right my-1 sm:my-2">
               {operandsFormatted.map((op, index) => (
                 <div key={`op-${index}-${currentProblem.id}`} className={verticalOperandStyle}>
                   {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>+</span>}
