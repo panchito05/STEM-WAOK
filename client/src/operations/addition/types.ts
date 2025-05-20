@@ -1,13 +1,26 @@
 // Tipos para el módulo de suma (addition)
 
 // Niveles de dificultad disponibles
-export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'expert';
+export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
 
 // Formato de visualización para problemas
-export type DisplayFormat = 'horizontal' | 'vertical' | 'word';
+export type ExerciseLayout = 'horizontal' | 'vertical';
+export type DisplayFormat = ExerciseLayout | 'word';
 
 // Estado de la respuesta del usuario
 export type AnswerStatus = 'correct' | 'incorrect' | 'skipped' | 'timeout' | 'revealed';
+
+// Estructura específica para problemas de suma
+export interface AdditionProblem {
+  id: string;
+  num1: number;   // Primer operando (compatibilidad con código legacy)
+  num2: number;   // Segundo operando (compatibilidad con código legacy)
+  operands: number[];  // Todos los operandos del problema
+  correctAnswer: number;  // La respuesta correcta (suma de operandos)
+  layout: ExerciseLayout;  // Diseño del problema (horizontal/vertical)
+  answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
+  answerDecimalPosition?: number;  // Posición del decimal en la respuesta (si aplica)
+}
 
 // Operando individual para un problema
 export interface Operand {
