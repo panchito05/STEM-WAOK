@@ -94,7 +94,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   
   return (
     <div className="fixed inset-0 bg-white z-50">
-      {/* Close button */}
+      {/* Close button en la esquina superior derecha */}
       <button
         onClick={onClose}
         className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -156,14 +156,25 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             )}
           </button>
           
-          {/* Numeric keypad */}
-          <div className="bg-white shadow-sm border border-gray-200 rounded-md p-2">
-            <NumericKeypad
-              onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
-              onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
-              onDotClick={() => setUserAnswer(prev => prev.includes('.') ? prev : `${prev}.`)}
-              hideArrows={true}
-            />
+          {/* Numeric keypad and close button container */}
+          <div className="flex flex-col">
+            <div className="bg-white shadow-sm border border-gray-200 rounded-md p-2 mb-2">
+              <NumericKeypad
+                onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
+                onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
+                onDotClick={() => setUserAnswer(prev => prev.includes('.') ? prev : `${prev}.`)}
+                hideArrows={true}
+              />
+            </div>
+            
+            {/* Botón X para cerrar pizarra */}
+            <button
+              onClick={onClose}
+              className="py-2 px-4 rounded-md bg-red-100 text-red-700 hover:bg-red-200 font-medium flex items-center justify-center"
+              aria-label="Cerrar pizarra"
+            >
+              <X className="h-4 w-4 mr-1" /> Cerrar pizarra
+            </button>
           </div>
         </div>
       </div>
