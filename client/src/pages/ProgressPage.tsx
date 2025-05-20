@@ -403,7 +403,7 @@ export default function ProgressPage() {
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Highest Level</p>
-                                <p className="text-2xl font-bold text-emerald-600">
+                                <p className="text-lg font-bold text-emerald-600 overflow-hidden text-ellipsis">
                                   {(() => {
                                     const difficulties = ['beginner', 'elementary', 'intermediate', 'advanced', 'expert'];
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
@@ -605,6 +605,155 @@ export default function ProgressPage() {
                                     return improvement > 0 
                                       ? `${Math.round(percentImprovement)}% faster` 
                                       : `${Math.abs(Math.round(percentImprovement))}% slower`;
+                                  })()}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* Tipo de problemas más difíciles */}
+                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div className="flex justify-between items-baseline mb-2">
+                                <p className="text-sm text-gray-500">Problemas Desafiantes</p>
+                                <p className="font-semibold text-orange-600">
+                                  {(() => {
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    if (moduleExercises.length === 0) return 'N/A';
+                                    
+                                    // Extraer todos los problemas y sus respuestas
+                                    let problemasDificiles: Record<string, {intentos: number, total: number}> = {};
+                                    
+                                    moduleExercises.forEach(ex => {
+                                      // Obtener y procesar userAnswers si existe
+                                      const userAnswers = ex.userAnswers || [];
+                                      
+                                      userAnswers.forEach((answer: any) => {
+                                        if (!answer || !answer.problem) return;
+                                        
+                                        // Crear una clave única para el problema
+                                        const problemKey = JSON.stringify(answer.problem);
+                                        
+                                        if (!problemasDificiles[problemKey]) {
+                                          problemasDificiles[problemKey] = {intentos: 0, total: 0};
+                                        }
+                                        
+                                        problemasDificiles[problemKey].intentos += (answer.attempts || 1);
+                                        problemasDificiles[problemKey].total += 1;
+                                      });
+                                    });
+                                    
+                                    // Calcular el problema con más intentos promedio
+                                    let maxIntentos = 0;
+                                    let problemaMasDificil = null;
+                                    
+                                    Object.entries(problemasDificiles).forEach(([key, data]) => {
+                                      const promedio = data.intentos / data.total;
+                                      if (promedio > maxIntentos && data.total >= 2) {
+                                        maxIntentos = promedio;
+                                        problemaMasDificil = key;
+                                      }
+                                    });
+                                    
+                                    if (problemaMasDificil) {
+                                      try {
+                                        const problema = JSON.parse(problemaMasDificil);
+                                        
+                                        // Intentar determinar el tipo de problema
+                                        if (problema.operand1 !== undefined && problema.operand2 !== undefined) {
+                                          return `${problema.operand1} + ${problema.operand2}`;
+                                        } else if (problema.numerator !== undefined && problema.denominator !== undefined) {
+                                          return `${problema.numerator}/${problema.denominator}`;
+                                        } else {
+                                          return `${maxIntentos.toFixed(1)} intentos promedio`;
+                                        }
+                                      } catch (e) {
+                                        return `${maxIntentos.toFixed(1)} intentos promedio`;
+                                      }
+                                    }
+                                    
+                                    return 'N/A';
+                                  })()}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* Calendario de práctica */}
+                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <p className="text-sm text-gray-500 mb-2">Días de Práctica (Últimos 7 días)</p>
+                              <div className="flex justify-between items-center">
+                                {(() => {
+                                  // Crear un array para los últimos 7 días
+                                  const dias = Array.from({length: 7}, (_, i) => {
+                                    const fecha = new Date();
+                                    fecha.setDate(fecha.getDate() - (6 - i));
+                                    return fecha;
+                                  });
+                                  
+                                  // Filtrar los ejercicios por módulo
+                                  const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                  
+                                  // Contar ejercicios por día
+                                  const ejerciciosPorDia = dias.map(dia => {
+                                    const count = moduleExercises.filter(ex => {
+                                      const fechaEjercicio = new Date(ex.date || ex.createdAt || '');
+                                      return fechaEjercicio.toDateString() === dia.toDateString();
+                                    }).length;
+                                    
+                                    return {
+                                      fecha: dia,
+                                      count,
+                                      diaSemana: dia.toLocaleDateString('es-ES', {weekday: 'short'}).substring(0, 1).toUpperCase()
+                                    };
+                                  });
+                                  
+                                  return ejerciciosPorDia.map((dia, index) => (
+                                    <div key={index} className="flex flex-col items-center">
+                                      <span className="text-xs text-gray-400">{dia.diaSemana}</span>
+                                      <div 
+                                        className={`w-8 h-8 flex items-center justify-center rounded-full mt-1 ${
+                                          dia.count === 0 ? 'bg-gray-100' : 
+                                          dia.count === 1 ? 'bg-green-100' : 
+                                          dia.count === 2 ? 'bg-green-300' : 'bg-green-500'
+                                        }`}
+                                      >
+                                        <span className={`text-xs font-medium ${
+                                          dia.count < 2 ? 'text-gray-700' : 'text-white'
+                                        }`}>
+                                          {dia.count}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ));
+                                })()}
+                              </div>
+                            </div>
+                            
+                            {/* Tasa de Errores Comunes */}
+                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div className="flex justify-between items-baseline mb-2">
+                                <p className="text-sm text-gray-500">Tasa de Error</p>
+                                <p className="font-semibold text-red-600">
+                                  {(() => {
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    if (moduleExercises.length === 0) return '0%';
+                                    
+                                    // Contar problemas incorrectos vs total
+                                    let totalProblemas = 0;
+                                    let problemasIncorrectos = 0;
+                                    
+                                    moduleExercises.forEach(ex => {
+                                      const userAnswers = ex.userAnswers || [];
+                                      userAnswers.forEach((answer: any) => {
+                                        if (!answer) return;
+                                        totalProblemas++;
+                                        if (!answer.isCorrect) {
+                                          problemasIncorrectos++;
+                                        }
+                                      });
+                                    });
+                                    
+                                    if (totalProblemas === 0) return '0%';
+                                    const errorRate = (problemasIncorrectos / totalProblemas) * 100;
+                                    return `${Math.round(errorRate)}%`;
                                   })()}
                                 </p>
                               </div>
