@@ -49,8 +49,8 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             )}
             <button 
               className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700 flex items-center gap-1"
-              onClick={handleNumberClick}
-              title="Haz clic para ver en grande"
+              onClick={() => handleNumberClick()}
+              title="Haz clic para ver en grande" 
               aria-label="Ver número en grande"
             >
               {formatNumber(op.value)}
@@ -83,7 +83,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             <React.Fragment key={index}>
               <button 
                 className="text-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700 flex items-center gap-1"
-                onClick={handleNumberClick}
+                onClick={() => handleNumberClick()}
                 title="Haz clic para ver en grande"
                 aria-label="Ver número en grande"
               >
