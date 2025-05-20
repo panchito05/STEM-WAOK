@@ -505,7 +505,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
           if (!value) continue;
           
           // Verificar si el contenido incluye palabras relacionadas con recompensas o progreso
-          const contentMatches = ['reward', 'recompensa', 'progress', 'problem', 'ejercicio', 'score', 'trophy']
+          const contentMatches = ['reward', 'recompensa', 'progress', 'problem', 'ejercicio', 'score', 'trophy', 'album', 'álbum', 'math', 'collection']
             .some(term => value.toLowerCase().includes(term.toLowerCase()));
             
           if (contentMatches) {
@@ -517,6 +517,42 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         } catch (e) {
           // Ignorar errores de parsing
         }
+      }
+      
+      // CUARTA FASE: Borrado forzado - Limpiar TODA la información del localStorage
+      // Para garantizar un borrado completo
+      console.log("🔥 [Fase 4] Borrado forzado de todas las claves relacionadas con la aplicación");
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key) continue;
+        
+        // Conservar solo las claves críticas del sistema que no son de datos 
+        // (como claves de autenticación)
+        const keysToPreserve = ['firebase:authUser', 'firebase:host', 'firebase:config'];
+        
+        if (!keysToPreserve.some(k => key.includes(k))) {
+          console.log(`🧹 [Fase 4] Borrado forzado: ${key}`);
+          localStorage.removeItem(key);
+          i--; // Ajustar índice ya que se eliminó un elemento
+          totalBorradas++;
+        }
+      }
+      
+      // QUINTA FASE: Emitir eventos específicos para limpiar componentes
+      if (typeof window !== 'undefined') {
+        // Emitir evento para reiniciar álbum de recompensas
+        const resetAlbumEvent = new CustomEvent('reset-rewards-album', { detail: { complete: true } });
+        window.dispatchEvent(resetAlbumEvent);
+        
+        // Emitir evento para limpiar historial
+        const clearHistoryEvent = new CustomEvent('clear-history-data');
+        window.dispatchEvent(clearHistoryEvent);
+        
+        // Emitir evento general de reinicio
+        const resetAllEvent = new CustomEvent('reset-all-data');
+        window.dispatchEvent(resetAllEvent);
+        
+        console.log("🔄 [Fase 5] Emitidos eventos de limpieza para todos los componentes");
       }
       
       console.log(`🏆 Borrada toda la información del Álbum de Recompensas y colecciones`);
