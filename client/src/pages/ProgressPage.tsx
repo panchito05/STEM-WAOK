@@ -115,8 +115,25 @@ export default function ProgressPage() {
       };
     });
 
-  // Recent exercises list
-  const recentExercises = [...exerciseHistory]
+  // Recent exercises list from local storage
+  const [localExerciseHistory, setLocalExerciseHistory] = useState<any[]>([]);
+  
+  // Cargar datos del localStorage cuando se monta el componente
+  useEffect(() => {
+    const storedResults = localStorage.getItem('math_results');
+    if (storedResults) {
+      try {
+        const parsedResults = JSON.parse(storedResults);
+        setLocalExerciseHistory(parsedResults);
+      } catch (error) {
+        console.error("Error parsing localStorage data:", error);
+        setLocalExerciseHistory([]);
+      }
+    }
+  }, []);
+  
+  // Combinar datos del ejercicio normal y local
+  const recentExercises = [...exerciseHistory, ...localExerciseHistory]
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 10);
 
@@ -447,10 +464,10 @@ export default function ProgressPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {recentExercises.map((exercise: ExerciseResult, index: number) => (
+                        {recentExercises.map((exercise: any, index: number) => (
                           <tr key={index} className="border-b">
                             <td className="py-3 px-4">
-                              {format(new Date(exercise.date || exercise.createdAt || new Date()), "MMMM dd, yyyy h:mm a")}
+                              {format(new Date(exercise.date || exercise.createdAt || exercise.extraData?.date || new Date()), "MMMM dd, yyyy h:mm a")}
                             </td>
                             <td className="py-3 px-4">{getModuleName(exercise.operationId)}</td>
                             <td className="py-3 px-4">
@@ -461,7 +478,9 @@ export default function ProgressPage() {
                             <td className="py-3 px-4">
                               {exercise.score !== undefined && exercise.totalProblems ?
                                 `${exercise.score}/${exercise.totalProblems} (${Math.round((exercise.score / exercise.totalProblems) * 100)}%)` :
-                                "N/A"}
+                                exercise.extraData?.accuracy ? 
+                                  `${Math.round(exercise.extraData.accuracy)}%` : 
+                                  "N/A"}
                             </td>
                             <td className="py-3 px-4">{exercise.timeSpent !== undefined ? `${exercise.timeSpent}s` : "N/A"}</td>
                             <td className="py-3 px-4">
@@ -546,11 +565,10 @@ export default function ProgressPage() {
                                     <h3 className="font-medium mb-2">Problem Review</h3>
                                     <div className="space-y-2">
                                       {(() => {
-                                        // Intenta obtener los detalles del problema de varias fuentes
-                                        let problemsToShow = null;
-
-                                        // En lugar de crear problemas aleatorios, mostraremos un mensaje claro
-                                        // indicando que estos son los problemas específicos del ejercicio seleccionado
+                                        // Verifica el tipo de ejercicio (normal o desde localStorage)
+                                        const isLocalStorageExercise = exercise.extraData !== undefined;
+                                        
+                                        // Función placeholder para cuando no hay problemas disponibles
                                         const getProblemDescription = () => {
                                           return [{
                                             isPlaceholder: true,
