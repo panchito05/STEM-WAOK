@@ -360,53 +360,106 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       setExerciseHistory([]);
       setModuleProgress({});
       
-      // PASO 1: BORRADO COMPLETO DE LOCALSTORAGE PRIMERO
-      console.log("🧨 BORRADO RADICAL - Paso 1: Limpiando localStorage");
+      // PASO 1: BORRADO EXTREMO DE LOCALSTORAGE 
+      console.log("🧨 BORRADO RADICAL MEJORADO - Fase 1: Limpieza completa del localStorage");
       
-      // Enfoque agresivo: borrar cualquier cosa que tenga que ver con datos
+      // Lista ampliada de palabras clave para detectar datos relacionados
+      const palabrasClave = [
+        // Progreso y ejercicios
+        'progress', 'progreso', 'exercise', 'ejercicio', 'history', 'historial',
+        'completed', 'completado', 'score', 'puntaje', 'result', 'resultado', 
+        'data', 'datos', 'stats', 'estadisticas', 'timer', 'tiempo',
+        
+        // Recompensas
+        'rewards', 'recompensas', 'trophy', 'trofeo', 'achievement', 'logro',
+        'album', 'álbum', 'collection', 'colección', 'unlock', 'desbloqueado',
+        'badge', 'medalla', 'prize', 'premio',
+        
+        // Respaldos y backups
+        'backup', 'respaldo', 'saved', 'guardado', 'math', 'matemáticas',
+        'operation', 'operación', 'user', 'usuario', 'profile', 'perfil',
+        
+        // Formato específico usado en la app
+        'mathApp_', 'math_', 'mathwaok_', 'waok_', 'problemDetails'
+      ];
+      
+      // Enfoque exhaustivo: múltiples pasadas para asegurar borrado total
+      let totalBorradas = 0;
+      
+      // PRIMERA FASE: Borrado por palabras clave en nombre de clave
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (
-            key.includes('progress') || 
-            key.includes('exercise') || 
-            key.includes('history') ||
-            key.includes('completed') ||
-            key.includes('score') ||
-            key.includes('result') ||
-            key.includes('data') ||
-            key.includes('rewards') // Incluir las claves de recompensas
-          )) {
+        if (!key) continue;
+        
+        // Verificar si la clave contiene alguna palabra clave
+        const matchesKeyword = palabrasClave.some(keyword => 
+          key.toLowerCase().includes(keyword.toLowerCase())
+        );
+        
+        if (matchesKeyword) {
           keysToRemove.push(key);
-          console.log(`🗑️ Borrando clave de localStorage: ${key}`);
+          console.log(`🗑️ [Fase 1] Borrar: ${key}`);
         }
       }
       
       // Eliminar todas las claves identificadas
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      console.log(`✅ Borradas ${keysToRemove.length} claves de localStorage`);
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        totalBorradas++;
+      });
       
-      // MEJORA: Borrado completo de todas las recompensas y colecciones
-      localStorage.removeItem('rewards-storage');
-      localStorage.removeItem('user_rewards');
-      localStorage.removeItem('user_default_rewards');
-      localStorage.removeItem('rewards_collection');
-      localStorage.removeItem('album-rewards');
-      localStorage.removeItem('rewards-unlocked');
+      console.log(`✅ [Fase 1] Borradas ${keysToRemove.length} claves`);
       
-      // Buscar claves adicionales relacionadas con recompensas
+      // SEGUNDA FASE: Búsqueda en contenido y borrado específico de recompensas
+      // Eliminar explícitamente todas las claves conocidas de recompensas
+      const keysRewards = [
+        // Claves principales conocidas de recompensas
+        'rewards-storage', 'user_rewards', 'user_default_rewards', 
+        'rewards_collection', 'album-rewards', 'rewards-unlocked',
+        'achievements-unlocked', 'trophies-earned', 'badges-collection',
+        
+        // Claves de configuración de recompensas
+        'rewards-settings', 'album-config', 'collection-settings',
+        
+        // Claves específicas para cada tipo de recompensa
+        'addition-rewards', 'subtraction-rewards', 'multiplication-rewards',
+        'division-rewards', 'fractions-rewards', 'algebra-rewards',
+        
+        // Claves de progreso general
+        'all-progress', 'full-history', 'completed-exercises',
+        'learning-path', 'user-journey',
+      ];
+      
+      // Borrar claves conocidas explícitamente
+      keysRewards.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`🏆 [Fase 2] Borrada clave específica: ${key}`);
+        totalBorradas++;
+      });
+      
+      // TERCERA FASE: Búsqueda en contenido
+      // Buscar palabras clave dentro del contenido de localStorage
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (
-            key.includes('reward') || 
-            key.includes('album') || 
-            key.includes('collection') ||
-            key.includes('trophy') ||
-            key.includes('achievement') ||
-            key.includes('unlock')
-          )) {
-          localStorage.removeItem(key);
-          console.log(`🏆 Borrada clave adicional de recompensas: ${key}`);
+        if (!key) continue;
+        
+        try {
+          const value = localStorage.getItem(key);
+          if (!value) continue;
+          
+          // Verificar si el contenido incluye palabras relacionadas con recompensas o progreso
+          const contentMatches = ['reward', 'recompensa', 'progress', 'problem', 'ejercicio', 'score', 'trophy']
+            .some(term => value.toLowerCase().includes(term.toLowerCase()));
+            
+          if (contentMatches) {
+            localStorage.removeItem(key);
+            console.log(`🔍 [Fase 3] Borrada por contenido: ${key}`);
+            totalBorradas++;
+            i--; // Ajustar índice ya que se eliminó un elemento
+          }
+        } catch (e) {
+          // Ignorar errores de parsing
         }
       }
       

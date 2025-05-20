@@ -177,6 +177,16 @@ export const exerciseProgressSchema = z.object({
   totalProblems: z.number().int().min(1),
   timeSpent: z.number().int().min(0),
   difficulty: z.string(),
+  
+  // Campos opcionales para estadísticas adicionales
+  accuracy: z.number().optional(),
+  avgTimePerProblem: z.number().optional(),
+  avgAttempts: z.number().optional(),
+  revealedAnswers: z.number().optional(),
+  
+  // Permitir campos adicionales para datos extendidos
+  extra_data: z.any().optional(),
+  problemDetails: z.any().optional()
 });
 
 export const moduleSettingsSchema = z.object({
