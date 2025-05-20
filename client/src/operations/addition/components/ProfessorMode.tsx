@@ -67,12 +67,33 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       const firstOperand = problem.operands[0];
       const secondOperand = problem.operands[1];
       
+      // Convertir operandos a strings con formato
+      const firstOperandStr = firstOperand.toFixed(1);
+      const secondOperandStr = secondOperand.toFixed(1);
+      
+      // Calcular ancho máximo para alinear (para puntos decimales)
+      const firstParts = firstOperandStr.split('.');
+      const secondParts = secondOperandStr.split('.');
+      
+      // Obtener partes enteras y decimales
+      const firstInt = firstParts[0];
+      const firstDec = firstParts[1] || '0';
+      const secondInt = secondParts[0];
+      const secondDec = secondParts[1] || '0';
+      
+      // Calcular máximo de caracteres para cada parte
+      const maxIntWidth = Math.max(firstInt.length, secondInt.length);
+      
+      // Crear strings alineados
+      const paddedFirstInt = firstInt.padStart(maxIntWidth, ' ');
+      const paddedSecondInt = secondInt.padStart(maxIntWidth, ' ');
+      
       return (
-        <div className="font-mono text-2xl whitespace-pre text-right">
-          <div className="pr-1">{firstOperand.toFixed(1)}</div>
+        <div className="font-mono text-2xl whitespace-pre">
+          <div className="text-right">{paddedFirstInt}.{firstDec}</div>
           <div className="flex items-center justify-end">
             <span className="mr-2">+</span>
-            <span>{secondOperand.toFixed(1)}</span>
+            <span>{paddedSecondInt}.{secondDec}</span>
           </div>
           <div className="border-t border-black mt-1 w-full"></div>
         </div>
