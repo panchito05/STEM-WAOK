@@ -12,12 +12,9 @@ interface SimpleNumericKeypadProps {
 /**
  * Versión simplificada del teclado numérico específicamente para modo profesor
  */
-export const NumericKeypad = ({
-  onNumberClick,
-  onBackspaceClick,
-  onDotClick,
-  hideArrows = false
-}) => {
+export const NumericKeypad: React.FC<SimpleNumericKeypadProps> = (props) => {
+  const { onNumberClick, onBackspaceClick, onDotClick, hideArrows = false } = props;
+  
   return (
     <div className="grid grid-cols-3 gap-2">
       {/* Fila 1 */}
@@ -94,7 +91,7 @@ export const NumericKeypad = ({
         <Button
           variant="outline"
           className="h-12 text-lg font-medium"
-          onClick={() => onDotClick()}
+          onClick={onDotClick}
         >
           .
         </Button>

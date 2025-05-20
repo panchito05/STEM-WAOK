@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Check, Trash } from 'lucide-react';
 import { AdditionProblem } from '../types';
 import { DrawingCanvas } from './DrawingCanvas';
-import { NumericKeypad } from './SimpleNumericKeypad';
+import NumericKeypad from './SimpleNumericKeypad';
 
 interface ProfessorModeProps {
   problem: AdditionProblem;
@@ -140,7 +140,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           
           <div className="grid grid-cols-1 gap-4">
             <NumericKeypad
-              onNumberClick={(num) => setUserAnswer(prev => `${prev}${num}`)}
+              onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
               onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
               onDotClick={() => setUserAnswer(prev => prev.includes('.') ? prev : `${prev}.`)}
               hideArrows={true}

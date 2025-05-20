@@ -2368,12 +2368,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           problem={currentProblem}
           onClose={() => setShowProfessorMode(false)}
           onCorrectAnswer={() => {
-            // Avanzar al siguiente problema
-            generateNewProblem();
-            // Resetear estado para el nuevo problema
-            setUserAnswer('');
-            setIsAnswerCorrect(null);
-            setAttempts(0);
+            // Generar un nuevo problema
+            const newProblem = generateAdditionProblem(settings.difficulty);
+            setCurrentProblem(newProblem);
+            
+            // Avanzar el contador de problemas si es necesario
+            if (currentProblemIndex < settings.problemCount - 1) {
+              setCurrentProblemIndex(prev => prev + 1);
+            }
+            
+            // Otras acciones si son necesarias
+            const newStartTime = Date.now();
+            setProblemStartTime(newStartTime);
           }}
           showVerticalFormat={true}
         />
