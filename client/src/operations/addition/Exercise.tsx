@@ -1286,37 +1286,73 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
 
-    // SOLUCIÓN OPTIMIZADA VERSIÓN 6.0: Captura los problemas en formato estándar unificado
+    // SOLUCIÓN OPTIMIZADA VERSIÓN 7.0: Captura los problemas con diagnóstico ULTRA detallado
     function capturarProblemasExactos() {
-      console.log("Capturando problemas de suma...");
+      console.log("🔍🔍🔍 INICIO CAPTURA PROBLEMAS - DIAGNÓSTICO DETALLADO 🔍🔍🔍");
       
-      // DIAGNÓSTICO: Imprimir información exacta para depuración
-      console.log(`DIAGNÓSTICO DE PROBLEMAS:
-        - Total problemas en lista: ${problemsList.length}
-        - Total respuestas en historial: ${userAnswersHistory.length}
+      // Diagnóstico 1: Estado general
+      console.log(`🔵 ESTADO GENERAL DEL EJERCICIO:
+        - Total problemas generados: ${problemsList.length}
+        - Índice problema actual: ${currentProblemIndex}
+        - Total respuestas historial: ${userAnswersHistory.length}
         - Respuestas nulas: ${userAnswersHistory.filter(r => r === null).length}
+        - ESTADO COMPLETO DEL ARREGLO DE RESPUESTAS: 
+          ${JSON.stringify(userAnswersHistory.map((r, i) => r ? 
+            {índice: i, problema: r.problemId, respuesta: r.userAnswer, correcta: r.isCorrect} : 
+            {índice: i, estado: "SIN RESPUESTA"}))}
       `);
       
-      // FIX CRÍTICO: Verificamos si hay respuestas pendientes y las actualizamos
-      // Esto asegura que todas las respuestas estén actualizadas antes de capturar los problemas
+      // DIAGNOSTICO 2: Examinar cada espacio de historia para detectar problemas
+      console.log("🟡 ANÁLISIS PROBLEMA POR PROBLEMA:");
+      for (let i = 0; i < problemsList.length; i++) {
+        const respuesta = userAnswersHistory[i];
+        const problema = problemsList[i];
+        console.log(`   Problema #${i+1}: ${problema.id}`);
+        console.log(`   - Operación: ${problema.operands?.[0]} + ${problema.operands?.[1]} = ${problema.correctAnswer}`);
+        console.log(`   - Tiene respuesta: ${respuesta ? "SÍ" : "NO"}`);
+        if (respuesta) {
+          console.log(`   - Respuesta dada: ${respuesta.userAnswer}`);
+          console.log(`   - Es correcta: ${respuesta.isCorrect ? "SÍ" : "NO"}`);
+          console.log(`   - Estado: ${respuesta.status}`);
+        }
+      }
+      
+      // DIAGNÓSTICO 3: Estado del problema actual
+      if (currentProblem) {
+        console.log(`🔴 PROBLEMA ACTUAL (posiblemente el último):
+          - Índice: ${currentProblemIndex}
+          - ID: ${currentProblem.id}
+          - Operación: ${currentProblem.operands?.[0]} + ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}
+          - Respuesta en teclado: ${digitAnswers.join("")}
+          - Tiene respuesta registrada: ${userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"}
+        `);
+      }
+      
+      // ARREGLO CRÍTICO: Verificar y corregir cualquier problema sin respuesta registrada
       if (currentProblem && currentProblemIndex < problemsList.length) {
         const currentAnswer = digitAnswers.join("");
-        console.log(`⚠️ Último problema - Estado antes de captura:`, {
-          índice: currentProblemIndex,
-          problema: currentProblem.id,
-          respuestaActual: currentAnswer,
-          existeEnHistorial: userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"
+        
+        console.log(`🔴 VERIFICACIÓN CRÍTICA - ÚLTIMO PROBLEMA #${currentProblemIndex+1}:`, {
+          id: currentProblem.id,
+          operación: `${currentProblem.operands?.[0]} + ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}`,
+          enTeclado: digitAnswers.join(""),
+          tieneDigitos: digitAnswers.length > 0 ? "SÍ" : "NO",
+          respuestaRegistrada: userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"
         });
         
         if (currentAnswer && currentAnswer.length > 0) {
-          // Verificar si el último problema tiene respuesta pendiente de registrar
+          // Verificamos si existe respuesta registrada
           const existingAnswer = userAnswersHistory[currentProblemIndex];
+          
           if (!existingAnswer) {
-            console.log("⚠️ ALERTA: Detectada respuesta sin registrar - Registrando inmediatamente");
+            console.log("🚨 PROBLEMA CRÍTICO DETECTADO: Último problema sin respuesta registrada");
+            console.log("🚨 Forzando registro inmediato de respuesta:", currentAnswer);
             
-            // Crear y registrar la respuesta
+            // Calculamos si la respuesta es correcta
             const isCorrect = parseFloat(currentAnswer) === currentProblem.correctAnswer;
-            userAnswersHistory[currentProblemIndex] = {
+            
+            // Creamos objeto respuesta completo
+            const respuestaGenerada = {
               problemId: currentProblem.id,
               problem: currentProblem,
               userAnswer: parseFloat(currentAnswer),
@@ -1326,28 +1362,42 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               timestamp: Date.now()
             };
             
+            console.log("📝 Respuesta generada:", respuestaGenerada);
+            
+            // FORZAMOS actualización directa - más confiable que setState
+            userAnswersHistory[currentProblemIndex] = respuestaGenerada;
+            
             console.log("✅ Respuesta registrada para problema:", currentProblem.id);
+            console.log("✅ Estado actual del historial:", userAnswersHistory.map((a, i) => a ? 
+              `Prob#${i+1}: ${a.problemId} - ${a.userAnswer} - ${a.isCorrect}` : 
+              `Prob#${i+1}: SIN RESPUESTA`));
           }
+        } else {
+          console.log("⚠️ NO HAY RESPUESTA EN TECLADO para el problema actual");
         }
       }
       
+      console.log("🔄 INICIO PROCESAMIENTO FINAL DE PROBLEMAS");
+      
       const problemasCapturados = [];
       
-      // Procesar cada problema completado
+      // Procesar cada problema para la visualización final
       for (let i = 0; i < problemsList.length; i++) {
         const respuesta = userAnswersHistory[i];
         const problema = problemsList[i];
         
-        // SOLUCIÓN: No omitir problemas sin respuesta
-        if (!problema) continue; // Solo omitimos si no hay problema (no debería ocurrir)
-        
-        // DIAGNÓSTICO: Detectar problemas sin respuesta en tiempo real
-        if (!respuesta) {
-          console.log(`⚠️ Problema #${i+1} sin respuesta registrada:`, problema.id);
+        // Solo omitimos si falta el problema (no debería ocurrir)
+        if (!problema) {
+          console.log(`⚠️ FALTA PROBLEMA en índice ${i}`);
+          continue;
         }
         
-        // Si no hay respuesta, creamos una respuesta "sin contestar" para visualización
-        // pero NO lo contamos como correcto
+        // Detectar problemas sin respuesta
+        if (!respuesta) {
+          console.log(`🚨 PROBLEMA #${i+1} SIN RESPUESTA REGISTRADA:`, problema.id);
+        }
+        
+        // Marcamos si falta respuesta
         const esRespuestaNula = !respuesta;
         
         // Extraer operandos de manera segura
