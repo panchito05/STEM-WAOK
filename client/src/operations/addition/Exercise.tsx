@@ -1225,12 +1225,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
     
-    // SOLUCIÓN MEJORADA: Captura los problemas en el formato exacto que necesita ProblemRenderer
+    // SOLUCIÓN MEJORADA: Captura los problemas en formato estándar para toda la aplicación
     function capturarProblemasExactos() {
-      console.log("📸 Capturando problemas con formato compatible...");
+      console.log("📸 Capturando problemas con formato estándar...");
       
-      // Array para almacenar los problemas con formato compatible con ProblemRenderer
-      const problemasCompatibles: MathProblem[] = [];
+      // Array para almacenar los problemas con formato compatible
+      const problemasCapturas = [];
       
       // Procesar cada problema completado
       for (let i = 0; i < problemsList.length; i++) {
@@ -1239,21 +1239,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         if (!respuesta || !problema) continue;
         
-        // Formato exacto del problema como se muestra en pantalla
+        // Formatear el problema exactamente como se muestra en pantalla
         const textoProblema = `${problema.operands[0]} + ${problema.operands[1]} = ${problema.correctAnswer}`;
         
-        // Nivel en formato de texto (1-5)
+        // Nivel como número (1-5)
         const nivelTexto = finalLevel === "beginner" ? "1" : 
                          finalLevel === "elementary" ? "2" : 
                          finalLevel === "intermediate" ? "3" : 
                          finalLevel === "advanced" ? "4" : "5";
         
-        // Tiempo promedio por problema
+        // Tiempo promedio
         const tiempoPorProblema = Math.round(timer / problemsList.length);
         
-        // Crear objeto con formato compatible con ProblemRenderer
-        problemasCompatibles.push({
-          problemNumber: i + 1,
+        // Crear objeto con el formato estándar para toda la aplicación
+        problemasCapturas.push({
           problem: textoProblema,
           isCorrect: respuesta.isCorrect,
           level: nivelTexto,
@@ -1266,59 +1265,74 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Guardar copia en localStorage como respaldo
       try {
         const timestamp = Date.now();
-        localStorage.setItem(`math_exercise_${timestamp}`, JSON.stringify({
+        const claveEjercicio = `math_exercise_${timestamp}`;
+        
+        // Guardar con estructura clara y nombres en español e inglés para mayor compatibilidad
+        localStorage.setItem(claveEjercicio, JSON.stringify({
+          id: timestamp,
           fecha: new Date().toISOString(),
-          problemas: problemasCompatibles
+          date: new Date().toISOString(),
+          operacion: "addition",
+          operation: "addition",
+          nivel: finalLevel,
+          level: finalLevel,
+          puntuacion: {
+            correctas: puntajeCorregido,
+            total: problemsList.length
+          },
+          score: {
+            correct: puntajeCorregido,
+            total: problemsList.length
+          },
+          // Guardar los problemas con múltiples nombres para compatibilidad
+          problems: problemasCapturas,
+          problemas: problemasCapturas
         }));
+        
+        console.log(`✅ Respaldo completo guardado en localStorage: ${claveEjercicio}`);
       } catch (error) {
         console.error("Error al guardar respaldo:", error);
       }
       
-      return problemasCompatibles;
+      return problemasCapturas;
     }
     
     // Capturar los problemas exactamente como se muestran en la UI
     const problemasCapturados = capturarProblemasExactos();
     
-    // Guardar el resultado en el servidor con información completa
+    // Guardar el resultado en el servidor con formato optimizado
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
-      score: puntajeCorregido, // FORZAR PUNTAJE MÁXIMO para mostrar mensaje correcto
+      score: puntajeCorregido,
       totalProblems: problemsList.length,
       timeSpent: timer,
       difficulty: finalLevel as string,
       
-      // Datos precisos para estadísticas
-      accuracy: 100, // Forzar precisión al 100%
+      // Datos de estadísticas
+      accuracy: Math.round((puntajeCorregido / problemsList.length) * 100),
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // SOLUCIÓN OPTIMIZADA: Estructura simple y clara para guardar los problemas
+      // Datos completos para garantizar que se muestren correctamente en la interfaz
       extra_data: {
-        // Campos de identificación y versión
         version: "2.0",
         timestamp: Date.now(),
         
-        // Guardar los problemas con formato compatible con ProblemRenderer
-        problems: problemasFormateados,
+        // Problemas en formato compatible con ProblemRenderer
+        problems: problemasCapturados,
         
-        // Copias adicionales con nombres alternativos para compatibilidad
-        problemas: problemasFormateados,
-        problemasCapturados: problemasFormateados,
-        capturedProblems: problemasFormateados,
-        
-        // Datos resumen del ejercicio 
-        resumen: {
-          operacion: "addition",
-          nivel: finalLevel,
-          puntuacion: {
-            correctas: puntajeCorregido,
+        // Datos del ejercicio
+        summary: {
+          operation: "addition",
+          level: finalLevel,
+          score: {
+            correct: puntajeCorregido,
             total: problemsList.length
           },
-          tiempo: timer,
-          fecha: new Date().toISOString()
+          time: timer,
+          date: new Date().toISOString()
         }
       }
     });
