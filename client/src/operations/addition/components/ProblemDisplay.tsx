@@ -23,8 +23,11 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   
   // Función para manejar el clic en un número y duplicarlo
-  const handleNumberClick = (value: number) => {
-    setSelectedNumbers([...problem.operands.map(op => op.value)]);
+  const handleNumberClick = () => {
+    console.log("Número clickeado, mostrando duplicador");
+    // Extraer solo los valores numéricos de los operandos
+    const numberValues = problem.operands.map(op => op.value);
+    setSelectedNumbers(numberValues);
     setShowDuplicator(true);
   };
   // Función para formatear un número
@@ -44,12 +47,15 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             ) : (
               <span className="mr-4 border-t border-black dark:border-white pt-1">+</span>
             )}
-            <span 
-              className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-1 rounded transition-colors"
-              onClick={() => handleNumberClick(op.value)}
+            <button 
+              className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700 flex items-center gap-1"
+              onClick={handleNumberClick}
+              title="Haz clic para ver en grande"
+              aria-label="Ver número en grande"
             >
               {formatNumber(op.value)}
-            </span>
+              <span className="text-xs text-blue-500">⇱</span>
+            </button>
           </div>
         ))}
         
@@ -75,12 +81,15 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
           {/* Mostrar operandos separados por + */}
           {problem.operands.map((op, index) => (
             <React.Fragment key={index}>
-              <span 
-                className="text-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-1 rounded transition-colors"
-                onClick={() => handleNumberClick(op.value)}
+              <button 
+                className="text-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700 flex items-center gap-1"
+                onClick={handleNumberClick}
+                title="Haz clic para ver en grande"
+                aria-label="Ver número en grande"
               >
                 {formatNumber(op.value)}
-              </span>
+                <span className="text-xs text-blue-500">⇱</span>
+              </button>
               {index < problem.operands.length - 1 && (
                 <span className="mx-2 text-lg">+</span>
               )}
@@ -101,9 +110,8 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   const renderWordProblem = () => {
     // Crear una descripción del problema basada en los operandos
     const description = problem.operands.map((op, index) => {
-      return op.label ? 
-        `${formatNumber(op.value)} ${op.label}` : 
-        formatNumber(op.value);
+      // Usar valor directamente ya que no todas las implementaciones tienen etiqueta
+      return formatNumber(op.value);
     }).join(' + ');
     
     return (
