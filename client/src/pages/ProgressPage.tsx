@@ -657,16 +657,6 @@ export default function ProgressPage() {
                                               </div>
                                             );
                                         }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                            
-                                            // 3. Buscar en todos los respaldos recientes (últimas 24 horas)
-                                            if (problems.length === 0) {
-                                              console.log("🔍 Buscando en todos los respaldos recientes...");
-                                              const horaActual = Date.now();
-                                              const haceDia = horaActual - (24 * 60 * 60 * 1000);
                                               
                                               for (let i = 0; i < localStorage.length; i++) {
                                                 const key = localStorage.key(i);
