@@ -432,7 +432,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [lastRewardShownIndex, setLastRewardShownIndex] = useState<number>(-1);
 
   // Estado para el diálogo de historial de ejercicios recientes
-  const [showHistoryDialog, setShowHistoryDialog] = useState(false);
+
 
   // Estados para manejar los videos explicativos de YouTube
   const [showVideoDialog, setShowVideoDialog] = useState(false);
@@ -2000,11 +2000,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 }`}>
                     {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                 </span>
-                {/* Botón de historial de ejercicios recientes */}
+                {/* Botón para ir a la página de progreso/historial */}
                 <Button variant="ghost" size="sm" onClick={() => {
-                  setShowHistoryDialog(true);
+                  window.location.href = "/progress";
                 }} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                  <History className="h-4 w-4" /> {isEnglish ? "Recent Exercise" : "Ejercicios Recientes"}
+                  <History className="h-4 w-4" /> {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> {currentTranslations.settings}
@@ -2247,24 +2247,5 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
       </div>
     </div>
-
-    {/* Utilizar el componente ExerciseHistoryDialog directamente */}
-    <ExerciseHistoryDialog 
-      moduleId="addition"
-      exerciseHistory={useProgress().exerciseHistory || []}
-      trigger={<div style={{ display: "none" }} ref={(el) => {
-        // Este es un hack para abrir el diálogo cuando showHistoryDialog cambia a true
-        if (el && showHistoryDialog) {
-          const clickEvent = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: true,
-          });
-          el.dispatchEvent(clickEvent);
-          // Reset después de disparar el evento
-          setShowHistoryDialog(false);
-        }
-      }} />}
-    />
   );
 }
