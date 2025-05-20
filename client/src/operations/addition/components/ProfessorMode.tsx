@@ -3,6 +3,7 @@ import { X, Check, Trash, Move } from 'lucide-react';
 import { AdditionProblem } from '../types';
 import { DrawingCanvas } from './DrawingCanvas';
 import NumericKeypad from './SimpleNumericKeypad';
+import { useTheme } from '@/context/ThemeContext';
 
 interface ProfessorModeProps {
   problem: AdditionProblem;
@@ -21,6 +22,10 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [position, setPosition] = useState<'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'>('topLeft');
   const canvasRef = useRef<any>(null);
+  
+  // Obtener el tema actual del contexto global
+  const { theme } = useTheme();
+  const isDarkTheme = theme === 'dark';
   
   // Reset state when problem changes
   useEffect(() => {
@@ -119,7 +124,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-slate-900 z-50">
+    <div className={`fixed inset-0 ${isDarkTheme ? 'bg-slate-900' : 'bg-white'} z-50`}>
       {/* Close button X rojo en la parte superior (más pequeño) */}
       <button
         onClick={onClose}
@@ -152,15 +157,15 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           </button>
           
           {/* Problem display */}
-          <div className="bg-white dark:bg-slate-800 p-4 shadow-sm border border-gray-200 dark:border-slate-700 rounded-md mb-2 dark:text-white">
+          <div className={`${isDarkTheme ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-200 text-gray-900'} p-4 shadow-sm border rounded-md mb-2`}>
             {renderProblem()}
           </div>
           
           {/* Answer input */}
           <div className="flex items-center mb-2">
-            <div className="font-medium mr-2 dark:text-white">Respuesta:</div>
+            <div className={`font-medium mr-2 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>Respuesta:</div>
             <div className="flex-1 flex">
-              <div className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-lg text-center min-h-[40px] dark:text-white">
+              <div className={`flex-1 ${isDarkTheme ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'} border rounded p-2 text-lg text-center min-h-[40px]`}>
                 {userAnswer}
               </div>
               <button
