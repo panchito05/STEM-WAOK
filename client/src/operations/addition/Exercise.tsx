@@ -1680,6 +1680,38 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
     setDigitAnswers(newAnswers);
   };
+  
+  // Función para manejar el retroceso secuencial que salta entre contenedores
+  const handleSequentialBackspace = () => {
+    if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
+    if (!exerciseStarted) startExercise();
+    
+    let newAnswers = [...digitAnswers];
+    let currentFocus = focusedDigitIndex;
+    
+    // Si el contenedor actual está vacío, movemos el foco al siguiente contenedor
+    if (newAnswers[currentFocus] === "") {
+      // Si estamos en modo RTL (derecha a izquierda), movemos a la derecha
+      if (inputDirection === 'rtl') {
+        if (currentFocus < currentProblem.answerMaxDigits - 1) {
+          setFocusedDigitIndex(currentFocus + 1);
+          // Aquí no borramos nada porque ya estaba vacío, solo cambiamos el foco
+        }
+      } 
+      // Si estamos en modo LTR (izquierda a derecha), movemos a la izquierda
+      else {
+        if (currentFocus > 0) {
+          setFocusedDigitIndex(currentFocus - 1);
+          // Aquí no borramos nada porque ya estaba vacío, solo cambiamos el foco
+        }
+      }
+    } 
+    // Si el contenedor actual tiene un dígito, lo borramos
+    else {
+      newAnswers[currentFocus] = "";
+      setDigitAnswers(newAnswers);
+    }
+  };
 
   useEffect(() => {
     const handlePhysicalKeyDown = (event: KeyboardEvent) => {
