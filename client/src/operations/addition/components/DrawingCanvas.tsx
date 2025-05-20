@@ -37,8 +37,8 @@ export function DrawingCanvas({
   const [activeTool, setActiveTool] = useState<ToolMode>('pen');
   const [darkMode, setDarkMode] = useState<boolean>(false);
   
-  // Tamaño fijo aumentado para el borrador (3x más grande)
-  const eraserSize = 45; // Tamaño fijo triplicado
+  // Tamaño fijo aumentado para el borrador (4x más grande)
+  const eraserSize = 60; // Tamaño fijo cuadruplicado
   
   // Referencias para optimización de dibujo
   const lastPoint = useRef<Point | null>(null);
