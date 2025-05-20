@@ -248,6 +248,44 @@ export function DrawingCanvas({
     setEraserSize(size);
     if (activeTool === 'eraser' && contextRef.current) {
       setActiveWidth(size);
+      
+      // Visual preview - dibuja un punto para mostrar el tamaño actual
+      if (canvasRef.current && contextRef.current) {
+        // Guarda el estado actual para restaurarlo después
+        const currentCompositeOperation = contextRef.current.globalCompositeOperation;
+        const currentColor = contextRef.current.strokeStyle;
+        
+        // Configurar para dibujar un punto de muestra
+        contextRef.current.globalCompositeOperation = 'source-over';
+        contextRef.current.fillStyle = darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
+        
+        // Dibuja un círculo temporal que muestra el tamaño actual
+        contextRef.current.beginPath();
+        contextRef.current.arc(canvasRef.current.width / 4, 50, size / 2, 0, Math.PI * 2);
+        contextRef.current.fill();
+        
+        // Restaurar configuración original
+        contextRef.current.globalCompositeOperation = currentCompositeOperation;
+        contextRef.current.strokeStyle = currentColor;
+        
+        // Programa la eliminación del punto de muestra después de 1 segundo
+        setTimeout(() => {
+          if (canvasRef.current && contextRef.current) {
+            const canvas = canvasRef.current;
+            // Borrar solo la región donde se dibujó el punto
+            contextRef.current.clearRect(canvas.width / 4 - size, 0, size * 2, 100);
+            
+            // Si hay imagen guardada, restaurarla
+            if (canvasImageRef.current) {
+              const img = new Image();
+              img.onload = () => {
+                contextRef.current?.drawImage(img, 0, 0);
+              };
+              img.src = canvasImageRef.current;
+            }
+          }
+        }, 1000);
+      }
     }
   };
   

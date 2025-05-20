@@ -184,12 +184,25 @@ html.canvas-dark-mode .divider {
 }
 
 /* Aseguramos que los textos y líneas en el ejercicio sean visibles */
-html.canvas-dark-mode .addition-exercise {
+html.canvas-dark-mode .addition-exercise,
+html.canvas-dark-mode label,
+html.canvas-dark-mode .exercise-label {
   color: white !important;
 }
 
 html.canvas-dark-mode .addition-exercise .number-row {
   color: white !important;
+}
+
+/* Asegurar que "Respuesta:" sea visible en modo oscuro */
+html.canvas-dark-mode label[for="answer"],
+html.canvas-dark-mode .form-label,
+html.canvas-dark-mode [data-label="Respuesta:"] {
+  color: white !important;
+  font-weight: bold !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
 }
 
 html.canvas-dark-mode .check-button {
