@@ -60,7 +60,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
         <span className="equals-symbol mx-3">=</span>
         
         {isShowingAnswer ? (
-          <span className="correct-answer text-green-600">{problem.correctAnswer}</span>
+          <span className="correct-answer text-green-600">{problem.result}</span>
         ) : (
           <span className="user-answer-container bg-gray-100 rounded-lg px-4 py-1 min-w-16 text-center">
             {userAnswer || '?'}
