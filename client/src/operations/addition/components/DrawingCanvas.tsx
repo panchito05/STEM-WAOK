@@ -37,8 +37,8 @@ export function DrawingCanvas({
   const [activeTool, setActiveTool] = useState<ToolMode>('pen');
   const [darkMode, setDarkMode] = useState<boolean>(false);
   
-  // Tamaño fijo aumentado para el borrador (4x más grande)
-  const eraserSize = 60; // Tamaño fijo cuadruplicado
+  // Tamaño muy grande para el borrador
+  const eraserSize = 120; // Tamaño extremadamente grande para borrar áreas amplias
   
   // Referencias para optimización de dibujo
   const lastPoint = useRef<Point | null>(null);
@@ -202,6 +202,12 @@ export function DrawingCanvas({
     const context = contextRef.current;
     if (!canvas || !context) return;
     
+    // Asegurar que el borrador tenga el tamaño correcto antes de empezar
+    if (activeTool === 'eraser') {
+      context.lineWidth = eraserSize;
+      context.globalCompositeOperation = 'destination-out';
+    } 
+    
     // Get the correct coordinates
     let x: number, y: number;
     
@@ -303,7 +309,8 @@ export function DrawingCanvas({
       
       if (tool === 'eraser') {
         context.globalCompositeOperation = 'destination-out';
-        setActiveWidth(eraserSize); // Usar el tamaño de borrador triplicado
+        context.lineWidth = eraserSize; // Aplicar directamente el tamaño grande al contexto
+        setActiveWidth(eraserSize); // Actualizar también el estado
       } else {
         context.globalCompositeOperation = 'source-over';
         
@@ -316,12 +323,26 @@ export function DrawingCanvas({
     }
   };
   
-  // Actualizar el tamaño de borrado al seleccionar el borrador
-  const updateEraserSize = () => {
-    if (contextRef.current) {
-      setActiveWidth(eraserSize);
+  // Función para asegurar que el tamaño del borrador se aplique correctamente
+  const applyEraserSettings = () => {
+    if (contextRef.current && activeTool === 'eraser') {
+      contextRef.current.lineWidth = eraserSize;
+      contextRef.current.globalCompositeOperation = 'destination-out';
     }
   };
+  
+  // Efectos para actualizar el contexto cuando cambia la herramienta
+  useEffect(() => {
+    if (contextRef.current) {
+      if (activeTool === 'eraser') {
+        contextRef.current.lineWidth = eraserSize;
+        contextRef.current.globalCompositeOperation = 'destination-out';
+      } else {
+        contextRef.current.lineWidth = activeWidth;
+        contextRef.current.globalCompositeOperation = 'source-over';
+      }
+    }
+  }, [activeTool, eraserSize, activeWidth]);
   
   // Función para cambiar color
   const changeColor = (color: string) => {
