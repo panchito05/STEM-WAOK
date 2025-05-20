@@ -22,6 +22,12 @@ export default function ProgressPage() {
   const [selectedExercise, setSelectedExercise] = useState<ExerciseResult | null>(null);
   const [localExerciseHistory, setLocalExerciseHistory] = useState<any[]>([]);
   
+  // Obtener el parámetro tab de la URL para seleccionar la pestaña inicial
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('tab') || 'detailed';
+  });
+  
   // Cargar datos del localStorage cuando se monta el componente
   useEffect(() => {
     const storedResults = localStorage.getItem('math_results');
@@ -247,7 +253,7 @@ export default function ProgressPage() {
             </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue="detailed">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="detailed">Detailed Progress</TabsTrigger>

@@ -2001,8 +2001,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 }`}>
                     {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                 </span>
-                {/* Botón para ir a la página de progreso/historial */}
-                <Link href="/progress">
+                {/* Botón para ir a la página de progreso/historial con tab=recent */}
+                <Link href="/progress?tab=recent">
                   <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                     <History className="h-4 w-4" /> {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
                   </Button>
