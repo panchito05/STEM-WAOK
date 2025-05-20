@@ -27,6 +27,10 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
     console.log("Número clickeado, mostrando duplicador");
     // Extraer solo los valores numéricos de los operandos
     const numberValues = problem.operands.map(op => op.value);
+    // Añadir el resultado como último número si está disponible
+    if (problem.result) {
+      numberValues.push(problem.result);
+    }
     setSelectedNumbers(numberValues);
     setShowDuplicator(true);
   };
