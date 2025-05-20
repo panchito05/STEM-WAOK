@@ -1300,7 +1300,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas exactamente como se muestran en la UI
     const problemasCapturados = capturarProblemasExactos();
     
-    // Guardar el resultado en el servidor con formato optimizado
+    // SOLUCIÓN OPTIMIZADA: Guardar datos con formato estándar
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
@@ -1309,21 +1309,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       timeSpent: timer,
       difficulty: finalLevel as string,
       
-      // Datos de estadísticas
+      // Estadísticas precisas
       accuracy: Math.round((puntajeCorregido / problemsList.length) * 100),
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // Datos completos para garantizar que se muestren correctamente en la interfaz
+      // ESTRUCTURA OPTIMIZADA: Contiene todos los campos necesarios para compatibilidad
       extra_data: {
+        // Versión y timestamp para registro
         version: "2.0",
         timestamp: Date.now(),
         
-        // Problemas en formato compatible con ProblemRenderer
+        // Problemas en múltiples formatos para compatibilidad con todas las partes de la aplicación
         problems: problemasCapturados,
+        mathProblems: problemasCapturados,
+        capturedProblems: problemasCapturados,
+        problemas: problemasCapturados,
         
-        // Datos del ejercicio
+        // Información del ejercicio en múltiples formatos
         summary: {
           operation: "addition",
           level: finalLevel,
@@ -1333,6 +1337,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           },
           time: timer,
           date: new Date().toISOString()
+        },
+        
+        // Versión en español para compatibilidad
+        resumen: {
+          operacion: "addition",
+          nivel: finalLevel,
+          puntuacion: {
+            correctas: puntajeCorregido,
+            total: problemsList.length
+          },
+          tiempo: timer,
+          fecha: new Date().toISOString()
+        },
+        
+        // Respaldo adicional para compatibilidad con versiones anteriores
+        exerciseSummary: {
+          operation: "addition",
+          level: finalLevel,
+          score: puntajeCorregido,
+          totalProblems: problemsList.length,
+          time: timer
         }
       }
     });

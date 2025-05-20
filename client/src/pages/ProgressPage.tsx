@@ -628,8 +628,20 @@ export default function ProgressPage() {
                                             
                                             // 3. FALLBACKS PARA COMPATIBILIDAD
                                             if (problems.length === 0) {
-                                              // Intentar campos alternativos
-                                              if (exercise.extra_data.exactProblems && Array.isArray(exercise.extra_data.exactProblems)) {
+                                              // BÚSQUEDA MEJORADA: Intentar todos los campos conocidos
+                                              if (exercise.extra_data.problems && Array.isArray(exercise.extra_data.problems)) {
+                                                problems = exercise.extra_data.problems;
+                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.problems");
+                                              }
+                                              else if (exercise.extra_data.mathProblems && Array.isArray(exercise.extra_data.mathProblems)) {
+                                                problems = exercise.extra_data.mathProblems;
+                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.mathProblems");
+                                              }
+                                              else if (exercise.extra_data.problemas && Array.isArray(exercise.extra_data.problemas)) {
+                                                problems = exercise.extra_data.problemas;
+                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.problemas");
+                                              }
+                                              else if (exercise.extra_data.exactProblems && Array.isArray(exercise.extra_data.exactProblems)) {
                                                 problems = exercise.extra_data.exactProblems;
                                                 console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.exactProblems");
                                               }
@@ -648,6 +660,28 @@ export default function ProgressPage() {
                                                     Array.isArray(exercise.extra_data.screenshot.problemReview)) {
                                                 problems = exercise.extra_data.screenshot.problemReview;
                                                 console.log("✅ Encontrados problemas en screenshot.problemReview");
+                                              }
+                                              // BÚSQUEDA DINÁMICA como último recurso
+                                              else {
+                                                // Buscar cualquier campo que sea un array y contenga problemas
+                                                for (const key in exercise.extra_data) {
+                                                  if (Array.isArray(exercise.extra_data[key]) && 
+                                                      exercise.extra_data[key].length > 0 &&
+                                                      typeof exercise.extra_data[key][0] === 'object') {
+                                                    
+                                                    const firstItem = exercise.extra_data[key][0];
+                                                    
+                                                    // Verificar si tiene la estructura básica de un problema
+                                                    if ((firstItem.problem || firstItem.problema) && 
+                                                        (typeof firstItem.isCorrect === 'boolean' || 
+                                                         typeof firstItem.esCorrecta === 'boolean')) {
+                                                      
+                                                      problems = exercise.extra_data[key];
+                                                      console.log(`✅ Encontrados problemas por búsqueda dinámica en campo: ${key}`);
+                                                      break;
+                                                    }
+                                                  }
+                                                }
                                               }
                                             }
                                           }
