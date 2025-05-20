@@ -148,13 +148,10 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
     <div className="w-full">
       {/* Contenido principal del problema */}
       <div className="relative">
-        {/* Envolvemos todo el problema con un área clickeable */}
-        <div onClick={handleNumberClick} className="cursor-pointer">
-          {/* Mostrar el problema según su formato */}
-          {problem.displayFormat === 'vertical' && renderVertical()}
-          {problem.displayFormat === 'horizontal' && renderHorizontal()}
-          {problem.displayFormat === 'word' && renderWordProblem()}
-        </div>
+        {/* Mostrar el problema según su formato */}
+        {problem.displayFormat === 'vertical' && renderVertical()}
+        {problem.displayFormat === 'horizontal' && renderHorizontal()}
+        {problem.displayFormat === 'word' && renderWordProblem()}
         
         {/* Mostrar indicador de correcto/incorrecto cuando se ha respondido */}
         {isAnswered && (
@@ -168,6 +165,18 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             )}
           </div>
         )}
+        
+        {/* Botón específico para mostrar los números duplicados */}
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleNumberClick}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-colors flex items-center space-x-2"
+            aria-label="Ver números en grande"
+          >
+            <span role="img" aria-label="Ver">👁️</span>
+            <span>Ver números en grande</span>
+          </button>
+        </div>
         
         {/* Duplicador de números que aparece al hacer clic */}
         <NumberDuplicator 
