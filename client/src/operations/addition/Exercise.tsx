@@ -1227,10 +1227,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // SOLUCIÓN OPTIMIZADA VERSIÓN 2.0: Captura los problemas en formato estándar para toda la aplicación
     function capturarProblemasExactos() {
-      console.log("📸 Capturando problemas con formato estándar (V2.0)...");
+      console.log("Capturando problemas de suma...");
       
-      // Array para almacenar los problemas con formato compatible
-      const problemasCapturas = [];
+      const problemasCapturados = [];
       
       // Procesar cada problema completado
       for (let i = 0; i < problemsList.length; i++) {
@@ -1239,8 +1238,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         if (!respuesta || !problema) continue;
         
-        // Formatear el problema exactamente como se muestra en pantalla
-        // Verificamos que existan los operandos o usamos operand1 y operand2 como alternativa
+        // Extraer operandos de manera segura
         let operandoA = 0;
         let operandoB = 0;
         
@@ -1249,36 +1247,39 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           operandoB = problema.operands[1];
         } else {
           // Alternativa para modelos antiguos
-          operandoA = (problema as any).operand1 || 0;
-          operandoB = (problema as any).operand2 || 0;
+          operandoA = (problema.operand1 !== undefined) ? problema.operand1 : 0;
+          operandoB = (problema.operand2 !== undefined) ? problema.operand2 : 0;
         }
         
         // Usar la respuesta correcta del problema o calcularla
         const respuestaCorrecta = problema.correctAnswer || (operandoA + operandoB);
         
-        // Formatear como texto exacto
-        const textoProblema = `${operandoA} + ${operandoB} = ${respuestaCorrecta}`;
-        
-        // Nivel como número (1-5)
-        const nivelTexto = finalLevel === "beginner" ? "1" : 
-                         finalLevel === "elementary" ? "2" : 
-                         finalLevel === "intermediate" ? "3" : 
-                         finalLevel === "advanced" ? "4" : "5";
-        
-        // Tiempo promedio
-        const tiempoPorProblema = Math.round(timer / problemsList.length);
-        
-        // Crear objeto con el formato estándar para toda la aplicación
-        problemasCapturas.push({
-          problem: textoProblema,
+        // Crear un objeto que incluya TODOS los datos necesarios para este tipo de problema
+        const problemaCompleto = {
+          // Metadatos para identificación
+          id: problema.id || `problema-${i}`,
+          tipo: "suma",
+          
+          // Datos específicos del problema de suma
+          operands: [operandoA, operandoB],
+          operacion: "+",
+          correctAnswer: respuestaCorrecta.toString(),
+          
+          // Formato visual del problema (para mostrar exactamente como se vio)
+          displayText: `${operandoA} + ${operandoB} = ${respuestaCorrecta}`,
+          
+          // Información sobre la respuesta del usuario
+          userAnswer: respuesta.userAnswer,
           isCorrect: respuesta.isCorrect,
-          level: nivelTexto,
-          attempts: respuesta.attempts ? respuesta.attempts.toString() : "1",
-          timeSpent: tiempoPorProblema,
-          info: `Nivel: ${nivelTexto}, Intentos: ${respuesta.attempts || 1}, Tiempo: ${tiempoPorProblema}s`,
-          userAnswer: respuesta.userAnswer || "",
-          correctAnswer: respuestaCorrecta.toString()
-        });
+          status: respuesta.status || (respuesta.isCorrect ? "correct" : "incorrect"),
+          
+          // Metadatos adicionales
+          level: (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty),
+          attempts: respuesta.attempts || currentAttempts || 1,
+          timeSpent: Math.round(timer / problemsList.length)
+        };
+        
+        problemasCapturados.push(problemaCompleto);
       }
       
       // RESPALDO MÚLTIPLE: Guardar en varias ubicaciones para garantizar recuperación
@@ -1346,27 +1347,29 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // VERSIÓN 3.0: Estructura mejorada que garantiza compatibilidad universal
+      // Datos extra con estructura clara
       extra_data: {
-        // Metadatos para mejor trazabilidad
-        version: "3.0",
+        // Metadatos para trazabilidad
+        version: "4.0",
         timestamp: Date.now(),
         exerciseId: `addition_${Date.now()}`,
         
-        // Problemas en múltiples ubicaciones para máxima compatibilidad
-        problems: problemasCapturados,
-        mathProblems: problemasCapturados,
-        capturedProblems: problemasCapturados,
-        problemas: problemasCapturados,
-        problemDetails: problemasCapturados, // Campo usado por el servidor
+        // Almacenar los problemas en una ubicación consistente
+        problemDetails: problemasCapturados,
         
-        // Información del ejercicio en múltiples formatos
+        // Incluir información específica del tipo de ejercicio
+        exerciseType: "addition",
+        
+        // Incluir resumen para facilitar acceso rápido
         summary: {
           operation: "addition",
           level: finalLevel,
           score: {
             correct: puntajeCorregido,
             total: problemsList.length
+          },
+          time: timer
+        }
           },
           time: timer,
           date: new Date().toISOString()
