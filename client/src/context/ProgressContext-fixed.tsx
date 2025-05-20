@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { cleanAllProgress } from "@/utils/progressCleaner";
 
 export interface ExerciseResult {
   id?: number;            // ID del registro en la base de datos
@@ -23,6 +24,7 @@ export interface ExerciseResult {
   avgTimePerProblem?: number;
   avgAttempts?: number;
   revealedAnswers?: number;
+  correctProblems?: number; // Número de problemas correctos
   problemDetails?: Array<{
     problemId?: string | number;
     problem?: any;
@@ -274,6 +276,14 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       // Crear respaldo redundante de los problemas para evitar pérdida
       // Esto permite recuperar los problemas correctamente en la página de historial
       try {
+        // Guardar en múltiples ubicaciones para mayor compatibilidad
+        if (result.problemDetails && result.problemDetails.length > 0) {
+          // Si ya hay problemDetails, asegurar que se guarden en múltiples ubicaciones
+          result.extra_data.problemDetails = result.problemDetails;
+          result.extra_data.exactProblems = result.problemDetails;
+          result.extra_data.mathProblems = result.problemDetails;
+        }
+        
         const backupKey = `backup_problemas_${Date.now()}`;
         if (result.extra_data.problems) {
           localStorage.setItem(backupKey, JSON.stringify(result.extra_data.problems));
@@ -281,6 +291,8 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
           localStorage.setItem(backupKey, JSON.stringify(result.extra_data.mathProblems));
         } else if (result.extra_data.capturedProblems) {
           localStorage.setItem(backupKey, JSON.stringify(result.extra_data.capturedProblems));
+        } else if (result.extra_data.problemDetails) {
+          localStorage.setItem(backupKey, JSON.stringify(result.extra_data.problemDetails));
         }
       } catch (err) {
         console.error("Error creando respaldo de problemas:", err);
@@ -353,316 +365,60 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     return moduleProgress[operationId];
   };
 
+  // Función mejorada para limpiar todos los datos de progreso
   const clearProgress = async () => {
     if (!isAuthenticated) return;
     
     try {
+      // Limpiar estados locales
       setExerciseHistory([]);
       setModuleProgress({});
       
-      // PASO 1: BORRADO RADICAL DE LOCALSTORAGE - Versión mejorada
-      console.log("🧨 BORRADO RADICAL MEJORADO 3.0 - Limpieza exhaustiva del localStorage");
+      // Usar la utilidad de limpieza exhaustiva
+      const cleanupResult = await cleanAllProgress();
       
-      // Crear una copia de todas las claves primero (para evitar problemas durante la iteración)
-      const allKeys: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) allKeys.push(key);
-      }
-      
-      console.log(`📋 Total de ${allKeys.length} claves encontradas en localStorage`);
-      
-      // Lista exhaustiva de palabras clave para detectar datos relacionados
-      const palabrasClave = [
-        // Progreso y ejercicios
-        'progress', 'progreso', 'exercise', 'ejercicio', 'history', 'historial',
-        'completed', 'completado', 'score', 'puntaje', 'result', 'resultado', 
-        'data', 'datos', 'stats', 'estadisticas', 'timer', 'tiempo',
+      if (cleanupResult.success) {
+        console.log("✅ Limpieza completada correctamente:", cleanupResult.stats);
         
-        // Recompensas y colecciones
-        'rewards', 'recompensas', 'trophy', 'trofeo', 'achievement', 'logro',
-        'album', 'álbum', 'collection', 'colección', 'unlock', 'desbloqueado',
-        'badge', 'medalla', 'prize', 'premio', 'trophy', 'trofeo',
+        // Actualizar desde el servidor
+        await fetchProgress();
         
-        // Respaldos y backups
-        'backup', 'respaldo', 'saved', 'guardado', 'math', 'matemáticas',
-        'operation', 'operación', 'user', 'usuario', 'profile', 'perfil',
-        
-        // Formato específico usado en la app
-        'mathApp_', 'math_', 'mathwaok_', 'waok_', 'problemDetails'
-      ];
-      
-      // PRIMERA FASE: Borrado directo por nombre de clave
-      let totalBorradas = 0;
-      
-      allKeys.forEach(key => {
-        // Verificar si la clave contiene alguna palabra clave
-        const matchesKeyword = palabrasClave.some(keyword => 
-          key.toLowerCase().includes(keyword.toLowerCase())
-        );
-        
-        if (matchesKeyword) {
-          localStorage.removeItem(key);
-          totalBorradas++;
-          console.log(`🗑️ [Fase 1] Eliminada clave: ${key}`);
-        }
-      });
-      
-      console.log(`✅ [Fase 1] Borradas ${totalBorradas} claves por palabra clave`);
-      
-      // SEGUNDA FASE: Limpieza exhaustiva - borrado específico de recompensas y datos críticos
-      const criticalKeys = [
-        // Recompensas principales
-        'rewards_collection', 'rewardsCollection', 'mathwaok_rewards', 'mathApp_rewards', 
-        'user_rewards', 'userRewards', 'rewards-collection', 'rewards_inventory',
-        
-        // Logros y trofeos
-        'achievements', 'completed_achievements', 'trophies', 'badges', 
-        'logros', 'achievementsData', 'achievementsProgress',
-        
-        // Datos de progreso principal
-        'exercise_history', 'exerciseHistory', 'module_progress', 'moduleProgress',
-        'mathApp_storage', 'mathwaok_storage', 'mathAppStorage',
-        
-        // Configuración y estados
-        'rewardsState', 'rewardsProgress', 'rewardsData', 'rewards-state'
-      ];
-      
-      // Borrar claves críticas explícitamente (incluso si ya fueron borradas)
-      criticalKeys.forEach(key => {
-        localStorage.removeItem(key);
-        console.log(`🏆 [Fase 2] Eliminación explícita de clave crítica: ${key}`);
-      });
-      
-      // TERCERA FASE: Búsqueda en contenido de las claves restantes
-      // Crear una nueva lista de claves restantes después de la limpieza
-      const remainingKeys: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key) remainingKeys.push(key);
-      }
-      
-      console.log(`🔍 [Fase 3] Analizando contenido de ${remainingKeys.length} claves restantes`);
-      
-      // Analizar el contenido de las claves restantes
-      let contentBorradas = 0;
-      remainingKeys.forEach(key => {
-        try {
-          const value = localStorage.getItem(key);
-          if (!value) return;
-          
-          // Verificar si el contenido contiene alguna palabra clave
-          const containsKeyword = palabrasClave.some(keyword => 
-            value.toLowerCase().includes(keyword.toLowerCase())
-          );
-          
-          if (containsKeyword) {
-            localStorage.removeItem(key);
-            contentBorradas++;
-            console.log(`🔍 [Fase 3] Eliminada clave por contenido: ${key}`);
-          }
-        } catch (error) {
-          console.error(`Error al analizar el contenido de la clave ${key}:`, error);
-        }
-      });
-      
-      console.log(`✅ [Fase 3] Borradas ${contentBorradas} claves adicionales por contenido`);
-      
-      // PASO 3: Eliminar datos del servidor si está disponible
-      try {
-        // Borrar datos en el servidor
-        const clearServerResponse = await fetch("/api/progress/clear", {
-          method: "POST",
-          credentials: "include",
+        toast({
+          title: "Progreso borrado",
+          description: "Se ha eliminado todo el historial de ejercicios y recompensas",
         });
+      } else {
+        console.error("❌ Error en limpieza:", cleanupResult.message);
         
-        if (clearServerResponse.ok) {
-          console.log("✅ Datos eliminados del servidor correctamente");
-        } else {
-          console.error("⚠️ Error al eliminar datos del servidor:", await clearServerResponse.text());
-        }
-      } catch (error) {
-        console.error("⚠️ Error de conexión al intentar eliminar datos del servidor:", error);
+        toast({
+          title: "Error al borrar progreso",
+          description: "No se pudo borrar completamente. Intente nuevamente.",
+          variant: "destructive",
+        });
       }
-      
-      // PASO 4: Recargar datos desde el servidor para confirmar limpieza
-      console.log("🔄 Recargando datos después de limpieza...");
-      await fetchProgress();
-      
-      // Mensaje de confirmación
-      toast({
-        title: "Progreso borrado",
-        description: "Se ha eliminado todo el historial de ejercicios y recompensas",
-      });
-      
-      console.log(`✅ PROCESO DE LIMPIEZA COMPLETADO CORRECTAMENTE
-        - ${totalBorradas} claves eliminadas por nombre
-        - ${criticalKeys.length} claves críticas eliminadas explícitamente
-        - ${contentBorradas} claves eliminadas por contenido
-        - Total: ${totalBorradas + criticalKeys.length + contentBorradas} elementos eliminados`);
     } catch (error) {
-      console.error("Error during clearProgress:", error);
+      console.error("Error durante limpieza:", error);
+      
       toast({
         title: "Error al borrar progreso",
-        description: "No se pudo borrar completamente el progreso. Intente nuevamente.",
-        variant: "destructive",
-      });
-    }
-            .some(term => value.toLowerCase().includes(term.toLowerCase()));
-            
-          if (contentMatches) {
-            localStorage.removeItem(key);
-            console.log(`🔍 [Fase 3] Borrada por contenido: ${key}`);
-            totalBorradas++;
-            i--; // Ajustar índice ya que se eliminó un elemento
-          }
-        } catch (e) {
-          // Ignorar errores de parsing
-        }
-      }
-      
-      console.log(`🏆 Borrada toda la información del Álbum de Recompensas y colecciones`);
-      
-      // PASO 2: BORRAR DATOS DEL SERVIDOR DE FORMA AGRESIVA
-      console.log("🔥 BORRADO RADICAL - Paso 2: Borrado en el servidor");
-      
-      // Obtener perfil activo para borrado específico
-      const activeProfileRes = await fetch("/api/child-profiles/active", {
-        credentials: "include",
-        cache: "no-store",
-        headers: { 'Pragma': 'no-cache' }
-      });
-      
-      // Variable para rastrear si el borrado tuvo éxito
-      let serverDeleteSuccess = false;
-      
-      if (activeProfileRes.ok) {
-        const activeProfile = await activeProfileRes.json();
-        
-        if (activeProfile && activeProfile.id) {
-          console.log("🎯 Borrando progreso para el perfil:", activeProfile.name, "ID:", activeProfile.id);
-          
-          // Múltiples intentos de borrado
-          for (let attempt = 1; attempt <= 3; attempt++) {
-            console.log(`Intento ${attempt} de borrado para perfil ${activeProfile.id}...`);
-            
-            try {
-              // Usar cache: no-store para asegurarnos que no haya caching
-              const response = await fetch(`/api/child-profiles/${activeProfile.id}/progress`, {
-                method: "DELETE",
-                credentials: "include",
-                cache: "no-store",
-                headers: {
-                  'Cache-Control': 'no-cache, no-store, must-revalidate',
-                  'Pragma': 'no-cache'
-                }
-              });
-              
-              if (response.ok) {
-                const result = await response.json();
-                console.log(`✅ Borrado exitoso en intento ${attempt}:`, result);
-                serverDeleteSuccess = true;
-                break; // Salir del bucle de intentos
-              } else {
-                console.log(`❌ Falló intento ${attempt}, código:`, response.status);
-              }
-            } catch (err) {
-              console.error(`❌ Error en intento ${attempt}:`, err);
-            }
-            
-            // Pequeña pausa entre intentos
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-        }
-      }
-      
-      // Si el borrado para el perfil falló o no hay perfil, intentar borrado general
-      if (!serverDeleteSuccess) {
-        console.log("🔄 Intentando borrado de progreso de usuario principal");
-        try {
-          const response = await fetch("/api/progress", {
-            method: "DELETE",
-            credentials: "include",
-            cache: "no-store",
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache'
-            }
-          });
-          
-          if (response.ok) {
-            console.log("✅ Borrado de progreso de usuario principal exitoso");
-            serverDeleteSuccess = true;
-          }
-        } catch (err) {
-          console.error("❌ Error al borrar progreso de usuario principal:", err);
-        }
-      }
-      
-      // PASO 3: FORZAR RECARGA COMPLETA DE DATOS
-      console.log("🔄 BORRADO RADICAL - Paso 3: Forzar recarga de datos");
-      
-      // Pequeña pausa para asegurarnos que los cambios en el servidor se propaguen
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Forzar recarga de datos desde el servidor con banderas anti-caché
-      await fetchProgress();
-      
-      // Verificación final
-      if (exerciseHistory.length === 0 && Object.keys(moduleProgress).length === 0) {
-        console.log("✅✅✅ BORRADO COMPLETO EXITOSO - No se encontraron datos después del borrado");
-      } else {
-        console.log("⚠️ ADVERTENCIA: Aún hay datos después del borrado:", 
-          exerciseHistory.length, "ejercicios,", 
-          Object.keys(moduleProgress).length, "módulos");
-      }
-      
-      toast({
-        title: serverDeleteSuccess ? "Progreso Eliminado" : "Borrado Parcial",
-        description: serverDeleteSuccess 
-          ? "Todos los datos han sido eliminados completamente del servidor y almacenamiento local" 
-          : "Los datos locales fueron borrados pero hubo un problema con el servidor",
-        variant: serverDeleteSuccess ? "default" : "destructive",
-      });
-    } catch (error) {
-      console.error("Error catastrófico al borrar progreso:", error);
-      toast({
-        title: "Error al Borrar Progreso",
-        description: "Se produjo un error inesperado. Por favor intenta nuevamente.",
+        description: "Ocurrió un error inesperado. Intente nuevamente.",
         variant: "destructive",
       });
     }
   };
 
-  // Función para refrescar datos de progreso manualmente
-  const refreshProgress = async () => {
-    try {
-      setIsLoading(true);
-      await fetchProgress();
-    } catch (error) {
-      console.error("Error refreshing progress data:", error);
-      toast({
-        title: "Error",
-        description: "No se pudieron actualizar los datos de progreso",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const contextValue: ProgressContextType = {
+    exerciseHistory,
+    moduleProgress,
+    saveExerciseResult,
+    getModuleProgress,
+    clearProgress,
+    refreshProgress: fetchProgress,
+    isLoading,
   };
 
   return (
-    <ProgressContext.Provider
-      value={{
-        exerciseHistory,
-        moduleProgress,
-        isLoading,
-        saveExerciseResult,
-        getModuleProgress,
-        clearProgress,
-        refreshProgress,
-      }}
-    >
+    <ProgressContext.Provider value={contextValue}>
       {children}
     </ProgressContext.Provider>
   );
@@ -670,7 +426,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
 
 export function useProgress() {
   const context = useContext(ProgressContext);
-  if (!context) {
+  if (context === null) {
     throw new Error("useProgress must be used within a ProgressProvider");
   }
   return context;

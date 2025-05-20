@@ -8,10 +8,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format, parseISO, subDays } from "date-fns";
-import AdditionProblemRenderer from "@/components/AdditionProblemRenderer";
 import { operationModules } from "@/utils/operationComponents";
 import { Loader2, RefreshCw, Check, X } from "lucide-react";
-import ProblemRenderer, { MathProblem } from "../components/ProblemRenderer";
+import ProblemRenderer, { MathProblem } from "@/components/ProblemRenderer";
 
 export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, refreshProgress, isLoading } = useProgress();
@@ -336,89 +335,51 @@ export default function ProgressPage() {
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Problems Solved</p>
                                 <p className="text-2xl font-bold">
-                                  {(() => {
-                                    const problemsSolved = exerciseHistory
-                                      .filter(ex => ex.operationId === module.id)
-                                      .reduce((sum, ex) => sum + (ex.score || 0), 0);
-                                    
-                                    const totalProblems = exerciseHistory
-                                      .filter(ex => ex.operationId === module.id)
-                                      .reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
-                                    
-                                    return `${problemsSolved} de ${totalProblems}`;
-                                  })()}
+                                  {exerciseHistory
+                                    .filter(ex => ex.operationId === module.id)
+                                    .reduce((sum, ex) => sum + ex.correctProblems, 0)}
                                 </p>
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Average Score</p>
-                                <p className="text-2xl font-bold">
+                            </div>
+                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div className="flex justify-between items-center mb-2">
+                                <p className="text-sm text-gray-500">Average Accuracy</p>
+                                <p className="text-lg font-bold">
                                   {progress?.averageScore 
-                                    ? `${Math.min(100, Math.round(progress.averageScore * 100))}%` 
+                                    ? `${Math.round(progress.averageScore * 100)}%` 
                                     : "N/A"}
                                 </p>
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Best Score</p>
-                                <p className="text-2xl font-bold">
-                                  {progress?.bestScore 
-                                    ? `${Math.min(100, Math.round(progress.bestScore * 100))}%` 
-                                    : "N/A"}
-                                </p>
-                              </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Average Time For Each Exercise Block Completed</p>
-                                <p className="text-xl mt-2">
-                                  <span className="font-bold">
-                                    {progress?.averageTime 
-                                      ? `${Math.round(progress.averageTime)}s` 
-                                      : "N/A"}
-                                  </span>
-                                </p>
-                              </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
-                                <p className="text-sm text-gray-500">Total Time</p>
-                                <p className="text-2xl font-bold">
-                                  {(() => {
-                                    const totalSeconds = exerciseHistory
-                                      .filter(ex => ex.operationId === module.id)
-                                      .reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-                                    
-                                    // Formatear tiempo: para minutos:segundos si es menos de una hora
-                                    if (totalSeconds < 3600) {
-                                      const minutes = Math.floor(totalSeconds / 60);
-                                      const seconds = totalSeconds % 60;
-                                      return `${minutes}m ${seconds}s`;
-                                    } 
-                                    // Para horas:minutos:segundos si es más de una hora
-                                    else {
-                                      const hours = Math.floor(totalSeconds / 3600);
-                                      const minutes = Math.floor((totalSeconds % 3600) / 60);
-                                      const seconds = totalSeconds % 60;
-                                      return `${hours}h ${minutes}m ${seconds}s`;
-                                    }
-                                  })()}
-                                </p>
+                              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                <div 
+                                  className="bg-blue-600 h-2.5 rounded-full" 
+                                  style={{ width: `${progress?.averageScore ? Math.round(progress.averageScore * 100) : 0}%` }}
+                                ></div>
                               </div>
                             </div>
-                            <div className="bg-white shadow p-3 rounded-lg border border-gray-100 w-full mb-3">
-                              <p className="text-sm text-gray-500">Average Time For Each Individual Exercise</p>
-                              <p className="text-xl mt-2">
-                                <span className="font-bold">
-                                  {(() => {
-                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    const totalProblems = moduleExercises.reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
-                                    const totalTime = moduleExercises.reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-                                    
-                                    return totalProblems > 0 
-                                      ? `${Math.round(totalTime / totalProblems)}s` 
-                                      : "N/A";
-                                  })()}
-                                </span>
-                              </p>
+                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <p className="text-sm text-gray-500 mb-2">Recent Performance</p>
+                              <div className="h-24">
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <LineChart
+                                    data={recentProgressData}
+                                    margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+                                  >
+                                    <Line 
+                                      type="monotone" 
+                                      dataKey={module.id} 
+                                      stroke={getModuleColor(module.id)} 
+                                      strokeWidth={2}
+                                      dot={{ r: 3 }}
+                                    />
+                                    <YAxis 
+                                      domain={[0, 100]} 
+                                      hide 
+                                    />
+                                  </LineChart>
+                                </ResponsiveContainer>
+                              </div>
                             </div>
-                            <Button variant="default" className="w-full bg-blue-500 hover:bg-blue-600" asChild>
-                              <a href={`/operation/${module.id}`}>Practice Again</a>
-                            </Button>
                           </div>
                         </CardContent>
                       </Card>
@@ -431,434 +392,175 @@ export default function ProgressPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Recent Exercise History</CardTitle>
-                  <CardDescription>Your last 10 completed exercises</CardDescription>
+                  <CardDescription>Your latest exercise results</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-4">Date</th>
-                          <th className="text-left py-3 px-4">Module</th>
-                          <th className="text-left py-3 px-4">Difficulty</th>
-                          <th className="text-left py-3 px-4">Score</th>
-                          <th className="text-left py-3 px-4">Time</th>
-                          <th className="text-left py-3 px-4">Actions</th>
+                    <table className="w-full text-sm text-left text-gray-500">
+                      <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3">Module</th>
+                          <th className="px-6 py-3">Date & Time</th>
+                          <th className="px-6 py-3">Difficulty</th>
+                          <th className="px-6 py-3">Score</th>
+                          <th className="px-6 py-3">Time</th>
+                          <th className="px-6 py-3">Details</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {recentExercises.map((exercise: ExerciseResult, index: number) => (
-                          <tr key={index} className="border-b">
-                            <td className="py-3 px-4">
-                              {format(new Date(exercise.date || exercise.createdAt || new Date()), "MMMM dd, yyyy h:mm a")}
+                        {recentExercises.map((exercise) => (
+                          <tr key={exercise.id} className="bg-white border-b hover:bg-gray-50">
+                            <td className="px-6 py-4 font-medium text-gray-900">
+                              {getModuleName(exercise.operationId)}
                             </td>
-                            <td className="py-3 px-4">{getModuleName(exercise.operationId)}</td>
-                            <td className="py-3 px-4">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyBadgeClass(exercise.difficulty || 'beginner')}`}>
-                                {(exercise.difficulty || 'beginner').charAt(0).toUpperCase() + (exercise.difficulty || 'beginner').slice(1)}
+                            <td className="px-6 py-4">
+                              {format(new Date(exercise.date), "MMM dd, yyyy HH:mm")}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyBadgeClass(exercise.difficulty)}`}>
+                                {exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}
                               </span>
                             </td>
-                            <td className="py-3 px-4">
-                              {exercise.score !== undefined && exercise.totalProblems ? 
-                                `${exercise.score}/${exercise.totalProblems} (${Math.round((exercise.score / exercise.totalProblems) * 100)}%)` : 
-                                "N/A"}
+                            <td className="px-6 py-4 font-medium">
+                              <div className="flex items-center">
+                                {exercise.score >= exercise.totalProblems * 0.7 ? 
+                                  <Check className="h-5 w-5 text-green-600 mr-2" /> : 
+                                  <X className="h-5 w-5 text-red-600 mr-2" />
+                                }
+                                {`${exercise.correctProblems}/${exercise.totalProblems} (${Math.round((exercise.score / exercise.totalProblems) * 100)}%)`}
+                              </div>
                             </td>
-                            <td className="py-3 px-4">{exercise.timeSpent !== undefined ? `${exercise.timeSpent}s` : "N/A"}</td>
-                            <td className="py-3 px-4">
+                            <td className="px-6 py-4">
+                              {exercise.timeSpent ? `${Math.round(exercise.timeSpent / 1000)}s` : "N/A"}
+                            </td>
+                            <td className="px-6 py-4">
                               <Dialog>
                                 <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    onClick={() => setSelectedExercise(exercise)}
-                                  >
-                                    Ver detalles
+                                  <Button variant="outline" size="sm" onClick={() => setSelectedExercise(exercise)}>
+                                    View
                                   </Button>
                                 </DialogTrigger>
-                                <DialogContent className="sm:max-w-md">
+                                <DialogContent className="sm:max-w-[600px]">
                                   <DialogHeader>
-                                    <DialogTitle className="text-center text-xl font-bold">
-                                      {getModuleName(exercise.operationId)} Exercise Complete!
-                                    </DialogTitle>
+                                    <DialogTitle>Exercise Details</DialogTitle>
+                                    <DialogDescription>
+                                      {getModuleName(exercise.operationId)} - {format(new Date(exercise.date), "MMM dd, yyyy HH:mm")}
+                                    </DialogDescription>
                                   </DialogHeader>
-                                  
-                                  <div className="bg-gray-50 p-4 rounded-md mb-4">
-                                    <p className="text-center text-sm text-gray-500">Total Time</p>
-                                    <p className="text-center text-2xl font-bold">
-                                      {exercise.timeSpent ? 
-                                        exercise.timeSpent < 60 ? 
-                                          `00:${exercise.timeSpent.toString().padStart(2, '0')}` : 
-                                          `${Math.floor(exercise.timeSpent / 60).toString().padStart(2, '0')}:${(exercise.timeSpent % 60).toString().padStart(2, '0')}` 
-                                        : '00:00'}
-                                    </p>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-3 gap-2">
-                                    <div className="bg-blue-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Score</p>
-                                      <p className="text-center text-lg font-bold text-blue-600">
-                                        {exercise.score}/{exercise.totalProblems}
-                                      </p>
+                                  <div className="space-y-6 py-4">
+                                    <div className="flex justify-between items-center">
+                                      <div>
+                                        <p className="text-sm font-medium">Difficulty</p>
+                                        <p className="text-sm">{exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium">Score</p>
+                                        <p className="text-sm">{`${exercise.correctProblems}/${exercise.totalProblems} (${Math.round((exercise.score / exercise.totalProblems) * 100)}%)`}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium">Time Spent</p>
+                                        <p className="text-sm">{exercise.timeSpent ? `${Math.round(exercise.timeSpent / 1000)}s` : "N/A"}</p>
+                                      </div>
                                     </div>
-                                    <div className="bg-green-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Accuracy</p>
-                                      <p className="text-center text-lg font-bold text-green-600">
-                                        {exercise.score && exercise.totalProblems ? 
-                                          `${Math.round((exercise.score / exercise.totalProblems) * 100)}%` : 
-                                          '0%'}
-                                      </p>
-                                    </div>
-                                    <div className="bg-purple-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Avg. Time</p>
-                                      <p className="text-center text-lg font-bold text-purple-600">
-                                        {exercise.timeSpent && exercise.totalProblems ? 
-                                          `${Math.round(exercise.timeSpent / exercise.totalProblems)}s` : 
-                                          'N/A'}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-3 gap-2 mt-2">
-                                    <div className="bg-yellow-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Avg. Attempts</p>
-                                      <p className="text-center text-lg font-bold text-yellow-600">
-                                        {exercise.avgAttempts ? exercise.avgAttempts.toFixed(1) : '1.0'}
-                                      </p>
-                                    </div>
-                                    <div className="bg-red-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Revealed</p>
-                                      <p className="text-center text-lg font-bold text-red-600">
-                                        {exercise.revealedAnswers || 0}
-                                      </p>
-                                    </div>
-                                    <div className="bg-teal-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Final Level</p>
-                                      <p className="text-center text-lg font-bold text-teal-600">
-                                        {exercise.difficulty === 'beginner' ? 'Principiante' : 
-                                         exercise.difficulty === 'intermediate' ? 'Intermedio' : 
-                                         exercise.difficulty === 'advanced' ? 'Avanzado' : 'Principiante'}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Mostrar Problem Review - siempre mostrar problemas, incluso si generamos datos de ejemplo */}
-                                  <div className="mt-4">
-                                    <h3 className="font-medium mb-2">Problem Review</h3>
-                                    <div className="space-y-2">
+
+                                    <div>
+                                      <p className="text-sm font-medium mb-2">Problems Review</p>
                                       {(() => {
-                                        // Si no hay ejercicio seleccionado
-                                        if (!exercise) {
-                                          return (
-                                            <div className="bg-gray-50 p-3 rounded-md">
-                                              <p className="text-center text-gray-500">No hay ejercicio seleccionado</p>
-                                            </div>
-                                          );
+                                        // Intenta obtener los problemas de varias ubicaciones posibles
+                                        let problems: any[] = [];
+                                        
+                                        // MEJORA IMPORTANTE: Check all possible locations for problem details
+                                        // Revisar primero en exercise.extra_data.problemDetails (nueva ubicación)
+                                        if (exercise.extra_data && exercise.extra_data.problemDetails && Array.isArray(exercise.extra_data.problemDetails)) {
+                                          problems = exercise.extra_data.problemDetails;
+                                          console.log("✅ Encontrados problemas en extra_data.problemDetails");
+                                        }
+                                        // Luego intentar en otras ubicaciones por compatibilidad
+                                        else if (exercise.extra_data && exercise.extra_data.mathProblems && Array.isArray(exercise.extra_data.mathProblems)) {
+                                          problems = exercise.extra_data.mathProblems;
+                                          console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.mathProblems");
+                                        }
+                                        else if (exercise.extra_data && exercise.extra_data.problems && Array.isArray(exercise.extra_data.problems)) {
+                                          problems = exercise.extra_data.problems;
+                                          console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.problems");
+                                        }
+                                        else if (exercise.extra_data && exercise.extra_data.exactProblems && Array.isArray(exercise.extra_data.exactProblems)) {
+                                          problems = exercise.extra_data.exactProblems;
+                                          console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.exactProblems");
+                                        }
+                                        else if (exercise.extra_data && exercise.extra_data.capturedProblems && Array.isArray(exercise.extra_data.capturedProblems)) {
+                                          problems = exercise.extra_data.capturedProblems;
+                                          console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.capturedProblems");
+                                        }
+                                        // Intentar en otras ubicaciones para compatibilidad con versiones antiguas
+                                        else if (exercise.extra_data && exercise.extra_data.screenshot && 
+                                            exercise.extra_data.screenshot.problemReview && 
+                                            Array.isArray(exercise.extra_data.screenshot.problemReview)) {
+                                          problems = exercise.extra_data.screenshot.problemReview;
+                                          console.log("✅ Encontrados problemas en exercise.extra_data.screenshot.problemReview");
                                         }
                                         
-                                        // Determinar el tipo de ejercicio para renderizarlo adecuadamente
-                                        const exerciseType = exercise.operationId || 
-                                                           (exercise.extra_data && exercise.extra_data.exerciseType) || 
-                                                           'unknown';
-                                        
-                                        // Extraer problemas del ejercicio seleccionado
-                                        let problems = null;
-                                        
-                                        if (exercise.extra_data) {
-                                          // Parsear extra_data si es string
-                                          let extraData = exercise.extra_data;
-                                          if (typeof extraData === 'string') {
-                                            try {
-                                              extraData = JSON.parse(extraData);
-                                            } catch (error) {
-                                              console.log("Error al parsear extra_data:", error);
-                                            }
-                                          }
-                                          
-                                          // Buscar en la ubicación principal
-                                          if (extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
-                                            problems = extraData.problemDetails;
-                                            console.log("Problemas encontrados en extra_data.problemDetails");
-                                          } 
-                                          // Ubicaciones alternativas para compatibilidad
-                                          else if (extraData.problems && Array.isArray(extraData.problems)) {
-                                            problems = extraData.problems;
-                                            console.log("Problemas encontrados en extra_data.problems");
-                                          }
-                                          else if (extraData.exactProblems && Array.isArray(extraData.exactProblems)) {
-                                            problems = extraData.exactProblems;
-                                            console.log("Problemas encontrados en extra_data.exactProblems");
-                                          }
-                                          // Verificar ubicaciones anteriores para compatibilidad
-                                          else if (extraData.screenshot && 
-                                                  extraData.screenshot.problemReview && 
-                                                  Array.isArray(extraData.screenshot.problemReview)) {
-                                            problems = extraData.screenshot.problemReview;
-                                            console.log("Problemas encontrados en extra_data.screenshot.problemReview");
-                                          }
+                                        // Si no hay problemas, mostrar mensaje
+                                        if (problems.length === 0) {
+                                          console.log("⚠️ NO SE ENCONTRARON PROBLEMAS para este ejercicio");
+                                          console.log("🔍 extra_data:", exercise.extra_data);
+                                          return <p className="text-sm text-gray-500">No problem details available for this exercise.</p>;
                                         }
                                         
-                                        // Si no hay problemas disponibles
-                                        if (!problems || problems.length === 0) {
-                                          return (
-                                            <div className="bg-gray-50 p-3 rounded-md">
-                                              <p className="text-center text-gray-500 italic">
-                                                Ejercicio de {exercise.operationId === 'addition' ? 'Suma' : 
-                                                             exercise.operationId === 'fractions' ? 'Fracciones' :
-                                                             exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} 
-                                                completado con puntuación {exercise.score}/{exercise.totalProblems}
-                                              </p>
-                                              <p className="text-xs text-center text-gray-400 mt-1">
-                                                Los detalles completos no se guardaron para este ejercicio anterior
-                                              </p>
-                                            </div>
-                                          );
-                                        }
-                                        
-                                        // Renderizar según el tipo de ejercicio
-                                        switch (exerciseType) {
-                                          case 'addition':
-                                            // Usar el renderizador específico para sumas
-                                            return <AdditionProblemRenderer problems={problems} showProblemNumbers={true} />;
-                                          
-                                          // Añadir otros tipos de ejercicios aquí cuando se creen sus componentes
-                                          // case 'fractions': return <FractionsProblemRenderer problems={problems} />;
-                                          
-                                          default:
-                                            // Renderizador genérico para cualquier tipo no específico
-                                            return (
-                                              <div className="space-y-2">
-                                                {problems.map((problem, index) => {
-                                                  // Intentar mostrar información básica
-                                                  const displayText = problem.displayText || problem.problem || 
-                                                                     `Problema #${index + 1}`;
-                                                  const isCorrect = problem.isCorrect !== undefined ? problem.isCorrect : false;
-                                                  
-                                                  return (
-                                                    <div 
-                                                      key={index}
-                                                      className={`p-3 rounded-lg ${isCorrect 
-                                                        ? 'bg-green-100 border border-green-200' 
-                                                        : 'bg-red-100 border border-red-200'}`}
-                                                    >
-                                                      <div className="flex justify-between items-center">
-                                                        <div>(#{index + 1}) {displayText}</div>
+                                        // Renderizar los problemas encontrados
+                                        return (
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {problems.map((problem, idx) => {
+                                              const isAnswerCorrect = problem.isCorrect !== undefined ? problem.isCorrect : 
+                                                                      problem.status === "correct";
+                                              
+                                              return (
+                                                <div 
+                                                  key={idx} 
+                                                  className={`p-3 rounded-lg border ${isAnswerCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}
+                                                >
+                                                  <div className="flex justify-between items-start">
+                                                    <div className="flex-1">
+                                                      {/* Renderizar el problema usando ProblemRenderer si es posible */}
+                                                      {problem.operands || problem.operation || problem.answer ? (
+                                                        <ProblemRenderer problem={problem as MathProblem} />
+                                                      ) : (
+                                                        // Fallback plain text representation
                                                         <div>
-                                                          {isCorrect 
-                                                            ? <Check className="h-5 w-5 text-green-600" /> 
-                                                            : <X className="h-5 w-5 text-red-600" />}
+                                                          <p className="text-sm font-medium">
+                                                            {typeof problem === "string" 
+                                                              ? problem 
+                                                              : problem.problem || problem.text || JSON.stringify(problem)}
+                                                          </p>
                                                         </div>
-                                                      </div>
-                                                      {problem.info && (
-                                                        <div className="text-xs text-gray-600 mt-1">{problem.info}</div>
                                                       )}
                                                     </div>
-                                                  );
-                                                })}
-                                              </div>
-                                            );
-                                        }
-                                              
-                                              for (let i = 0; i < localStorage.length; i++) {
-                                                const key = localStorage.key(i);
-                                                if (key && key.startsWith('backup_problemas_')) {
-                                                  try {
-                                                    const keyTimestamp = parseInt(key.split('_').pop() || '0');
-                                                    if (keyTimestamp >= haceDia) {
-                                                      const storedData = localStorage.getItem(key);
-                                                      if (storedData) {
-                                                        const parsedData = JSON.parse(storedData);
-                                                        if (Array.isArray(parsedData) && parsedData.length > 0) {
-                                                          problems = parsedData;
-                                                          console.log(`✅ PROBLEMAS RECUPERADOS DE RESPALDO RECIENTE (${key}):`, problems);
-                                                          break;
-                                                        }
-                                                      }
-                                                    }
-                                                  } catch (error) {
-                                                    console.error(`Error procesando respaldo (${key}):`, error);
-                                                  }
-                                                }
-                                              }
-                                            }
-                                            
-                                            // 4. FALLBACKS PARA COMPATIBILIDAD
-                                            if (problems.length === 0) {
-                                              // BÚSQUEDA MEJORADA: Intentar todos los campos conocidos
-                                              if (exercise.extra_data.problems && Array.isArray(exercise.extra_data.problems)) {
-                                                problems = exercise.extra_data.problems;
-                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.problems");
-                                              }
-                                              else if (exercise.extra_data.mathProblems && Array.isArray(exercise.extra_data.mathProblems)) {
-                                                problems = exercise.extra_data.mathProblems;
-                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.mathProblems");
-                                              }
-                                              else if (exercise.extra_data.problemas && Array.isArray(exercise.extra_data.problemas)) {
-                                                problems = exercise.extra_data.problemas;
-                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.problemas");
-                                              }
-                                              else if (exercise.extra_data.exactProblems && Array.isArray(exercise.extra_data.exactProblems)) {
-                                                problems = exercise.extra_data.exactProblems;
-                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.exactProblems");
-                                              }
-                                              else if (exercise.extra_data.capturedProblems && Array.isArray(exercise.extra_data.capturedProblems)) {
-                                                problems = exercise.extra_data.capturedProblems;
-                                                console.log("✅ ENCONTRADOS PROBLEMAS en extra_data.capturedProblems");
-                                              }
-                                              // Intentar obtener de problemDetails (FALLBACK LEGACY)
-                                              else if (exercise.extra_data.problemDetails) {
-                                                problems = exercise.extra_data.problemDetails;
-                                                console.log("✅ Encontrados problemas en exercise.extra_data.problemDetails");
-                                              }
-                                              // Intentar en screenshot.problemReview
-                                              else if (exercise.extra_data.screenshot && 
-                                                    exercise.extra_data.screenshot.problemReview && 
-                                                    Array.isArray(exercise.extra_data.screenshot.problemReview)) {
-                                                problems = exercise.extra_data.screenshot.problemReview;
-                                                console.log("✅ Encontrados problemas en screenshot.problemReview");
-                                              }
-                                              // BÚSQUEDA DINÁMICA como último recurso
-                                              else {
-                                                // Buscar cualquier campo que sea un array y contenga problemas
-                                                for (const key in exercise.extra_data) {
-                                                  if (Array.isArray(exercise.extra_data[key]) && 
-                                                      exercise.extra_data[key].length > 0 &&
-                                                      typeof exercise.extra_data[key][0] === 'object') {
-                                                    
-                                                    const firstItem = exercise.extra_data[key][0];
-                                                    
-                                                    // Verificar si tiene la estructura básica de un problema
-                                                    if ((firstItem.problem || firstItem.problema) && 
-                                                        (typeof firstItem.isCorrect === 'boolean' || 
-                                                         typeof firstItem.esCorrecta === 'boolean')) {
-                                                      
-                                                      problems = exercise.extra_data[key];
-                                                      console.log(`✅ Encontrados problemas por búsqueda dinámica en campo: ${key}`);
-                                                      break;
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                          
-                                          // Si aún no hay problemas, usar datos básicos disponibles
-                                          if (problems.length === 0) {
-                                            console.log("⚠️ No se encontraron problemas en ninguna estructura conocida");
-                                            problems = [{
-                                              problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' : 
-                                                         exercise.operationId === 'fractions' ? 'Fracciones' :
-                                                         exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} 
-                                                       completado con puntuación ${exercise.score}/${exercise.totalProblems}`,
-                                              isCorrect: true,
-                                              isPlaceholder: true
-                                            }];
-                                          }
-                                        } catch (error) {
-                                          console.error("Error al procesar problemas:", error);
-                                          problems = [{
-                                            problem: "Error al procesar detalles del ejercicio",
-                                            isCorrect: true,
-                                            isPlaceholder: true
-                                          }];
-                                        }
-                                        
-                                        problemsToShow = problems;
-                                        
-                                        // Convertir problemas al formato estándar para usar con ProblemRenderer
-                                        const standardizedProblems: MathProblem[] = [];
-                                        const placeholders: React.ReactNode[] = [];
-                                        
-                                        problemsToShow.forEach((problem, idx) => {
-                                          // Procesar placeholders por separado
-                                          if (problem.isPlaceholder) {
-                                            placeholders.push(
-                                              <div key={`placeholder-${idx}`} className="bg-gray-50 p-3 rounded-md">
-                                                <p className="text-center text-gray-500 italic">
-                                                  {typeof problem.problem === 'string' ? problem.problem : `Problema ${idx + 1}`}
-                                                </p>
-                                                <p className="text-xs text-center text-gray-400 mt-1">
-                                                  Los detalles completos no se guardaron para este ejercicio anterior
-                                                </p>
-                                              </div>
-                                            );
-                                            return; // Skip to next iteration
-                                          }
-                                          
-                                          // SOLUCIÓN MEJORADA: Determinar si el problema es correcto
-                                          const isCorrect = 
-                                            typeof problem.isCorrect === 'boolean' ? problem.isCorrect :
-                                            typeof problem.esCorrecta === 'boolean' ? problem.esCorrecta :
-                                            problem.status === 'correct';
-                                          
-                                          // Obtener el texto del problema en formato estándar con compatibilidad multilingüe
-                                          let problemText = '';
-                                          if (typeof problem.problem === 'string') {
-                                            problemText = problem.problem;
-                                          } else if (typeof problem.problema === 'string') { 
-                                            // Compatibilidad con versión en español
-                                            problemText = problem.problema;
-                                          } else if (problem.problem && problem.problem.operands) {
-                                            // Para problemas de suma
-                                            problemText = problem.problem.operands.join(' + ') + ' = ' + problem.problem.correctAnswer;
-                                          } else if (problem.text) {
-                                            problemText = problem.text;
-                                          } else if (problem.texto) {
-                                            problemText = problem.texto;
-                                          } else {
-                                            // Formato básico si no hay texto disponible
-                                            problemText = `Problema ${idx + 1}`;
-                                          }
-                                          
-                                          // Construir información adicional con soporte multilingüe
-                                          const infoItems = [];
-                                          
-                                          // Nivel - buscar en múltiples campos
-                                          const level = problem.level || problem.nivel;
-                                          if (level) infoItems.push(`Nivel: ${level}`);
-                                          
-                                          // Intentos - buscar en múltiples campos
-                                          const attempts = problem.attempts || problem.intentos;
-                                          if (attempts) infoItems.push(`Intentos: ${attempts}`);
-                                          
-                                          // Tiempo - buscar en múltiples campos
-                                          const time = problem.timeSpent || problem.tiempo;
-                                          if (time) infoItems.push(`Tiempo: ${time}s`);
-                                          
-                                          // Información preformateada
-                                          const infoText = problem.info || problem.infoTexto || infoItems.join(', ');
-                                          
-                                          // Añadir problema estandarizado
-                                          standardizedProblems.push({
-                                            problemNumber: idx + 1,
-                                            problem: problemText,
-                                            isCorrect: isCorrect,
-                                            info: infoText || undefined,
-                                            attempts: problem.attempts,
-                                            timeSpent: problem.timeSpent,
-                                            level: problem.level,
-                                            userAnswer: problem.userAnswer
-                                          });
-                                        });
-                                        
-                                        // Usar el componente ProblemRenderer para mostrar los problemas
-                                        return (
-                                          <>
-                                            {/* Renderizar problemas estandarizados */}
-                                            {standardizedProblems.length > 0 && (
-                                              <ProblemRenderer 
-                                                problems={standardizedProblems} 
-                                                showProblemNumbers={true}
-                                                showInfoDetails={true}
-                                              />
-                                            )}
-                                            
-                                            {/* Renderizar placeholders si hay */}
-                                            {placeholders.length > 0 && (
-                                              <div className="space-y-2 mt-2">
-                                                {placeholders}
-                                              </div>
-                                            )}
-                                          </>
+                                                    <div className="ml-2">
+                                                      {isAnswerCorrect ? (
+                                                        <Check className="h-5 w-5 text-green-600" />
+                                                      ) : (
+                                                        <X className="h-5 w-5 text-red-600" />
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                  
+                                                  {/* Mostrar la respuesta del usuario si está disponible */}
+                                                  {problem.userAnswer && (
+                                                    <div className="mt-1 text-xs">
+                                                      <span className="font-medium">Your answer:</span> {problem.userAnswer}
+                                                    </div>
+                                                  )}
+                                                  
+                                                  {/* Mostrar la respuesta correcta si el problema fue incorrecto */}
+                                                  {!isAnswerCorrect && problem.correctAnswer && (
+                                                    <div className="mt-1 text-xs">
+                                                      <span className="font-medium">Correct answer:</span> {problem.correctAnswer}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
                                         );
                                       })()}
                                     </div>
@@ -871,7 +573,6 @@ export default function ProgressPage() {
                       </tbody>
                     </table>
                   </div>
-
                 </CardContent>
               </Card>
             </TabsContent>
