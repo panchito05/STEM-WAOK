@@ -1282,22 +1282,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         problemasCapturados.push(problemaCompleto);
       }
       
-      // RESPALDO MÚLTIPLE: Guardar en varias ubicaciones para garantizar recuperación
-      try {
-        const timestamp = Date.now();
-        
-        // 1. Respaldo principal
-        const claveEjercicio = `math_exercise_${timestamp}`;
-        
-        // 2. Respaldo por tipo de operación 
-        const claveOperacion = `operation_addition_${timestamp}`;
-        
-        // 3. Respaldo usando formato estándar
-        const claveEstandar = `backup_problemas_${timestamp}`;
-        
-        // Guardar múltiples respaldos para máxima seguridad
-        localStorage.setItem(claveEstandar, JSON.stringify(problemasCapturas));
-        localStorage.setItem(claveOperacion, JSON.stringify(problemasCapturas));
+      return problemasCapturados;
         
         // Guardar con estructura clara y nombres en español e inglés para mayor compatibilidad
         localStorage.setItem(claveEjercicio, JSON.stringify({
@@ -1367,9 +1352,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           score: {
             correct: puntajeCorregido,
             total: problemsList.length
-          },
-          time: timer
-        }
           },
           time: timer,
           date: new Date().toISOString()
