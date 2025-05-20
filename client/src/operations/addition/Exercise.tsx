@@ -546,6 +546,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings.difficulty, settings.enableAdaptiveDifficulty, adaptiveDifficulty]);
 
+  // Actualizar el tiempo de inicio cuando cambia el problema
+  useEffect(() => {
+    if (currentProblem && !viewingPrevious && !exerciseCompleted) {
+      setProblemStartTime(Date.now());
+    }
+  }, [currentProblem, viewingPrevious, exerciseCompleted]);
+
   useEffect(() => {
     if (currentProblem && !viewingPrevious && !exerciseCompleted) {
       const numBoxes = currentProblem.answerMaxDigits || 0;
