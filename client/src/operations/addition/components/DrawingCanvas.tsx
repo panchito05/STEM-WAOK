@@ -375,6 +375,25 @@ export function DrawingCanvas({
     }
   };
   
+  // Botón adicional para cambiar el tamaño del borrador
+  const EraserSizeButton = () => {
+    return (
+      <button
+        onClick={changeEraserSize}
+        className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+        title="Cambiar tamaño del borrador"
+      >
+        <div className="flex flex-col items-center">
+          <div className="text-xs font-bold">{eraserSize}px</div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M8 12h8" />
+          </svg>
+        </div>
+      </button>
+    );
+  };
+  
   // Función para asegurar que el tamaño del borrador se aplique correctamente
   const applyEraserSettings = () => {
     if (contextRef.current && activeTool === 'eraser') {
@@ -481,6 +500,9 @@ export function DrawingCanvas({
             <path d="M15 2l7 7-7 7-7-7 7-7z"></path>
           </svg>
         </button>
+        
+        {/* Botón para cambiar tamaño del borrador (solo visible cuando el borrador está activo) */}
+        {activeTool === 'eraser' && <EraserSizeButton />}
         
 
         
