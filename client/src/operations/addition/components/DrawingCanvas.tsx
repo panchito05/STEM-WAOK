@@ -156,6 +156,11 @@ export function DrawingCanvas({
       }
     }
     
+    // Cerrar el menú de ajuste de tamaño del borrador al dibujar
+    if (showEraserSizeMenu) {
+      setShowEraserSizeMenu(false);
+    }
+    
     const canvas = canvasRef.current;
     const context = contextRef.current;
     if (!canvas || !context) return;
@@ -300,6 +305,9 @@ export function DrawingCanvas({
   // Estado para controlar la vista previa del borrador
   const [isShowingPreview, setIsShowingPreview] = useState(false);
   
+  // Estado para controlar la visibilidad del menú de ajuste de tamaño
+  const [showEraserSizeMenu, setShowEraserSizeMenu] = useState(true);
+  
   // Función para cambiar el tamaño del borrador
   const changeEraserSize = (size: number) => {
     // Actualizar el tamaño del borrador en el estado
@@ -315,6 +323,9 @@ export function DrawingCanvas({
     
     // Mostrar vista previa como un elemento HTML separado
     setIsShowingPreview(true);
+    
+    // Aseguramos que el menú se mantenga abierto al ajustar el tamaño
+    setShowEraserSizeMenu(true);
     
     // Limpiar cualquier temporizador anterior
     if (currentTimerRef.current) {
@@ -426,7 +437,7 @@ export function DrawingCanvas({
         </button>
         
         {/* Control deslizante para el tamaño del borrador */}
-        {activeTool === 'eraser' && (
+        {activeTool === 'eraser' && showEraserSizeMenu && (
           <div className={`w-full px-1 py-2 ${darkMode ? 'text-white' : 'text-gray-700'}`}>
             <p className="text-xs mb-1 text-center">Tamaño: {eraserSize}</p>
             <input 
