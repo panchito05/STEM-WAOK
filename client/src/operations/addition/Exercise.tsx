@@ -944,6 +944,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const advanceToNextActiveProblem = useCallback(() => {
     const nextActiveIdx = actualActiveProblemIndexBeforeViewingPrevious + 1;
     if (nextActiveIdx < problemsList.length) {
+      // Avanzar al siguiente problema normal
       setCurrentProblemIndex(nextActiveIdx);
       setCurrentProblem(problemsList[nextActiveIdx]);
       setActualActiveProblemIndexBeforeViewingPrevious(nextActiveIdx);
@@ -953,9 +954,48 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setProblemTimerValue(settings.timeValue); // Resetear timer para el nuevo problema
       setWaitingForContinue(false); // Permitir que el nuevo problema inicie su timer
     } else {
+      // ÚLTIMA RESPUESTA - SOLUCIÓN FINAL
+      // Antes de completar, asegurarnos de guardar la respuesta del último problema
+      const currentAnswer = digitAnswers.join("");
+      
+      console.log("🔍 VALIDANDO ÚLTIMO PROBLEMA ANTES DE COMPLETAR:", {
+        respuestaActual: currentAnswer,
+        problemaActual: currentProblem?.id,
+        indice: currentProblemIndex
+      });
+      
+      if (currentProblem && currentAnswer && currentAnswer.length > 0) {
+        // Verificar si ya existe una respuesta registrada
+        const existingAnswer = userAnswersHistory[currentProblemIndex];
+        
+        if (!existingAnswer) {
+          console.log("🔴 ÚLTIMO PROBLEMA: Registrando respuesta final antes de completar:", currentAnswer);
+          
+          // Crear respuesta con todos los datos necesarios
+          const respuestaFinal = {
+            problemId: currentProblem.id,
+            problem: currentProblem,
+            userAnswer: parseFloat(currentAnswer),
+            isCorrect: parseFloat(currentAnswer) === currentProblem.correctAnswer,
+            status: parseFloat(currentAnswer) === currentProblem.correctAnswer ? 'correct' : 'incorrect',
+            attempts: currentAttempts || 1,
+            timestamp: Date.now()
+          };
+          
+          // Actualizar respuesta en el historial - Dos métodos para asegurar actualización
+          const newHistory = [...userAnswersHistory];
+          newHistory[currentProblemIndex] = respuestaFinal;
+          userAnswersHistory[currentProblemIndex] = respuestaFinal; // Actualización directa
+          setUserAnswersHistory(newHistory); // Actualización por setState
+          
+          console.log("✅ ÚLTIMA RESPUESTA REGISTRADA:", respuestaFinal);
+        }
+      }
+      
+      // Ahora sí completar el ejercicio
       completeExercise();
     }
-  }, [actualActiveProblemIndexBeforeViewingPrevious, problemsList, settings.timeValue]);
+  }, [actualActiveProblemIndexBeforeViewingPrevious, problemsList, settings.timeValue, digitAnswers, currentProblem, userAnswersHistory, currentProblemIndex, currentAttempts]);
 
 
   const moveToPreviousProblem = () => {
