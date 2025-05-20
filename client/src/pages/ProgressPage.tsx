@@ -675,15 +675,32 @@ export default function ProgressPage() {
                                         
                                         problemsToShow = problems;
                                         
-                                        // Ya no necesitamos esta sección ya que la hemos reemplazado arriba
+                                        // Convertir problemas al formato estándar para usar con ProblemRenderer
+                                        const standardizedProblems: MathProblem[] = [];
+                                        const placeholders: React.ReactNode[] = [];
                                         
-                                        return problemsToShow.map((problem, idx) => {
-                                          // Intentar determinar si el problema es correcto
+                                        problemsToShow.forEach((problem, idx) => {
+                                          // Procesar placeholders por separado
+                                          if (problem.isPlaceholder) {
+                                            placeholders.push(
+                                              <div key={`placeholder-${idx}`} className="bg-gray-50 p-3 rounded-md">
+                                                <p className="text-center text-gray-500 italic">
+                                                  {typeof problem.problem === 'string' ? problem.problem : `Problema ${idx + 1}`}
+                                                </p>
+                                                <p className="text-xs text-center text-gray-400 mt-1">
+                                                  Los detalles completos no se guardaron para este ejercicio anterior
+                                                </p>
+                                              </div>
+                                            );
+                                            return; // Skip to next iteration
+                                          }
+                                          
+                                          // Determinar si el problema es correcto
                                           const isCorrect = 
                                             problem.isCorrect !== undefined ? problem.isCorrect :
                                             problem.status === 'correct';
                                           
-                                          // Intentar extraer información del problema
+                                          // Obtener el texto del problema en formato estándar
                                           let problemText = '';
                                           if (typeof problem.problem === 'string') {
                                             problemText = problem.problem;
@@ -693,44 +710,50 @@ export default function ProgressPage() {
                                           } else if (problem.text) {
                                             problemText = problem.text;
                                           } else {
-                                            // Fallback si no hay texto de problema disponible
-                                            problemText = `Problem ${idx + 1}`;
+                                            // Formato básico si no hay texto disponible
+                                            problemText = `Problema ${idx + 1}`;
                                           }
                                           
-                                          // Si es un placeholder, mostrar mensaje especial
-                                          if (problem.isPlaceholder) {
-                                            return (
-                                              <div key={idx} className="bg-gray-50 p-3 rounded-md">
-                                                <p className="text-center text-gray-500 italic">
-                                                  {problemText}
-                                                </p>
-                                                <p className="text-xs text-center text-gray-400 mt-1">
-                                                  Los detalles completos no se guardaron para este ejercicio anterior
-                                                </p>
-                                              </div>
-                                            );
-                                          }
+                                          // Construir información adicional
+                                          const infoItems = [];
+                                          if (problem.level) infoItems.push(`Lvl: ${problem.level}`);
+                                          if (problem.attempts) infoItems.push(`Att: ${problem.attempts}`);
+                                          if (problem.timeSpent) infoItems.push(`T: ${problem.timeSpent}s`);
+                                          const infoText = infoItems.join(', ');
                                           
-                                          // Para problemas normales
-                                          return (
-                                            <div key={idx} className={`${isCorrect ? 'bg-green-50' : 'bg-red-50'} p-3 rounded-md relative`}>
-                                              <p className="font-medium">
-                                                (#{idx + 1}) {problemText}
-                                              </p>
-                                              <p className="text-xs text-gray-500">
-                                                {problem.level ? `Lvl: ${problem.level}, ` : ''}
-                                                {problem.attempts ? `Att: ${problem.attempts}, ` : ''}
-                                                {problem.timeSpent ? `T: ${problem.timeSpent}s` : ''}
-                                              </p>
-                                              <span className="absolute right-3 top-3">
-                                                {isCorrect ? 
-                                                  <Check size={16} className="text-green-500" /> : 
-                                                  <X size={16} className="text-red-500" />
-                                                }
-                                              </span>
-                                            </div>
-                                          );
+                                          // Añadir problema estandarizado
+                                          standardizedProblems.push({
+                                            problemNumber: idx + 1,
+                                            problem: problemText,
+                                            isCorrect: isCorrect,
+                                            info: infoText || undefined,
+                                            attempts: problem.attempts,
+                                            timeSpent: problem.timeSpent,
+                                            level: problem.level,
+                                            userAnswer: problem.userAnswer
+                                          });
                                         });
+                                        
+                                        // Usar el componente ProblemRenderer para mostrar los problemas
+                                        return (
+                                          <>
+                                            {/* Renderizar problemas estandarizados */}
+                                            {standardizedProblems.length > 0 && (
+                                              <ProblemRenderer 
+                                                problems={standardizedProblems} 
+                                                showProblemNumbers={true}
+                                                showInfoDetails={true}
+                                              />
+                                            )}
+                                            
+                                            {/* Renderizar placeholders si hay */}
+                                            {placeholders.length > 0 && (
+                                              <div className="space-y-2 mt-2">
+                                                {placeholders}
+                                              </div>
+                                            )}
+                                          </>
+                                        );
                                       })()}
                                     </div>
                                   </div>

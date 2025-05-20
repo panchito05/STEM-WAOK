@@ -1,11 +1,12 @@
 import React from 'react';
+import { Check, X } from 'lucide-react';
 
-// Definimos un tipo estándar para los problemas de matemáticas
+// Definición de tipos para problemas matemáticos
 export interface MathProblem {
   problemNumber?: number;
-  problem: string; // El texto del problema (ej: "2 + 3 = 5")
-  isCorrect: boolean; // Si fue respondido correctamente
-  info?: string; // Información adicional (nivel, intentos, tiempo)
+  problem: string;
+  isCorrect: boolean;
+  info?: string;
   attempts?: string;
   timeSpent?: number;
   level?: string;
@@ -20,8 +21,7 @@ interface ProblemRendererProps {
 }
 
 /**
- * Componente dedicado para renderizar problemas matemáticos
- * Proporciona una visualización consistente independiente de la fuente de datos
+ * Componente para renderizar problemas matemáticos con un formato consistente
  */
 const ProblemRenderer: React.FC<ProblemRendererProps> = ({
   problems,
@@ -42,7 +42,7 @@ const ProblemRenderer: React.FC<ProblemRendererProps> = ({
       {problems.map((problem, index) => (
         <div 
           key={`problem-${index}`}
-          className={`problem-item p-3 rounded-lg border ${
+          className={`problem-item p-3 rounded-lg border relative ${
             problem.isCorrect 
               ? 'bg-green-50 border-green-200' 
               : 'bg-red-50 border-red-200'
@@ -75,6 +75,13 @@ const ProblemRenderer: React.FC<ProblemRendererProps> = ({
               {problem.info}
             </div>
           )}
+          
+          <span className="absolute right-3 top-3">
+            {problem.isCorrect ? 
+              <Check className="h-5 w-5 text-green-500" /> : 
+              <X className="h-5 w-5 text-red-500" />
+            }
+          </span>
         </div>
       ))}
     </div>
