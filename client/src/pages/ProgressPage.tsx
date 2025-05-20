@@ -8,6 +8,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format, parseISO, subDays } from "date-fns";
+import AdditionProblemRenderer from "@/components/AdditionProblemRenderer";
 import { operationModules } from "@/utils/operationComponents";
 import { Loader2, RefreshCw, Check, X } from "lucide-react";
 import ProblemRenderer, { MathProblem } from "../components/ProblemRenderer";
@@ -545,109 +546,117 @@ export default function ProgressPage() {
                                     <h3 className="font-medium mb-2">Problem Review</h3>
                                     <div className="space-y-2">
                                       {(() => {
-                                        // Intenta obtener los detalles del problema de varias fuentes
-                                        let problemsToShow = null;
-                                        
-                                        // En lugar de crear problemas aleatorios, mostraremos un mensaje claro
-                                        // indicando que estos son los problemas específicos del ejercicio seleccionado
-                                        const getProblemDescription = () => {
-                                          return [{
-                                            isPlaceholder: true,
-                                            problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' : 
-                                                       exercise.operationId === 'fractions' ? 'Fracciones' :
-                                                       exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} completado con puntuación ${exercise.score}/${exercise.totalProblems}`,
-                                            isCorrect: true
-                                          }];
-                                        };
-                                        
-                                        // SOLUCIÓN DEFINITIVA: Ver qué campos están disponibles en el ejercicio
-                                        console.log(`DEBUG ID ${exercise.id}:`, exercise);
-                                        
+                                        // Si no hay ejercicio seleccionado
                                         if (!exercise) {
-                                          console.log("No hay ejercicio seleccionado");
-                                          return [{
-                                            problem: "No hay ejercicio seleccionado",
-                                            isCorrect: true,
-                                            isPlaceholder: true
-                                          }];
+                                          return (
+                                            <div className="bg-gray-50 p-3 rounded-md">
+                                              <p className="text-center text-gray-500">No hay ejercicio seleccionado</p>
+                                            </div>
+                                          );
                                         }
                                         
-                                        let problems = [];
+                                        // Determinar el tipo de ejercicio para renderizarlo adecuadamente
+                                        const exerciseType = exercise.operationId || 
+                                                           (exercise.extra_data && exercise.extra_data.exerciseType) || 
+                                                           'unknown';
                                         
-                                        try {
-                                          // Extraer datos de extra_data primero
-                                          if (exercise.extra_data) {
-                                            let extraData = exercise.extra_data;
-                                            
-                                            // Si es string, intentar parsearlo como JSON
-                                            if (typeof extraData === 'string') {
-                                              try {
-                                                extraData = JSON.parse(extraData);
-                                              } catch (error) {
-                                                console.log("Error al parsear extra_data:", error);
-                                              }
-                                            }
-                                            
-                                            // Verificar si existe screenshot.problemReview
-                                            if (extraData.screenshot && 
-                                                extraData.screenshot.problemReview && 
-                                                Array.isArray(extraData.screenshot.problemReview)) {
-                                              problems = extraData.screenshot.problemReview;
-                                              console.log("✅ Encontrados problemas en extra_data.screenshot.problemReview");
+                                        // Extraer problemas del ejercicio seleccionado
+                                        let problems = null;
+                                        
+                                        if (exercise.extra_data) {
+                                          // Parsear extra_data si es string
+                                          let extraData = exercise.extra_data;
+                                          if (typeof extraData === 'string') {
+                                            try {
+                                              extraData = JSON.parse(extraData);
+                                            } catch (error) {
+                                              console.log("Error al parsear extra_data:", error);
                                             }
                                           }
                                           
-                                          // ESTRATEGIA MEJORADA: Búsqueda completa de problemas en múltiples ubicaciones
-                                          if (problems.length === 0 && exercise.extra_data && typeof exercise.extra_data === 'object') {
-                                            console.log("🔍 Búsqueda exhaustiva de problemas en todas las estructuras posibles...");
-                                            
-                                            // 1. Verificar todos los formatos posibles en extra_data
-                                            const posiblesCampos = [
-                                              'problems',
-                                              'mathProblems',
-                                              'capturedProblems',
-                                              'uiProblems',
-                                              'problemDetails',
-                                            ];
-                                            
-                                            // Buscar en todos los campos posibles
-                                            for (const campo of posiblesCampos) {
-                                              if (exercise.extra_data[campo] && Array.isArray(exercise.extra_data[campo])) {
-                                                problems = exercise.extra_data[campo];
-                                                console.log(`✅ PROBLEMAS ENCONTRADOS en extra_data.${campo}:`, problems);
-                                                break; // Terminar si encontramos problemas
-                                              }
-                                            }
-                                            
-                                            // 2. Buscar en respaldos de localStorage usando el timestamp
-                                            if (problems.length === 0) {
-                                              const timestamp = exercise.extra_data.timestamp || exercise.extra_data.captureTimestamp;
-                                              if (timestamp) {
-                                                // Buscar en diferentes formatos de clave de respaldo
-                                                const posiblesClaves = [
-                                                  `backup_problemas_${timestamp}`,
-                                                  `exercise_${timestamp}`,
-                                                  `backup_${exercise.operationId}_${timestamp}`
-                                                ];
-                                                
-                                                for (const clave of posiblesClaves) {
-                                                  const storedData = localStorage.getItem(clave);
-                                                  if (storedData) {
-                                                    try {
-                                                      const parsedData = JSON.parse(storedData);
-                                                      // Si es un array directamente, o tiene problemas en alguna propiedad
-                                                      if (Array.isArray(parsedData)) {
-                                                        problems = parsedData;
-                                                        console.log(`✅ PROBLEMAS RECUPERADOS DE LOCALSTORAGE (${clave}):`, problems);
-                                                        break;
-                                                      } else if (parsedData.problems && Array.isArray(parsedData.problems)) {
-                                                        problems = parsedData.problems;
-                                                        console.log(`✅ PROBLEMAS RECUPERADOS DE LOCALSTORAGE (${clave}):`, problems);
-                                                        break;
-                                                      }
-                                                    } catch (error) {
-                                                      console.error(`Error parseando datos de localStorage (${clave}):`, error);
-                                                    }
+                                          // Buscar en la ubicación principal
+                                          if (extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
+                                            problems = extraData.problemDetails;
+                                            console.log("Problemas encontrados en extra_data.problemDetails");
+                                          } 
+                                          // Ubicaciones alternativas para compatibilidad
+                                          else if (extraData.problems && Array.isArray(extraData.problems)) {
+                                            problems = extraData.problems;
+                                            console.log("Problemas encontrados en extra_data.problems");
+                                          }
+                                          else if (extraData.exactProblems && Array.isArray(extraData.exactProblems)) {
+                                            problems = extraData.exactProblems;
+                                            console.log("Problemas encontrados en extra_data.exactProblems");
+                                          }
+                                          // Verificar ubicaciones anteriores para compatibilidad
+                                          else if (extraData.screenshot && 
+                                                  extraData.screenshot.problemReview && 
+                                                  Array.isArray(extraData.screenshot.problemReview)) {
+                                            problems = extraData.screenshot.problemReview;
+                                            console.log("Problemas encontrados en extra_data.screenshot.problemReview");
+                                          }
+                                        }
+                                        
+                                        // Si no hay problemas disponibles
+                                        if (!problems || problems.length === 0) {
+                                          return (
+                                            <div className="bg-gray-50 p-3 rounded-md">
+                                              <p className="text-center text-gray-500 italic">
+                                                Ejercicio de {exercise.operationId === 'addition' ? 'Suma' : 
+                                                             exercise.operationId === 'fractions' ? 'Fracciones' :
+                                                             exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} 
+                                                completado con puntuación {exercise.score}/{exercise.totalProblems}
+                                              </p>
+                                              <p className="text-xs text-center text-gray-400 mt-1">
+                                                Los detalles completos no se guardaron para este ejercicio anterior
+                                              </p>
+                                            </div>
+                                          );
+                                        }
+                                        
+                                        // Renderizar según el tipo de ejercicio
+                                        switch (exerciseType) {
+                                          case 'addition':
+                                            // Usar el renderizador específico para sumas
+                                            return <AdditionProblemRenderer problems={problems} showProblemNumbers={true} />;
+                                          
+                                          // Añadir otros tipos de ejercicios aquí cuando se creen sus componentes
+                                          // case 'fractions': return <FractionsProblemRenderer problems={problems} />;
+                                          
+                                          default:
+                                            // Renderizador genérico para cualquier tipo no específico
+                                            return (
+                                              <div className="space-y-2">
+                                                {problems.map((problem, index) => {
+                                                  // Intentar mostrar información básica
+                                                  const displayText = problem.displayText || problem.problem || 
+                                                                     `Problema #${index + 1}`;
+                                                  const isCorrect = problem.isCorrect !== undefined ? problem.isCorrect : false;
+                                                  
+                                                  return (
+                                                    <div 
+                                                      key={index}
+                                                      className={`p-3 rounded-lg ${isCorrect 
+                                                        ? 'bg-green-100 border border-green-200' 
+                                                        : 'bg-red-100 border border-red-200'}`}
+                                                    >
+                                                      <div className="flex justify-between items-center">
+                                                        <div>(#{index + 1}) {displayText}</div>
+                                                        <div>
+                                                          {isCorrect 
+                                                            ? <Check className="h-5 w-5 text-green-600" /> 
+                                                            : <X className="h-5 w-5 text-red-600" />}
+                                                        </div>
+                                                      </div>
+                                                      {problem.info && (
+                                                        <div className="text-xs text-gray-600 mt-1">{problem.info}</div>
+                                                      )}
+                                                    </div>
+                                                  );
+                                                })}
+                                              </div>
+                                            );
+                                        }
                                                   }
                                                 }
                                               }

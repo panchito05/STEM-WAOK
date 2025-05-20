@@ -1283,10 +1283,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
       
       return problemasCapturados;
-        
-        // Guardar con estructura clara y nombres en español e inglés para mayor compatibilidad
-        localStorage.setItem(claveEjercicio, JSON.stringify({
-          id: timestamp,
           fecha: new Date().toISOString(),
           date: new Date().toISOString(),
           operacion: "addition",
@@ -1317,6 +1313,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas exactamente como se muestran en la UI
     const problemasCapturados = capturarProblemasExactos();
     
+    // Generar problemas capturados con el formato específico para sumas
+    const problemasCapturados = capturarProblemasExactos();
+    
     // SOLUCIÓN OPTIMIZADA: Guardar datos con formato estándar
     saveExerciseResult({
       operationId: "addition",
@@ -1331,6 +1330,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
+      
+      // Datos extra con estructura clara
+      extra_data: {
+        // Metadatos para trazabilidad
+        version: "4.0",
+        timestamp: Date.now(),
+        exerciseId: `addition_${Date.now()}`,
+        
+        // Almacenar los problemas en una ubicación consistente
+        problemDetails: problemasCapturados,
+        
+        // Incluir información específica del tipo de ejercicio
+        exerciseType: "addition",
+        
+        // Incluir resumen para facilitar acceso rápido
+        summary: {
+          operation: "addition",
+          level: finalLevel,
+          score: {
+            correct: puntajeCorregido,
+            total: problemsList.length
+          },
+          time: timer
+        }
+      }
       
       // Datos extra con estructura clara
       extra_data: {
