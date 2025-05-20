@@ -265,7 +265,17 @@ export function DrawingCanvas({
   // Función para alternar entre modo claro y oscuro
   const toggleDarkMode = () => {
     saveCanvasState();
-    setDarkMode(!darkMode);
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    
+    // Comunica el cambio de modo oscuro al documento para que otros componentes puedan reaccionar
+    document.documentElement.classList.toggle('canvas-dark-mode', newDarkMode);
+    
+    // Emitir un evento personalizado para que componentes padres puedan saber del cambio
+    const event = new CustomEvent('canvasDarkModeChange', { 
+      detail: { darkMode: newDarkMode } 
+    });
+    document.dispatchEvent(event);
   };
   
   return (
