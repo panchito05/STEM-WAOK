@@ -7,7 +7,7 @@ import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
 import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ import LevelUpHandler from "@/components/LevelUpHandler";
 import { useRewardsStore, awardReward, getRewardProbability, selectRandomReward } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
 import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
+import YoutubeVideoDialog from '@/components/YoutubeVideoDialog';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -35,28 +36,7 @@ const verticalOperandStyle = "font-mono text-2xl sm:text-3xl text-right tracking
 const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
-// Interface para los metadatos de videos de YouTube
-interface YoutubeVideoMetadata {
-  url: string;
-  title: string;
-  thumbnailUrl: string;
-  videoId: string;
-  loading: boolean;
-  error: boolean;
-}
-
-// Componente para gestionar videos explicativos de YouTube
-const YoutubeVideoDialog = ({
-  isOpen,
-  onClose,
-  videos,
-  onSave
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  videos: string[];
-  onSave: (newVideos: string[]) => void;
-}) => {
+// Constantes de estilo para el componente principal
   const [videoLinks, setVideoLinks] = useState<string[]>([...videos]);
   const [videosMetadata, setVideosMetadata] = useState<YoutubeVideoMetadata[]>([]);
   const [isEditMode, setIsEditMode] = useState(videos.length === 0);
