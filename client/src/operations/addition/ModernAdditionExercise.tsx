@@ -84,10 +84,15 @@ const Exercise: React.FC = () => {
   
   // Renderizar pantalla de resultados cuando el ejercicio está completo
   if (state.isComplete) {
+    // Calcular el número real de problemas respondidos
+    const actualTotalProblems = state.userAnswers.length;
+    // Usar el máximo entre el total definido en problems y los que realmente contestó el usuario
+    const finalTotalProblems = Math.max(state.problems.length, actualTotalProblems);
+    
     return (
       <ResultsBoard
         score={state.score}
-        totalProblems={state.problems.length}
+        totalProblems={finalTotalProblems}
         userAnswers={state.userAnswers}
         difficulty={state.settings.difficulty}
         timeSpent={state.settings.hasTimeLimit ? state.settings.timeLimit - globalTimer.timeRemaining : 0}
