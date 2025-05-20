@@ -21,6 +21,9 @@ export interface Problem {
   imageUrl?: string;
 }
 
+// Tipo alias para compatibilidad con código anterior
+export type AdditionProblem = Problem;
+
 // Estructura de una respuesta de usuario
 export interface UserAnswer {
   problemId: string;
@@ -65,3 +68,72 @@ export type ExerciseEvent =
   | { type: 'explanation_shown'; problem: Problem }
   | { type: 'timer_ended'; problem: Problem }
   | { type: 'exercise_completed'; score: number; totalProblems: number };
+
+// Estado del ejercicio para el contexto
+export interface ExerciseState {
+  // Estado general del ejercicio
+  isActive: boolean;
+  isComplete: boolean;
+  currentProblemIndex: number;
+  score: number;
+  
+  // Problemas y respuestas
+  problems: Problem[];
+  userAnswers: UserAnswer[];
+  
+  // Estado del problema actual
+  currentAnswer: string | number;
+  attempts: number;
+  showExplanation: boolean;
+  
+  // Temporizadores
+  timeRemaining: number;
+  problemTimeRemaining: number;
+  
+  // Configuración
+  settings: ModuleSettings;
+}
+
+// Configuración específica del módulo (reutilizada desde settings.ts)
+export interface ModuleSettings {
+  language?: string;
+  problemCount?: number;
+  difficulty?: DifficultyLevel;
+  hasTimeLimit?: boolean;
+  timeLimit?: number;
+  hasPerProblemTimer?: boolean;
+  maxOperands?: number;
+  minValue?: number;
+  maxValue?: number;
+  allowNegatives?: boolean;
+  allowDecimals?: boolean;
+  decimalPlaces?: number;
+  maxAttemptsPerProblem?: number;
+  showHints?: boolean;
+  showExplanations?: boolean;
+  preferredDisplayFormat?: DisplayFormat;
+  adaptiveMode?: boolean;
+  consecutiveCorrectThreshold?: number;
+  consecutiveIncorrectThreshold?: number;
+}
+
+// Tipo para el contexto del ejercicio
+export interface ExerciseContextType {
+  // Estado
+  state: ExerciseState;
+  
+  // Acciones
+  startExercise: (settings: ModuleSettings) => void;
+  endExercise: () => void;
+  nextProblem: () => void;
+  updateAnswer: (value: string | number) => void;
+  submitAnswer: () => void;
+  skipProblem: () => void;
+  showSolution: () => void;
+  
+  // Timer
+  startTimer: () => void;
+  pauseTimer: () => void;
+  resumeTimer: () => void;
+  resetTimer: () => void;
+}
