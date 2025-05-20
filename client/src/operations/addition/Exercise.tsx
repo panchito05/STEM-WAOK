@@ -1660,68 +1660,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }, 10);
   };
 
-  // Función para manejar el retroceso secuencial que permite saltar entre contenedores
-  const handleSequentialBackspace = () => {
-    if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
-    if (!exerciseStarted) startExercise();
-    
-    let newAnswers = [...digitAnswers];
-    let currentFocus = focusedDigitIndex;
-    
-    // Si el contenedor actual está vacío, movemos el foco al siguiente contenedor
-    if (newAnswers[currentFocus] === "") {
-      // Si estamos en modo RTL (derecha a izquierda), movemos a la derecha
-      if (inputDirection === 'rtl') {
-        if (currentFocus < currentProblem.answerMaxDigits - 1) {
-          setFocusedDigitIndex(currentFocus + 1);
-          // Aquí no borramos nada porque ya estaba vacío, solo cambiamos el foco
-        }
-      } 
-      // Si estamos en modo LTR (izquierda a derecha), movemos a la izquierda
-      else {
-        if (currentFocus > 0) {
-          setFocusedDigitIndex(currentFocus - 1);
-          // Aquí no borramos nada porque ya estaba vacío, solo cambiamos el foco
-        }
-      }
-    } 
-    // Si el contenedor actual tiene un dígito, lo borramos
-    else {
-      newAnswers[currentFocus] = "";
-      setDigitAnswers(newAnswers);
-    }
-  };
-
-  // Función para manejar el retroceso secuencial que permite saltar entre contenedores
-  const handleSequentialBackspace = () => {
-    if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
-    if (!exerciseStarted) startExercise();
-    
-    let newAnswers = [...digitAnswers];
-    let currentFocus = focusedDigitIndex;
-    
-    // Si el contenedor actual está vacío, movemos el foco al siguiente contenedor
-    if (newAnswers[currentFocus] === "") {
-      // Si estamos en modo RTL (derecha a izquierda), movemos a la derecha
-      if (inputDirection === 'rtl') {
-        if (currentFocus < currentProblem.answerMaxDigits - 1) {
-          setFocusedDigitIndex(currentFocus + 1);
-        }
-      } 
-      // Si estamos en modo LTR (izquierda a derecha), movemos a la izquierda
-      else {
-        if (currentFocus > 0) {
-          setFocusedDigitIndex(currentFocus - 1);
-        }
-      }
-    } 
-    // Si el contenedor actual tiene un dígito, lo borramos
-    else {
-      newAnswers[currentFocus] = "";
-      setDigitAnswers(newAnswers);
-    }
-  };
-
   const handleDigitInput = (value: string) => {
     if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
     if (!exerciseStarted) startExercise();
@@ -2204,34 +2142,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         </div>
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-xs mx-auto">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "backspace"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
-              className={`text-lg sm:text-xl h-11 sm:h-12 ${
-                key === "sequential_backspace" 
-                  ? "bg-red-50 hover:bg-red-100 text-red-600 active:bg-red-200" 
-                  : key === "" 
-                    ? "invisible pointer-events-none" 
-                    : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100"
-              }`}
-              onClick={() => {
-                if (viewingPrevious || exerciseCompleted || waitingRef.current || !key || key === "") return;
-                
-                if (key === "sequential_backspace") {
-                  handleSequentialBackspace();
-                } else {
-                  handleDigitInput(key);
-                }
-              }}
-              disabled={waitingRef.current || exerciseCompleted || viewingPrevious || key === "" || (!exerciseStarted && key !== "" && key !== "backspace" && key !== "sequential_backspace" && (key < '0' || key > '9'))}
+              className={`text-lg sm:text-xl h-11 sm:h-12 ${key === "" ? "invisible pointer-events-none" : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100"}`}
+              onClick={() => !viewingPrevious && !exerciseCompleted && !waitingRef.current && key && key !== "" && handleDigitInput(key)}
+              disabled={waitingRef.current || exerciseCompleted || viewingPrevious || key === "" || (!exerciseStarted && key !== "" && key!=="backspace" && (key < '0' || key > '9'))}
             >
-              {key === "backspace" 
-                ? <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" /> 
-                : key === "sequential_backspace" 
-                  ? <span className="text-xl font-bold">&gt;</span>
-                  : key
-              }
+              {key === "backspace" ? <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" /> : key}
             </Button>
           ))}
         </div>
