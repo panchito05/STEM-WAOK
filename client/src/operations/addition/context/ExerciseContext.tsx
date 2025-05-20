@@ -165,6 +165,13 @@ const exerciseReducer = (state: ExerciseState, event: ExerciseEvent): ExerciseSt
         const endTime = Date.now();
         const timeSpent = Math.floor((endTime - state.startTime) / 1000);
         
+        // Añadir logs para diagnóstico
+        console.log('ExerciseContext - Finalizando ejercicio:', {
+          totalProblemsActual: state.problems.length,
+          userAnswersActual: userAnswers.length,
+          scoreActual: score
+        });
+        
         // Guardar el resultado del ejercicio
         saveExerciseResult({
           id: uuidv4(),

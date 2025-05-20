@@ -43,6 +43,14 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
   onRetry,
   onHome
 }) => {
+  // Logs para diagnóstico
+  console.log('ResultsBoard - Datos recibidos:', {
+    scoreRecibido: score,
+    totalProblemsRecibido: totalProblems,
+    userAnswersLength: userAnswers.length,
+    dificultad: difficulty
+  });
+  
   // Verificar que el score no sea mayor que totalProblems
   const validScore = Math.min(score, totalProblems);
   
@@ -51,6 +59,13 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
   
   // Usar el máximo entre totalProblems y actualTotalProblems para asegurar precisión
   const finalTotalProblems = Math.max(totalProblems, actualTotalProblems);
+  
+  // Más logs para diagnóstico después del cálculo
+  console.log('ResultsBoard - Valores calculados:', {
+    validScore,
+    actualTotalProblems,
+    finalTotalProblems
+  });
   
   // Calcular porcentaje de aciertos con valores corregidos
   const percentage = Math.round((validScore / finalTotalProblems) * 100);
