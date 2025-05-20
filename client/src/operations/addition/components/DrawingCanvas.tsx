@@ -37,8 +37,12 @@ export function DrawingCanvas({
   const [activeTool, setActiveTool] = useState<ToolMode>('pen');
   const [darkMode, setDarkMode] = useState<boolean>(false);
   
-  // Tamaño ajustado para el borrador
-  const eraserSize = 60; // Reducción del 50% según lo solicitado
+  // Tamaños del borrador
+  const eraserSizes = [20, 40, 60, 100]; // Cuatro tamaños diferentes
+  // Estado para el tamaño actual del borrador (índice en el array)
+  const [eraserSizeIndex, setEraserSizeIndex] = useState<number>(2); // Comienza con el tercer tamaño (60px)
+  // Obtener el tamaño actual del borrador
+  const eraserSize = eraserSizes[eraserSizeIndex];
   // Estado para mostrar el indicador visual del borrador
   const [showEraserIndicator, setShowEraserIndicator] = useState<boolean>(false);
   
@@ -197,12 +201,33 @@ export function DrawingCanvas({
   }, []);
 
   // Drawing functions optimizadas
+  // Función para cambiar el tamaño del borrador
+  const changeEraserSize = () => {
+    // Circular a través de los tamaños disponibles
+    const newIndex = (eraserSizeIndex + 1) % eraserSizes.length;
+    setEraserSizeIndex(newIndex);
+    
+    // Si el borrador está activo, actualizar el contexto
+    if (activeTool === 'eraser' && contextRef.current) {
+      contextRef.current.lineWidth = eraserSizes[newIndex];
+    }
+  };
+  
   const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     event.preventDefault(); // Prevenir comportamiento por defecto
     
     const canvas = canvasRef.current;
     const context = contextRef.current;
     if (!canvas || !context) return;
+    
+    // Cambiar tamaño del borrador al hacer clic derecho o tocar con dos dedos
+    if (event.type === 'mousedown' && 'button' in event && event.button === 2) {
+      event.preventDefault();
+      if (activeTool === 'eraser') {
+        changeEraserSize();
+        return; // No iniciar dibujo para clic derecho
+      }
+    }
     
     // Asegurar que el borrador tenga el tamaño correcto antes de empezar
     if (activeTool === 'eraser') {
@@ -404,6 +429,12 @@ export function DrawingCanvas({
           onTouchStart={startDrawing}
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
+          onContextMenu={(e) => {
+            e.preventDefault(); // Prevenir menú contextual
+            if (activeTool === 'eraser') {
+              changeEraserSize();
+            }
+          }}
           style={{ touchAction: 'none' }}
         />
         
@@ -417,7 +448,12 @@ export function DrawingCanvas({
               width: `${eraserSize}px`,
               height: `${eraserSize}px`,
             }}
-          />
+          >
+            {/* Mostrar tamaño del borrador */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 text-white text-xs px-1 rounded">
+              {eraserSize}px
+            </div>
+          </div>
         )}
       </div>
       
