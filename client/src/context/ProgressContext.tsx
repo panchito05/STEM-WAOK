@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { cleanAllProgress } from "@/utils/progressCleaner";
 
 export interface ExerciseResult {
   id?: number;            // ID del registro en la base de datos
@@ -24,7 +23,6 @@ export interface ExerciseResult {
   avgTimePerProblem?: number;
   avgAttempts?: number;
   revealedAnswers?: number;
-  correctProblems?: number; // Número de problemas correctos
   problemDetails?: Array<{
     problemId?: string | number;
     problem?: any;
@@ -510,26 +508,18 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         variant: "destructive",
       });
     }
-  };
-
-  // Código de limpieza adicional que parece estar fuera de lugar
-  const cleanupAdditionalContent = () => {
-    try {
-      let i = 0;
-      // El siguiente código parece estar incompleto, lo completamos con la estructura correcta
-      const contentMatches = false; // Esta variable debe ser calculada correctamente en tu código real
-      
-      if (contentMatches) {
-        localStorage.removeItem("key"); // Esta clave debe ser definida correctamente en tu código real
-        console.log(`🔍 [Fase 3] Borrada por contenido: key`);
-        let totalBorradas = 0; // Esta variable debe ser definida correctamente en tu código real
-        totalBorradas++;
-        i--; // Ajustar índice ya que se eliminó un elemento
+            .some(term => value.toLowerCase().includes(term.toLowerCase()));
+            
+          if (contentMatches) {
+            localStorage.removeItem(key);
+            console.log(`🔍 [Fase 3] Borrada por contenido: ${key}`);
+            totalBorradas++;
+            i--; // Ajustar índice ya que se eliminó un elemento
+          }
+        } catch (e) {
+          // Ignorar errores de parsing
+        }
       }
-    } catch (e) {
-      // Ignorar errores de parsing
-    }
-  }
       
       console.log(`🏆 Borrada toda la información del Álbum de Recompensas y colecciones`);
       
