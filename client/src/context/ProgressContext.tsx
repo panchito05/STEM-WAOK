@@ -262,14 +262,52 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     }
 
     try {
-      // MEJORA: Asegurar que los problemas se guarden en un formato consistente
+      // MEJORA V3: Sistema robusto para garantizar que los problemas se guarden correctamente
       if (!result.extra_data) {
         result.extra_data = {};
       }
       
       // Asegurar que hay una versión para mejor compatibilidad
-      result.extra_data.version = "2.0";
+      result.extra_data.version = "3.0";
       result.extra_data.timestamp = Date.now();
+      
+      // NUEVA SOLUCIÓN: Unificar formato de almacenamiento para evitar inconsistencias
+      // Identificar dónde están los problemas en la estructura actual
+      let problemasEncontrados: any[] = [];
+      
+      // Buscar en todos los posibles lugares donde pueden estar los problemas
+      if (result.problemDetails && Array.isArray(result.problemDetails)) {
+        problemasEncontrados = result.problemDetails;
+      } 
+      else if (result.extra_data.problems && Array.isArray(result.extra_data.problems)) {
+        problemasEncontrados = result.extra_data.problems;
+      }
+      else if (result.extra_data.exactProblems && Array.isArray(result.extra_data.exactProblems)) {
+        problemasEncontrados = result.extra_data.exactProblems;
+      }
+      else if (result.extra_data.capturedProblems && Array.isArray(result.extra_data.capturedProblems)) {
+        problemasEncontrados = result.extra_data.capturedProblems;
+      }
+      else if (result.extra_data.mathProblems && Array.isArray(result.extra_data.mathProblems)) {
+        problemasEncontrados = result.extra_data.mathProblems;
+      }
+      else if (result.extra_data.problemDetails && Array.isArray(result.extra_data.problemDetails)) {
+        problemasEncontrados = result.extra_data.problemDetails;
+      }
+      
+      // Si encontramos problemas, los guardamos en TODOS los campos posibles para asegurar compatibilidad
+      if (problemasEncontrados.length > 0) {
+        // Guardar en múltiples ubicaciones para máxima compatibilidad
+        result.extra_data.problems = [...problemasEncontrados];
+        result.extra_data.exactProblems = [...problemasEncontrados];
+        result.extra_data.capturedProblems = [...problemasEncontrados];
+        result.extra_data.mathProblems = [...problemasEncontrados];
+        result.extra_data.problemDetails = [...problemasEncontrados];
+        result.extra_data.problemas = [...problemasEncontrados];
+        
+        // Guardar también en la estructura principal para asegurar
+        result.problemDetails = [...problemasEncontrados];
+      }
       
       // Crear respaldo redundante de los problemas para evitar pérdida
       // Esto permite recuperar los problemas correctamente en la página de historial
@@ -361,7 +399,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       setModuleProgress({});
       
       // PASO 1: BORRADO EXTREMO DE LOCALSTORAGE 
-      console.log("🧨 BORRADO RADICAL MEJORADO - Fase 1: Limpieza completa del localStorage");
+      console.log("🧨 BORRADO RADICAL MEJORADO V2 - Fase 1: Limpieza completa del localStorage");
       
       // Lista ampliada de palabras clave para detectar datos relacionados
       const palabrasClave = [
@@ -373,7 +411,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         // Recompensas
         'rewards', 'recompensas', 'trophy', 'trofeo', 'achievement', 'logro',
         'album', 'álbum', 'collection', 'colección', 'unlock', 'desbloqueado',
-        'badge', 'medalla', 'prize', 'premio',
+        'badge', 'medalla', 'prize', 'premio', 'rewards-storage',
         
         // Respaldos y backups
         'backup', 'respaldo', 'saved', 'guardado', 'math', 'matemáticas',
