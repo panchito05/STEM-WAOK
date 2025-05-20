@@ -457,8 +457,7 @@ export default function ProgressPage() {
                                       {getModuleName(exercise.operationId)} Exercise Complete!
                                     </DialogTitle>
                                   </DialogHeader>
-
-                                  <div className="bg-gray-50 p-4 rounded-md mb-4">
+                                    <div className="bg-gray-50 p-4 rounded-md mb-4">
                                     <p className="text-center text-sm text-gray-500">Total Time</p>
                                     <p className="text-center text-2xl font-bold">
                                       {exercise.timeSpent ?
