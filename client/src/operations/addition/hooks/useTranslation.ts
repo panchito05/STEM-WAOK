@@ -1,96 +1,80 @@
-// useTranslation.ts - Hook para manejar traducciones en el módulo de suma
-import { useCallback } from 'react';
-import { useSettings } from '@/context/SettingsContext';
+// useTranslation.ts - Hook simplificado para traducciones
+import { useState, useEffect } from 'react';
 
-// Traducciones disponibles
+// Traducciones básicas para el módulo de suma
 const translations = {
-  english: {
-    'common.loading': 'Loading...',
-    'common.timeRemaining': 'Time:',
-    
-    'exercise.start': 'Start',
-    'exercise.problem': 'Problem',
+  es: {
+    'common.timeRemaining': 'Tiempo restante',
+    'common.check': 'Verificar',
+    'common.next': 'Siguiente',
+    'common.loading': 'Cargando',
+    'common.loadingProblems': 'Cargando problemas',
+    'common.reloadingProblem': 'Recargando problema',
+    'exercise.correct': 'Correcto',
+    'exercise.incorrect': 'Incorrecto',
+    'exercise.timeUp': 'Tiempo agotado',
+    'exercise.completed': '¡Ejercicio Completado!',
+    'exercise.finalScore': 'Puntuación Final',
+    'exercise.help': 'Ayuda',
+    'exercise.tryAgain': 'Intentar otra vez',
+    'exercise.showAnswer': 'Mostrar Respuesta',
+    'exercise.continue': 'Continuar',
     'exercise.seconds': 's',
-    'exercise.explanation': 'Explanation',
-    'exercise.explanationText': 'To add {first} + {second}, we count {first} units and then add {second} more units, which gives us {result} units in total.',
-    'exercise.visualRepresentation': 'Visual Representation',
-    'exercise.tips': 'Tips',
-    'exercise.tipBreakdown': 'Break down large numbers into smaller parts to make addition easier.',
-    'exercise.tipPractice': 'Regular practice makes mental addition faster and more accurate.',
-    
-    'results.completed': 'Exercise Completed',
-    'results.points': 'points',
-    'results.excellent': 'Excellent Work!',
-    'results.good': 'Good Job!',
-    'results.average': 'Not Bad!',
-    'results.needsPractice': 'Keep Practicing!',
-    'results.totalProblems': 'Total Problems',
-    'results.correctAnswers': 'Correct',
-    'results.wrongAnswers': 'Incorrect',
-    'results.accuracy': 'Accuracy',
-    'results.problemList': 'Problem List',
-    'results.tryAgain': 'Try Again',
-    'results.backToHome': 'Back to Home'
+    'exercise.restart': 'Reiniciar',
+    'exercise.feedback': 'Retroalimentación',
+    'exercise.accuracy': 'Precisión',
   },
-  spanish: {
-    'common.loading': 'Cargando...',
-    'common.timeRemaining': 'Tiempo:',
-    
-    'exercise.start': 'Comenzar',
-    'exercise.problem': 'Problema',
+  en: {
+    'common.timeRemaining': 'Time remaining',
+    'common.check': 'Check',
+    'common.next': 'Next',
+    'common.loading': 'Loading',
+    'common.loadingProblems': 'Loading problems',
+    'common.reloadingProblem': 'Reloading problem',
+    'exercise.correct': 'Correct',
+    'exercise.incorrect': 'Incorrect',
+    'exercise.timeUp': 'Time is up',
+    'exercise.completed': 'Exercise Completed!',
+    'exercise.finalScore': 'Final Score',
+    'exercise.help': 'Help',
+    'exercise.tryAgain': 'Try Again',
+    'exercise.showAnswer': 'Show Answer',
+    'exercise.continue': 'Continue',
     'exercise.seconds': 's',
-    'exercise.explanation': 'Explicación',
-    'exercise.explanationText': 'Para sumar {first} + {second}, contamos {first} unidades y luego agregamos {second} unidades más, lo que nos da un total de {result} unidades.',
-    'exercise.visualRepresentation': 'Representación Visual',
-    'exercise.tips': 'Consejos',
-    'exercise.tipBreakdown': 'Descompón números grandes en partes más pequeñas para facilitar la suma.',
-    'exercise.tipPractice': 'La práctica regular hace que la suma mental sea más rápida y precisa.',
-    
-    'results.completed': 'Ejercicio Completado',
-    'results.points': 'puntos',
-    'results.excellent': '¡Excelente Trabajo!',
-    'results.good': '¡Buen Trabajo!',
-    'results.average': '¡No Está Mal!',
-    'results.needsPractice': '¡Sigue Practicando!',
-    'results.totalProblems': 'Total de Problemas',
-    'results.correctAnswers': 'Correctos',
-    'results.wrongAnswers': 'Incorrectos',
-    'results.accuracy': 'Precisión',
-    'results.problemList': 'Lista de Problemas',
-    'results.tryAgain': 'Intentar de Nuevo',
-    'results.backToHome': 'Volver al Inicio'
+    'exercise.restart': 'Restart',
+    'exercise.feedback': 'Feedback',
+    'exercise.accuracy': 'Accuracy',
   }
 };
 
-// Tipo de parámetros de traducción
-type TranslationParams = Record<string, string | number>;
-
-/**
- * Hook personalizado para manejar traducciones en el módulo de suma
- */
+// Hook simplificado para traducción
 export function useTranslation() {
-  // Obtener configuración de idioma del contexto global
-  const settings = useSettings().getModuleSettings('addition');
+  const [language, setLanguage] = useState<'es' | 'en'>('es');
   
-  // Determinar el idioma a usar
-  const language = settings?.language || 'spanish';
-  const currentTranslations = language === 'english' ? translations.english : translations.spanish;
-  
-  /**
-   * Función para traducir una clave con parámetros opcionales
-   */
-  const t = useCallback((key: string, params?: TranslationParams): string => {
-    let text = currentTranslations[key] || key;
-    
-    // Reemplazar parámetros si existen
-    if (params) {
-      Object.entries(params).forEach(([paramKey, paramValue]) => {
-        text = text.replace(`{${paramKey}}`, String(paramValue));
-      });
+  // Intentar obtener el idioma de localStorage o settings al iniciar
+  useEffect(() => {
+    try {
+      // Buscar preferencia de idioma en configuración de módulo
+      const settingsStr = localStorage.getItem('moduleSettings');
+      if (settingsStr) {
+        const settings = JSON.parse(settingsStr);
+        if (settings && settings.addition && settings.addition.language) {
+          const lang = settings.addition.language === 'spanish' ? 'es' : 'en';
+          setLanguage(lang);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading language preference:", error);
     }
-    
-    return text;
-  }, [currentTranslations]);
+  }, []);
   
-  return { t, language };
+  // Función de traducción
+  const t = (key: string): string => {
+    if (translations[language] && key in translations[language]) {
+      return translations[language][key as keyof typeof translations[typeof language]];
+    }
+    return key;
+  };
+  
+  return { t, language, setLanguage };
 }

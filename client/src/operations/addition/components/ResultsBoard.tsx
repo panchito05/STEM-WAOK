@@ -1,10 +1,11 @@
-// ResultsBoard.tsx - Componente para mostrar los resultados del ejercicio
+// ResultsBoard.tsx - Muestra los resultados finales del ejercicio
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Trophy, ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Problem, UserAnswer, ExerciseResults } from '../types';
 import { useTranslation } from '../hooks/useTranslation';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface ResultsBoardProps {
   results: ExerciseResults;
@@ -14,140 +15,147 @@ interface ResultsBoardProps {
 }
 
 /**
- * Componente para mostrar los resultados del ejercicio
+ * Componente que muestra los resultados del ejercicio
  */
-export const ResultsBoard: React.FC<ResultsBoardProps> = ({
-  results,
-  problems,
-  userAnswers,
-  onRestart
-}) => {
+export function ResultsBoard({ results, problems, userAnswers, onRestart }: ResultsBoardProps) {
   const { t } = useTranslation();
   
-  // Determinar mensaje según el rendimiento
-  const getPerformanceMessage = () => {
-    const { accuracy } = results;
-    
-    if (accuracy >= 0.9) {
-      return t('results.excellent');
-    } else if (accuracy >= 0.7) {
-      return t('results.good');
-    } else if (accuracy >= 0.5) {
-      return t('results.average');
-    } else {
-      return t('results.needsPractice');
-    }
-  };
+  // Calcular puntuaciones
+  const accuracyPercentage = Math.round(results.accuracy * 100);
+  const scoreClass = getScoreClass(accuracyPercentage);
   
   return (
-    <div className="space-y-6">
-      {/* Cabecera con resultado general */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-6 rounded-lg text-white text-center">
-        <h2 className="text-2xl font-bold mb-2">{t('results.completed')}</h2>
-        <div className="flex justify-center items-center mb-4">
-          <Trophy className="w-10 h-10 text-yellow-300 mr-3" />
-          <span className="text-3xl font-bold">{results.totalPoints} {t('results.points')}</span>
-        </div>
-        <p className="text-xl">{getPerformanceMessage()}</p>
-      </div>
-      
-      {/* Estadísticas principales */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard 
-          label={t('results.totalProblems')} 
-          value={results.totalProblems.toString()} 
-        />
-        <StatCard 
-          label={t('results.correctAnswers')} 
-          value={results.correctAnswers.toString()}
-          valueColor="text-green-600"
-        />
-        <StatCard 
-          label={t('results.wrongAnswers')} 
-          value={results.wrongAnswers.toString()} 
-          valueColor="text-red-600"
-        />
-        <StatCard 
-          label={t('results.accuracy')} 
-          value={`${Math.round(results.accuracy * 100)}%`}
-          valueColor={results.accuracy >= 0.7 ? 'text-green-600' : 'text-orange-600'}
-        />
-      </div>
-      
-      {/* Lista de problemas */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="bg-gray-100 p-3 border-b border-gray-200">
-          <h3 className="font-medium">{t('results.problemList')}</h3>
-        </div>
-        
-        <div className="divide-y divide-gray-200">
-          {problems.map((problem, index) => {
-            const userAnswer = userAnswers.find(a => a.problemId === problem.id);
-            const isCorrect = userAnswer?.isCorrect || false;
-            
-            return (
-              <div 
-                key={problem.id}
-                className={`p-3 flex justify-between items-center ${
-                  isCorrect ? 'bg-green-50' : 'bg-red-50'
-                }`}
-              >
-                <div className="flex items-center">
-                  <span className="bg-gray-200 text-gray-700 w-7 h-7 flex items-center justify-center rounded-full mr-3">
-                    {index + 1}
-                  </span>
-                  <span className="font-mono">
-                    {problem.operands[0]} + {problem.operands[1]} = {problem.result}
-                  </span>
-                </div>
-                
-                <div className="flex items-center">
-                  {userAnswer && (
-                    <span className={`font-mono mr-3 ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-                      {userAnswer.userAnswer || '-'}
-                    </span>
-                  )}
-                  
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    isCorrect ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                  }`}>
-                    {isCorrect ? '✓' : '✗'}
-                  </span>
-                </div>
+    <div className="flex flex-col gap-4">
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+        <CardHeader className="pb-2 text-center">
+          <CardTitle className="text-2xl font-bold text-blue-700">
+            {t('exercise.completed')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-2">
+            {/* Precisión */}
+            <div className="flex flex-col items-center p-3 bg-white rounded-lg shadow-sm">
+              <h3 className="text-lg font-medium text-gray-700">{t('exercise.accuracy')}</h3>
+              <div className="w-full mt-2">
+                <Progress value={accuracyPercentage} className="h-2.5" />
               </div>
-            );
-          })}
-        </div>
-      </div>
-      
-      {/* Botones de acción */}
-      <div className="flex justify-center space-x-4">
-        <Button
-          onClick={onRestart}
-          className="bg-green-600 hover:bg-green-700 text-white"
-        >
-          {t('results.tryAgain')}
-        </Button>
-        
-        <Button
-          onClick={() => window.location.href = '/'}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          {t('results.backToHome')} <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
-      </div>
+              <p className={`text-2xl font-bold mt-2 ${scoreClass}`}>
+                {accuracyPercentage}%
+              </p>
+            </div>
+            
+            {/* Puntuación total */}
+            <div className="flex flex-col items-center p-3 bg-white rounded-lg shadow-sm">
+              <h3 className="text-lg font-medium text-gray-700">{t('exercise.finalScore')}</h3>
+              <p className={`text-3xl font-bold mt-2 ${scoreClass}`}>
+                {results.totalPoints}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {results.correctAnswers} / {results.totalProblems} {t('exercise.correct').toLowerCase()}
+              </p>
+            </div>
+          </div>
+          
+          {/* Resumen de tiempo */}
+          <div className="flex flex-col p-3 bg-white rounded-lg shadow-sm mt-3">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">{t('exercise.timeStats')}</h3>
+            <div className="grid grid-cols-2 gap-2 text-center">
+              <div>
+                <p className="text-sm text-gray-500">{t('exercise.totalTime')}</p>
+                <p className="text-lg font-semibold">
+                  {formatTime(results.totalTimeTaken)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">{t('exercise.avgTimePerProblem')}</p>
+                <p className="text-lg font-semibold">
+                  {formatTime(results.averageTimePerProblem)}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Lista de problemas */}
+          <div className="mt-4">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">{t('exercise.problemList')}</h3>
+            <div className="space-y-2 max-h-60 overflow-y-auto p-1">
+              {userAnswers.map((answer, index) => {
+                const problem = problems.find(p => p.id === answer.problemId);
+                
+                return (
+                  <div 
+                    key={answer.problemId} 
+                    className={`p-3 rounded-md 
+                      ${answer.isCorrect 
+                        ? 'bg-green-50 border border-green-200' 
+                        : 'bg-red-50 border border-red-200'}`
+                    }
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-mono">
+                          {problem?.operands[0]} + {problem?.operands[1]} = {problem?.result}
+                        </span>
+                      </div>
+                      <div className="flex items-center">
+                        <Badge 
+                          className={`ml-2 ${answer.isCorrect ? "bg-green-500" : "bg-red-500"} text-white`}
+                        >
+                          {answer.isCorrect 
+                            ? t('exercise.correct') 
+                            : t('exercise.incorrect')}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-1 flex justify-between text-xs text-gray-500">
+                      <span>
+                        {t('exercise.yourAnswer')}: <b>{answer.userAnswer || t('exercise.noAnswer')}</b>
+                      </span>
+                      <span>
+                        {t('exercise.attempt')}: {answer.attempt}
+                      </span>
+                      <span>
+                        {formatTime(answer.timeTaken)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Botón de reinicio */}
+          <div className="mt-6 flex justify-center">
+            <Button 
+              onClick={onRestart}
+              className="px-8 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors"
+            >
+              {t('exercise.restart')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-};
+}
 
-// Componente auxiliar para las tarjetas de estadísticas
-const StatCard: React.FC<{
-  label: string;
-  value: string;
-  valueColor?: string;
-}> = ({ label, value, valueColor = 'text-blue-600' }) => (
-  <Card className="p-3 text-center">
-    <p className="text-sm text-gray-500 mb-1">{label}</p>
-    <p className={`text-xl font-bold ${valueColor}`}>{value}</p>
-  </Card>
-);
+/**
+ * Determina la clase CSS para la puntuación según el porcentaje
+ */
+function getScoreClass(percentage: number): string {
+  if (percentage >= 90) return 'text-green-600';
+  if (percentage >= 70) return 'text-blue-600';
+  if (percentage >= 50) return 'text-yellow-600';
+  return 'text-red-600';
+}
+
+/**
+ * Formatea el tiempo en segundos a mm:ss
+ */
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
