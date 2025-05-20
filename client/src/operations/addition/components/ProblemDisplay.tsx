@@ -1,7 +1,7 @@
 // ProblemDisplay.tsx - Muestra el problema actual de suma
 import React from 'react';
 import { Problem } from '../types';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface ProblemDisplayProps {
   problem: Problem;

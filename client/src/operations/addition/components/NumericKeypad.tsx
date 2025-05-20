@@ -1,7 +1,7 @@
 // NumericKeypad.tsx - Teclado numérico para ingresar respuestas
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Backspace } from 'lucide-react';
+import { Delete } from 'lucide-react';
 
 interface NumericKeypadProps {
   onNumberClick: (value: string) => void;
@@ -74,7 +74,7 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
           onClick={onBackspaceClick}
           disabled={disabled || currentAnswer.length === 0}
         >
-          <Backspace className="h-6 w-6" />
+          <Delete className="h-6 w-6" />
         </Button>
         
         {/* Botón Verificar (opcional) */}
