@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "@/hooks/use-translations";
+// Importar el tipo MathProblem para el formato estándar de problemas
+import { MathProblem } from '../../components/ProblemRenderer';
 import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus from '@/lib/eventBus'; // Eliminado 'on', 'off' ya que no se usan directamente aquí
 import LevelUpHandler from "@/components/LevelUpHandler";
@@ -1223,9 +1225,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
     
-    // Importar el tipo MathProblem del nuevo componente ProblemRenderer
-    import { MathProblem } from '../../components/ProblemRenderer';
-
     // NUEVO ENFOQUE MEJORADO: Capturar problemas directamente desde la UI
     function captureProblemsFromUI(): MathProblem[] {
       console.log("📸 Capturando problemas directamente de la UI...");
