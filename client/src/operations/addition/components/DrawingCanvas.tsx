@@ -17,7 +17,7 @@ interface DrawingCanvasProps {
   strokeWidth?: number;
   className?: string;
   onClear?: () => void;
-  currentProblem?: AdditionProblem; // Problema actual para estampar en el canvas
+  currentProblem?: AdditionProblem | null; // Problema actual para estampar en el canvas
 }
 
 export function DrawingCanvas({
@@ -28,7 +28,7 @@ export function DrawingCanvas({
   className = '',
   onClear,
   position = 'right', // Nueva propiedad para posicionar los controles: 'left' o 'right'
-  currentProblem = null
+  currentProblem
 }: DrawingCanvasProps & { position?: 'left' | 'right' }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -463,15 +463,15 @@ export function DrawingCanvas({
     
     // Formatear los números
     const { operands } = currentProblem;
-    const formattedOperands = operands.map(num => num.toFixed(1));
+    const formattedOperands = operands.map((num: number) => num.toFixed(1));
     
     // Encontrar la longitud máxima para alineación
-    const parts = formattedOperands.map(num => {
+    const parts = formattedOperands.map((num: string) => {
       const [intPart, decPart] = num.split('.');
       return { intPart, decPart };
     });
     
-    const maxIntLength = Math.max(...parts.map(p => p.intPart.length));
+    const maxIntLength = Math.max(...parts.map((p: {intPart: string, decPart: string}) => p.intPart.length));
     
     // Dibujar los operandos alineados
     let yOffset = -40;
