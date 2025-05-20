@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
 // Importar componentes
-import { ProblemDisplay } from './components/ProblemDisplay';
-import { NumericKeypad } from './components/NumericKeypad';
+import ProblemDisplay from './components/ProblemDisplay';
+import NumericKeypad from './components/NumericKeypad';
 import { ResultsBoard } from './components/ResultsBoard';
 import { ExplanationPanel } from './components/ExplanationPanel';
 
@@ -27,8 +27,8 @@ import {
   LevelFeedback
 } from './types';
 
-// Importar componente para audio (si es necesario)
-import { useAudio } from '@/hooks/useAudio';
+// Importar hook para audio
+import { useAudio } from '../../hooks/useAudio';
 
 // Componente principal para el ejercicio de suma
 export default function AdditionExercise() {

@@ -1,90 +1,75 @@
-// AdditionProblemRenderer.tsx
+// AdditionProblemRenderer.tsx - Componente para renderizar problemas de suma en diferentes partes de la aplicación
 import React from 'react';
-import { Check, X } from 'lucide-react';
 
-// Interfaz específica para problemas de suma
-interface AdditionProblem {
-  id?: string;
-  tipo?: string;
-  displayText?: string;
-  operands?: number[];
-  operacion?: string;
-  correctAnswer?: string;
-  userAnswer?: any;
-  isCorrect?: boolean;
-  status?: string;
-  level?: string;
-  attempts?: number;
-  timeSpent?: number;
-  problem?: string; // Campo compatible para versiones antiguas
-  info?: string;    // Campo compatible para versiones antiguas
+interface Problem {
+  operands: number[];
+  result: number;
 }
 
 interface AdditionProblemRendererProps {
-  problems: AdditionProblem[];
-  showProblemNumbers?: boolean;
+  problem: {
+    operands: number[];
+    result: number;
+  } | string;
+  isCompact?: boolean;
+  showAnswer?: boolean;
+  highlightCorrect?: boolean;
 }
 
-const AdditionProblemRenderer: React.FC<AdditionProblemRendererProps> = ({ 
-  problems, 
-  showProblemNumbers = true
+/**
+ * Componente para renderizar de forma consistente un problema de suma
+ * en diferentes partes de la aplicación (ejercicios, historial, etc.)
+ */
+const AdditionProblemRenderer: React.FC<AdditionProblemRendererProps> = ({
+  problem,
+  isCompact = false,
+  showAnswer = true,
+  highlightCorrect = false
 }) => {
+  // Si el problema es una cadena, intentar extraer los números
+  let operands: number[] = [];
+  let result: number | null = null;
+  
+  if (typeof problem === 'string') {
+    // Intentar analizar la cadena del problema (formato típico: "5 + 7 = 12")
+    const parts = problem.split('=');
+    if (parts.length === 2) {
+      // Extraer resultado
+      result = parseInt(parts[1].trim());
+      
+      // Extraer operandos
+      const operandParts = parts[0].split('+');
+      operands = operandParts.map(op => parseInt(op.trim())).filter(n => !isNaN(n));
+    }
+  } else {
+    // Si ya es un objeto problema, usarlo directamente
+    operands = problem.operands;
+    result = problem.result;
+  }
+  
+  // Determinar clases según configuración
+  const containerClasses = isCompact 
+    ? 'text-sm inline-flex items-center'
+    : 'text-lg md:text-xl flex items-center justify-center';
+    
+  const resultClasses = highlightCorrect && showAnswer
+    ? 'font-bold text-green-600'
+    : 'font-medium';
+    
   return (
-    <div className="space-y-2">
-      {problems.map((problem, index) => {
-        // Determinar el texto a mostrar (usar displayText, problem, o construirlo desde operands)
-        let displayText = '';
-        if (problem.displayText) {
-          displayText = problem.displayText;
-        } else if (problem.problem) {
-          displayText = problem.problem;
-        } else if (problem.operands && problem.operands.length >= 2) {
-          displayText = `${problem.operands[0]} ${problem.operacion || '+'} ${problem.operands[1]} = ${problem.correctAnswer}`;
-        }
-        
-        // Determinar si es correcto
-        const isCorrect = problem.isCorrect !== undefined ? problem.isCorrect : 
-                        (problem.status === 'correct');
-        
-        // Crear información adicional
-        const level = problem.level || '1';
-        const levelDisplay = level === 'beginner' ? '1' : 
-                            level === 'elementary' ? '2' : 
-                            level === 'intermediate' ? '3' : 
-                            level === 'advanced' ? '4' : 
-                            level === 'expert' ? '5' : level;
-        
-        const infoText = problem.info || 
-                        `Lvl: ${levelDisplay}, Att: ${problem.attempts || 1}, T: ${problem.timeSpent || 0}s`;
-        
-        return (
-          <div 
-            key={problem.id || index} 
-            className={`p-3 rounded-lg ${isCorrect 
-              ? 'bg-green-100 border border-green-200' 
-              : 'bg-red-100 border border-red-200'}`}
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                {showProblemNumbers && <span className="font-medium">(#{index + 1})</span>} {displayText}
-                
-                {/* Mostrar respuesta del usuario si fue incorrecta */}
-                {!isCorrect && problem.userAnswer !== undefined && !isNaN(problem.userAnswer) && 
-                  <span className="text-red-600 ml-2">({problem.userAnswer})</span>
-                }
-              </div>
-              <div>
-                {isCorrect 
-                  ? <Check className="h-5 w-5 text-green-600" /> 
-                  : <X className="h-5 w-5 text-red-600" />}
-              </div>
-            </div>
-            <div className="text-xs text-gray-600 mt-1">
-              {infoText}
-            </div>
-          </div>
-        );
-      })}
+    <div className={containerClasses}>
+      {operands.map((operand, index) => (
+        <React.Fragment key={index}>
+          {index > 0 && <span className="mx-1">+</span>}
+          <span className="font-mono">{operand}</span>
+        </React.Fragment>
+      ))}
+      <span className="mx-1">=</span>
+      {showAnswer ? (
+        <span className={`font-mono ${resultClasses}`}>{result}</span>
+      ) : (
+        <span className="font-mono text-gray-400">?</span>
+      )}
     </div>
   );
 };
