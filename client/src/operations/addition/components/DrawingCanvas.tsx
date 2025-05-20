@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 
 // Definir los diferentes modos de herramientas
-type ToolMode = 'pen' | 'eraser' | 'highlighter' | 'line';
+type ToolMode = 'pen' | 'eraser';
 
 // Punto para optimización del dibujo
 interface Point {
@@ -308,15 +308,9 @@ export function DrawingCanvas({
         context.globalCompositeOperation = 'source-over';
         
         // Ajustar grosor según la herramienta
-        if (tool === 'highlighter') {
-          setActiveWidth(15);
-          setActiveColor('#ffff0080'); // Amarillo transparente
-        } else if (tool === 'pen') {
+        if (tool === 'pen') {
           setActiveWidth(3);
           setActiveColor(darkMode ? '#ffffff' : '#333333');
-        } else if (tool === 'line') {
-          setActiveWidth(2);
-          setActiveColor('#0000ff');
         }
       }
     }
@@ -402,16 +396,7 @@ export function DrawingCanvas({
           </div>
         )}
         
-        {/* Marcador */}
-        <button
-          onClick={() => setTool('highlighter')}
-          className={`p-2 rounded-full ${activeTool === 'highlighter' ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
-          title="Marcador"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 11l6 6 M6 18l-3 3 M12 6l6 6 M4 18L18 4"></path>
-          </svg>
-        </button>
+
       </div>
       
       {/* Selector de colores con modo oscuro integrado */}
