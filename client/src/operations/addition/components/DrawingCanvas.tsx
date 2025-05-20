@@ -246,43 +246,62 @@ export function DrawingCanvas({
   // Función para cambiar el tamaño del borrador
   const changeEraserSize = (size: number) => {
     setEraserSize(size);
+    
+    // Actualizar lineWidth directamente en el contexto
+    if (contextRef.current) {
+      contextRef.current.lineWidth = size;
+    }
+    
     if (activeTool === 'eraser' && contextRef.current) {
       setActiveWidth(size);
       
       // Visual preview - dibuja un punto para mostrar el tamaño actual
       if (canvasRef.current && contextRef.current) {
+        // Guardar el estado actual del canvas para restaurarlo después
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvasRef.current.width;
+        tempCanvas.height = canvasRef.current.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        if (tempCtx && canvasRef.current) {
+          tempCtx.drawImage(canvasRef.current, 0, 0);
+        }
+        
         // Guarda el estado actual para restaurarlo después
         const currentCompositeOperation = contextRef.current.globalCompositeOperation;
         const currentColor = contextRef.current.strokeStyle;
+        const currentLineWidth = contextRef.current.lineWidth;
         
         // Configurar para dibujar un punto de muestra
         contextRef.current.globalCompositeOperation = 'source-over';
-        contextRef.current.fillStyle = darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
+        contextRef.current.fillStyle = darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
         
         // Dibuja un círculo temporal que muestra el tamaño actual
         contextRef.current.beginPath();
         contextRef.current.arc(canvasRef.current.width / 4, 50, size / 2, 0, Math.PI * 2);
         contextRef.current.fill();
         
-        // Restaurar configuración original
-        contextRef.current.globalCompositeOperation = currentCompositeOperation;
-        contextRef.current.strokeStyle = currentColor;
+        // Dibuja un segundo círculo en otro lugar para mejor visualización
+        contextRef.current.beginPath();
+        contextRef.current.arc(canvasRef.current.width / 2, 50, size / 2, 0, Math.PI * 2);
+        contextRef.current.fill();
         
-        // Programa la eliminación del punto de muestra después de 1 segundo
+        // Muestra texto con el tamaño
+        contextRef.current.font = "16px Arial";
+        contextRef.current.fillText(`Tamaño: ${size}px`, canvasRef.current.width / 4 + size/2 + 10, 55);
+        
+        // Restaurar configuración original después de un breve momento
         setTimeout(() => {
           if (canvasRef.current && contextRef.current) {
-            const canvas = canvasRef.current;
-            // Borrar solo la región donde se dibujó el punto
-            contextRef.current.clearRect(canvas.width / 4 - size, 0, size * 2, 100);
-            
-            // Si hay imagen guardada, restaurarla
-            if (canvasImageRef.current) {
-              const img = new Image();
-              img.onload = () => {
-                contextRef.current?.drawImage(img, 0, 0);
-              };
-              img.src = canvasImageRef.current;
+            // Restaurar imagen original
+            contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+            if (tempCtx) {
+              contextRef.current.drawImage(tempCanvas, 0, 0);
             }
+            
+            // Restaurar configuración
+            contextRef.current.globalCompositeOperation = currentCompositeOperation;
+            contextRef.current.strokeStyle = currentColor;
+            contextRef.current.lineWidth = size; // Mantener el nuevo tamaño para el borrador
           }
         }, 1000);
       }

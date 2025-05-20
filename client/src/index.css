@@ -197,12 +197,34 @@ html.canvas-dark-mode .addition-exercise .number-row {
 /* Asegurar que "Respuesta:" sea visible en modo oscuro */
 html.canvas-dark-mode label[for="answer"],
 html.canvas-dark-mode .form-label,
-html.canvas-dark-mode [data-label="Respuesta:"] {
+html.canvas-dark-mode [data-label="Respuesta:"],
+html.canvas-dark-mode span:contains("Respuesta:"),
+html.canvas-dark-mode .answer-label,
+html.canvas-dark-mode .question-label {
   color: white !important;
   font-weight: bold !important;
   opacity: 1 !important;
   visibility: visible !important;
   display: block !important;
+}
+
+/* Selector de fuerza para garantizar que todas las etiquetas sean visibles en modo oscuro */
+html.canvas-dark-mode *:before,
+html.canvas-dark-mode *[data-content="Respuesta:"],
+html.canvas-dark-mode *[class*="label"],
+html.canvas-dark-mode *[class*="Label"] {
+  color: white !important;
+}
+
+/* Específicamente para el texto "Respuesta:" */
+html.canvas-dark-mode .exercise-container > div:first-child {
+  color: white !important;
+}
+
+/* Refuerzo para todos los textos dentro del ejercicio en modo oscuro */
+html.canvas-dark-mode .exercise-container * {
+  color: white !important;
+  border-color: white !important;
 }
 
 html.canvas-dark-mode .check-button {
