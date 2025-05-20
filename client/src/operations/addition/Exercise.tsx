@@ -2100,6 +2100,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     onClick={() => {
                         if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+                            
+                            // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
+                            setConsecutiveCorrectAnswers(0);
+                            console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
+                            
                             // Usamos la respuesta correcta del problema directamente
                             setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
                             setFeedbackColor("blue");
