@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 
 // Definir los diferentes modos de herramientas
-type ToolMode = 'pen' | 'eraser' | 'highlighter' | 'line';
+type ToolMode = 'pen' | 'eraser' | 'line';
 
 interface DrawingCanvasProps {
   width?: number;
@@ -142,6 +142,13 @@ export function DrawingCanvas({
   
   // Drawing functions
   const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    // Si hay una vista previa activa, la limpiamos primero
+    if (previewTimerRef.current) {
+      clearTimeout(previewTimerRef.current);
+      previewTimerRef.current = null;
+      clearPreview();
+    }
+    
     const canvas = canvasRef.current;
     const context = contextRef.current;
     if (!canvas || !context) return;
@@ -224,27 +231,59 @@ export function DrawingCanvas({
       
       if (tool === 'eraser') {
         context.globalCompositeOperation = 'destination-out';
+        context.lineWidth = eraserSize; // Asegurar que el borrador use el tamaño correcto
         setActiveWidth(eraserSize); // Usar el tamaño de borrador definido
       } else {
         context.globalCompositeOperation = 'source-over';
         
         // Ajustar grosor según la herramienta
-        if (tool === 'highlighter') {
-          setActiveWidth(15);
-          setActiveColor('#ffff0080'); // Amarillo transparente
-        } else if (tool === 'pen') {
+        if (tool === 'pen') {
+          context.lineWidth = 3;
           setActiveWidth(3);
-          setActiveColor(darkMode ? '#ffffff' : '#333333');
+          const color = darkMode ? '#ffffff' : '#333333';
+          context.strokeStyle = color;
+          setActiveColor(color);
         } else if (tool === 'line') {
+          context.lineWidth = 2;
           setActiveWidth(2);
+          context.strokeStyle = '#0000ff';
           setActiveColor('#0000ff');
         }
       }
     }
   };
   
+  // Variable para gestionar el temporizador de visualización
+  const previewTimerRef = useRef<number | null>(null);
+  // Variable para guardar el canvas temporal
+  const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  
+  // Función para limpiar la vista previa
+  const clearPreview = () => {
+    if (canvasRef.current && contextRef.current && tempCanvasRef.current) {
+      // Restaurar imagen original
+      contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      const tempCtx = tempCanvasRef.current.getContext('2d');
+      if (tempCtx) {
+        contextRef.current.drawImage(tempCanvasRef.current, 0, 0);
+      }
+      
+      // Asegurar que se mantenga la configuración correcta para el borrador
+      if (activeTool === 'eraser') {
+        contextRef.current.globalCompositeOperation = 'destination-out';
+        contextRef.current.lineWidth = eraserSize;
+      }
+    }
+  };
+  
   // Función para cambiar el tamaño del borrador
   const changeEraserSize = (size: number) => {
+    // Limpiar cualquier vista previa anterior
+    if (previewTimerRef.current) {
+      clearTimeout(previewTimerRef.current);
+      previewTimerRef.current = null;
+    }
+    
     setEraserSize(size);
     
     // Actualizar lineWidth directamente en el contexto
@@ -258,18 +297,21 @@ export function DrawingCanvas({
       // Visual preview - dibuja un punto para mostrar el tamaño actual
       if (canvasRef.current && contextRef.current) {
         // Guardar el estado actual del canvas para restaurarlo después
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvasRef.current.width;
-        tempCanvas.height = canvasRef.current.height;
-        const tempCtx = tempCanvas.getContext('2d');
+        if (!tempCanvasRef.current) {
+          tempCanvasRef.current = document.createElement('canvas');
+        }
+        
+        tempCanvasRef.current.width = canvasRef.current.width;
+        tempCanvasRef.current.height = canvasRef.current.height;
+        
+        const tempCtx = tempCanvasRef.current.getContext('2d');
         if (tempCtx && canvasRef.current) {
+          tempCtx.clearRect(0, 0, tempCanvasRef.current.width, tempCanvasRef.current.height);
           tempCtx.drawImage(canvasRef.current, 0, 0);
         }
         
         // Guarda el estado actual para restaurarlo después
         const currentCompositeOperation = contextRef.current.globalCompositeOperation;
-        const currentColor = contextRef.current.strokeStyle;
-        const currentLineWidth = contextRef.current.lineWidth;
         
         // Configurar para dibujar un punto de muestra
         contextRef.current.globalCompositeOperation = 'source-over';
@@ -277,32 +319,13 @@ export function DrawingCanvas({
         
         // Dibuja un círculo temporal que muestra el tamaño actual
         contextRef.current.beginPath();
-        contextRef.current.arc(canvasRef.current.width / 4, 50, size / 2, 0, Math.PI * 2);
+        contextRef.current.arc(100, 50, size / 2, 0, Math.PI * 2);
         contextRef.current.fill();
         
-        // Dibuja un segundo círculo en otro lugar para mejor visualización
-        contextRef.current.beginPath();
-        contextRef.current.arc(canvasRef.current.width / 2, 50, size / 2, 0, Math.PI * 2);
-        contextRef.current.fill();
-        
-        // Muestra texto con el tamaño
-        contextRef.current.font = "16px Arial";
-        contextRef.current.fillText(`Tamaño: ${size}px`, canvasRef.current.width / 4 + size/2 + 10, 55);
-        
-        // Restaurar configuración original después de un breve momento
-        setTimeout(() => {
-          if (canvasRef.current && contextRef.current) {
-            // Restaurar imagen original
-            contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-            if (tempCtx) {
-              contextRef.current.drawImage(tempCanvas, 0, 0);
-            }
-            
-            // Restaurar configuración
-            contextRef.current.globalCompositeOperation = currentCompositeOperation;
-            contextRef.current.strokeStyle = currentColor;
-            contextRef.current.lineWidth = size; // Mantener el nuevo tamaño para el borrador
-          }
+        // Programa la eliminación automática después de un breve momento
+        previewTimerRef.current = window.setTimeout(() => {
+          clearPreview();
+          previewTimerRef.current = null;
         }, 1000);
       }
     }
@@ -390,16 +413,7 @@ export function DrawingCanvas({
           </div>
         )}
         
-        {/* Marcador */}
-        <button
-          onClick={() => setTool('highlighter')}
-          className={`p-2 rounded-full ${activeTool === 'highlighter' ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
-          title="Marcador"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 11l6 6 M6 18l-3 3 M12 6l6 6 M4 18L18 4"></path>
-          </svg>
-        </button>
+
       </div>
       
       {/* Selector de colores con modo oscuro integrado */}
