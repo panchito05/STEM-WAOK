@@ -2174,15 +2174,34 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         </div>
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-xs mx-auto">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "backspace"].map((key, idx) => (
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
-              className={`text-lg sm:text-xl h-11 sm:h-12 ${key === "" ? "invisible pointer-events-none" : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100"}`}
-              onClick={() => !viewingPrevious && !exerciseCompleted && !waitingRef.current && key && key !== "" && handleDigitInput(key)}
-              disabled={waitingRef.current || exerciseCompleted || viewingPrevious || key === "" || (!exerciseStarted && key !== "" && key!=="backspace" && (key < '0' || key > '9'))}
+              className={`text-lg sm:text-xl h-11 sm:h-12 ${
+                key === "sequential_backspace" 
+                  ? "bg-red-50 hover:bg-red-100 text-red-600 active:bg-red-200" 
+                  : key === "" 
+                    ? "invisible pointer-events-none" 
+                    : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100"
+              }`}
+              onClick={() => {
+                if (viewingPrevious || exerciseCompleted || waitingRef.current || !key || key === "") return;
+                
+                if (key === "sequential_backspace") {
+                  handleSequentialBackspace();
+                } else {
+                  handleDigitInput(key);
+                }
+              }}
+              disabled={waitingRef.current || exerciseCompleted || viewingPrevious || key === "" || (!exerciseStarted && key !== "" && key !== "backspace" && key !== "sequential_backspace" && (key < '0' || key > '9'))}
             >
-              {key === "backspace" ? <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" /> : key}
+              {key === "backspace" 
+                ? <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" /> 
+                : key === "sequential_backspace" 
+                  ? <span className="text-xl font-bold">&gt;</span>
+                  : key
+              }
             </Button>
           ))}
         </div>
