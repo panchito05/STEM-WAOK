@@ -1,6 +1,6 @@
 // useTranslation.ts - Hook para manejar traducciones en el módulo de suma
-import { useContext, useCallback } from 'react';
-import { SettingsContext } from '@/context/SettingsContext';
+import { useCallback } from 'react';
+import { useSettings } from '@/context/SettingsContext';
 
 // Traducciones disponibles
 const translations = {
@@ -70,8 +70,7 @@ type TranslationParams = Record<string, string | number>;
  */
 export function useTranslation() {
   // Obtener configuración de idioma del contexto global
-  const { getModuleSettings } = useContext(SettingsContext);
-  const settings = getModuleSettings('addition');
+  const settings = useSettings().getModuleSettings('addition');
   
   // Determinar el idioma a usar
   const language = settings?.language || 'spanish';
