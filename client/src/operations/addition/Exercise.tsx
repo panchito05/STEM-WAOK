@@ -489,6 +489,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     waitingRef.current = waitingForContinue;
     // Ya no enfocamos el botón aquí, se hace directamente en cada punto donde se llama a setWaitingForContinue(true)
   }, [waitingForContinue]);
+  
+  // Monitor avanzado del contador de respuestas consecutivas correctas
+  useEffect(() => {
+    // Sincronizar con localStorage para asegurar consistencia total
+    if (consecutiveCorrectAnswers !== undefined) {
+      try {
+        // 1. Almacenar en localStorage para persistencia
+        localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString());
+        
+        // 2. También almacenar en sessionStorage para verificación cruzada
+        sessionStorage.setItem('addition_lastConsecutiveCorrect', consecutiveCorrectAnswers.toString());
+        sessionStorage.setItem('addition_lastConsecutiveUpdateTime', Date.now().toString());
+        
+        // 3. Logs detallados para seguimiento
+        console.log(`[CONTADOR-V2] Actualizado contador de respuestas correctas consecutivas a ${consecutiveCorrectAnswers}`);
+        
+        // 4. Verificación avanzada para diagnóstico
+        if (consecutiveCorrectAnswers >= CORRECT_ANSWERS_FOR_LEVEL_UP && settings.enableAdaptiveDifficulty) {
+          console.log(`[CONTADOR-V2] ⚠️ ATENCIÓN: Se alcanzó umbral para subir nivel (${consecutiveCorrectAnswers}/${CORRECT_ANSWERS_FOR_LEVEL_UP})`);
+          
+          // 5. Verificar si el nivel debería subir
+          const difficultiesOrder = ["beginner", "elementary", "intermediate", "advanced", "expert"];
+          const currentLevelIdx = difficultiesOrder.indexOf(adaptiveDifficulty);
+          
+          if (currentLevelIdx < difficultiesOrder.length - 1) {
+            console.log(`[CONTADOR-V2] ✅ Confirmado: condiciones cumplidas para subir de nivel`);
+            sessionStorage.setItem('addition_levelUpEligible', 'true');
+          }
+        }
+      } catch (error) {
+        console.error('[CONTADOR-V2] Error al sincronizar contador:', error);
+      }
+    }
+  }, [consecutiveCorrectAnswers, settings.enableAdaptiveDifficulty, adaptiveDifficulty]);
 
   useEffect(() => {
     generateNewProblemSet();
@@ -606,43 +640,58 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setConsecutiveCorrectAnswers(newConsecutive);
       setConsecutiveIncorrectAnswers(0);
 
-      // Sistema más robusto para verificar subida de nivel
+      // Sistema mejorado y más robusto para verificar subida de nivel
+      // Doble verificación con logs para diagnóstico
+      console.log(`[CONTADOR] Respuestas correctas consecutivas actuales: ${newConsecutive}/${CORRECT_ANSWERS_FOR_LEVEL_UP}`);
+      
       if (newConsecutive >= CORRECT_ANSWERS_FOR_LEVEL_UP && settings.enableAdaptiveDifficulty) {
           const difficultiesOrder: DifficultyLevel[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
           const currentLevelIdx = difficultiesOrder.indexOf(adaptiveDifficulty);
           
-          // Logs detallados para depuración
-          console.log(`[NIVEL] Verificando subida de nivel. Rachas consecutivas: ${newConsecutive}/${CORRECT_ANSWERS_FOR_LEVEL_UP}`);
-          console.log(`[NIVEL] Nivel actual: ${adaptiveDifficulty} (Índice: ${currentLevelIdx}/${difficultiesOrder.length-1})`);
+          // Logs para diagnóstico y seguimiento
+          console.log(`[NIVEL] ===== VERIFICACIÓN DE SUBIDA DE NIVEL =====`);
+          console.log(`[NIVEL] Rachas consecutivas correctas: ${newConsecutive}/${CORRECT_ANSWERS_FOR_LEVEL_UP}`);
+          console.log(`[NIVEL] Nivel actual: ${adaptiveDifficulty} (Índice ${currentLevelIdx}/${difficultiesOrder.length-1})`);
+          console.log(`[NIVEL] Dificultad adaptativa activada: ${settings.enableAdaptiveDifficulty}`);
           
-          // Doble verificación para asegurar que podemos subir de nivel
+          // Verificar que podemos subir de nivel
           if (currentLevelIdx < difficultiesOrder.length - 1) {
               const newLevel = difficultiesOrder[currentLevelIdx + 1];
-              console.log(`[NIVEL] ¡SUBIENDO DE NIVEL! De ${adaptiveDifficulty} a ${newLevel}`);
+              console.log(`[NIVEL] ✅ INICIANDO SUBIDA DE NIVEL: ${adaptiveDifficulty} → ${newLevel}`);
               
-              // Primero actualizar localStorage manualmente para asegurar persistencia
               try {
+                  // Actualizar localStorage con el nuevo nivel
                   localStorage.setItem('addition_adaptiveDifficulty', newLevel);
+                  localStorage.setItem('addition_currentLevel', newLevel);
                   
-                  // Luego actualizar el estado para la UI
+                  // Actualizar los estados para la UI
                   setAdaptiveDifficulty(newLevel);
-                  updateModuleSettings("addition", { difficulty: newLevel, enableAdaptiveDifficulty: true });
+                  updateModuleSettings("addition", { 
+                      difficulty: newLevel, 
+                      enableAdaptiveDifficulty: true 
+                  });
                   
-                  // Reiniciar contador de respuestas consecutivas
+                  // Reiniciar contador de respuestas correctas
                   setConsecutiveCorrectAnswers(0);
                   localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
                   
-                  // Mostrar recompensa de subida de nivel
+                  // Mostrar recompensa y bloquear avance automático
                   setShowLevelUpReward(true);
                   setBlockAutoAdvance(true);
                   
                   // Notificar al sistema de eventos
-                  eventBus.emit('levelUp', { previousLevel: adaptiveDifficulty, newLevel });
+                  eventBus.emit('levelUp', { 
+                      previousLevel: adaptiveDifficulty, 
+                      newLevel,
+                      consecutiveCorrectAnswers: CORRECT_ANSWERS_FOR_LEVEL_UP
+                  });
+                  
+                  console.log(`[NIVEL] ✅ SUBIDA DE NIVEL COMPLETADA: ${adaptiveDifficulty} → ${newLevel}`);
               } catch (error) {
-                  console.error('[ERROR] No se pudo actualizar el nivel:', error);
+                  console.error('[NIVEL] ❌ Error en subida de nivel:', error);
               }
           } else {
-              console.log(`[NIVEL] Ya estás en el nivel máximo (${adaptiveDifficulty})`);
+              console.log(`[NIVEL] ⚠️ Ya estás en el nivel máximo (${adaptiveDifficulty})`);
           }
       }
 
