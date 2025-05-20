@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Check, Trash, Move, Moon, Sun } from 'lucide-react';
+import { X, Check, Trash, Move } from 'lucide-react';
 import { AdditionProblem } from '../types';
 import { DrawingCanvas } from './DrawingCanvas';
 import NumericKeypad from './SimpleNumericKeypad';
@@ -20,12 +20,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [position, setPosition] = useState<'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'>('topLeft');
-  const [darkMode, setDarkMode] = useState<boolean>(false);
-  // Solo necesitamos una referencia para el canvas, utilizamos tipo más específico
-  const drawingCanvasRef = useRef<{
-    clearCanvas: () => void;
-    toggleDarkMode: () => void;
-  } | null>(null);
+  const canvasRef = useRef<any>(null);
   
   // Reset state when problem changes
   useEffect(() => {
@@ -33,8 +28,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     setIsCorrect(null);
     
     // Clear canvas when problem changes
-    if (drawingCanvasRef.current) {
-      drawingCanvasRef.current.clearCanvas();
+    if (canvasRef.current && canvasRef.current.clear) {
+      canvasRef.current.clear();
     }
   }, [problem]);
   
@@ -55,41 +50,13 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         setIsCorrect(null);
         
         // Clear canvas
-        if (drawingCanvasRef.current) {
-          drawingCanvasRef.current.clearCanvas();
+        if (canvasRef.current && canvasRef.current.clear) {
+          canvasRef.current.clear();
         }
         
         // Move to next problem
         onCorrectAnswer();
       }, 1000); // Short delay before moving to next problem
-    }
-  };
-  
-  // Effect para manejar cambios de tema oscuro
-  useEffect(() => {
-    // Función para escuchar eventos de cambio de tema del DrawingCanvas
-    const handleDarkModeChange = (event: any) => {
-      const isDarkMode = event.detail.darkMode;
-      setDarkMode(isDarkMode);
-    };
-    
-    // Agregar listener para el evento personalizado
-    document.addEventListener('canvasDarkModeChange', handleDarkModeChange);
-    
-    // Cleanup
-    return () => {
-      document.removeEventListener('canvasDarkModeChange', handleDarkModeChange);
-    };
-  }, []);
-  
-  // Función para alternar el modo oscuro
-  const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    
-    // Aquí comunicamos el cambio al DrawingCanvas
-    if (drawingCanvasRef.current && drawingCanvasRef.current.toggleDarkMode) {
-      drawingCanvasRef.current.toggleDarkMode();
     }
   };
   
@@ -101,19 +68,19 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       const secondOperand = problem.operands[1];
       
       return (
-        <div className={`font-mono text-2xl whitespace-pre text-right ${darkMode ? 'text-white' : 'text-black'}`}>
+        <div className="font-mono text-2xl whitespace-pre text-right">
           <div className="pr-1">{firstOperand.toFixed(1)}</div>
           <div className="flex items-center justify-end">
             <span className="mr-2">+</span>
             <span>{secondOperand.toFixed(1)}</span>
           </div>
-          <div className={`border-t ${darkMode ? 'border-white' : 'border-black'} mt-1 w-full`}></div>
+          <div className="border-t border-black mt-1 w-full"></div>
         </div>
       );
     } else {
       // Horizontal format (fallback)
       return (
-        <div className={`font-mono text-2xl ${darkMode ? 'text-white' : 'text-black'}`}>
+        <div className="font-mono text-2xl">
           {problem.operands.map((op, index) => (
             <React.Fragment key={index}>
               <span>{op.toFixed(1)}</span>
@@ -152,43 +119,22 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   return (
-    <div className={`fixed inset-0 ${darkMode ? 'bg-gray-900' : 'bg-white'} z-50`}>
-      {/* Botones de control en la parte superior */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-2 z-50">
-        {/* Botón de modo oscuro */}
-        <button
-          onClick={toggleDarkMode}
-          className={`p-2 rounded-full ${darkMode ? 'bg-blue-500 hover:bg-blue-600' : 'bg-gray-200 hover:bg-gray-300'} transition-colors`}
-          aria-label={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-        >
-          {darkMode ? (
-            <Sun className="h-3 w-3 text-white" />
-          ) : (
-            <Moon className="h-3 w-3 text-gray-800" />
-          )}
-        </button>
-        
-        {/* Close button X rojo en la parte superior (más pequeño) */}
-        <button
-          onClick={onClose}
-          className="p-2 rounded-full bg-red-600 hover:bg-red-700 transition-colors"
-          aria-label="Cerrar modo profesor"
-          style={{zIndex: 9999}}
-        >
-          <X className="h-3 w-3 text-white" />
-        </button>
-      </div>
+    <div className="fixed inset-0 bg-white z-50">
+      {/* Close button X rojo en la parte superior (más pequeño) */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 left-1/2 transform -translate-x-1/2 p-2 rounded-full bg-red-600 hover:bg-red-700 transition-colors z-50"
+        aria-label="Cerrar modo profesor"
+        style={{zIndex: 9999}}
+      >
+        <X className="h-3 w-3 text-white" />
+      </button>
       
       {/* Main layout with drawing area taking most of the screen */}
       <div className="h-full w-full">
         {/* Full screen drawing canvas as background - expanded to full screen */}
         <div className="absolute inset-0 w-full h-full">
-          <DrawingCanvas 
-            ref={drawingCanvasRef}
-            width={window.innerWidth} 
-            height={window.innerHeight} 
-            className="w-full h-full" 
-          />
+          <DrawingCanvas width={window.innerWidth} height={window.innerHeight} className="w-full h-full" />
         </div>
         
         {/* Problem and keypad container with dynamic positioning */}
@@ -206,23 +152,23 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           </button>
           
           {/* Problem display */}
-          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} p-4 shadow-sm border rounded-md mb-2`}>
+          <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             {renderProblem()}
           </div>
           
           {/* Answer input */}
           <div className="flex items-center mb-2">
-            <div className={`font-medium mr-2 ${darkMode ? 'text-white' : 'text-gray-800'}`}>Respuesta:</div>
+            <div className="font-medium mr-2">Respuesta:</div>
             <div className="flex-1 flex">
-              <div className={`flex-1 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'} border rounded p-2 text-lg text-center min-h-[40px]`}>
+              <div className="flex-1 bg-white border border-gray-300 rounded p-2 text-lg text-center min-h-[40px]">
                 {userAnswer}
               </div>
               <button
                 onClick={() => setUserAnswer('')}
-                className={`ml-2 p-2 rounded ${darkMode ? 'bg-gray-700 border-gray-600 hover:bg-gray-600' : 'bg-white border-gray-200 hover:bg-gray-100'} border`}
+                className="ml-2 p-2 rounded bg-white border border-gray-200 hover:bg-gray-100"
                 title="Borrar respuesta"
               >
-                <Trash className={`h-4 w-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
+                <Trash className="h-4 w-4 text-gray-600" />
               </button>
             </div>
           </div>
@@ -233,7 +179,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             disabled={!userAnswer}
             className={`w-full mb-2 py-3 px-4 rounded-md text-white font-medium text-base
               ${!userAnswer 
-                ? 'bg-gray-500 opacity-50 cursor-not-allowed' 
+                ? 'bg-gray-300 cursor-not-allowed' 
                 : isCorrect === null 
                   ? 'bg-blue-600 hover:bg-blue-700' 
                   : isCorrect 
@@ -250,9 +196,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           </button>
           
           {/* Numeric keypad */}
-          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} shadow-sm border rounded-md p-2`}>
+          <div className="bg-white shadow-sm border border-gray-200 rounded-md p-2">
             <NumericKeypad
-              darkMode={darkMode}
               onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
               onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
               onDotClick={() => setUserAnswer(prev => prev.includes('.') ? prev : `${prev}.`)}
