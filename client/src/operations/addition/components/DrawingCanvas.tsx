@@ -28,6 +28,28 @@ export function DrawingCanvas({
   const [activeColor, setActiveColor] = useState<string>(strokeColor);
   const [activeWidth, setActiveWidth] = useState<number>(strokeWidth);
   const [activeTool, setActiveTool] = useState<ToolMode>('pen');
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  
+  // Estado para guardar la imagen del canvas antes de cambiar herramientas
+  const canvasImageRef = useRef<string | null>(null);
+  
+  // Salvar el estado del canvas
+  const saveCanvasState = () => {
+    if (canvasRef.current) {
+      canvasImageRef.current = canvasRef.current.toDataURL();
+    }
+  };
+  
+  // Restaurar el estado del canvas
+  const restoreCanvasState = () => {
+    if (canvasRef.current && canvasImageRef.current && contextRef.current) {
+      const img = new Image();
+      img.onload = () => {
+        contextRef.current?.drawImage(img, 0, 0);
+      };
+      img.src = canvasImageRef.current;
+    }
+  };
   
   // Initialize the canvas context
   useEffect(() => {
@@ -37,6 +59,11 @@ export function DrawingCanvas({
     // For high resolution screens
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
+    
+    // Guarda el estado actual antes de resetear el canvas
+    if (canvasRef.current) {
+      saveCanvasState();
+    }
     
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
@@ -56,7 +83,10 @@ export function DrawingCanvas({
     }
     
     contextRef.current = context;
-  }, [activeColor, activeWidth, activeTool]);
+    
+    // Restaura el estado después de configurar el contexto
+    restoreCanvasState();
+  }, []);
   
   // Resize the canvas when window size changes
   useEffect(() => {
@@ -180,6 +210,9 @@ export function DrawingCanvas({
   
   // Funciones para cambiar herramientas
   const setTool = (tool: ToolMode) => {
+    // Guardar el estado actual del canvas
+    saveCanvasState();
+    
     setActiveTool(tool);
     
     // Si tenemos contexto, actualizamos las propiedades
@@ -198,7 +231,7 @@ export function DrawingCanvas({
           setActiveColor('#ffff0080'); // Amarillo transparente
         } else if (tool === 'pen') {
           setActiveWidth(3);
-          setActiveColor('#333333');
+          setActiveColor(darkMode ? '#ffffff' : '#333333');
         } else if (tool === 'line') {
           setActiveWidth(2);
           setActiveColor('#0000ff');
@@ -209,17 +242,26 @@ export function DrawingCanvas({
   
   // Función para cambiar color
   const changeColor = (color: string) => {
+    // Guardar el estado actual del canvas
+    saveCanvasState();
+    
     setActiveColor(color);
     if (contextRef.current) {
       contextRef.current.strokeStyle = color;
     }
   };
   
+  // Función para alternar entre modo claro y oscuro
+  const toggleDarkMode = () => {
+    saveCanvasState();
+    setDarkMode(!darkMode);
+  };
+  
   return (
     <div className={`drawing-canvas-container relative ${className}`}>
       <canvas
         ref={canvasRef}
-        className="drawing-canvas cursor-crosshair bg-white w-full h-full"
+        className={`drawing-canvas cursor-crosshair ${darkMode ? 'bg-gray-900' : 'bg-white'} w-full h-full`}
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
@@ -231,11 +273,11 @@ export function DrawingCanvas({
       />
       
       {/* Barra de herramientas */}
-      <div className="absolute top-20 left-4 flex flex-col gap-2 bg-white p-2 rounded-lg shadow">
+      <div className={`absolute top-20 left-4 flex flex-col gap-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-2 rounded-lg shadow`}>
         {/* Lápiz */}
         <button
           onClick={() => setTool('pen')}
-          className={`p-2 rounded-full ${activeTool === 'pen' ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+          className={`p-2 rounded-full ${activeTool === 'pen' ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
           title="Lápiz"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -243,11 +285,29 @@ export function DrawingCanvas({
           </svg>
         </button>
         
-        {/* Borrador */}
+        {/* Borrador pequeño */}
         <button
-          onClick={() => setTool('eraser')}
-          className={`p-2 rounded-full ${activeTool === 'eraser' ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
-          title="Borrador"
+          onClick={() => {
+            setTool('eraser');
+            setActiveWidth(10); // Borrador pequeño para precisión
+          }}
+          className={`p-2 rounded-full ${activeTool === 'eraser' && activeWidth === 10 ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+          title="Borrador pequeño"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <path d="M15 2l7 7-7 7-7-7 7-7z"></path>
+          </svg>
+        </button>
+        
+        {/* Borrador grande */}
+        <button
+          onClick={() => {
+            setTool('eraser');
+            setActiveWidth(30); // Borrador grande
+          }}
+          className={`p-2 rounded-full ${activeTool === 'eraser' && activeWidth === 30 ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+          title="Borrador grande"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 20h-4v-4h4v4z M4 20v-4h12v4H4z M4 12h4v4H4v-4z M16 12h4v4h-4v-4z"></path>
@@ -257,7 +317,7 @@ export function DrawingCanvas({
         {/* Marcador */}
         <button
           onClick={() => setTool('highlighter')}
-          className={`p-2 rounded-full ${activeTool === 'highlighter' ? 'bg-blue-500 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}
+          className={`p-2 rounded-full ${activeTool === 'highlighter' ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
           title="Marcador"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -267,17 +327,36 @@ export function DrawingCanvas({
       </div>
       
       {/* Selector de colores */}
-      <div className="absolute top-4 left-4 flex gap-2 bg-white p-2 rounded-lg shadow">
-        <button onClick={() => changeColor('#333333')} className="w-6 h-6 rounded-full bg-gray-800 border border-gray-300" title="Negro"></button>
+      <div className={`absolute top-4 left-4 flex gap-2 ${darkMode ? 'bg-gray-800' : 'bg-white'} p-2 rounded-lg shadow`}>
+        <button onClick={() => changeColor(darkMode ? '#ffffff' : '#333333')} className={`w-6 h-6 rounded-full ${darkMode ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-300'}`} title={darkMode ? "Blanco" : "Negro"}></button>
         <button onClick={() => changeColor('#ff0000')} className="w-6 h-6 rounded-full bg-red-500 border border-gray-300" title="Rojo"></button>
         <button onClick={() => changeColor('#0000ff')} className="w-6 h-6 rounded-full bg-blue-500 border border-gray-300" title="Azul"></button>
         <button onClick={() => changeColor('#00ff00')} className="w-6 h-6 rounded-full bg-green-500 border border-gray-300" title="Verde"></button>
+        <button onClick={() => changeColor('#ffff00')} className="w-6 h-6 rounded-full bg-yellow-400 border border-gray-300" title="Amarillo"></button>
       </div>
+      
+      {/* Modo oscuro */}
+      <button
+        onClick={toggleDarkMode}
+        className={`absolute top-4 right-4 p-2 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-full`}
+        title={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      >
+        {darkMode ? (
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5" />
+            <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        )}
+      </button>
       
       {/* Botón para borrar todo */}
       <button
         onClick={clearCanvas}
-        className="absolute bottom-4 right-4 p-2 bg-gray-100 hover:bg-gray-200 rounded-full"
+        className={`absolute bottom-4 right-4 p-2 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-full`}
         title="Borrar todo"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
