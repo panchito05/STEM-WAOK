@@ -60,6 +60,13 @@ export interface ModuleSettings {
   problemTimeLimit?: number;
   showExplanations: boolean;
   language: string;
+  maxAttempts?: number;
+  showImmediateFeedback?: boolean;
+  enableSoundEffects?: boolean;
+  enableAnimations?: boolean;
+  showAnswerWithExplanation?: boolean; 
+  allowSkipping?: boolean;
+  enableHints?: boolean;
 }
 
 // Estado del ejercicio
@@ -91,6 +98,7 @@ export interface ExerciseResult {
   problems: Problem[];
   settings: ModuleSettings;
   userAnswers: UserAnswer[];
+  extra_data?: Record<string, any>; // Datos adicionales flexibles para guardar información específica
 }
 
 // Configuración para el generador de problemas

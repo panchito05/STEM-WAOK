@@ -1,5 +1,5 @@
 // utils.ts
-import { AdditionProblem, DifficultyLevel, ExerciseLayout } from "./types"; // Asegúrate que la ruta y el contenido de types.ts sean correctos
+import { AdditionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -24,6 +24,57 @@ function getRandomDecimal(min: number, max: number, maxDecimals: 0 | 1 | 2): num
 
 function generateUniqueId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
+/**
+ * Convierte un problema de tipo AdditionProblem al tipo genérico Problem
+ * Este adaptador garantiza la compatibilidad entre los dos tipos
+ */
+export function additionProblemToProblem(problem: AdditionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
+  // Convertir operandos simples a tipo Operand
+  const operands: Operand[] = problem.operands.map(value => ({ value }));
+  
+  return {
+    id: problem.id,
+    operands,
+    displayFormat: problem.layout, // El layout de AdditionProblem es el displayFormat de Problem
+    correctAnswer: problem.correctAnswer,
+    difficulty, // Usamos el parámetro de dificultad o el predeterminado
+    allowDecimals: problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0,
+    maxAttempts: 3 // Por defecto permitimos 3 intentos
+  };
+}
+
+/**
+ * Convierte un problema de tipo Problem al tipo específico AdditionProblem
+ * Este adaptador se usa cuando necesitamos utilizar funciones que requieren AdditionProblem
+ */
+export function problemToAdditionProblem(problem: Problem): AdditionProblem {
+  const operands = problem.operands.map(op => op.value);
+  let answerDecimalPosition: number | undefined = undefined;
+  
+  if (problem.allowDecimals) {
+    // Determinar el número de decimales a partir de los operandos
+    const decimals = Math.max(...operands.map(op => {
+      const strOp = op.toString();
+      const dotIndex = strOp.indexOf('.');
+      return dotIndex >= 0 ? strOp.length - dotIndex - 1 : 0;
+    }));
+    if (decimals > 0) {
+      answerDecimalPosition = decimals;
+    }
+  }
+  
+  return {
+    id: problem.id,
+    num1: operands[0] || 0,
+    num2: operands[1] || 0,
+    operands,
+    correctAnswer: problem.correctAnswer,
+    layout: problem.displayFormat as ExerciseLayout, // Solo horizontal o vertical, no 'word'
+    answerMaxDigits: problem.correctAnswer.toString().replace('.', '').length,
+    answerDecimalPosition
+  };
 }
 
 // --- Generación del Problema ---
