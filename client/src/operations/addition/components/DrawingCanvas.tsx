@@ -473,9 +473,6 @@ export function DrawingCanvas({
     
     const maxIntLength = Math.max(...parts.map((p: {intPart: string, decPart: string}) => p.intPart.length));
     
-    // Dibujar los operandos alineados
-    let yOffset = -40;
-    
     // Posición del signo + (muy a la izquierda)
     const signXPosition = centerX - (maxIntLength * 35) - 20;
     
@@ -483,36 +480,78 @@ export function DrawingCanvas({
     const decimalXPosition = centerX + 10;
     const decimalPartXPosition = centerX + 40;
     
-    // Dibujar primer operando
-    context.fillText(
-      parts[0].intPart.padStart(maxIntLength, ' '), 
-      centerX - 15, 
-      centerY + yOffset
-    );
-    context.fillText('.', decimalXPosition, centerY + yOffset);
-    context.fillText(parts[0].decPart, decimalPartXPosition, centerY + yOffset);
+    // Detectar si es un problema avanzado (más de 2 operandos)
+    const isAdvancedProblem = operands.length > 2;
     
-    // Dibujar operador + y segundo operando
-    yOffset += 60;
-    context.textAlign = 'right';
-    // Poner el signo + completamente a la izquierda alineado con el margen
-    context.fillText('+', signXPosition, centerY + yOffset);
-    // Mantener la alineación para los números
-    
-    context.fillText(
-      parts[1].intPart.padStart(maxIntLength, ' '), 
-      centerX - 15, 
-      centerY + yOffset
-    );
-    context.fillText('.', decimalXPosition, centerY + yOffset);
-    context.fillText(parts[1].decPart, decimalPartXPosition, centerY + yOffset);
-    
-    // Dibujar línea - extendida hasta el signo +
-    yOffset += 40;
-    context.beginPath();
-    context.moveTo(signXPosition - 10, centerY + yOffset); // Extender hasta el signo +
-    context.lineTo(decimalPartXPosition + 30, centerY + yOffset); // Extender a la derecha también
-    context.stroke();
+    if (isAdvancedProblem) {
+      // Para problemas avanzados, dibujar todos los operandos en formato vertical
+      let yOffset = -120; // Empezar más arriba para acomodar más números
+      
+      // Dibujar todos los operandos excepto el último
+      for (let i = 0; i < parts.length - 1; i++) {
+        context.fillText(
+          parts[i].intPart.padStart(maxIntLength, ' '), 
+          centerX - 15, 
+          centerY + yOffset
+        );
+        context.fillText('.', decimalXPosition, centerY + yOffset);
+        context.fillText(parts[i].decPart, decimalPartXPosition, centerY + yOffset);
+        yOffset += 60;
+      }
+      
+      // Dibujar el último operando con el signo +
+      context.textAlign = 'right';
+      context.fillText('+', signXPosition, centerY + yOffset);
+      
+      // Último operando
+      context.fillText(
+        parts[parts.length - 1].intPart.padStart(maxIntLength, ' '), 
+        centerX - 15, 
+        centerY + yOffset
+      );
+      context.fillText('.', decimalXPosition, centerY + yOffset);
+      context.fillText(parts[parts.length - 1].decPart, decimalPartXPosition, centerY + yOffset);
+      
+      // Dibujar línea
+      yOffset += 40;
+      context.beginPath();
+      context.moveTo(signXPosition - 10, centerY + yOffset);
+      context.lineTo(decimalPartXPosition + 30, centerY + yOffset);
+      context.stroke();
+    } else {
+      // Para problemas básicos (2 operandos), mantener el formato original
+      let yOffset = -40;
+      
+      // Dibujar primer operando
+      context.fillText(
+        parts[0].intPart.padStart(maxIntLength, ' '), 
+        centerX - 15, 
+        centerY + yOffset
+      );
+      context.fillText('.', decimalXPosition, centerY + yOffset);
+      context.fillText(parts[0].decPart, decimalPartXPosition, centerY + yOffset);
+      
+      // Dibujar operador + y segundo operando
+      yOffset += 60;
+      context.textAlign = 'right';
+      // Poner el signo + completamente a la izquierda alineado con el margen
+      context.fillText('+', signXPosition, centerY + yOffset);
+      
+      context.fillText(
+        parts[1].intPart.padStart(maxIntLength, ' '), 
+        centerX - 15, 
+        centerY + yOffset
+      );
+      context.fillText('.', decimalXPosition, centerY + yOffset);
+      context.fillText(parts[1].decPart, decimalPartXPosition, centerY + yOffset);
+      
+      // Dibujar línea
+      yOffset += 40;
+      context.beginPath();
+      context.moveTo(signXPosition - 10, centerY + yOffset);
+      context.lineTo(decimalPartXPosition + 30, centerY + yOffset);
+      context.stroke();
+    }
     
     // Restaurar configuraciones originales
     context.strokeStyle = originalStrokeStyle;
