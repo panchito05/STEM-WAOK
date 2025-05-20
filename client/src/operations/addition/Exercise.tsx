@@ -2017,6 +2017,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
             <div className="flex items-center gap-2">
               <button
+                className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 w-auto hover:bg-indigo-50"
+                onClick={() => alert('Professor Mode activado. Esta funcionalidad estará disponible próximamente.')}
+                title="Modo Profesor"
+              >
+                <span className="text-xs font-medium mr-1">
+                  {settings.language === 'english' ? 'Professor Mode' : 'Modo Profesor'}
+                </span>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </button>
+              <button
                 className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7 w-auto`}
                 onClick={() => setShowVideoDialog(true)}
                 title="Videos explicativos"
