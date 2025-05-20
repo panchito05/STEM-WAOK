@@ -61,28 +61,23 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   
   // Format the problem for display
   const renderProblem = () => {
-    if (showVerticalFormat) {
-      // Vertical format (for addition)
+    if (showVerticalFormat && problem.operands.length === 2) {
+      // Vertical format (for addition with 2 operands)
+      const firstOperand = problem.operands[0];
+      const secondOperand = problem.operands[1];
+      
       return (
         <div className="font-mono text-2xl whitespace-pre">
-          {problem.operands.map((op, index) => (
-            <React.Fragment key={index}>
-              {index === problem.operands.length - 1 && (
-                <div className="flex items-center">
-                  <span className="mr-2">+</span>
-                  <span>{op.toFixed(1)}</span>
-                </div>
-              )} 
-              {index !== problem.operands.length - 1 && (
-                <div>{op.toFixed(1)}</div>
-              )}
-            </React.Fragment>
-          ))}
+          <div>{firstOperand.toFixed(1)}</div>
+          <div className="flex items-center">
+            <span className="mr-2">+</span>
+            <span>{secondOperand.toFixed(1)}</span>
+          </div>
           <div className="border-t border-black mt-1 w-full"></div>
         </div>
       );
     } else {
-      // Horizontal format
+      // Horizontal format (fallback)
       return (
         <div className="font-mono text-2xl">
           {problem.operands.map((op, index) => (
@@ -109,21 +104,19 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       </button>
       
       {/* Main layout with problem in top-left and drawing area taking most of the screen */}
-      <div className="h-full w-full flex flex-col">
-        <div className="flex w-full">
-          {/* Problem display in top-left corner */}
-          <div className="absolute top-2 left-2 bg-white p-2 shadow-sm border border-gray-200 rounded-md">
-            {renderProblem()}
-          </div>
-          
-          {/* Drawing canvas taking full screen */}
-          <div className="w-full h-[calc(100vh-160px)]" ref={canvasRef}>
-            <DrawingCanvas height={window.innerHeight - 160} />
-          </div>
+      <div className="h-full w-full">
+        {/* Problem display in top-left corner */}
+        <div className="absolute top-4 left-4 bg-white p-3 shadow-sm border border-gray-200 rounded-md z-10">
+          {renderProblem()}
+        </div>
+        
+        {/* Drawing canvas taking full screen */}
+        <div className="absolute inset-0 pt-2 pb-[120px]">
+          <DrawingCanvas height={window.innerHeight - 120} />
         </div>
         
         {/* Simple numeric keypad at bottom */}
-        <div className="fixed bottom-0 left-0 w-full bg-gray-50 border-t border-gray-200">
+        <div className="absolute bottom-0 left-0 right-0 bg-gray-50 border-t border-gray-200 z-10">
           <div className="flex items-center px-4 py-2">
             <div className="mr-2">Respuesta:</div>
             <div className="flex-1 mx-2">
