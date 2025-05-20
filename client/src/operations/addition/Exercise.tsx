@@ -1843,6 +1843,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               return (
                 <React.Fragment key={`digit-box-frag-${index}-${currentProblem.id}`}>
                   <div
+                    data-box-index={index}
+                    data-problem-id={currentProblem.id}
                     ref={el => {
                       if (el) {
                         // Guardar la referencia en el array auxiliar
