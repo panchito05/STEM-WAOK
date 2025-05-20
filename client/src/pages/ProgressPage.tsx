@@ -413,25 +413,34 @@ export default function ProgressPage() {
                           {/* Botones de expandir/contraer */}
                           <div className="flex space-x-2">
                             {isExpanded ? (
-                              <button 
-                                onClick={() => setExpandedCard(null)} 
+                              <Button 
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedCard(null);
+                                }}
                                 className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white"
                                 title="Minimizar"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                              </button>
+                              </Button>
                             ) : (
-                              <button 
-                                onClick={() => setExpandedCard(module.id)} 
+                              <Button 
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  console.log("Expandiendo tarjeta:", module.id);
+                                  setExpandedCard(module.id);
+                                }}
                                 className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white"
                                 title="Expandir"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
                                 </svg>
-                              </button>
+                              </Button>
                             )}
                           </div>
                         </div>
