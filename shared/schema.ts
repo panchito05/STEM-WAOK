@@ -120,6 +120,17 @@ export type ExternalAuthUser = z.infer<typeof externalAuthUserSchema>;
 export type ChildProfile = typeof childProfiles.$inferSelect;
 export type InsertChildProfile = z.infer<typeof insertChildProfileSchema>;
 
+export interface MathProblem {
+  problem: string;
+  isCorrect: boolean;
+  level?: string;
+  attempts?: string | number;
+  timeSpent?: string | number;
+  info?: string;
+  userAnswer?: string;
+  correctAnswer?: string;
+}
+
 export interface ExerciseProgress {
   operationId: string;
   score: number;
@@ -132,6 +143,14 @@ export interface ExerciseProgress {
   avgAttempts?: number;
   revealedAnswers?: number;
   problemDetails?: Array<any>;
+  extra_data?: {
+    version?: string;
+    timestamp?: number;
+    problems?: MathProblem[];
+    mathProblems?: MathProblem[];
+    capturedProblems?: MathProblem[];
+    [key: string]: any;
+  };
 }
 
 export interface ModuleSettingsData {
