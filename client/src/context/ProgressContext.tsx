@@ -434,18 +434,80 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         console.log(`🏆 [Fase 2] Eliminación explícita de clave crítica: ${key}`);
       });
       
-      // TERCERA FASE: Búsqueda en contenido
-      // Buscar palabras clave dentro del contenido de localStorage
+      // TERCERA FASE: Búsqueda en contenido de las claves restantes
+      // Crear una nueva lista de claves restantes después de la limpieza
+      const remainingKeys: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (!key) continue;
-        
+        if (key) remainingKeys.push(key);
+      }
+      
+      console.log(`🔍 [Fase 3] Analizando contenido de ${remainingKeys.length} claves restantes`);
+      
+      // Analizar el contenido de las claves restantes
+      let contentBorradas = 0;
+      remainingKeys.forEach(key => {
         try {
           const value = localStorage.getItem(key);
-          if (!value) continue;
+          if (!value) return;
           
-          // Verificar si el contenido incluye palabras relacionadas con recompensas o progreso
-          const contentMatches = ['reward', 'recompensa', 'progress', 'problem', 'ejercicio', 'score', 'trophy']
+          // Verificar si el contenido contiene alguna palabra clave
+          const containsKeyword = palabrasClave.some(keyword => 
+            value.toLowerCase().includes(keyword.toLowerCase())
+          );
+          
+          if (containsKeyword) {
+            localStorage.removeItem(key);
+            contentBorradas++;
+            console.log(`🔍 [Fase 3] Eliminada clave por contenido: ${key}`);
+          }
+        } catch (error) {
+          console.error(`Error al analizar el contenido de la clave ${key}:`, error);
+        }
+      });
+      
+      console.log(`✅ [Fase 3] Borradas ${contentBorradas} claves adicionales por contenido`);
+      
+      // PASO 3: Eliminar datos del servidor si está disponible
+      try {
+        // Borrar datos en el servidor
+        const clearServerResponse = await fetch("/api/progress/clear", {
+          method: "POST",
+          credentials: "include",
+        });
+        
+        if (clearServerResponse.ok) {
+          console.log("✅ Datos eliminados del servidor correctamente");
+        } else {
+          console.error("⚠️ Error al eliminar datos del servidor:", await clearServerResponse.text());
+        }
+      } catch (error) {
+        console.error("⚠️ Error de conexión al intentar eliminar datos del servidor:", error);
+      }
+      
+      // PASO 4: Recargar datos desde el servidor para confirmar limpieza
+      console.log("🔄 Recargando datos después de limpieza...");
+      await fetchProgress();
+      
+      // Mensaje de confirmación
+      toast({
+        title: "Progreso borrado",
+        description: "Se ha eliminado todo el historial de ejercicios y recompensas",
+      });
+      
+      console.log(`✅ PROCESO DE LIMPIEZA COMPLETADO CORRECTAMENTE
+        - ${totalBorradas} claves eliminadas por nombre
+        - ${criticalKeys.length} claves críticas eliminadas explícitamente
+        - ${contentBorradas} claves eliminadas por contenido
+        - Total: ${totalBorradas + criticalKeys.length + contentBorradas} elementos eliminados`);
+    } catch (error) {
+      console.error("Error during clearProgress:", error);
+      toast({
+        title: "Error al borrar progreso",
+        description: "No se pudo borrar completamente el progreso. Intente nuevamente.",
+        variant: "destructive",
+      });
+    }
             .some(term => value.toLowerCase().includes(term.toLowerCase()));
             
           if (contentMatches) {
