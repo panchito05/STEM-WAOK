@@ -449,6 +449,24 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       
       console.log(`✅ [Fase 1] Borradas ${keysToRemove.length} claves`);
       
+      // NUEVA FASE: Borrado directo del sistema de recompensas de Zustand
+      try {
+        // Borrar específicamente la clave de almacenamiento de recompensas
+        localStorage.removeItem('rewards-storage');
+        console.log("✅ [Nueva Fase] Borrado directo de rewards-storage");
+        
+        // Intentar limpiar la memoria del sistema de recompensas si está disponible
+        // Esta parte se ejecutará en el cliente, no en el servidor
+        if (typeof window !== 'undefined') {
+          // Publicar un evento global para que otros componentes sepan que las recompensas se han reiniciado
+          const resetEvent = new CustomEvent('rewards-reset');
+          window.dispatchEvent(resetEvent);
+          console.log("✅ [Nueva Fase] Evento de reinicio de recompensas emitido");
+        }
+      } catch (rewardsError) {
+        console.error("Error al reiniciar sistema de recompensas:", rewardsError);
+      }
+      
       // SEGUNDA FASE: Búsqueda en contenido y borrado específico de recompensas
       // Eliminar explícitamente todas las claves conocidas de recompensas
       const keysRewards = [
