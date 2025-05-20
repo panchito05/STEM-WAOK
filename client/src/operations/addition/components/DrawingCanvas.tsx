@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useTheme } from '@/context/ThemeContext';
 
 // Definir los diferentes modos de herramientas
 type ToolMode = 'pen' | 'eraser' | 'line';
@@ -28,7 +29,9 @@ export function DrawingCanvas({
   const [activeColor, setActiveColor] = useState<string>(strokeColor);
   const [activeWidth, setActiveWidth] = useState<number>(strokeWidth);
   const [activeTool, setActiveTool] = useState<ToolMode>('pen');
-  const [darkMode, setDarkMode] = useState<boolean>(false);
+  
+  // Obtener el tema actual del contexto global
+  const { theme, toggleTheme } = useTheme();
   
   // Estado para tamaño del borrador
   const [eraserSize, setEraserSize] = useState<number>(15);
@@ -252,7 +255,7 @@ export function DrawingCanvas({
         if (tool === 'pen') {
           context.lineWidth = 3;
           setActiveWidth(3);
-          const color = darkMode ? '#ffffff' : '#333333';
+          const color = theme === 'dark' ? '#ffffff' : '#333333';
           context.strokeStyle = color;
           setActiveColor(color);
         } else if (tool === 'line') {
@@ -364,25 +367,10 @@ export function DrawingCanvas({
     }
   };
   
-  // Función para alternar entre modo claro y oscuro
-  const toggleDarkMode = () => {
+  // Función para alternar entre modo claro y oscuro - ahora delega al ThemeContext
+  const handleThemeToggle = () => {
     saveCanvasState();
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    
-    // Comunica el cambio de modo oscuro al documento para que otros componentes puedan reaccionar
-    document.documentElement.classList.toggle('canvas-dark-mode', newDarkMode);
-    
-    // También añadimos la clase dark para que funcione con Tailwind
-    document.documentElement.classList.toggle('dark', newDarkMode);
-    
-    // Emitir un evento personalizado para que componentes padres puedan saber del cambio
-    const event = new CustomEvent('canvasDarkModeChange', { 
-      detail: { darkMode: newDarkMode } 
-    });
-    document.dispatchEvent(event);
-    
-    console.log("Modo oscuro cambiado:", newDarkMode ? "ACTIVADO" : "DESACTIVADO");
+    toggleTheme(); // Usa la función del contexto ThemeContext
   };
   
   return (
