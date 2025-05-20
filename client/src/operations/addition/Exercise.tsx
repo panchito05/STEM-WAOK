@@ -1660,33 +1660,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }, 10);
   };
 
-  // Función para manejar el retroceso secuencial que permite saltar entre contenedores
-  const handleSequentialBackspace = () => {
+  // Función para manejar el retroceso simple
+  const handleBackspace = () => {
     if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
     if (!exerciseStarted) startExercise();
     
     let newAnswers = [...digitAnswers];
     let currentFocus = focusedDigitIndex;
     
-    // Si el contenedor actual está vacío, movemos el foco al siguiente contenedor
-    if (newAnswers[currentFocus] === "") {
-      // Si estamos en modo RTL (derecha a izquierda), movemos a la derecha
-      if (inputDirection === 'rtl') {
-        if (currentFocus < currentProblem.answerMaxDigits - 1) {
-          setFocusedDigitIndex(currentFocus + 1);
-          // Aquí no borramos nada porque ya estaba vacío, solo cambiamos el foco
-        }
-      } 
-      // Si estamos en modo LTR (izquierda a derecha), movemos a la izquierda
-      else {
-        if (currentFocus > 0) {
-          setFocusedDigitIndex(currentFocus - 1);
-          // Aquí no borramos nada porque ya estaba vacío, solo cambiamos el foco
-        }
-      }
-    } 
     // Si el contenedor actual tiene un dígito, lo borramos
-    else {
+    if (newAnswers[currentFocus] !== "") {
       newAnswers[currentFocus] = "";
       setDigitAnswers(newAnswers);
     }
@@ -1705,13 +1688,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Si estamos en modo RTL (derecha a izquierda), movemos a la derecha
       if (inputDirection === 'rtl') {
         if (currentFocus < currentProblem.answerMaxDigits - 1) {
+          // Movemos el foco a la derecha y borramos el contenido en ese contenedor
           setFocusedDigitIndex(currentFocus + 1);
+          
+          // Programamos el borrado después del cambio de foco
+          setTimeout(() => {
+            setDigitAnswers((prev) => {
+              const updated = [...prev];
+              if (currentFocus + 1 < currentProblem.answerMaxDigits) {
+                updated[currentFocus + 1] = "";
+              }
+              return updated;
+            });
+          }, 10);
         }
       } 
       // Si estamos en modo LTR (izquierda a derecha), movemos a la izquierda
       else {
         if (currentFocus > 0) {
+          // Movemos el foco a la izquierda y borramos el contenido en ese contenedor
           setFocusedDigitIndex(currentFocus - 1);
+          
+          // Programamos el borrado después del cambio de foco
+          setTimeout(() => {
+            setDigitAnswers((prev) => {
+              const updated = [...prev];
+              if (currentFocus - 1 >= 0) {
+                updated[currentFocus - 1] = "";
+              }
+              return updated;
+            });
+          }, 10);
         }
       }
     } 
