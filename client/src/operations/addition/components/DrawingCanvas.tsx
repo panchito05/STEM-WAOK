@@ -16,6 +16,7 @@ interface DrawingCanvasProps {
   strokeWidth?: number;
   className?: string;
   onClear?: () => void;
+  onShowNumbers?: () => void; // Nueva propiedad para mostrar números
 }
 
 export function DrawingCanvas({
@@ -25,6 +26,7 @@ export function DrawingCanvas({
   strokeWidth = 3,
   className = '',
   onClear,
+  onShowNumbers,
   position = 'right' // Nueva propiedad para posicionar los controles: 'left' o 'right'
 }: DrawingCanvasProps & { position?: 'left' | 'right' }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -502,9 +504,18 @@ export function DrawingCanvas({
           </svg>
         </button>
         
-        {/* El borrador ya no necesita un panel permanente visible */}
-        
-
+        {/* Botón para ver números en grande */}
+        {onShowNumbers && (
+          <button
+            onClick={onShowNumbers}
+            className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+            title="Ver números en grande"
+          >
+            <div className="flex items-center justify-center">
+              <span role="img" aria-label="Ver" className="text-lg">👁️</span>
+            </div>
+          </button>
+        )}
         
 
       </div>
