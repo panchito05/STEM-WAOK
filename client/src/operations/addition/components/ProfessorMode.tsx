@@ -67,9 +67,9 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       const secondOperand = problem.operands[1];
       
       return (
-        <div className="font-mono text-2xl whitespace-pre">
-          <div>{firstOperand.toFixed(1)}</div>
-          <div className="flex items-center">
+        <div className="font-mono text-2xl whitespace-pre text-right">
+          <div className="pr-1">{firstOperand.toFixed(1)}</div>
+          <div className="flex items-center justify-end">
             <span className="mr-2">+</span>
             <span>{secondOperand.toFixed(1)}</span>
           </div>
@@ -111,34 +111,34 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         </div>
         
         {/* Problem and keypad container in top-left corner */}
-        <div className="absolute top-4 left-4 z-10 max-w-[300px]">
+        <div className="absolute top-4 left-4 z-10 w-[280px]">
           {/* Problem display */}
-          <div className="bg-white p-3 shadow-sm border border-gray-200 rounded-md mb-1">
+          <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             {renderProblem()}
           </div>
           
-          {/* Answer input */}
-          <div className="bg-white shadow-sm border border-gray-200 rounded-md p-2 mb-1 flex items-center">
-            <div className="mr-2 text-sm">Respuesta:</div>
-            <div className="flex-1 mx-1">
-              <div className="border border-gray-200 rounded p-1 text-center">
+          {/* Answer input - now with more space */}
+          <div className="flex items-center mb-2">
+            <div className="font-medium mr-2">Respuesta:</div>
+            <div className="flex-1 flex">
+              <div className="flex-1 bg-white border border-gray-300 rounded p-2 text-lg text-center min-h-[40px]">
                 {userAnswer}
               </div>
+              <button
+                onClick={() => setUserAnswer('')}
+                className="ml-2 p-2 rounded bg-white border border-gray-200 hover:bg-gray-100"
+                title="Borrar respuesta"
+              >
+                <Trash className="h-4 w-4 text-gray-600" />
+              </button>
             </div>
-            <button
-              onClick={() => setUserAnswer('')}
-              className="p-1 rounded hover:bg-gray-100"
-              title="Borrar respuesta"
-            >
-              <Trash className="h-4 w-4 text-gray-600" />
-            </button>
           </div>
           
           {/* Check answer button */}
           <button
             onClick={checkAnswer}
             disabled={!userAnswer}
-            className={`w-full mb-1 py-2 px-3 rounded flex items-center justify-center text-white text-sm
+            className={`w-full mb-2 py-3 px-4 rounded-md text-white font-medium text-base
               ${!userAnswer 
                 ? 'bg-gray-300 cursor-not-allowed' 
                 : isCorrect === null 
@@ -150,14 +150,14 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             {isCorrect === null ? (
               <>Comprobar</>
             ) : isCorrect ? (
-              <>¡Correcto! <Check className="ml-1 h-4 w-4" /></>
+              <>¡Correcto! <Check className="ml-1 h-5 w-5 inline" /></>
             ) : (
               <>Incorrecto</>
             )}
           </button>
           
           {/* Numeric keypad */}
-          <div className="bg-white shadow-sm border border-gray-200 rounded-md p-1">
+          <div className="bg-white shadow-sm border border-gray-200 rounded-md p-2">
             <NumericKeypad
               onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
               onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
