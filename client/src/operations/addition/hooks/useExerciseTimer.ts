@@ -1,147 +1,98 @@
-// useExerciseTimer.ts - Hook personalizado para gestionar el temporizador del ejercicio
-import { useState, useEffect, useRef } from 'react';
+// useExerciseTimer.ts - Hook personalizado para manejar el temporizador de ejercicios
+import { useState, useRef, useEffect, useCallback } from 'react';
 
-interface TimerConfig {
-  timerType: 'global' | 'per-problem'; // Tipo de temporizador
-  timeValue: number;                   // Valor del tiempo en segundos
-  active: boolean;                     // Si el temporizador está activo
-  onTimerComplete?: () => void;        // Callback cuando el tiempo se acaba
+interface TimerOptions {
+  autoStart?: boolean;
+  onTimeEnd?: () => void;
 }
 
-export function useExerciseTimer({ timerType, timeValue, active, onTimerComplete }: TimerConfig) {
-  // Estado principal del temporizador
-  const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const [isTimerActive, setIsTimerActive] = useState(false);
-  const [globalTimer, setGlobalTimer] = useState(0);
+/**
+ * Hook personalizado para manejar un temporizador de ejercicios
+ * @param maxTime Tiempo máximo en segundos
+ * @param options Opciones adicionales (autoStart, onTimeEnd)
+ */
+export function useExerciseTimer(maxTime: number, options: TimerOptions = {}) {
+  const [timeLeft, setTimeLeft] = useState<number>(maxTime);
+  const [isActive, setIsActive] = useState<boolean>(options.autoStart || false);
+  const timerRef = useRef<number | null>(null);
+  const lastTickTimeRef = useRef<number>(Date.now());
   
-  // Referencias para manejar intervalos y timeouts
-  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const globalTimerIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Inicializar temporizador
-  const initializeTimer = () => {
-    if (timerType === 'global') {
-      // Si es temporizador global, inicializar con el valor total
-      setTimeLeft(timeValue);
-    } else if (timerType === 'per-problem') {
-      // Si es por problema, inicializar con el tiempo por problema
-      setTimeLeft(timeValue);
-    }
-  };
-  
-  // Iniciar temporizador
-  const startTimer = () => {
-    if (!active) return;
+  // Función para iniciar el temporizador
+  const startTimer = useCallback(() => {
+    if (timerRef.current !== null) return; // Ya está activo
     
-    setIsTimerActive(true);
+    setIsActive(true);
+    lastTickTimeRef.current = Date.now();
     
-    // Iniciar temporizador global para medir el tiempo total
-    if (!globalTimerIntervalRef.current) {
-      globalTimerIntervalRef.current = setInterval(() => {
-        setGlobalTimer(prev => prev + 0.1);
-      }, 100);
-    }
-    
-    // Iniciar temporizador específico (global o por problema)
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-    }
-    
-    if (timeLeft === null) {
-      initializeTimer();
-    }
-    
-    timerIntervalRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev === null) return null;
-        
-        // Si el tiempo llega a cero, ejecutar callback y detener
-        if (prev <= 0.1) {
-          if (onTimerComplete) {
-            onTimerComplete();
-          }
-          if (timerIntervalRef.current) {
-            clearInterval(timerIntervalRef.current);
-            timerIntervalRef.current = null;
-          }
-          return 0;
-        }
-        
-        return prev - 0.1;
-      });
-    }, 100);
-  };
-  
-  // Pausar temporizador
-  const pauseTimer = () => {
-    setIsTimerActive(false);
-    
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-  };
-  
-  // Reiniciar temporizador para un nuevo problema
-  const resetProblemTimer = () => {
-    if (timerType === 'per-problem') {
-      setTimeLeft(timeValue);
+    timerRef.current = window.setInterval(() => {
+      const now = Date.now();
+      const delta = (now - lastTickTimeRef.current) / 1000; // Tiempo transcurrido en segundos
+      lastTickTimeRef.current = now;
       
-      if (active && isTimerActive) {
-        if (timerIntervalRef.current) {
-          clearInterval(timerIntervalRef.current);
+      setTimeLeft(prev => {
+        const newTime = Math.max(0, prev - delta);
+        
+        // Si llegamos a 0, ejecutar callback si existe
+        if (newTime === 0 && options.onTimeEnd) {
+          options.onTimeEnd();
+          pauseTimer();
         }
-        startTimer();
-      }
-    }
-  };
+        
+        return newTime;
+      });
+    }, 100); // Actualizar cada 100ms para un conteo más preciso
+  }, [options.onTimeEnd]);
   
-  // Detener todos los temporizadores
-  const stopAllTimers = () => {
-    setIsTimerActive(false);
+  // Función para pausar el temporizador
+  const pauseTimer = useCallback(() => {
+    if (timerRef.current === null) return; // Ya está pausado
     
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-    
-    if (globalTimerIntervalRef.current) {
-      clearInterval(globalTimerIntervalRef.current);
-      globalTimerIntervalRef.current = null;
-    }
-  };
+    clearInterval(timerRef.current);
+    timerRef.current = null;
+    setIsActive(false);
+  }, []);
   
-  // Efecto para inicializar el temporizador cuando cambian las propiedades
+  // Función para reiniciar el temporizador
+  const resetTimer = useCallback(() => {
+    pauseTimer();
+    setTimeLeft(maxTime);
+  }, [maxTime, pauseTimer]);
+  
+  // Función para reiniciar y empezar
+  const restartTimer = useCallback(() => {
+    resetTimer();
+    startTimer();
+  }, [resetTimer, startTimer]);
+  
+  // Limpiar intervalo al desmontar componente
   useEffect(() => {
-    initializeTimer();
-    
-    // Limpiar cuando el componente se desmonta
     return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-      }
-      if (globalTimerIntervalRef.current) {
-        clearInterval(globalTimerIntervalRef.current);
+      if (timerRef.current !== null) {
+        clearInterval(timerRef.current);
       }
     };
-  }, [timerType, timeValue]);
+  }, []);
   
-  // Efecto para manejar activación/desactivación
+  // Auto-iniciar si está configurado
   useEffect(() => {
-    if (active) {
+    if (options.autoStart) {
       startTimer();
-    } else {
-      pauseTimer();
     }
-  }, [active]);
+    
+    return () => pauseTimer();
+  }, [options.autoStart, startTimer, pauseTimer]);
+  
+  // Cuando maxTime cambia, actualizar timeLeft
+  useEffect(() => {
+    setTimeLeft(maxTime);
+  }, [maxTime]);
   
   return {
     timeLeft,
-    isTimerActive,
-    globalTimer,
+    isTimerActive: isActive,
     startTimer,
     pauseTimer,
-    resetProblemTimer,
-    stopAllTimers
+    resetTimer,
+    restartTimer
   };
 }

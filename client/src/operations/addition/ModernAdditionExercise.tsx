@@ -1,173 +1,359 @@
-// ModernAdditionExercise.tsx - Versión moderna y refactorizada del módulo de suma
-import React from 'react';
-// Importamos los componentes UI de Shadcn
-import { Card } from '@/components/ui/card';
+// ModernAdditionExercise.tsx - Componente modernizado para ejercicios de suma
+import React, { useState, useEffect, useRef } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { ExerciseProvider, useExercise } from './context/ExerciseContext';
-import { ModuleSettings } from './types';
+import { ModuleSettings } from '@/types/settings';
+import { generateProblems } from './utils/problemGenerator';
+import { Problem, UserAnswer } from './types';
 import ProblemDisplay from './components/ProblemDisplay';
 import NumericKeypad from './components/NumericKeypad';
-// Importemos estos componentes cuando los creemos
-// import ResultsBoard from './components/ResultsBoard';
-// import ExplanationPanel from './components/ExplanationPanel';
+import ExplanationPanel from './components/ExplanationPanel';
+import ResultsBoard from './components/ResultsBoard';
+import { useTranslation } from './hooks/useTranslation';
+import { useExerciseTimer } from './hooks/useExerciseTimer';
+import { saveExerciseResult } from '@/services/progressService';
 
-// Componente interno que usa el contexto
 function ExerciseContent() {
-  const { 
-    state, 
-    currentProblem, 
-    currentAnswer,
-    problemIndex,
-    totalProblems,
-    remainingAttempts,
-    timeLeft,
-    score,
-    setAnswer,
-    submitAnswer,
-    goToNextProblem,
-    restartExercise,
-    showExplanation,
-    userAnswers
-  } = useExercise();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  return (
+    <div className="exercise-content p-4">
+      {loading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Cargando ejercicio...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-8 text-red-600">
+          <p>Error: {error}</p>
+          <Button className="mt-4" onClick={() => window.location.reload()}>
+            Reintentar
+          </Button>
+        </div>
+      ) : (
+        <p>Contenido del ejercicio</p>
+      )}
+    </div>
+  );
+}
 
-  // Función para renderizar el contenido según el estado
+// Componente principal
+export default function ModernAdditionExercise({ config }: { config: ModuleSettings }) {
+  // Estado
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
+  const [userAnswer, setUserAnswer] = useState('');
+  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
+  const [exerciseState, setExerciseState] = useState<'ready' | 'in-progress' | 'explanation' | 'completed'>('ready');
+  const [score, setScore] = useState(0);
+  const [remainingAttempts, setRemainingAttempts] = useState(config.maxAttemptsPerProblem || 1);
+  
+  // Referencias
+  const startTimeRef = useRef<number>(Date.now());
+  const problemStartTimeRef = useRef<number>(Date.now());
+  
+  // Hooks personalizados
+  const { t } = useTranslation();
+  const { 
+    timeLeft, 
+    startTimer, 
+    pauseTimer, 
+    resetTimer, 
+    isTimerActive 
+  } = useExerciseTimer(config.timeLimit || 0);
+  
+  // Obtener problema actual
+  const currentProblem = problems[currentProblemIndex] || null;
+  
+  // Cargar problemas al inicio
+  useEffect(() => {
+    async function loadProblems() {
+      try {
+        const generatedProblems = await generateProblems({
+          count: config.problemCount || 5,
+          difficulty: config.difficulty || 'easy',
+          maxOperands: config.maxOperands || 2,
+          allowNegatives: config.allowNegatives || false,
+          allowDecimals: config.allowDecimals || false
+        });
+        
+        setProblems(generatedProblems);
+        startTimeRef.current = Date.now();
+        
+        if (config.hasTimeLimit) {
+          startTimer();
+        }
+        
+        setExerciseState('in-progress');
+      } catch (err) {
+        console.error('Error al generar problemas:', err);
+        setExerciseState('ready');
+      }
+    }
+    
+    loadProblems();
+    
+    // Limpieza al desmontar
+    return () => {
+      pauseTimer();
+    };
+  }, [config]);
+  
+  // Reset del tiempo al cambiar de problema
+  useEffect(() => {
+    if (exerciseState === 'in-progress' && currentProblem) {
+      problemStartTimeRef.current = Date.now();
+      
+      if (config.hasPerProblemTimer && config.hasTimeLimit) {
+        resetTimer();
+        startTimer();
+      }
+      
+      setRemainingAttempts(config.maxAttemptsPerProblem || 1);
+    }
+  }, [currentProblemIndex, exerciseState, currentProblem]);
+  
+  // Comprobar si se acabó el tiempo
+  useEffect(() => {
+    if (timeLeft === 0 && isTimerActive && exerciseState === 'in-progress') {
+      handleTimerEnd();
+    }
+  }, [timeLeft, isTimerActive, exerciseState]);
+  
+  // Manejo de respuesta del usuario
+  const handleNumberClick = (value: string) => {
+    // Evitar múltiples puntos decimales
+    if (value === '.' && userAnswer.includes('.')) return;
+    
+    // Limitar longitud de la respuesta
+    if (userAnswer.length >= 10) return;
+    
+    setUserAnswer(prev => prev + value);
+  };
+  
+  const handleBackspaceClick = () => {
+    setUserAnswer(prev => prev.slice(0, -1));
+  };
+  
+  const handleSubmitAnswer = () => {
+    if (!currentProblem || userAnswer === '') return;
+    
+    const timeTaken = (Date.now() - problemStartTimeRef.current) / 1000;
+    const isCorrect = userAnswer === currentProblem.correctAnswer.toString();
+    
+    if (isCorrect) {
+      // Respuesta correcta
+      const newAnswer: UserAnswer = {
+        problemId: currentProblem.id,
+        problem: currentProblem,
+        userAnswer,
+        isCorrect: true,
+        status: 'correct',
+        attempts: config.maxAttemptsPerProblem - remainingAttempts + 1,
+        timeTaken,
+        timestamp: Date.now()
+      };
+      
+      setUserAnswers(prev => [...prev, newAnswer]);
+      setScore(prev => prev + 1);
+      
+      pauseTimer();
+      moveToNextProblem();
+    } else {
+      // Respuesta incorrecta
+      if (remainingAttempts > 1) {
+        // Todavía tiene intentos
+        setRemainingAttempts(prev => prev - 1);
+        
+        // Opcional: Mostrar feedback de error
+        
+      } else {
+        // Se acabaron los intentos
+        const newAnswer: UserAnswer = {
+          problemId: currentProblem.id,
+          problem: currentProblem,
+          userAnswer,
+          isCorrect: false,
+          status: 'incorrect',
+          attempts: config.maxAttemptsPerProblem,
+          timeTaken,
+          timestamp: Date.now()
+        };
+        
+        setUserAnswers(prev => [...prev, newAnswer]);
+        pauseTimer();
+        
+        // Mostrar explicación si está habilitado
+        if (config.showExplanations) {
+          setExerciseState('explanation');
+        } else {
+          moveToNextProblem();
+        }
+      }
+    }
+  };
+  
+  // Manejo del fin del temporizador
+  const handleTimerEnd = () => {
+    if (!currentProblem) return;
+    
+    const timeTaken = (Date.now() - problemStartTimeRef.current) / 1000;
+    
+    const newAnswer: UserAnswer = {
+      problemId: currentProblem.id,
+      problem: currentProblem,
+      userAnswer: userAnswer || '',
+      isCorrect: false,
+      status: 'timeout',
+      attempts: config.maxAttemptsPerProblem - remainingAttempts + 1,
+      timeTaken,
+      timestamp: Date.now()
+    };
+    
+    setUserAnswers(prev => [...prev, newAnswer]);
+    pauseTimer();
+    
+    // Mostrar explicación si está habilitado
+    if (config.showExplanations) {
+      setExerciseState('explanation');
+    } else {
+      moveToNextProblem();
+    }
+  };
+  
+  // Continuar después de explicación
+  const handleContinueAfterExplanation = () => {
+    moveToNextProblem();
+  };
+  
+  // Avanzar al siguiente problema
+  const moveToNextProblem = () => {
+    if (currentProblemIndex < problems.length - 1) {
+      // Pasar al siguiente problema
+      setCurrentProblemIndex(prev => prev + 1);
+      setUserAnswer('');
+      setExerciseState('in-progress');
+    } else {
+      // Finalizar ejercicio
+      finishExercise();
+    }
+  };
+  
+  // Finalizar el ejercicio
+  const finishExercise = async () => {
+    pauseTimer();
+    
+    // Calcular tiempo total
+    const totalTime = (Date.now() - startTimeRef.current) / 1000;
+    
+    // Guardar resultados
+    try {
+      await saveExerciseResult({
+        module: 'addition',
+        score,
+        totalProblems: problems.length,
+        timeSpent: totalTime,
+        settings: config,
+        userAnswers,
+        timestamp: Date.now()
+      });
+      
+      console.log('Ejercicio guardado correctamente');
+    } catch (err) {
+      console.error('Error al guardar los resultados:', err);
+    }
+    
+    setExerciseState('completed');
+  };
+  
+  // Reiniciar ejercicio
+  const handleRestartExercise = () => {
+    setProblems([]);
+    setCurrentProblemIndex(0);
+    setUserAnswer('');
+    setUserAnswers([]);
+    setScore(0);
+    setExerciseState('ready');
+    
+    // Volver a cargar problemas (se hace mediante el efecto)
+  };
+  
+  // Renderizar contenido según el estado
   const renderContent = () => {
-    switch (state) {
-      case 'loading':
+    switch (exerciseState) {
+      case 'ready':
         return (
-          <div className="flex flex-col items-center justify-center p-8">
-            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
-            <p className="text-lg">Cargando ejercicio...</p>
+          <div className="text-center py-8">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p>Preparando ejercicio...</p>
           </div>
         );
         
-      case 'problem-display':
-        return (
+      case 'in-progress':
+        return currentProblem ? (
           <>
-            {/* Barra de progreso */}
-            <div className="w-full mb-4">
-              <div className="flex justify-between mb-1 text-sm">
-                <span>Problema {problemIndex + 1} de {totalProblems}</span>
-                {timeLeft !== null && (
-                  <span>Tiempo: {Math.ceil(timeLeft)}s</span>
-                )}
-              </div>
-              <Progress value={(problemIndex / totalProblems) * 100} />
-            </div>
+            <ProblemDisplay 
+              problem={currentProblem}
+              userAnswer={userAnswer}
+              isShowingAnswer={false}
+              timeLeft={config.hasTimeLimit ? timeLeft : null}
+              isTimerActive={isTimerActive}
+              maxTime={config.timeLimit || 0}
+              remainingAttempts={config.maxAttemptsPerProblem > 1 ? remainingAttempts : undefined}
+              showHint={config.showHints && remainingAttempts < config.maxAttemptsPerProblem}
+            />
             
-            {/* Visualización del problema */}
-            {currentProblem && (
-              <ProblemDisplay 
-                problem={currentProblem} 
-                userAnswer={currentAnswer}
-                remainingAttempts={remainingAttempts}
-              />
-            )}
-            
-            {/* Teclado numérico */}
-            <NumericKeypad
-              onNumberClick={(value) => setAnswer(currentAnswer + value)}
-              onBackspaceClick={() => setAnswer(currentAnswer.slice(0, -1))}
-              onSubmitClick={submitAnswer}
-              currentAnswer={currentAnswer}
+            <NumericKeypad 
+              onNumberClick={handleNumberClick}
+              onBackspaceClick={handleBackspaceClick}
+              onSubmitClick={handleSubmitAnswer}
+              currentAnswer={userAnswer}
               disabled={!currentProblem}
               showCheckButton={true}
             />
+            
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              Problema {currentProblemIndex + 1} de {problems.length}
+            </div>
           </>
-        );
-        
-      case 'feedback':
-        const lastAnswer = userAnswers[problemIndex];
-        const isCorrect = lastAnswer?.isCorrect || false;
-        
-        return (
-          <div className="flex flex-col items-center">
-            {/* Retroalimentación */}
-            <div className={`text-2xl font-bold mb-4 ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-              {isCorrect ? '¡Correcto!' : 'Incorrecto'}
-            </div>
-            
-            {/* Problema y respuesta */}
-            {currentProblem && (
-              <div className="mb-4 text-center">
-                <p className="text-lg mb-2">
-                  {currentProblem.operands?.join(' + ')} = {currentProblem.correctAnswer}
-                </p>
-                <p>Tu respuesta: {currentAnswer}</p>
-              </div>
-            )}
-            
-            {/* Botones de acción */}
-            <div className="flex gap-4 mt-4">
-              {!isCorrect && (
-                <Button 
-                  variant="outline" 
-                  onClick={showExplanation}
-                >
-                  Ver explicación
-                </Button>
-              )}
-              <Button 
-                onClick={goToNextProblem}
-              >
-                {problemIndex < totalProblems - 1 ? 'Siguiente problema' : 'Ver resultados'}
-              </Button>
-            </div>
+        ) : (
+          <div className="text-center py-8">
+            <p>No hay problemas disponibles</p>
           </div>
         );
         
       case 'explanation':
         return (
-          <ExplanationPanel 
-            problem={currentProblem} 
-            userAnswer={currentAnswer}
-            onContinue={goToNextProblem}
+          <ExplanationPanel
+            problem={currentProblem}
+            userAnswer={userAnswer}
+            onContinue={handleContinueAfterExplanation}
           />
         );
         
       case 'completed':
         return (
-          <ResultsBoard 
-            results={userAnswers}
-            totalProblems={totalProblems}
+          <ResultsBoard
+            userAnswers={userAnswers}
+            totalProblems={problems.length}
             score={score}
-            onRestart={restartExercise}
+            onRestart={handleRestartExercise}
+            onReturn={() => {
+              // Navegar de vuelta al menú principal (implementar según sea necesario)
+            }}
           />
         );
         
-      case 'error':
-        return (
-          <div className="flex flex-col items-center justify-center p-8">
-            <div className="text-red-500 text-lg mb-4">
-              Ha ocurrido un error al cargar el ejercicio.
-            </div>
-            <Button onClick={restartExercise}>
-              Reintentar
-            </Button>
-          </div>
-        );
-        
       default:
-        return null;
+        return <div>Estado desconocido</div>;
     }
   };
-
+  
   return (
-    <div className="exercise-container">
-      {renderContent()}
-    </div>
-  );
-}
-
-// Componente principal que proporciona el contexto
-export default function ModernAdditionExercise({ config }: { config: ModuleSettings }) {
-  return (
-    <Card className="w-full max-w-3xl mx-auto">
+    <Card className="addition-exercise-container max-w-4xl mx-auto">
       <CardContent className="p-6">
-        <ExerciseProvider settings={config}>
-          <ExerciseContent />
-        </ExerciseProvider>
+        {renderContent()}
       </CardContent>
     </Card>
   );

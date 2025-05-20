@@ -1,80 +1,70 @@
-// useTranslation.ts - Hook simplificado para traducciones
-import { useState, useEffect } from 'react';
+// useTranslation.ts - Hook para manejo de idiomas
+import { useCallback } from 'react';
+import { useStore } from '@/store/store';
 
-// Traducciones básicas para el módulo de suma
+// Traducciones básicas
 const translations = {
   es: {
+    'exercise.completed': 'Ejercicio completado',
+    'exercise.accuracy': 'Precisión',
+    'exercise.continue': 'Continuar',
+    'exercise.restart': 'Reiniciar',
+    'exercise.return': 'Volver al menú',
     'common.timeRemaining': 'Tiempo restante',
-    'common.check': 'Verificar',
+    'common.correct': 'Correcto',
+    'common.incorrect': 'Incorrecto',
+    'common.skip': 'Saltar',
+    'common.check': 'Comprobar',
     'common.next': 'Siguiente',
     'common.loading': 'Cargando',
-    'common.loadingProblems': 'Cargando problemas',
-    'common.reloadingProblem': 'Recargando problema',
-    'exercise.correct': 'Correcto',
-    'exercise.incorrect': 'Incorrecto',
-    'exercise.timeUp': 'Tiempo agotado',
-    'exercise.completed': '¡Ejercicio Completado!',
-    'exercise.finalScore': 'Puntuación Final',
-    'exercise.help': 'Ayuda',
-    'exercise.tryAgain': 'Intentar otra vez',
-    'exercise.showAnswer': 'Mostrar Respuesta',
-    'exercise.continue': 'Continuar',
-    'exercise.seconds': 's',
-    'exercise.restart': 'Reiniciar',
-    'exercise.feedback': 'Retroalimentación',
-    'exercise.accuracy': 'Precisión',
+    'common.error': 'Error',
+    'hint.title': 'Pista',
+    'hint.startSimpler': 'Intenta descomponer el problema en partes más simples',
+    'hint.tryAgain': 'Inténtalo de nuevo'
   },
   en: {
+    'exercise.completed': 'Exercise completed',
+    'exercise.accuracy': 'Accuracy',
+    'exercise.continue': 'Continue',
+    'exercise.restart': 'Restart',
+    'exercise.return': 'Return to menu',
     'common.timeRemaining': 'Time remaining',
+    'common.correct': 'Correct',
+    'common.incorrect': 'Incorrect',
+    'common.skip': 'Skip',
     'common.check': 'Check',
     'common.next': 'Next',
     'common.loading': 'Loading',
-    'common.loadingProblems': 'Loading problems',
-    'common.reloadingProblem': 'Reloading problem',
-    'exercise.correct': 'Correct',
-    'exercise.incorrect': 'Incorrect',
-    'exercise.timeUp': 'Time is up',
-    'exercise.completed': 'Exercise Completed!',
-    'exercise.finalScore': 'Final Score',
-    'exercise.help': 'Help',
-    'exercise.tryAgain': 'Try Again',
-    'exercise.showAnswer': 'Show Answer',
-    'exercise.continue': 'Continue',
-    'exercise.seconds': 's',
-    'exercise.restart': 'Restart',
-    'exercise.feedback': 'Feedback',
-    'exercise.accuracy': 'Accuracy',
+    'common.error': 'Error',
+    'hint.title': 'Hint',
+    'hint.startSimpler': 'Try breaking down the problem into simpler parts',
+    'hint.tryAgain': 'Try again'
   }
 };
 
-// Hook simplificado para traducción
+/**
+ * Hook personalizado para manejo de traducciones
+ */
 export function useTranslation() {
-  const [language, setLanguage] = useState<'es' | 'en'>('es');
+  // Obtener el idioma actual del store (o usar español por defecto)
+  const moduleSettings = useStore(state => state.activeProfile?.moduleSettings?.addition);
+  const language = moduleSettings?.language || 'es';
   
-  // Intentar obtener el idioma de localStorage o settings al iniciar
-  useEffect(() => {
-    try {
-      // Buscar preferencia de idioma en configuración de módulo
-      const settingsStr = localStorage.getItem('moduleSettings');
-      if (settingsStr) {
-        const settings = JSON.parse(settingsStr);
-        if (settings && settings.addition && settings.addition.language) {
-          const lang = settings.addition.language === 'spanish' ? 'es' : 'en';
-          setLanguage(lang);
-        }
-      }
-    } catch (error) {
-      console.error("Error loading language preference:", error);
+  // Función para traducir una clave
+  const t = useCallback((key: string, replacements?: Record<string, string>): string => {
+    // Buscar la traducción
+    const translation = translations[language as keyof typeof translations]?.[key as keyof (typeof translations)['es']] || key;
+    
+    // Aplicar reemplazos si existen
+    if (replacements) {
+      return Object.entries(replacements).reduce(
+        (result, [placeholder, value]) => result.replace(`{{${placeholder}}}`, value),
+        translation
+      );
     }
-  }, []);
+    
+    return translation;
+  }, [language]);
   
-  // Función de traducción
-  const t = (key: string): string => {
-    if (translations[language] && key in translations[language]) {
-      return translations[language][key as keyof typeof translations[typeof language]];
-    }
-    return key;
-  };
-  
-  return { t, language, setLanguage };
+  return { t, language };
 }

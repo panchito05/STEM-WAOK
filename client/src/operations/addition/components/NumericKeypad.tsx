@@ -1,95 +1,97 @@
 // NumericKeypad.tsx - Teclado numérico para ingresar respuestas
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Delete } from 'lucide-react';
 
 interface NumericKeypadProps {
   onNumberClick: (value: string) => void;
   onBackspaceClick: () => void;
-  onClearClick: () => void;
-  onCheckClick: () => void;
+  onSubmitClick?: () => void;
+  currentAnswer: string;
   disabled?: boolean;
   showCheckButton?: boolean;
-  answerMaxDigits?: number;
-  currentAnswer: string;
 }
 
 const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onNumberClick,
   onBackspaceClick,
-  onClearClick,
-  onCheckClick,
+  onSubmitClick,
+  currentAnswer,
   disabled = false,
-  showCheckButton = true,
-  answerMaxDigits = 5,
-  currentAnswer
+  showCheckButton = false
 }) => {
-  // Determinar si el usuario ha alcanzado el máximo de dígitos permitidos
-  const isMaxDigitsReached = currentAnswer.length >= answerMaxDigits;
+  // Definir los botones del teclado
+  const keypadButtons = [
+    '7', '8', '9',
+    '4', '5', '6',
+    '1', '2', '3',
+    '0', '.', '<'
+  ];
+  
+  // Gestionar el clic en los botones
+  const handleButtonClick = (value: string) => {
+    if (disabled) return;
+    
+    if (value === '<') {
+      onBackspaceClick();
+    } else {
+      onNumberClick(value);
+    }
+  };
+  
+  // Gestionar teclas de teclado físico
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (disabled) return;
+      
+      // Permitir números, punto decimal y teclas de borrar/enter
+      if (/^[0-9.]$/.test(e.key)) {
+        onNumberClick(e.key);
+      } else if (e.key === 'Backspace') {
+        onBackspaceClick();
+      } else if (e.key === 'Enter' && onSubmitClick) {
+        onSubmitClick();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNumberClick, onBackspaceClick, onSubmitClick, disabled]);
   
   return (
-    <div className="numeric-keypad mt-4">
+    <div className="numeric-keypad w-full max-w-xs mx-auto">
+      {/* Cuadrícula de botones */}
       <div className="grid grid-cols-3 gap-2">
-        {/* Números 1-9 */}
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+        {keypadButtons.map((btn) => (
           <Button
-            key={num}
-            variant="outline"
+            key={btn}
+            type="button"
+            variant={btn === '<' ? "outline" : "secondary"}
             size="lg"
-            className="h-14 text-xl font-bold"
-            onClick={() => onNumberClick(num.toString())}
-            disabled={disabled || isMaxDigitsReached}
+            className={`h-12 font-bold ${disabled ? 'opacity-50' : ''}`}
+            onClick={() => handleButtonClick(btn)}
+            disabled={disabled}
           >
-            {num}
+            {btn === '<' ? (
+              <span className="text-lg">⌫</span>
+            ) : (
+              btn
+            )}
           </Button>
         ))}
-        
-        {/* Botón Borrar Todo (C) */}
-        <Button
-          variant="outline"
-          size="lg"
-          className="h-14 text-xl font-bold bg-red-50 text-red-700 hover:bg-red-100"
-          onClick={onClearClick}
-          disabled={disabled}
-        >
-          C
-        </Button>
-        
-        {/* Botón 0 */}
-        <Button
-          variant="outline"
-          size="lg"
-          className="h-14 text-xl font-bold"
-          onClick={() => onNumberClick('0')}
-          disabled={disabled || isMaxDigitsReached}
-        >
-          0
-        </Button>
-        
-        {/* Botón Borrar (Backspace) */}
-        <Button
-          variant="outline"
-          size="lg"
-          className="h-14 flex items-center justify-center"
-          onClick={onBackspaceClick}
-          disabled={disabled || currentAnswer.length === 0}
-        >
-          <Delete className="h-6 w-6" />
-        </Button>
-        
-        {/* Botón Verificar (opcional) */}
-        {showCheckButton && (
-          <Button
-            variant="default"
-            size="lg"
-            className="h-14 mt-2 text-lg font-medium col-span-3 bg-green-600 hover:bg-green-700"
-            onClick={onCheckClick}
-            disabled={disabled || currentAnswer.length === 0}
-          >
-            Verificar
-          </Button>
-        )}
       </div>
+      
+      {/* Botón de enviar */}
+      {onSubmitClick && (
+        <Button
+          type="button"
+          size="lg"
+          className={`w-full mt-2 h-12 ${disabled ? 'opacity-50' : ''}`}
+          onClick={onSubmitClick}
+          disabled={disabled || (showCheckButton && currentAnswer === '')}
+        >
+          {showCheckButton ? 'Comprobar' : 'Enviar'}
+        </Button>
+      )}
     </div>
   );
 };
