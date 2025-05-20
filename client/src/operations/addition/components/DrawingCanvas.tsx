@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 
 // Definir los diferentes modos de herramientas
 type ToolMode = 'pen' | 'eraser' | 'line';
