@@ -1,48 +1,32 @@
-// Niveles de dificultad para los ejercicios
+// Tipos para el módulo de suma (addition)
+
+// Niveles de dificultad disponibles
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'expert';
 
-// Formatos de visualización para los problemas
-export type DisplayFormat = 'vertical' | 'horizontal' | 'word';
+// Formato de visualización para problemas
+export type DisplayFormat = 'horizontal' | 'vertical' | 'word';
 
-// Interfaz para los operandos de un problema de suma
+// Estado de la respuesta del usuario
+export type AnswerStatus = 'correct' | 'incorrect' | 'skipped' | 'timeout' | 'revealed';
+
+// Operando individual para un problema
 export interface Operand {
   value: number;
-  label?: string;
+  label?: string; // Para problemas de palabras
 }
 
-// Interfaz para un problema de suma
+// Estructura de un problema matemático
 export interface Problem {
   id: string;
   operands: Operand[];
   displayFormat: DisplayFormat;
   correctAnswer: number;
   difficulty: DifficultyLevel;
-  allowDecimals?: boolean;
-  timeLimit?: number;
-  maxAttempts?: number;
+  allowDecimals: boolean;
+  maxAttempts: number;
 }
 
-// Interfaz para las configuraciones del módulo
-export interface ModuleSettings {
-  difficulty: DifficultyLevel;
-  problemCount: number;
-  hasTimeLimit: boolean;
-  timeLimit: number;
-  hasPerProblemTimer: boolean;
-  problemTimeLimit: number;
-  showExplanations: boolean;
-  language: string;
-  maxConsecutiveIncorrect?: number;
-  allowMultipleAttempts?: boolean;
-  maxAttemptCount?: number;
-  consecutiveCorrectThreshold?: number;
-  consecutiveIncorrectThreshold?: number;
-}
-
-// Estado de una respuesta
-export type AnswerStatus = 'correct' | 'incorrect' | 'timeout' | 'revealed' | 'skipped';
-
-// Interfaz para una respuesta del usuario
+// Respuesta del usuario a un problema
 export interface UserAnswer {
   problemId: string;
   problem: Problem;
@@ -53,7 +37,19 @@ export interface UserAnswer {
   timestamp: number;
 }
 
-// Interfaz para el estado del ejercicio
+// Configuraciones para un módulo específico
+export interface ModuleSettings {
+  difficulty: DifficultyLevel;
+  problemCount: number;
+  hasTimeLimit: boolean;
+  timeLimit: number;
+  hasPerProblemTimer: boolean;
+  problemTimeLimit?: number;
+  showExplanations: boolean;
+  language: string;
+}
+
+// Estado del ejercicio
 export interface ExerciseState {
   problems: Problem[];
   userAnswers: UserAnswer[];
@@ -68,9 +64,10 @@ export interface ExerciseState {
   endTime: number | null;
   consecutiveCorrect: number;
   consecutiveIncorrect: number;
+  attempts: number;
 }
 
-// Interfaz para el resultado de un ejercicio
+// Resultado de un ejercicio completado
 export interface ExerciseResult {
   id: string;
   moduleId: string;
@@ -83,23 +80,36 @@ export interface ExerciseResult {
   userAnswers: UserAnswer[];
 }
 
-// Interfaz para estadísticas de un módulo
-export interface ModuleStats {
-  moduleId: string;
-  totalExercises: number;
-  averageScore: number;
-  totalProblemsAttempted: number;
-  correctAnswers: number;
-  incorrectAnswers: number;
-  timeoutAnswers: number;
-  revealedAnswers: number;
-  skippedAnswers: number;
-  averageTimePerProblem: number;
-  lastActivity: string;
-  difficultyProgression: {
-    easy: number;
-    medium: number;
-    hard: number;
-    expert: number;
-  };
+// Configuración para el generador de problemas
+export interface ProblemGeneratorConfig {
+  difficulty: DifficultyLevel;
+  problemCount: number;
+  maxOperands?: number;
+  minValue?: number;
+  maxValue?: number;
+  allowNegatives?: boolean;
+  allowDecimals?: boolean;
+  decimalPlaces?: number;
+  preferredDisplayFormat?: DisplayFormat | DisplayFormat[];
 }
+
+// Tipos para el contexto del ejercicio
+export interface ExerciseContextType {
+  state: ExerciseState;
+  updateAnswer: (value: string | number) => void;
+  submitAnswer: () => boolean;
+  skipProblem: () => void;
+  showSolution: () => void;
+  nextProblem: () => void;
+  resetExercise: (settings?: Partial<ModuleSettings>) => void;
+}
+
+// Eventos para el reducer del contexto
+export type ExerciseEvent =
+  | { type: 'UPDATE_ANSWER'; payload: string }
+  | { type: 'SUBMIT_ANSWER' }
+  | { type: 'SKIP_PROBLEM' }
+  | { type: 'SHOW_SOLUTION' }
+  | { type: 'NEXT_PROBLEM' }
+  | { type: 'COMPLETE_EXERCISE' }
+  | { type: 'RESET_EXERCISE'; payload?: Partial<ModuleSettings> };
