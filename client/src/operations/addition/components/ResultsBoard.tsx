@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -15,7 +15,8 @@ import {
   Clock, 
   Award, 
   Home, 
-  RefreshCw 
+  RefreshCw,
+  Save
 } from 'lucide-react';
 import { Problem, UserAnswer, DifficultyLevel } from '../types';
 import { formatTime } from '@/utils/formatTime';
@@ -44,6 +45,41 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
 }) => {
   // Calcular porcentaje de aciertos
   const percentage = Math.round((score / totalProblems) * 100);
+  
+  // Guardar los resultados en el almacenamiento local
+  useEffect(() => {
+    // Crear un objeto con los datos del resultado
+    const resultData = {
+      module: 'addition',
+      date: new Date().toISOString(),
+      score,
+      totalProblems,
+      percentage,
+      difficulty,
+      timeSpent,
+      userAnswers: userAnswers.map(answer => ({
+        problemId: answer.problemId,
+        problemText: renderProblemText(answer.problem),
+        userAnswer: answer.userAnswer,
+        correctAnswer: answer.problem.correctAnswer,
+        isCorrect: answer.isCorrect,
+        status: answer.status,
+        attempts: answer.attempts
+      }))
+    };
+    
+    // Obtener los resultados anteriores del localStorage
+    const storedResults = localStorage.getItem('math_results');
+    const allResults = storedResults ? JSON.parse(storedResults) : [];
+    
+    // Añadir el nuevo resultado
+    allResults.push(resultData);
+    
+    // Guardar la lista actualizada en localStorage
+    localStorage.setItem('math_results', JSON.stringify(allResults));
+    
+    console.log('Resultados guardados localmente:', resultData);
+  }, []);
   
   // Determinar color basado en el porcentaje
   const getColorClass = () => {
