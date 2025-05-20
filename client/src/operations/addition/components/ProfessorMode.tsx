@@ -120,14 +120,14 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
   return (
     <div className="fixed inset-0 bg-white z-50">
-      {/* Close button X rojo en la parte superior */}
+      {/* Close button X rojo en la parte superior (más pequeño) */}
       <button
         onClick={onClose}
-        className="absolute top-4 left-1/2 transform -translate-x-1/2 p-3 rounded-full bg-red-600 hover:bg-red-700 transition-colors z-50"
+        className="absolute top-4 left-1/2 transform -translate-x-1/2 p-2 rounded-full bg-red-600 hover:bg-red-700 transition-colors z-50"
         aria-label="Cerrar modo profesor"
         style={{zIndex: 9999}}
       >
-        <X className="h-6 w-6 text-white" />
+        <X className="h-3 w-3 text-white" />
       </button>
       
       {/* Main layout with drawing area taking most of the screen */}
