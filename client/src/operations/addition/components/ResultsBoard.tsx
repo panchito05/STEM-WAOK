@@ -1,136 +1,123 @@
-// ResultsBoard.tsx - Muestra los resultados al finalizar un ejercicio
+// ResultsBoard.tsx - Componente para mostrar resultados finales del ejercicio
 import React from 'react';
-import { UserAnswer, Problem, DifficultyLevel } from '../types';
-import { CheckCircle, XCircle, Clock, Award, BarChart3, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { UserAnswer } from '../types';
+import { formatProblemToString } from '../utils/problemGenerator';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface ResultsBoardProps {
-  userAnswersHistory: UserAnswer[];
-  problemsList: Problem[];
-  finalScore: number;
-  timer: number;
-  finalLevel: DifficultyLevel;
-  revealedAnswers: number;
-  avgTimePerProblem: number;
-  avgAttemptsValue: number;
+  userAnswers: UserAnswer[];
+  totalProblems: number;
+  score: number;
+  onRestart: () => void;
+  onReturn?: () => void;
 }
 
 const ResultsBoard: React.FC<ResultsBoardProps> = ({
-  userAnswersHistory,
-  problemsList,
-  finalScore,
-  timer,
-  finalLevel,
-  revealedAnswers,
-  avgTimePerProblem,
-  avgAttemptsValue
+  userAnswers,
+  totalProblems,
+  score,
+  onRestart,
+  onReturn
 }) => {
-  // Calcular la precisión
-  const accuracy = Math.round((finalScore / problemsList.length) * 100);
+  const { t } = useTranslation();
   
+  // Calcular estadísticas
+  const accuracy = totalProblems > 0 
+    ? Math.round((score / totalProblems) * 100) 
+    : 0;
+    
+  const totalTime = userAnswers.reduce((total, answer) => 
+    total + (answer.timeTaken || 0), 0);
+    
+  const averageTime = totalProblems > 0 
+    ? Math.round((totalTime / totalProblems) * 10) / 10 
+    : 0;
+    
+  const correctAnswers = userAnswers.filter(a => a.isCorrect).length;
+  const incorrectAnswers = totalProblems - correctAnswers;
+
   return (
-    <div className="results-board py-4">
-      <h2 className="text-2xl font-bold text-center mb-6">¡Ejercicio Completado!</h2>
+    <div className="results-board">
+      <h2 className="text-2xl font-bold text-center mb-4">
+        {t('exercise.completed')}
+      </h2>
       
-      {/* Puntuación Principal */}
-      <div className="score-display flex items-center justify-center mb-6">
-        <div className="bg-green-50 p-4 rounded-xl border border-green-100 text-center">
-          <div className="text-gray-600 text-sm mb-1">Puntuación Final</div>
-          <div className="text-4xl font-bold text-green-600">
-            {finalScore} <span className="text-gray-400 text-xl">/ {problemsList.length}</span>
-          </div>
+      {/* Resumen de puntuación */}
+      <div className="score-summary text-center mb-6">
+        <div className="text-4xl font-bold mb-2">
+          {score} / {totalProblems}
+        </div>
+        <div className="text-lg">
+          {t('exercise.accuracy')}: {accuracy}%
+        </div>
+        <div className="text-sm text-muted-foreground">
+          Tiempo promedio: {averageTime}s por problema
         </div>
       </div>
       
-      {/* Estadísticas del Ejercicio */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 p-3 rounded-lg shadow-sm text-center border border-blue-100">
-          <div className="text-sm text-gray-600 mb-1 flex items-center justify-center">
-            <BarChart3 className="h-4 w-4 mr-1" />
-            <span>Precisión</span>
-          </div>
-          <div className="text-xl text-blue-600 font-semibold">{accuracy}%</div>
-        </div>
+      {/* Detalles de cada problema */}
+      <div className="problem-details mb-6">
+        <h3 className="text-lg font-medium mb-3">Detalles por problema:</h3>
         
-        <div className="bg-purple-50 p-3 rounded-lg shadow-sm text-center border border-purple-100">
-          <div className="text-sm text-gray-600 mb-1 flex items-center justify-center">
-            <Clock className="h-4 w-4 mr-1" />
-            <span>Tiempo</span>
-          </div>
-          <div className="text-xl text-purple-600 font-semibold">{Math.round(timer)}s</div>
-        </div>
-        
-        <div className="bg-amber-50 p-3 rounded-lg shadow-sm text-center border border-amber-100">
-          <div className="text-sm text-gray-600 mb-1 flex items-center justify-center">
-            <TrendingUp className="h-4 w-4 mr-1" />
-            <span>Intentos</span>
-          </div>
-          <div className="text-xl text-amber-600 font-semibold">{avgAttemptsValue.toFixed(1)}</div>
-        </div>
-        
-        <div className="bg-red-50 p-3 rounded-lg shadow-sm text-center border border-red-100">
-          <div className="text-sm text-gray-600 mb-1">Reveladas</div>
-          <div className="text-xl text-red-600 font-semibold">{revealedAnswers}</div>
-        </div>
-        
-        <div className="bg-teal-50 p-3 rounded-lg shadow-sm text-center border border-teal-100">
-          <div className="text-sm text-gray-600 mb-1">Nivel Final</div>
-          <div className="text-xl text-teal-600 font-semibold">{finalLevel === "beginner" ? "1" :
-                                                      finalLevel === "elementary" ? "2" :
-                                                      finalLevel === "intermediate" ? "3" :
-                                                      finalLevel === "advanced" ? "4" : "5"}</div>
-        </div>
-        
-        <div className="bg-indigo-50 p-3 rounded-lg shadow-sm text-center border border-indigo-100">
-          <div className="text-sm text-gray-600 mb-1">Tiempo/Prob</div>
-          <div className="text-xl text-indigo-600 font-semibold">{avgTimePerProblem}s</div>
-        </div>
-      </div>
-      
-      {/* Resumen de Problemas */}
-      <div className="problem-summary">
-        <h3 className="text-lg font-semibold mb-3">Resumen de Problemas</h3>
-        <div className="space-y-2">
-          {userAnswersHistory.map((answer, index) => {
-            if (!answer) return null;
-            
-            const problem = problemsList[index];
-            if (!problem) return null;
-            
-            const operands = problem.operands || [];
-            
+        <div className="space-y-3">
+          {userAnswers.map((answer, index) => {
+            // Asegurar que problem es un objeto de tipo Problem
+            const problem = typeof answer.problem === 'string' 
+              ? { id: answer.problemId, operands: [], correctAnswer: '', displayText: answer.problem }
+              : answer.problem;
+              
             return (
-              <div 
-                key={`summary-${index}`} 
-                className={`p-3 rounded-lg flex justify-between items-center ${
-                  answer.isCorrect ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'
-                }`}
-              >
-                <div>
-                  <span className="font-medium">{operands[0]} + {operands[1]}</span>
-                  <span className="mx-2">=</span>
-                  <span className="font-bold">{problem.correctAnswer}</span>
-                  
-                  {!answer.isCorrect && answer.userAnswer && (
-                    <span className="text-red-600 ml-3">({answer.userAnswer})</span>
+              <Card key={answer.problemId || index} className={`
+                ${answer.isCorrect ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'}
+                dark:${answer.isCorrect ? 'border-green-800 bg-green-950' : 'border-red-800 bg-red-950'}
+              `}>
+                <CardContent className="p-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-medium">
+                        {problem.displayText || formatProblemToString(problem)}
+                      </div>
+                      <div className="text-sm mt-1">
+                        Tu respuesta: {answer.userAnswer}
+                      </div>
+                      {!answer.isCorrect && (
+                        <div className="text-sm mt-1">
+                          Respuesta correcta: {problem.correctAnswer}
+                        </div>
+                      )}
+                    </div>
+                    <div className={`
+                      px-2 py-1 rounded text-sm
+                      ${answer.isCorrect ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}
+                      dark:${answer.isCorrect ? 'bg-green-700 text-green-100' : 'bg-red-700 text-red-100'}
+                    `}>
+                      {answer.isCorrect ? 'Correcto' : 'Incorrecto'}
+                    </div>
+                  </div>
+                  {answer.timeTaken && (
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Tiempo: {Math.round(answer.timeTaken * 10) / 10}s
+                    </div>
                   )}
-                  
-                  {answer.attempts && answer.attempts > 1 && (
-                    <span className="text-gray-500 text-xs ml-2">
-                      {answer.attempts} intentos
-                    </span>
-                  )}
-                </div>
-                
-                <div>
-                  {answer.isCorrect 
-                    ? <CheckCircle className="h-5 w-5 text-green-600" /> 
-                    : <XCircle className="h-5 w-5 text-red-600" />
-                  }
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
+      </div>
+      
+      {/* Acciones */}
+      <div className="flex justify-center gap-4">
+        <Button onClick={onRestart} className="min-w-[120px]">
+          Reintentar
+        </Button>
+        {onReturn && (
+          <Button variant="outline" onClick={onReturn} className="min-w-[120px]">
+            Volver al menú
+          </Button>
+        )}
       </div>
     </div>
   );
