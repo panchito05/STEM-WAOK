@@ -2375,7 +2375,39 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <ProfessorMode
           problem={currentProblem}
           onClose={() => setShowProfessorMode(false)}
-          onCorrectAnswer={() => {
+          onCorrectAnswer={(wasCorrect: boolean) => {
+            // Actualizar contadores de respuestas consecutivas
+            if (wasCorrect) {
+              const newConsecutive = consecutiveCorrectAnswers + 1;
+              setConsecutiveCorrectAnswers(newConsecutive);
+              setConsecutiveIncorrectAnswers(0);
+              
+              // Verificar posible subida de nivel si se alcanza el umbral
+              if (newConsecutive >= CORRECT_ANSWERS_FOR_LEVEL_UP && settings.enableAdaptiveDifficulty) {
+                const difficultiesOrder: DifficultyLevel[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
+                const currentLevelIdx = difficultiesOrder.indexOf(adaptiveDifficulty);
+                
+                // Solo subir si no estamos ya en el nivel máximo
+                if (currentLevelIdx < difficultiesOrder.length - 1) {
+                  const newLevel = difficultiesOrder[currentLevelIdx + 1];
+                  setAdaptiveDifficulty(newLevel);
+                  setConsecutiveCorrectAnswers(0);
+                  console.log(`[CONTADOR] 🔼 Subiendo nivel a: ${newLevel}`);
+                }
+              }
+            } else if (settings.enableCompensation) {
+              // Agregar problema de compensación cuando se falla
+              console.log("[ADDITION] Agregando problema de compensación por respuesta incorrecta en modo profesor");
+              const difficultyForCompensation = settings.enableAdaptiveDifficulty
+                ? adaptiveDifficulty
+                : (settings.difficulty as DifficultyLevel);
+                
+              const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+              setProblemsList(prev => [...prev, compensationProblem]);
+              // Agregamos null al historial para que coincida con el nuevo problema añadido
+              setUserAnswersHistory(prev => [...prev, null]);
+            }
+            
             // Generar un nuevo problema
             const newProblem = generateAdditionProblem(settings.difficulty);
             setCurrentProblem(newProblem);
@@ -2385,11 +2417,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setCurrentProblemIndex(prev => prev + 1);
             }
             
-            // Otras acciones si son necesarias
+            // Reiniciar temporizador para el nuevo problema
             const newStartTime = Date.now();
             setProblemStartTime(newStartTime);
           }}
           showVerticalFormat={true}
+          settings={{
+            maxAttempts: settings.maxAttempts,
+            enableCompensation: settings.enableCompensation
+          }}
         />
       )}
     </div>

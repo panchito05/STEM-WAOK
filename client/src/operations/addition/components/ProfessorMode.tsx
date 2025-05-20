@@ -7,25 +7,32 @@ import NumericKeypad from './SimpleNumericKeypad';
 interface ProfessorModeProps {
   problem: AdditionProblem;
   onClose: () => void;
-  onCorrectAnswer: () => void;
+  onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
+  settings: {
+    maxAttempts: number;
+    enableCompensation: boolean;
+  };
 }
 
 export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   problem,
   onClose,
   onCorrectAnswer,
-  showVerticalFormat = true
+  showVerticalFormat = true,
+  settings
 }) => {
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [position, setPosition] = useState<'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'>('topLeft');
+  const [attempts, setAttempts] = useState<number>(0);
   const canvasRef = useRef<any>(null);
   
   // Reset state when problem changes
   useEffect(() => {
     setUserAnswer('');
     setIsCorrect(null);
+    setAttempts(0);
     
     // Clear canvas when problem changes
     if (canvasRef.current && canvasRef.current.clear) {
@@ -37,25 +44,31 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const checkAnswer = () => {
     if (!userAnswer) return;
     
+    // Incrementar número de intentos
+    const newAttempts = attempts + 1;
+    setAttempts(newAttempts);
+    
     const numAnswer = Number(userAnswer);
     const correctAnswer = problem.operands.reduce((a, b) => a + b, 0);
     const result = numAnswer === correctAnswer;
     
     setIsCorrect(result);
     
-    if (result) {
+    // Si la respuesta es correcta o se agotaron los intentos
+    if (result || newAttempts >= settings.maxAttempts) {
       setTimeout(() => {
         // Reset state
         setUserAnswer('');
         setIsCorrect(null);
+        setAttempts(0);
         
         // Clear canvas
         if (canvasRef.current && canvasRef.current.clear) {
           canvasRef.current.clear();
         }
         
-        // Move to next problem
-        onCorrectAnswer();
+        // Move to next problem, indicando si fue correcto para compensación si es necesario
+        onCorrectAnswer(result);
       }, 1000); // Short delay before moving to next problem
     }
   };
