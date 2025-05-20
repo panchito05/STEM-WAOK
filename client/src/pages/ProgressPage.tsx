@@ -33,7 +33,7 @@ export default function ProgressPage() {
   }, [refreshProgress]);
 
   // Nota: La actualización automática ha sido desactivada
-  // La actualización ahora sólo ocurre cuando el usuario 
+  // La actualización ahora sólo ocurre cuando el usuario
   // hace clic en el botón de "Refresh Data"
 
   if (isLoading) {
@@ -139,7 +139,7 @@ export default function ProgressPage() {
         <title>Your Progress - Math W+A+O+K</title>
         <meta name="description" content="Track your math learning progress and view your performance statistics." />
       </Helmet>
-      
+
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>
@@ -150,10 +150,10 @@ export default function ProgressPage() {
             </p>
           </div>
           <div className="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
-              onClick={handleRefresh} 
+              onClick={handleRefresh}
               disabled={isRefreshing}
               className="flex items-center"
             >
@@ -197,7 +197,7 @@ export default function ProgressPage() {
             </AlertDialog>
           </div>
         </div>
-        
+
         {exerciseHistory.length === 0 ? (
           <Card>
             <CardContent className="py-10">
@@ -219,7 +219,7 @@ export default function ProgressPage() {
               <TabsTrigger value="detailed">Detailed Progress</TabsTrigger>
               <TabsTrigger value="recent">Recent Exercises</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="overview">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
@@ -257,7 +257,7 @@ export default function ProgressPage() {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardHeader>
                     <CardTitle>Module Comparison</CardTitle>
@@ -283,7 +283,7 @@ export default function ProgressPage() {
                 </Card>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="detailed">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {operationModules
@@ -292,9 +292,9 @@ export default function ProgressPage() {
                     const progress = moduleProgress[module.id];
                     return (
                       <Card key={module.id} className="overflow-hidden transition-all">
-                        <div 
+                        <div
                           className="flex justify-between items-center p-4 border-b border-gray-200 relative overflow-hidden"
-                          style={{ 
+                          style={{
                             backgroundColor: module.color || '#4287f5',
                             color: 'white'
                           }}
@@ -310,7 +310,7 @@ export default function ProgressPage() {
                               <rect width="100%" height="100%" fill={`url(#grid-${module.id})`} />
                             </svg>
                           </div>
-                          
+
                           <div className="flex items-center relative z-10">
                             <div className="flex items-center">
                               <div className="mr-3 bg-white/25 p-2 rounded-lg shadow-inner">
@@ -339,11 +339,11 @@ export default function ProgressPage() {
                                     const problemsSolved = exerciseHistory
                                       .filter(ex => ex.operationId === module.id)
                                       .reduce((sum, ex) => sum + (ex.score || 0), 0);
-                                    
+
                                     const totalProblems = exerciseHistory
                                       .filter(ex => ex.operationId === module.id)
                                       .reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
-                                    
+
                                     return `${problemsSolved} de ${totalProblems}`;
                                   })()}
                                 </p>
@@ -351,16 +351,16 @@ export default function ProgressPage() {
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Average Score</p>
                                 <p className="text-2xl font-bold">
-                                  {progress?.averageScore 
-                                    ? `${Math.min(100, Math.round(progress.averageScore * 100))}%` 
+                                  {progress?.averageScore
+                                    ? `${Math.min(100, Math.round(progress.averageScore * 100))}%`
                                     : "N/A"}
                                 </p>
                               </div>
                               <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                                 <p className="text-sm text-gray-500">Best Score</p>
                                 <p className="text-2xl font-bold">
-                                  {progress?.bestScore 
-                                    ? `${Math.min(100, Math.round(progress.bestScore * 100))}%` 
+                                  {progress?.bestScore
+                                    ? `${Math.min(100, Math.round(progress.bestScore * 100))}%`
                                     : "N/A"}
                                 </p>
                               </div>
@@ -368,8 +368,8 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500">Average Time For Each Exercise Block Completed</p>
                                 <p className="text-xl mt-2">
                                   <span className="font-bold">
-                                    {progress?.averageTime 
-                                      ? `${Math.round(progress.averageTime)}s` 
+                                    {progress?.averageTime
+                                      ? `${Math.round(progress.averageTime)}s`
                                       : "N/A"}
                                   </span>
                                 </p>
@@ -381,13 +381,13 @@ export default function ProgressPage() {
                                     const totalSeconds = exerciseHistory
                                       .filter(ex => ex.operationId === module.id)
                                       .reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-                                    
+
                                     // Formatear tiempo: para minutos:segundos si es menos de una hora
                                     if (totalSeconds < 3600) {
                                       const minutes = Math.floor(totalSeconds / 60);
                                       const seconds = totalSeconds % 60;
                                       return `${minutes}m ${seconds}s`;
-                                    } 
+                                    }
                                     // Para horas:minutos:segundos si es más de una hora
                                     else {
                                       const hours = Math.floor(totalSeconds / 3600);
@@ -407,9 +407,9 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     const totalProblems = moduleExercises.reduce((sum, ex) => sum + (ex.totalProblems || 0), 0);
                                     const totalTime = moduleExercises.reduce((sum, ex) => sum + (ex.timeSpent || 0), 0);
-                                    
-                                    return totalProblems > 0 
-                                      ? `${Math.round(totalTime / totalProblems)}s` 
+
+                                    return totalProblems > 0
+                                      ? `${Math.round(totalTime / totalProblems)}s`
                                       : "N/A";
                                   })()}
                                 </span>
@@ -425,7 +425,7 @@ export default function ProgressPage() {
                   })}
               </div>
             </TabsContent>
-            
+
             <TabsContent value="recent">
               <Card>
                 <CardHeader>
@@ -458,17 +458,17 @@ export default function ProgressPage() {
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              {exercise.score !== undefined && exercise.totalProblems ? 
-                                `${exercise.score}/${exercise.totalProblems} (${Math.round((exercise.score / exercise.totalProblems) * 100)}%)` : 
+                              {exercise.score !== undefined && exercise.totalProblems ?
+                                `${exercise.score}/${exercise.totalProblems} (${Math.round((exercise.score / exercise.totalProblems) * 100)}%)` :
                                 "N/A"}
                             </td>
                             <td className="py-3 px-4">{exercise.timeSpent !== undefined ? `${exercise.timeSpent}s` : "N/A"}</td>
                             <td className="py-3 px-4">
                               <Dialog>
                                 <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
                                     onClick={() => setSelectedExercise(exercise)}
                                   >
                                     Ver detalles
@@ -480,18 +480,18 @@ export default function ProgressPage() {
                                       {getModuleName(exercise.operationId)} Exercise Complete!
                                     </DialogTitle>
                                   </DialogHeader>
-                                  
+
                                   <div className="bg-gray-50 p-4 rounded-md mb-4">
                                     <p className="text-center text-sm text-gray-500">Total Time</p>
                                     <p className="text-center text-2xl font-bold">
-                                      {exercise.timeSpent ? 
-                                        exercise.timeSpent < 60 ? 
-                                          `00:${exercise.timeSpent.toString().padStart(2, '0')}` : 
-                                          `${Math.floor(exercise.timeSpent / 60).toString().padStart(2, '0')}:${(exercise.timeSpent % 60).toString().padStart(2, '0')}` 
+                                      {exercise.timeSpent ?
+                                        exercise.timeSpent < 60 ?
+                                          `00:${exercise.timeSpent.toString().padStart(2, '0')}` :
+                                          `${Math.floor(exercise.timeSpent / 60).toString().padStart(2, '0')}:${(exercise.timeSpent % 60).toString().padStart(2, '0')}`
                                         : '00:00'}
                                     </p>
                                   </div>
-                                  
+
                                   <div className="grid grid-cols-3 gap-2">
                                     <div className="bg-blue-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Score</p>
@@ -502,21 +502,21 @@ export default function ProgressPage() {
                                     <div className="bg-green-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Accuracy</p>
                                       <p className="text-center text-lg font-bold text-green-600">
-                                        {exercise.score && exercise.totalProblems ? 
-                                          `${Math.round((exercise.score / exercise.totalProblems) * 100)}%` : 
+                                        {exercise.score && exercise.totalProblems ?
+                                          `${Math.round((exercise.score / exercise.totalProblems) * 100)}%` :
                                           '0%'}
                                       </p>
                                     </div>
                                     <div className="bg-purple-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Avg. Time</p>
                                       <p className="text-center text-lg font-bold text-purple-600">
-                                        {exercise.timeSpent && exercise.totalProblems ? 
-                                          `${Math.round(exercise.timeSpent / exercise.totalProblems)}s` : 
+                                        {exercise.timeSpent && exercise.totalProblems ?
+                                          `${Math.round(exercise.timeSpent / exercise.totalProblems)}s` :
                                           'N/A'}
                                       </p>
                                     </div>
                                   </div>
-                                  
+
                                   <div className="grid grid-cols-3 gap-2 mt-2">
                                     <div className="bg-yellow-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Avg. Attempts</p>
@@ -533,13 +533,13 @@ export default function ProgressPage() {
                                     <div className="bg-teal-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Final Level</p>
                                       <p className="text-center text-lg font-bold text-teal-600">
-                                        {exercise.difficulty === 'beginner' ? 'Principiante' : 
-                                         exercise.difficulty === 'intermediate' ? 'Intermedio' : 
+                                        {exercise.difficulty === 'beginner' ? 'Principiante' :
+                                         exercise.difficulty === 'intermediate' ? 'Intermedio' :
                                          exercise.difficulty === 'advanced' ? 'Avanzado' : 'Principiante'}
                                       </p>
                                     </div>
                                   </div>
-                                  
+
                                   {/* Mostrar Problem Review - siempre mostrar problemas, incluso si generamos datos de ejemplo */}
                                   <div className="mt-4">
                                     <h3 className="font-medium mb-2">Problem Review</h3>
@@ -547,22 +547,22 @@ export default function ProgressPage() {
                                       {(() => {
                                         // Intenta obtener los detalles del problema de varias fuentes
                                         let problemsToShow = null;
-                                        
+
                                         // En lugar de crear problemas aleatorios, mostraremos un mensaje claro
                                         // indicando que estos son los problemas específicos del ejercicio seleccionado
                                         const getProblemDescription = () => {
                                           return [{
                                             isPlaceholder: true,
-                                            problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' : 
+                                            problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' :
                                                        exercise.operationId === 'fractions' ? 'Fracciones' :
                                                        exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} completado con puntuación ${exercise.score}/${exercise.totalProblems}`,
                                             isCorrect: true
                                           }];
                                         };
-                                        
+
                                         // SOLUCIÓN DEFINITIVA: Ver qué campos están disponibles en el ejercicio
                                         console.log(`DEBUG ID ${exercise.id}:`, exercise);
-                                        
+
                                         if (!exercise) {
                                           console.log("No hay ejercicio seleccionado");
                                           return [{
@@ -571,14 +571,14 @@ export default function ProgressPage() {
                                             isPlaceholder: true
                                           }];
                                         }
-                                        
+
                                         let problems = [];
-                                        
+
                                         try {
                                           // Extraer datos de extra_data primero
                                           if (exercise.extra_data) {
                                             let extraData = exercise.extra_data;
-                                            
+
                                             // Si es string, intentar parsearlo como JSON
                                             if (typeof extraData === 'string') {
                                               try {
@@ -587,20 +587,20 @@ export default function ProgressPage() {
                                                 console.log("Error al parsear extra_data:", error);
                                               }
                                             }
-                                            
+
                                             // Verificar si existe screenshot.problemReview
-                                            if (extraData.screenshot && 
-                                                extraData.screenshot.problemReview && 
+                                            if (extraData.screenshot &&
+                                                extraData.screenshot.problemReview &&
                                                 Array.isArray(extraData.screenshot.problemReview)) {
                                               problems = extraData.screenshot.problemReview;
                                               console.log("✅ Encontrados problemas en extra_data.screenshot.problemReview");
                                             }
                                           }
-                                          
+
                                           // ESTRATEGIA MEJORADA: Búsqueda completa de problemas en múltiples ubicaciones
                                           if (problems.length === 0 && exercise.extra_data && typeof exercise.extra_data === 'object') {
                                             console.log("🔍 Búsqueda exhaustiva de problemas en todas las estructuras posibles...");
-                                            
+
                                             // 1. Verificar todos los formatos posibles en extra_data
                                             const posiblesCampos = [
                                               'problems',
@@ -609,7 +609,7 @@ export default function ProgressPage() {
                                               'uiProblems',
                                               'problemDetails',
                                             ];
-                                            
+
                                             // Buscar en todos los campos posibles
                                             for (const campo of posiblesCampos) {
                                               if (exercise.extra_data[campo] && Array.isArray(exercise.extra_data[campo])) {
@@ -618,7 +618,7 @@ export default function ProgressPage() {
                                                 break; // Terminar si encontramos problemas
                                               }
                                             }
-                                            
+
                                             // 2. Buscar en respaldos de localStorage usando el timestamp
                                             if (problems.length === 0) {
                                               const timestamp = exercise.extra_data.timestamp || exercise.extra_data.captureTimestamp;
@@ -629,7 +629,7 @@ export default function ProgressPage() {
                                                   `exercise_${timestamp}`,
                                                   `backup_${exercise.operationId}_${timestamp}`
                                                 ];
-                                                
+
                                                 for (const clave of posiblesClaves) {
                                                   const storedData = localStorage.getItem(clave);
                                                   if (storedData) {
@@ -652,13 +652,13 @@ export default function ProgressPage() {
                                                 }
                                               }
                                             }
-                                            
+
                                             // 3. Buscar en todos los respaldos recientes (últimas 24 horas)
                                             if (problems.length === 0) {
                                               console.log("🔍 Buscando en todos los respaldos recientes...");
                                               const horaActual = Date.now();
                                               const haceDia = horaActual - (24 * 60 * 60 * 1000);
-                                              
+
                                               for (let i = 0; i < localStorage.length; i++) {
                                                 const key = localStorage.key(i);
                                                 if (key && key.startsWith('backup_problemas_')) {
@@ -681,7 +681,7 @@ export default function ProgressPage() {
                                                 }
                                               }
                                             }
-                                            
+
                                             // 4. FALLBACKS PARA COMPATIBILIDAD
                                             if (problems.length === 0) {
                                               // BÚSQUEDA MEJORADA: Intentar todos los campos conocidos
@@ -711,8 +711,8 @@ export default function ProgressPage() {
                                                 console.log("✅ Encontrados problemas en exercise.extra_data.problemDetails");
                                               }
                                               // Intentar en screenshot.problemReview
-                                              else if (exercise.extra_data.screenshot && 
-                                                    exercise.extra_data.screenshot.problemReview && 
+                                              else if (exercise.extra_data.screenshot &&
+                                                    exercise.extra_data.screenshot.problemReview &&
                                                     Array.isArray(exercise.extra_data.screenshot.problemReview)) {
                                                 problems = exercise.extra_data.screenshot.problemReview;
                                                 console.log("✅ Encontrados problemas en screenshot.problemReview");
@@ -721,17 +721,17 @@ export default function ProgressPage() {
                                               else {
                                                 // Buscar cualquier campo que sea un array y contenga problemas
                                                 for (const key in exercise.extra_data) {
-                                                  if (Array.isArray(exercise.extra_data[key]) && 
+                                                  if (Array.isArray(exercise.extra_data[key]) &&
                                                       exercise.extra_data[key].length > 0 &&
                                                       typeof exercise.extra_data[key][0] === 'object') {
-                                                    
+
                                                     const firstItem = exercise.extra_data[key][0];
-                                                    
+
                                                     // Verificar si tiene la estructura básica de un problema
-                                                    if ((firstItem.problem || firstItem.problema) && 
-                                                        (typeof firstItem.isCorrect === 'boolean' || 
+                                                    if ((firstItem.problem || firstItem.problema) &&
+                                                        (typeof firstItem.isCorrect === 'boolean' ||
                                                          typeof firstItem.esCorrecta === 'boolean')) {
-                                                      
+
                                                       problems = exercise.extra_data[key];
                                                       console.log(`✅ Encontrados problemas por búsqueda dinámica en campo: ${key}`);
                                                       break;
@@ -741,14 +741,14 @@ export default function ProgressPage() {
                                               }
                                             }
                                           }
-                                          
+
                                           // Si aún no hay problemas, usar datos básicos disponibles
                                           if (problems.length === 0) {
                                             console.log("⚠️ No se encontraron problemas en ninguna estructura conocida");
                                             problems = [{
-                                              problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' : 
+                                              problem: `Ejercicio de ${exercise.operationId === 'addition' ? 'Suma' :
                                                          exercise.operationId === 'fractions' ? 'Fracciones' :
-                                                         exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'} 
+                                                         exercise.operationId === 'counting' ? 'Conteo' : 'Matemáticas'}
                                                        completado con puntuación ${exercise.score}/${exercise.totalProblems}`,
                                               isCorrect: true,
                                               isPlaceholder: true
@@ -762,13 +762,13 @@ export default function ProgressPage() {
                                             isPlaceholder: true
                                           }];
                                         }
-                                        
+
                                         problemsToShow = problems;
-                                        
+
                                         // Convertir problemas al formato estándar para usar con ProblemRenderer
                                         const standardizedProblems: MathProblem[] = [];
                                         const placeholders: React.ReactNode[] = [];
-                                        
+
                                         problemsToShow.forEach((problem, idx) => {
                                           // Procesar placeholders por separado
                                           if (problem.isPlaceholder) {
@@ -784,18 +784,18 @@ export default function ProgressPage() {
                                             );
                                             return; // Skip to next iteration
                                           }
-                                          
+
                                           // SOLUCIÓN MEJORADA: Determinar si el problema es correcto
-                                          const isCorrect = 
+                                          const isCorrect =
                                             typeof problem.isCorrect === 'boolean' ? problem.isCorrect :
                                             typeof problem.esCorrecta === 'boolean' ? problem.esCorrecta :
                                             problem.status === 'correct';
-                                          
+
                                           // Obtener el texto del problema en formato estándar con compatibilidad multilingüe
                                           let problemText = '';
                                           if (typeof problem.problem === 'string') {
                                             problemText = problem.problem;
-                                          } else if (typeof problem.problema === 'string') { 
+                                          } else if (typeof problem.problema === 'string') {
                                             // Compatibilidad con versión en español
                                             problemText = problem.problema;
                                           } else if (problem.problem && problem.problem.operands) {
@@ -809,25 +809,25 @@ export default function ProgressPage() {
                                             // Formato básico si no hay texto disponible
                                             problemText = `Problema ${idx + 1}`;
                                           }
-                                          
+
                                           // Construir información adicional con soporte multilingüe
                                           const infoItems = [];
-                                          
+
                                           // Nivel - buscar en múltiples campos
                                           const level = problem.level || problem.nivel;
                                           if (level) infoItems.push(`Nivel: ${level}`);
-                                          
+
                                           // Intentos - buscar en múltiples campos
                                           const attempts = problem.attempts || problem.intentos;
                                           if (attempts) infoItems.push(`Intentos: ${attempts}`);
-                                          
+
                                           // Tiempo - buscar en múltiples campos
                                           const time = problem.timeSpent || problem.tiempo;
                                           if (time) infoItems.push(`Tiempo: ${time}s`);
-                                          
+
                                           // Información preformateada
                                           const infoText = problem.info || problem.infoTexto || infoItems.join(', ');
-                                          
+
                                           // Añadir problema estandarizado
                                           standardizedProblems.push({
                                             problemNumber: idx + 1,
@@ -840,19 +840,19 @@ export default function ProgressPage() {
                                             userAnswer: problem.userAnswer
                                           });
                                         });
-                                        
+
                                         // Usar el componente ProblemRenderer para mostrar los problemas
                                         return (
                                           <>
                                             {/* Renderizar problemas estandarizados */}
                                             {standardizedProblems.length > 0 && (
-                                              <ProblemRenderer 
-                                                problems={standardizedProblems} 
+                                              <ProblemRenderer
+                                                problems={standardizedProblems}
                                                 showProblemNumbers={true}
                                                 showInfoDetails={true}
                                               />
                                             )}
-                                            
+
                                             {/* Renderizar placeholders si hay */}
                                             {placeholders.length > 0 && (
                                               <div className="space-y-2 mt-2">
@@ -878,3 +878,7 @@ export default function ProgressPage() {
             </TabsContent>
           </Tabs>
         )}
+      </div>
+    </>
+  );
+}
