@@ -1829,22 +1829,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   );
 }
 
-// ProgressPage.tsx
-import { useState, useEffect, useCallback } from "react";
-import { Helmet } from "react-helmet";
-import { useProgress, ExerciseResult } from "@/context/ProgressContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { format, parseISO, subDays } from "date-fns";
-import { operationModules } from "@/utils/operationComponents";
-import { Loader2, RefreshCw, Check, X } from "lucide-react";
-import ProblemRenderer, { MathProblem } from "../components/ProblemRenderer";
 
-export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, refreshProgress, isLoading } = useProgress();
   const [isClearing, setIsClearing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
