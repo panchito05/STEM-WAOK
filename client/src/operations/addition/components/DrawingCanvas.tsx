@@ -30,6 +30,9 @@ export function DrawingCanvas({
   const [activeTool, setActiveTool] = useState<ToolMode>('pen');
   const [darkMode, setDarkMode] = useState<boolean>(false);
   
+  // Estado para tamaño del borrador
+  const [eraserSize, setEraserSize] = useState<number>(15);
+  
   // Estado para guardar la imagen del canvas antes de cambiar herramientas
   const canvasImageRef = useRef<string | null>(null);
   
@@ -221,7 +224,7 @@ export function DrawingCanvas({
       
       if (tool === 'eraser') {
         context.globalCompositeOperation = 'destination-out';
-        setActiveWidth(20); // Borrador más grande
+        setActiveWidth(eraserSize); // Usar el tamaño de borrador definido
       } else {
         context.globalCompositeOperation = 'source-over';
         
@@ -237,6 +240,14 @@ export function DrawingCanvas({
           setActiveColor('#0000ff');
         }
       }
+    }
+  };
+  
+  // Función para cambiar el tamaño del borrador
+  const changeEraserSize = (size: number) => {
+    setEraserSize(size);
+    if (activeTool === 'eraser' && contextRef.current) {
+      setActiveWidth(size);
     }
   };
   
@@ -285,34 +296,32 @@ export function DrawingCanvas({
           </svg>
         </button>
         
-        {/* Borrador pequeño */}
+        {/* Borrador con un solo botón */}
         <button
-          onClick={() => {
-            setTool('eraser');
-            setActiveWidth(10); // Borrador pequeño para precisión
-          }}
-          className={`p-2 rounded-full ${activeTool === 'eraser' && activeWidth === 10 ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
-          title="Borrador pequeño"
+          onClick={() => setTool('eraser')}
+          className={`p-2 rounded-full ${activeTool === 'eraser' ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+          title="Borrador"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
             <path d="M15 2l7 7-7 7-7-7 7-7z"></path>
           </svg>
         </button>
         
-        {/* Borrador grande */}
-        <button
-          onClick={() => {
-            setTool('eraser');
-            setActiveWidth(30); // Borrador grande
-          }}
-          className={`p-2 rounded-full ${activeTool === 'eraser' && activeWidth === 30 ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
-          title="Borrador grande"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M20 20h-4v-4h4v4z M4 20v-4h12v4H4z M4 12h4v4H4v-4z M16 12h4v4h-4v-4z"></path>
-          </svg>
-        </button>
+        {/* Control deslizante para el tamaño del borrador */}
+        {activeTool === 'eraser' && (
+          <div className={`w-full px-1 py-2 ${darkMode ? 'text-white' : 'text-gray-700'}`}>
+            <p className="text-xs mb-1 text-center">Tamaño: {eraserSize}</p>
+            <input 
+              type="range" 
+              min="5" 
+              max="50" 
+              value={eraserSize} 
+              onChange={(e) => changeEraserSize(parseInt(e.target.value))} 
+              className="w-full cursor-pointer"
+            />
+          </div>
+        )}
         
         {/* Marcador */}
         <button
@@ -328,11 +337,25 @@ export function DrawingCanvas({
       
       {/* Selector de colores */}
       <div className={`absolute top-4 left-4 flex gap-2 ${darkMode ? 'bg-gray-800' : 'bg-white'} p-2 rounded-lg shadow`}>
-        <button onClick={() => changeColor(darkMode ? '#ffffff' : '#333333')} className={`w-6 h-6 rounded-full ${darkMode ? 'bg-white border-gray-300' : 'bg-gray-800 border-gray-300'}`} title={darkMode ? "Blanco" : "Negro"}></button>
-        <button onClick={() => changeColor('#ff0000')} className="w-6 h-6 rounded-full bg-red-500 border border-gray-300" title="Rojo"></button>
-        <button onClick={() => changeColor('#0000ff')} className="w-6 h-6 rounded-full bg-blue-500 border border-gray-300" title="Azul"></button>
-        <button onClick={() => changeColor('#00ff00')} className="w-6 h-6 rounded-full bg-green-500 border border-gray-300" title="Verde"></button>
-        <button onClick={() => changeColor('#ffff00')} className="w-6 h-6 rounded-full bg-yellow-400 border border-gray-300" title="Amarillo"></button>
+        {darkMode ? (
+          // Colores para modo oscuro (pizarra negra)
+          <>
+            <button onClick={() => changeColor('#ffffff')} className="w-6 h-6 rounded-full bg-white border border-gray-300" title="Blanco"></button>
+            <button onClick={() => changeColor('#00ffff')} className="w-6 h-6 rounded-full bg-cyan-400 border border-gray-300" title="Cian"></button>
+            <button onClick={() => changeColor('#ff00ff')} className="w-6 h-6 rounded-full bg-pink-500 border border-gray-300" title="Magenta"></button>
+            <button onClick={() => changeColor('#ffff00')} className="w-6 h-6 rounded-full bg-yellow-400 border border-gray-300" title="Amarillo"></button>
+            <button onClick={() => changeColor('#00ff00')} className="w-6 h-6 rounded-full bg-green-500 border border-gray-300" title="Verde"></button>
+          </>
+        ) : (
+          // Colores para modo claro (pizarra blanca)
+          <>
+            <button onClick={() => changeColor('#333333')} className="w-6 h-6 rounded-full bg-gray-800 border border-gray-300" title="Negro"></button>
+            <button onClick={() => changeColor('#ff0000')} className="w-6 h-6 rounded-full bg-red-500 border border-gray-300" title="Rojo"></button>
+            <button onClick={() => changeColor('#0000ff')} className="w-6 h-6 rounded-full bg-blue-500 border border-gray-300" title="Azul"></button>
+            <button onClick={() => changeColor('#00ff00')} className="w-6 h-6 rounded-full bg-green-500 border border-gray-300" title="Verde"></button>
+            <button onClick={() => changeColor('#ffff00')} className="w-6 h-6 rounded-full bg-yellow-400 border border-gray-300" title="Amarillo"></button>
+          </>
+        )}
       </div>
       
       {/* Modo oscuro */}
