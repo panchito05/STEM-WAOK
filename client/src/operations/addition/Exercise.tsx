@@ -2363,11 +2363,5 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
       </div>
     </div>
-
-    {/* Profesor Mode Dialog */}
-    <ProfessorModeDialog 
-      isOpen={showProfessorMode} 
-      onClose={() => setShowProfessorMode(false)} 
-    />
   );
 }
