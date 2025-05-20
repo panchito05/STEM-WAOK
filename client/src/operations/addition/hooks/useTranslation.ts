@@ -1,106 +1,120 @@
-// useTranslation.ts - Hook para manejar traducciones en el módulo
 import { useCallback } from 'react';
 import { useStore } from '@/store/store';
 
+// Tipo para parámetros de traducción
 interface TranslationParams {
   [key: string]: string | number;
 }
 
+// Formato de mensajes para el idioma español
+const esMessages: Record<string, string> = {
+  submit: 'Enviar',
+  answer: 'Respuesta',
+  correct: '¡Correcto!',
+  incorrect: 'Incorrecto',
+  continue: 'Continuar',
+  explanationStart: 'Para sumar {{operand1}} y {{operand2}}',
+  explanationWrong: 'Tú respondiste {{answer}}',
+  explanationMultipleOperands: 'Para resolver este problema, sumamos todos los números:',
+  explanationStepByStep: 'Paso a paso:',
+  score: 'Puntuación: {{score}} / {{total}}',
+  timeSpent: 'Tiempo',
+  difficulty: 'Dificultad',
+  difficultyEasy: 'Fácil',
+  difficultyMedium: 'Medio',
+  difficultyHard: 'Difícil',
+  difficultyExpert: 'Experto',
+  difficultyUnknown: 'Desconocido',
+  correctIncorrect: 'Correcto/Incorrecto',
+  problemSummary: 'Resumen de problemas',
+  youAnswered: 'Tu respuesta: {{answer}}',
+  home: 'Inicio',
+  tryAgain: 'Intentar de nuevo',
+  excellentJob: '¡Excelente trabajo!',
+  greatJob: '¡Buen trabajo!',
+  goodEffort: '¡Buen esfuerzo!',
+  keepPracticing: 'Sigue practicando',
+  timeRemaining: 'Tiempo restante: {{time}}',
+  skip: 'Saltar',
+  showSolution: 'Mostrar solución'
+};
+
+// Formato de mensajes para el idioma inglés
+const enMessages: Record<string, string> = {
+  submit: 'Submit',
+  answer: 'Answer',
+  correct: 'Correct!',
+  incorrect: 'Incorrect',
+  continue: 'Continue',
+  explanationStart: 'To add {{operand1}} and {{operand2}}',
+  explanationWrong: 'You answered {{answer}}',
+  explanationMultipleOperands: 'To solve this problem, we add all the numbers:',
+  explanationStepByStep: 'Step by step:',
+  score: 'Score: {{score}} / {{total}}',
+  timeSpent: 'Time Spent',
+  difficulty: 'Difficulty',
+  difficultyEasy: 'Easy',
+  difficultyMedium: 'Medium',
+  difficultyHard: 'Hard',
+  difficultyExpert: 'Expert',
+  difficultyUnknown: 'Unknown',
+  correctIncorrect: 'Correct/Incorrect',
+  problemSummary: 'Problem Summary',
+  youAnswered: 'Your answer: {{answer}}',
+  home: 'Home',
+  tryAgain: 'Try Again',
+  excellentJob: 'Excellent job!',
+  greatJob: 'Great job!',
+  goodEffort: 'Good effort!',
+  keepPracticing: 'Keep practicing',
+  timeRemaining: 'Time remaining: {{time}}',
+  skip: 'Skip',
+  showSolution: 'Show Solution'
+};
+
+// Mensajes por idioma
+const messages: Record<string, Record<string, string>> = {
+  en: enMessages,
+  es: esMessages
+};
+
+/**
+ * Hook para manejar traducciones en el módulo de suma
+ */
 export const useTranslation = () => {
-  const store = useStore();
-  const language = store.activeProfile?.moduleSettings?.addition?.language || 'es';
+  // Obtener el idioma actual de la store global
+  const language = useStore(state => 
+    state.currentProfile?.moduleSettings?.addition?.language || 
+    state.settings?.language || 
+    'es'
+  );
   
-  // Traducciones disponibles
-  const translations: Record<string, Record<string, string>> = {
-    es: {
-      // Mensajes comunes
-      'common.correct': 'Correcto',
-      'common.incorrect': 'Incorrecto',
-      'common.skip': 'Saltar',
-      'common.showSolution': 'Ver solución',
-      'common.tryAgain': 'Intentar de nuevo',
-      'common.returnToMenu': 'Volver al menú',
-      'common.continue': 'Continuar',
-      
-      // Ejercicio
-      'exercise.addition': 'Ejercicio de suma',
-      'exercise.wordProblem': 'Problema de texto',
-      'exercise.progress': 'Progreso',
-      'exercise.timeRemaining': 'Tiempo restante',
-      
-      // Resultados
-      'results.exerciseComplete': '¡Ejercicio completado!',
-      'results.excellent': '¡Excelente trabajo!',
-      'results.good': '¡Buen trabajo!',
-      'results.fair': 'Buen intento',
-      'results.needsPractice': 'Necesitas más práctica',
-      'results.correct': 'correctas',
-      'results.problemReview': 'Revisión de problemas',
-      'results.yourAnswer': 'Tu respuesta',
-      
-      // Explicaciones
-      'explanation.title': 'Explicación',
-      'explanation.wordProblemIntro': 'Este es un problema de texto que requiere identificar los números y realizar una suma.',
-      'explanation.extractNumbers': 'Los números que debemos sumar son: {numbers}.',
-      'explanation.performAddition': 'Al sumar {operands}, obtenemos {result}.',
-      'explanation.additionIntro': 'Para resolver {operands}, seguimos estos pasos:',
-      'explanation.decimalAlignment': 'Debemos alinear los números por el punto decimal para sumar correctamente.',
-      'explanation.groupingNumbers': 'Podemos agrupar los números para facilitar el cálculo.',
-      'explanation.addingNumbers': 'Sumamos {current} + {next} = {result}.',
-      'explanation.additionResult': 'Por lo tanto, {operands} = {result}.'
-    },
-    en: {
-      // Common messages
-      'common.correct': 'Correct',
-      'common.incorrect': 'Incorrect',
-      'common.skip': 'Skip',
-      'common.showSolution': 'Show solution',
-      'common.tryAgain': 'Try again',
-      'common.returnToMenu': 'Return to menu',
-      'common.continue': 'Continue',
-      
-      // Exercise
-      'exercise.addition': 'Addition Exercise',
-      'exercise.wordProblem': 'Word Problem',
-      'exercise.progress': 'Progress',
-      'exercise.timeRemaining': 'Time remaining',
-      
-      // Results
-      'results.exerciseComplete': 'Exercise completed!',
-      'results.excellent': 'Excellent work!',
-      'results.good': 'Good job!',
-      'results.fair': 'Nice try',
-      'results.needsPractice': 'Needs more practice',
-      'results.correct': 'correct',
-      'results.problemReview': 'Problem Review',
-      'results.yourAnswer': 'Your answer',
-      
-      // Explanations
-      'explanation.title': 'Explanation',
-      'explanation.wordProblemIntro': 'This is a word problem that requires identifying numbers and performing addition.',
-      'explanation.extractNumbers': 'The numbers we need to add are: {numbers}.',
-      'explanation.performAddition': 'By adding {operands}, we get {result}.',
-      'explanation.additionIntro': 'To solve {operands}, we follow these steps:',
-      'explanation.decimalAlignment': 'We need to align the decimal points to add correctly.',
-      'explanation.groupingNumbers': 'We can group numbers to make the calculation easier.',
-      'explanation.addingNumbers': 'We add {current} + {next} = {result}.',
-      'explanation.additionResult': 'Therefore, {operands} = {result}.'
-    }
-  };
-  
-  // Función para obtener la traducción según el idioma actual
-  const t = useCallback((key: string, params?: TranslationParams): string => {
-    const lang = language in translations ? language : 'es'; // Fallback a español
-    let text = translations[lang][key] || key; // Si no hay traducción, usar la clave
+  /**
+   * Traduce una clave a texto según el idioma actual
+   * @param key Clave de traducción
+   * @param params Parámetros para reemplazar en el texto
+   * @returns Texto traducido
+   */
+  const t = useCallback((key: string, options?: { defaultValue?: string; values?: TranslationParams }): string => {
+    // Obtener los mensajes para el idioma actual
+    const currentMessages = messages[language] || messages['es'];
     
-    // Reemplazar parámetros en el texto si existen
-    if (params) {
-      Object.entries(params).forEach(([paramKey, value]) => {
-        text = text.replace(`{${paramKey}}`, String(value));
+    // Intentar obtener la traducción
+    let translation = currentMessages[key];
+    
+    // Si no existe la traducción, usar el valor por defecto o la clave
+    if (!translation) {
+      translation = options?.defaultValue || key;
+    }
+    
+    // Reemplazar los parámetros en el texto
+    if (options?.values) {
+      Object.entries(options.values).forEach(([paramKey, paramValue]) => {
+        translation = translation.replace(new RegExp(`{{${paramKey}}}`, 'g'), String(paramValue));
       });
     }
     
-    return text;
+    return translation;
   }, [language]);
   
   return { t, language };

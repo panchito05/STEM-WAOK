@@ -1,35 +1,36 @@
-// ExerciseContext.tsx - Contexto para gestionar el estado del ejercicio
-import React, { createContext, useReducer, useContext, useEffect, useCallback } from 'react';
+// ExerciseContext.tsx - Contexto para el estado del ejercicio
+import React, { createContext, useReducer, useContext, useCallback, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { useStore } from '@/store/store';
-import { saveExerciseResult } from '@/services/progressService';
 import { 
-  Problem, UserAnswer, ExerciseState, ModuleSettings, 
-  ExerciseContextType, ExerciseEvent 
+  ExerciseState, Problem, UserAnswer, ExerciseContextType, 
+  ExerciseEvent, ExerciseResult, ProblemGeneratorConfig, DifficultyLevel 
 } from '../types';
-import { useExerciseTimer } from '../hooks/useExerciseTimer';
-import { generateProblems } from '../utils/problemGenerator';
+import { generateProblems, adaptDifficulty } from '../utils/problemGenerator';
+import { saveExerciseResult } from '@/services/progressService';
+import { ModuleSettings } from '@/types/settings';
 
-// Estado inicial del ejercicio
+// Estado inicial del contexto
 const initialState: ExerciseState = {
   isActive: false,
   isComplete: false,
-  currentProblemIndex: 0,
-  score: 0,
   problems: [],
-  userAnswers: [],
+  currentProblemIndex: 0,
   currentAnswer: '',
+  userAnswers: [],
+  score: 0,
   attempts: 0,
   showExplanation: false,
-  timeRemaining: 0,
-  problemTimeRemaining: 0,
+  consecutive: {
+    correct: 0,
+    incorrect: 0
+  },
   settings: {
-    language: 'es',
     problemCount: 5,
-    difficulty: 'beginner',
+    difficulty: 'easy',
     hasTimeLimit: false,
     timeLimit: 300,
     hasPerProblemTimer: false,
+    problemTimeLimit: 30,
     maxOperands: 2,
     minValue: 1,
     maxValue: 10,
@@ -41,12 +42,15 @@ const initialState: ExerciseState = {
     showExplanations: true,
     preferredDisplayFormat: 'horizontal',
     adaptiveMode: false,
+    language: 'es',
     consecutiveCorrectThreshold: 3,
     consecutiveIncorrectThreshold: 2
-  }
+  },
+  timeRemaining: 0,
+  problemTimeRemaining: 0
 };
 
-// Tipo de acciones para el reducer
+// Tipos de acciones para el reducer
 type ActionType = 
   | { type: 'START_EXERCISE'; settings: ModuleSettings }
   | { type: 'END_EXERCISE' }
@@ -60,231 +64,282 @@ type ActionType =
   | { type: 'UPDATE_PROBLEM_TIMER'; timeRemaining: number }
   | { type: 'TIMER_EXPIRED'; timerType: 'global' | 'problem' };
 
-// Reducer para manejar las acciones
+// Reducer para manejar acciones
 function exerciseReducer(state: ExerciseState, action: ActionType): ExerciseState {
   switch (action.type) {
     case 'START_EXERCISE':
       return {
         ...initialState,
         isActive: true,
-        timeRemaining: action.settings.hasTimeLimit ? (action.settings.timeLimit || 300) : 0,
-        problemTimeRemaining: action.settings.hasPerProblemTimer ? 30 : 0,
-        settings: { ...action.settings }
+        settings: {
+          ...initialState.settings,
+          problemCount: action.settings.problemCount || initialState.settings.problemCount,
+          difficulty: action.settings.difficulty as DifficultyLevel || initialState.settings.difficulty,
+          hasTimeLimit: action.settings.hasTimeLimit || initialState.settings.hasTimeLimit,
+          timeLimit: action.settings.timeLimit || initialState.settings.timeLimit,
+          hasPerProblemTimer: action.settings.hasPerProblemTimer || initialState.settings.hasPerProblemTimer,
+          problemTimeLimit: action.settings.problemTimeLimit || initialState.settings.problemTimeLimit,
+          maxOperands: action.settings.maxOperands || initialState.settings.maxOperands,
+          minValue: action.settings.minValue || initialState.settings.minValue,
+          maxValue: action.settings.maxValue || initialState.settings.maxValue,
+          allowNegatives: action.settings.allowNegatives || initialState.settings.allowNegatives,
+          allowDecimals: action.settings.allowDecimals || initialState.settings.allowDecimals,
+          decimalPlaces: action.settings.decimalPlaces || initialState.settings.decimalPlaces,
+          maxAttemptsPerProblem: action.settings.maxAttemptsPerProblem || initialState.settings.maxAttemptsPerProblem,
+          showHints: action.settings.showHints ?? initialState.settings.showHints,
+          showExplanations: action.settings.showExplanations ?? initialState.settings.showExplanations,
+          preferredDisplayFormat: action.settings.preferredDisplayFormat as any || initialState.settings.preferredDisplayFormat,
+          adaptiveMode: action.settings.adaptiveMode || initialState.settings.adaptiveMode,
+          language: action.settings.language || initialState.settings.language,
+          consecutiveCorrectThreshold: action.settings.consecutiveCorrectThreshold || initialState.settings.consecutiveCorrectThreshold,
+          consecutiveIncorrectThreshold: action.settings.consecutiveIncorrectThreshold || initialState.settings.consecutiveIncorrectThreshold
+        },
+        timeRemaining: action.settings.hasTimeLimit ? (action.settings.timeLimit || initialState.settings.timeLimit) : 0,
+        problemTimeRemaining: action.settings.hasPerProblemTimer ? (action.settings.problemTimeLimit || initialState.settings.problemTimeLimit) : 0
       };
-      
+
     case 'END_EXERCISE':
       return {
         ...state,
         isActive: false,
         isComplete: true
       };
-      
+
     case 'SET_PROBLEMS':
       return {
         ...state,
-        problems: action.problems
+        problems: action.problems,
+        currentProblemIndex: 0,
+        currentAnswer: '',
+        attempts: 0,
+        showExplanation: false
       };
-      
-    case 'NEXT_PROBLEM':
+
+    case 'NEXT_PROBLEM': {
       const nextIndex = state.currentProblemIndex + 1;
-      const isLastProblem = nextIndex >= state.problems.length;
-      
+      const isComplete = nextIndex >= state.problems.length;
+
       return {
         ...state,
-        currentProblemIndex: isLastProblem ? state.currentProblemIndex : nextIndex,
+        currentProblemIndex: isComplete ? state.currentProblemIndex : nextIndex,
         currentAnswer: '',
         attempts: 0,
         showExplanation: false,
-        isComplete: isLastProblem
+        isComplete: isComplete,
+        problemTimeRemaining: state.settings.hasPerProblemTimer ? state.settings.problemTimeLimit : 0
       };
-      
+    }
+
     case 'UPDATE_ANSWER':
       return {
         ...state,
         currentAnswer: action.value
       };
-      
-    case 'SUBMIT_ANSWER':
+
+    case 'SUBMIT_ANSWER': {
       const currentProblem = state.problems[state.currentProblemIndex];
-      const newAttempts = state.attempts + 1;
+      const attempts = state.attempts + 1;
+      const isMaxAttempts = attempts >= state.settings.maxAttemptsPerProblem;
+      const isCorrect = action.isCorrect;
+
+      // Actualizar el conteo de respuestas consecutivas
+      const consecutive = { ...state.consecutive };
+      if (isCorrect) {
+        consecutive.correct += 1;
+        consecutive.incorrect = 0;
+      } else {
+        consecutive.correct = 0;
+        consecutive.incorrect += 1;
+      }
+
+      // Actualizar la puntuación si la respuesta es correcta
+      const score = isCorrect ? state.score + 1 : state.score;
+
+      // Crear objeto de respuesta del usuario
       const userAnswer: UserAnswer = {
         problemId: currentProblem.id,
         problem: currentProblem,
         userAnswer: state.currentAnswer,
-        isCorrect: action.isCorrect,
-        status: action.isCorrect ? 'correct' : 'incorrect',
-        attempts: newAttempts,
-        timeTaken: state.settings.hasPerProblemTimer 
-          ? (30 - state.problemTimeRemaining) 
-          : 0,
-        timestamp: Date.now()
+        isCorrect: isCorrect,
+        attempts: attempts,
+        timestamp: Date.now(),
+        status: isCorrect ? 'correct' : 'incorrect'
       };
-      
-      // Actualizar respuestas del usuario
-      const updatedUserAnswers = [...state.userAnswers];
-      const existingAnswerIndex = updatedUserAnswers.findIndex(
-        answer => answer.problemId === currentProblem.id
-      );
-      
+
+      // Actualizar o agregar la respuesta del usuario
+      const userAnswers = [...state.userAnswers];
+      const existingAnswerIndex = userAnswers.findIndex(a => a.problemId === currentProblem.id);
+
       if (existingAnswerIndex >= 0) {
-        updatedUserAnswers[existingAnswerIndex] = userAnswer;
+        userAnswers[existingAnswerIndex] = userAnswer;
       } else {
-        updatedUserAnswers.push(userAnswer);
+        userAnswers.push(userAnswer);
       }
-      
-      // Calcular puntuación
-      const correctAnswers = updatedUserAnswers.filter(answer => answer.isCorrect).length;
-      const newScore = Math.round((correctAnswers / state.problems.length) * 100);
-      
+
+      // Mostrar explicación si se llegó al número máximo de intentos o si la respuesta es correcta
+      const showExplanation = 
+        (state.settings.showExplanations && isMaxAttempts && !isCorrect) || 
+        (state.settings.showExplanations && isCorrect);
+
+      // Adaptar la dificultad si está en modo adaptativo y es una respuesta correcta al primer intento
+      let adaptedDifficulty = state.settings.difficulty;
+      if (state.settings.adaptiveMode && isCorrect && attempts === 1) {
+        adaptedDifficulty = adaptDifficulty(
+          state.settings.difficulty,
+          consecutive.correct,
+          consecutive.incorrect,
+          state.settings.consecutiveCorrectThreshold,
+          state.settings.consecutiveIncorrectThreshold
+        );
+      }
+
       return {
         ...state,
-        userAnswers: updatedUserAnswers,
-        attempts: newAttempts,
-        score: newScore,
-        showExplanation: action.isCorrect 
-          ? false 
-          : (newAttempts >= (state.settings.maxAttemptsPerProblem || 2) && state.settings.showExplanations)
+        score,
+        attempts,
+        userAnswers,
+        showExplanation,
+        consecutive,
+        settings: {
+          ...state.settings,
+          difficulty: adaptedDifficulty
+        }
       };
+    }
+
+    case 'SKIP_PROBLEM': {
+      const currentProblem = state.problems[state.currentProblemIndex];
       
-    case 'SKIP_PROBLEM':
-      const skippedProblem = state.problems[state.currentProblemIndex];
+      // Crear objeto de respuesta del usuario para el problema saltado
       const skippedAnswer: UserAnswer = {
-        problemId: skippedProblem.id,
-        problem: skippedProblem,
+        problemId: currentProblem.id,
+        problem: currentProblem,
         userAnswer: '',
         isCorrect: false,
-        status: 'skipped',
         attempts: state.attempts,
-        timeTaken: state.settings.hasPerProblemTimer 
-          ? (30 - state.problemTimeRemaining) 
-          : 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        status: 'skipped'
       };
-      
-      // Actualizar respuestas del usuario
-      const updatedSkippedAnswers = [...state.userAnswers];
-      const existingSkippedIndex = updatedSkippedAnswers.findIndex(
-        answer => answer.problemId === skippedProblem.id
-      );
-      
-      if (existingSkippedIndex >= 0) {
-        updatedSkippedAnswers[existingSkippedIndex] = skippedAnswer;
+
+      // Actualizar o agregar la respuesta del usuario
+      const userAnswers = [...state.userAnswers];
+      const existingAnswerIndex = userAnswers.findIndex(a => a.problemId === currentProblem.id);
+
+      if (existingAnswerIndex >= 0) {
+        userAnswers[existingAnswerIndex] = skippedAnswer;
       } else {
-        updatedSkippedAnswers.push(skippedAnswer);
+        userAnswers.push(skippedAnswer);
       }
-      
-      // Recalcular puntuación
-      const correctAfterSkip = updatedSkippedAnswers.filter(answer => answer.isCorrect).length;
-      const scoreAfterSkip = Math.round((correctAfterSkip / state.problems.length) * 100);
-      
+
+      // Resetear consecutivos correctos
+      const consecutive = { ...state.consecutive, correct: 0 };
+
       return {
         ...state,
-        userAnswers: updatedSkippedAnswers,
-        score: scoreAfterSkip,
-        showExplanation: state.settings.showExplanations
+        userAnswers,
+        consecutive,
+        showExplanation: state.settings.showExplanations // Mostrar explicación después de saltar
       };
+    }
+
+    case 'SHOW_SOLUTION': {
+      const currentProblem = state.problems[state.currentProblemIndex];
       
-    case 'SHOW_SOLUTION':
-      const revealedProblem = state.problems[state.currentProblemIndex];
+      // Crear objeto de respuesta del usuario para la solución revelada
       const revealedAnswer: UserAnswer = {
-        problemId: revealedProblem.id,
-        problem: revealedProblem,
-        userAnswer: revealedProblem.correctAnswer,
-        isCorrect: false,
-        status: 'revealed',
+        problemId: currentProblem.id,
+        problem: currentProblem,
+        userAnswer: currentProblem.correctAnswer.toString(),
+        isCorrect: false, // No cuenta como correcto aunque se revele la solución
         attempts: state.attempts,
-        timeTaken: state.settings.hasPerProblemTimer 
-          ? (30 - state.problemTimeRemaining) 
-          : 0,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        status: 'revealed'
       };
-      
-      // Actualizar respuestas del usuario
-      const updatedRevealedAnswers = [...state.userAnswers];
-      const existingRevealedIndex = updatedRevealedAnswers.findIndex(
-        answer => answer.problemId === revealedProblem.id
-      );
-      
-      if (existingRevealedIndex >= 0) {
-        updatedRevealedAnswers[existingRevealedIndex] = revealedAnswer;
+
+      // Actualizar o agregar la respuesta del usuario
+      const userAnswers = [...state.userAnswers];
+      const existingAnswerIndex = userAnswers.findIndex(a => a.problemId === currentProblem.id);
+
+      if (existingAnswerIndex >= 0) {
+        userAnswers[existingAnswerIndex] = revealedAnswer;
       } else {
-        updatedRevealedAnswers.push(revealedAnswer);
+        userAnswers.push(revealedAnswer);
       }
-      
+
+      // Actualizar estado
       return {
         ...state,
-        userAnswers: updatedRevealedAnswers,
-        currentAnswer: revealedProblem.correctAnswer.toString(),
-        showExplanation: true
+        currentAnswer: currentProblem.correctAnswer.toString(),
+        userAnswers,
+        showExplanation: true,
+        consecutive: { ...state.consecutive, correct: 0 } // Resetear consecutivos correctos
       };
-      
+    }
+
     case 'UPDATE_TIMER':
       return {
         ...state,
         timeRemaining: action.timeRemaining
       };
-      
+
     case 'UPDATE_PROBLEM_TIMER':
       return {
         ...state,
         problemTimeRemaining: action.timeRemaining
       };
-      
-    case 'TIMER_EXPIRED':
+
+    case 'TIMER_EXPIRED': {
       if (action.timerType === 'global') {
-        // Si el temporizador global expira, finalizar ejercicio
+        // Si expira el temporizador global, terminar el ejercicio
         return {
           ...state,
           isActive: false,
           isComplete: true
         };
       } else {
-        // Si el temporizador del problema expira, marcar como timeout
-        const timeoutProblem = state.problems[state.currentProblemIndex];
+        // Si expira el temporizador del problema, registrar como tiempo agotado
+        const currentProblem = state.problems[state.currentProblemIndex];
+        
+        // Crear objeto de respuesta del usuario para tiempo agotado
         const timeoutAnswer: UserAnswer = {
-          problemId: timeoutProblem.id,
-          problem: timeoutProblem,
+          problemId: currentProblem.id,
+          problem: currentProblem,
           userAnswer: state.currentAnswer,
           isCorrect: false,
-          status: 'timeout',
-          attempts: state.attempts,
-          timeTaken: 30, // Tiempo máximo por problema
-          timestamp: Date.now()
+          attempts: state.attempts + 1,
+          timestamp: Date.now(),
+          status: 'timeout'
         };
-        
-        // Actualizar respuestas del usuario
-        const updatedTimeoutAnswers = [...state.userAnswers];
-        const existingTimeoutIndex = updatedTimeoutAnswers.findIndex(
-          answer => answer.problemId === timeoutProblem.id
-        );
-        
-        if (existingTimeoutIndex >= 0) {
-          updatedTimeoutAnswers[existingTimeoutIndex] = timeoutAnswer;
+
+        // Actualizar o agregar la respuesta del usuario
+        const userAnswers = [...state.userAnswers];
+        const existingAnswerIndex = userAnswers.findIndex(a => a.problemId === currentProblem.id);
+
+        if (existingAnswerIndex >= 0) {
+          userAnswers[existingAnswerIndex] = timeoutAnswer;
         } else {
-          updatedTimeoutAnswers.push(timeoutAnswer);
+          userAnswers.push(timeoutAnswer);
         }
-        
-        // Recalcular puntuación
-        const correctAfterTimeout = updatedTimeoutAnswers.filter(answer => answer.isCorrect).length;
-        const scoreAfterTimeout = Math.round((correctAfterTimeout / state.problems.length) * 100);
-        
+
         return {
           ...state,
-          userAnswers: updatedTimeoutAnswers,
-          score: scoreAfterTimeout,
-          showExplanation: state.settings.showExplanations
+          userAnswers,
+          attempts: state.attempts + 1,
+          showExplanation: state.settings.showExplanations,
+          consecutive: { ...state.consecutive, correct: 0, incorrect: state.consecutive.incorrect + 1 }
         };
       }
-      
+    }
+
     default:
       return state;
   }
 }
 
 // Crear contexto
-const ExerciseContext = createContext<ExerciseContextType | null>(null);
+const ExerciseContext = createContext<ExerciseContextType | undefined>(undefined);
 
-// Hook para usar el contexto
+// Hook personalizado para usar el contexto
 export const useExerciseContext = () => {
   const context = useContext(ExerciseContext);
   if (!context) {
@@ -293,231 +348,250 @@ export const useExerciseContext = () => {
   return context;
 };
 
-// Proveedor del contexto
+// Provider para proveer contexto a la aplicación
 export const ExerciseProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(exerciseReducer, initialState);
-  const timer = useExerciseTimer();
   
-  // Tracking de analíticas
+  const globalTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const problemTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const exerciseStartTimeRef = useRef<number | null>(null);
+  
+  // Rastrear eventos del ejercicio
   const trackEvent = useCallback((event: ExerciseEvent) => {
-    // Aquí podríamos implementar analíticas
-    console.log('Exercise Event:', event);
+    // Aquí se podría implementar un sistema de análisis para rastrear eventos
+    console.log('Exercise event:', event.type, event.data);
   }, []);
   
-  // Iniciar ejercicio
+  // Función para iniciar el ejercicio
   const startExercise = useCallback((settings: ModuleSettings) => {
     dispatch({ type: 'START_EXERCISE', settings });
     
-    // Generar problemas según configuración
-    const problems = generateProblems({
+    // Generar problemas según la configuración
+    const config: ProblemGeneratorConfig = {
       count: settings.problemCount || 5,
-      difficulty: settings.difficulty || 'beginner',
-      format: settings.preferredDisplayFormat,
-      maxOperands: settings.maxOperands,
-      minValue: settings.minValue,
-      maxValue: settings.maxValue,
-      allowNegatives: settings.allowNegatives,
-      allowDecimals: settings.allowDecimals,
-      decimalPlaces: settings.decimalPlaces
-    });
+      difficulty: settings.difficulty as DifficultyLevel || 'easy',
+      minValue: settings.minValue || 1,
+      maxValue: settings.maxValue || 10,
+      maxOperands: settings.maxOperands || 2,
+      allowNegatives: settings.allowNegatives || false,
+      allowDecimals: settings.allowDecimals || false,
+      decimalPlaces: settings.decimalPlaces || 1,
+      preferredDisplayFormat: settings.preferredDisplayFormat as any || 'horizontal'
+    };
     
-    // Asignar ID único a cada problema
-    const problemsWithIds = problems.map(problem => ({
-      ...problem,
-      id: uuidv4()
-    }));
+    const problems = generateProblems(config);
+    dispatch({ type: 'SET_PROBLEMS', problems });
     
-    dispatch({ type: 'SET_PROBLEMS', problems: problemsWithIds });
-    
-    // Si hay límite de tiempo, iniciar temporizador
-    if (settings.hasTimeLimit && settings.timeLimit) {
-      timer.startTimer();
-    }
+    // Registrar tiempo de inicio
+    exerciseStartTimeRef.current = Date.now();
     
     // Registrar evento de inicio
-    trackEvent({
-      type: 'exercise_started',
-      config: settings
+    trackEvent({ 
+      type: 'start', 
+      data: { settings, problemCount: problems.length } 
     });
-  }, [timer, trackEvent]);
+    
+    // Iniciar temporizador global si es necesario
+    if (settings.hasTimeLimit) {
+      const timeLimit = settings.timeLimit || 300; // 5 minutos por defecto
+      dispatch({ type: 'UPDATE_TIMER', timeRemaining: timeLimit });
+      
+      if (globalTimerRef.current) clearInterval(globalTimerRef.current);
+      
+      globalTimerRef.current = setInterval(() => {
+        dispatch({ type: 'UPDATE_TIMER', timeRemaining: state.timeRemaining - 1 });
+        
+        if (state.timeRemaining <= 1) {
+          // Tiempo agotado
+          if (globalTimerRef.current) clearInterval(globalTimerRef.current);
+          dispatch({ type: 'TIMER_EXPIRED', timerType: 'global' });
+          
+          // Registrar evento de tiempo agotado
+          trackEvent({ type: 'timer_expired', data: { timerType: 'global' } });
+          
+          // Guardar resultado
+          saveExerciseResults();
+        }
+      }, 1000);
+    }
+    
+    // Iniciar temporizador de problema si es necesario
+    if (settings.hasPerProblemTimer) {
+      startProblemTimer();
+    }
+  }, [state.timeRemaining, trackEvent]);
   
-  // Finalizar ejercicio
+  // Función para iniciar temporizador de problema
+  const startProblemTimer = useCallback(() => {
+    if (!state.settings.hasPerProblemTimer) return;
+    
+    const problemTimeLimit = state.settings.problemTimeLimit || 30; // 30 segundos por defecto
+    dispatch({ type: 'UPDATE_PROBLEM_TIMER', timeRemaining: problemTimeLimit });
+    
+    if (problemTimerRef.current) clearInterval(problemTimerRef.current);
+    
+    problemTimerRef.current = setInterval(() => {
+      dispatch({ type: 'UPDATE_PROBLEM_TIMER', timeRemaining: state.problemTimeRemaining - 1 });
+      
+      if (state.problemTimeRemaining <= 1) {
+        // Tiempo agotado para este problema
+        if (problemTimerRef.current) clearInterval(problemTimerRef.current);
+        dispatch({ type: 'TIMER_EXPIRED', timerType: 'problem' });
+        
+        // Registrar evento de tiempo agotado
+        trackEvent({ type: 'timer_expired', data: { timerType: 'problem' } });
+      }
+    }, 1000);
+  }, [state.settings.hasPerProblemTimer, state.settings.problemTimeLimit, state.problemTimeRemaining, trackEvent]);
+  
+  // Función para finalizar el ejercicio
   const endExercise = useCallback(() => {
     // Detener temporizadores
-    timer.pauseTimer();
+    if (globalTimerRef.current) clearInterval(globalTimerRef.current);
+    if (problemTimerRef.current) clearInterval(problemTimerRef.current);
     
     dispatch({ type: 'END_EXERCISE' });
     
-    // Guardar resultado
-    const { problems, userAnswers, score, settings } = state;
+    // Registrar evento de finalización
+    trackEvent({ type: 'end', data: { score: state.score, totalProblems: state.problems.length } });
     
-    const result = {
-      module: 'addition',
-      score,
-      totalProblems: problems.length,
-      timeSpent: settings.hasTimeLimit 
-        ? (settings.timeLimit || 300) - state.timeRemaining 
-        : 0,
-      settings,
-      userAnswers,
-      timestamp: Date.now()
+    // Guardar resultado
+    saveExerciseResults();
+  }, [state.score, state.problems.length, trackEvent]);
+  
+  // Guardar resultados del ejercicio
+  const saveExerciseResults = useCallback(() => {
+    if (!state.isActive || state.problems.length === 0) return;
+    
+    const timeSpent = exerciseStartTimeRef.current 
+      ? Math.floor((Date.now() - exerciseStartTimeRef.current) / 1000) 
+      : 0;
+    
+    const result: ExerciseResult = {
+      id: uuidv4(),
+      moduleId: 'addition',
+      date: Date.now(),
+      problems: state.problems,
+      userAnswers: state.userAnswers,
+      score: state.score,
+      totalProblems: state.problems.length,
+      settings: state.settings,
+      timeSpent,
+      difficulty: state.settings.difficulty,
+      initialDifficulty: initialState.settings.difficulty
     };
     
-    // Guardar en el servicio de progreso
     saveExerciseResult(result);
-    
-    // Registrar evento de finalización
-    trackEvent({
-      type: 'exercise_completed',
-      score,
-      totalProblems: problems.length
-    });
-  }, [state, timer, trackEvent]);
+  }, [state]);
   
-  // Pasar al siguiente problema
-  const nextProblem = useCallback(() => {
-    const nextIndex = state.currentProblemIndex + 1;
-    
-    // Si es el último problema, finalizar ejercicio
-    if (nextIndex >= state.problems.length) {
-      endExercise();
-      return;
-    }
-    
-    dispatch({ type: 'NEXT_PROBLEM' });
-    
-    // Si tiene temporizador por problema, reiniciarlo
-    if (state.settings.hasPerProblemTimer) {
-      timer.resetTimer();
-      timer.startTimer();
-    }
-    
-    // Registrar evento de nuevo problema
-    const nextProblem = state.problems[nextIndex];
-    if (nextProblem) {
-      trackEvent({
-        type: 'problem_displayed',
-        problem: nextProblem
-      });
-    }
-  }, [state, endExercise, timer, trackEvent]);
-  
-  // Actualizar respuesta
+  // Función para actualizar la respuesta actual
   const updateAnswer = useCallback((value: string | number) => {
     dispatch({ type: 'UPDATE_ANSWER', value });
   }, []);
   
-  // Enviar respuesta
+  // Función para enviar una respuesta
   const submitAnswer = useCallback(() => {
-    const { currentProblemIndex, problems, currentAnswer } = state;
-    const currentProblem = problems[currentProblemIndex];
+    const currentProblem = state.problems[state.currentProblemIndex];
+    const userAnswer = parseFloat(state.currentAnswer.toString());
+    const correctAnswer = currentProblem.correctAnswer;
     
-    // Verificar si la respuesta es correcta
-    const userAnswerNum = parseFloat(currentAnswer.toString());
-    const correctAnswerNum = parseFloat(currentProblem.correctAnswer.toString());
-    const isCorrect = !isNaN(userAnswerNum) && userAnswerNum === correctAnswerNum;
+    // Comprobar si la respuesta es correcta
+    const isCorrect = userAnswer === correctAnswer;
     
     dispatch({ type: 'SUBMIT_ANSWER', isCorrect });
     
     // Registrar evento de respuesta
-    trackEvent({
-      type: 'answer_submitted',
-      problem: currentProblem,
-      answer: currentAnswer,
-      isCorrect,
-      attemptCount: state.attempts + 1
+    trackEvent({ 
+      type: 'answer', 
+      data: { 
+        problemId: currentProblem.id, 
+        userAnswer, 
+        correctAnswer, 
+        isCorrect,
+        attempts: state.attempts + 1
+      } 
     });
     
     return isCorrect;
-  }, [state, trackEvent]);
+  }, [state.problems, state.currentProblemIndex, state.currentAnswer, state.attempts, trackEvent]);
   
-  // Saltar problema
+  // Función para saltar un problema
   const skipProblem = useCallback(() => {
-    const { currentProblemIndex, problems } = state;
-    const currentProblem = problems[currentProblemIndex];
+    const currentProblem = state.problems[state.currentProblemIndex];
     
     dispatch({ type: 'SKIP_PROBLEM' });
     
-    // Registrar evento de respuesta saltada
-    trackEvent({
-      type: 'answer_submitted',
-      problem: currentProblem,
-      answer: '',
-      isCorrect: false,
-      attemptCount: state.attempts
+    // Registrar evento de salto
+    trackEvent({ 
+      type: 'skip', 
+      data: { problemId: currentProblem.id } 
     });
-  }, [state, trackEvent]);
+  }, [state.problems, state.currentProblemIndex, trackEvent]);
   
-  // Mostrar solución
+  // Función para mostrar la solución
   const showSolution = useCallback(() => {
-    const { currentProblemIndex, problems } = state;
-    const currentProblem = problems[currentProblemIndex];
+    const currentProblem = state.problems[state.currentProblemIndex];
     
     dispatch({ type: 'SHOW_SOLUTION' });
     
-    // Registrar evento de explicación
-    trackEvent({
-      type: 'explanation_shown',
-      problem: currentProblem
+    // Registrar evento de mostrar solución
+    trackEvent({ 
+      type: 'solution', 
+      data: { problemId: currentProblem.id } 
     });
-  }, [state, trackEvent]);
+  }, [state.problems, state.currentProblemIndex, trackEvent]);
   
-  // Efecto para actualizar el temporizador
-  useEffect(() => {
-    if (state.isActive && state.settings.hasTimeLimit) {
-      const interval = setInterval(() => {
-        dispatch({ type: 'UPDATE_TIMER', timeRemaining: state.timeRemaining - 1 });
-        
-        // Si el tiempo se acaba
-        if (state.timeRemaining <= 1) {
-          clearInterval(interval);
-          dispatch({ type: 'TIMER_EXPIRED', timerType: 'global' });
-          endExercise();
-        }
-      }, 1000);
-      
-      return () => clearInterval(interval);
+  // Función para pasar al siguiente problema
+  const nextProblem = useCallback(() => {
+    const isLastProblem = state.currentProblemIndex === state.problems.length - 1;
+    
+    dispatch({ type: 'NEXT_PROBLEM' });
+    
+    // Si era el último problema, finalizar el ejercicio
+    if (isLastProblem) {
+      endExercise();
+    } else if (state.settings.hasPerProblemTimer) {
+      // Reiniciar el temporizador de problema para el nuevo problema
+      startProblemTimer();
     }
-  }, [state.isActive, state.timeRemaining, state.settings.hasTimeLimit, endExercise]);
+  }, [state.currentProblemIndex, state.problems.length, state.settings.hasPerProblemTimer, endExercise, startProblemTimer]);
   
-  // Efecto para temporizador de problema individual
+  // Función para actualizar el temporizador global
+  const updateTimer = useCallback((timeRemaining: number) => {
+    dispatch({ type: 'UPDATE_TIMER', timeRemaining });
+  }, []);
+  
+  // Función para actualizar el temporizador de problema
+  const updateProblemTimer = useCallback((timeRemaining: number) => {
+    dispatch({ type: 'UPDATE_PROBLEM_TIMER', timeRemaining });
+  }, []);
+  
+  // Función para marcar que un temporizador ha expirado
+  const timerExpired = useCallback((timerType: 'global' | 'problem') => {
+    dispatch({ type: 'TIMER_EXPIRED', timerType });
+  }, []);
+  
+  // Limpiar temporizadores al desmontar
   useEffect(() => {
-    if (state.isActive && state.settings.hasPerProblemTimer && state.problemTimeRemaining > 0) {
-      const interval = setInterval(() => {
-        dispatch({ type: 'UPDATE_PROBLEM_TIMER', timeRemaining: state.problemTimeRemaining - 1 });
-        
-        // Si el tiempo del problema se acaba
-        if (state.problemTimeRemaining <= 1) {
-          clearInterval(interval);
-          dispatch({ type: 'TIMER_EXPIRED', timerType: 'problem' });
-          
-          // Registrar evento de tiempo agotado
-          const currentProblem = state.problems[state.currentProblemIndex];
-          trackEvent({
-            type: 'timer_ended',
-            problem: currentProblem
-          });
-        }
-      }, 1000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [state.isActive, state.problemTimeRemaining, state.settings.hasPerProblemTimer, state.currentProblemIndex, state.problems, trackEvent]);
+    return () => {
+      if (globalTimerRef.current) clearInterval(globalTimerRef.current);
+      if (problemTimerRef.current) clearInterval(problemTimerRef.current);
+    };
+  }, []);
   
-  // Valor del contexto
+  // Crear objeto de contexto
   const contextValue: ExerciseContextType = {
     state,
     startExercise,
     endExercise,
-    nextProblem,
     updateAnswer,
     submitAnswer,
     skipProblem,
     showSolution,
-    startTimer: timer.startTimer,
-    pauseTimer: timer.pauseTimer,
-    resumeTimer: timer.startTimer,
-    resetTimer: timer.resetTimer
+    nextProblem,
+    updateTimer,
+    updateProblemTimer,
+    timerExpired
   };
   
   return (

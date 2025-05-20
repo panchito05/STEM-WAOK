@@ -1,98 +1,118 @@
-// ExplanationPanel.tsx - Componente para mostrar explicaciones de problemas
 import React from 'react';
-import { Problem } from '../types';
-import { useTranslation } from '../hooks/useTranslation';
-import { ArrowRight } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { ExplanationPanelProps } from '../types';
+import { useTranslation } from '../hooks/useTranslation';
 
-interface ExplanationPanelProps {
-  problem: Problem;
-  userAnswer?: string | number;
-  onContinue?: () => void;
-}
-
-const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ 
-  problem, 
+/**
+ * Panel de explicación para mostrar después de responder un problema
+ */
+const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
+  problem,
   userAnswer,
-  onContinue 
+  isCorrect,
+  onContinue
 }) => {
   const { t } = useTranslation();
   
-  // Generar explicación paso a paso
-  const generateExplanation = (): string[] => {
-    // Si es un problema de texto, usar explicación personalizada
-    if (problem.displayFormat === 'word') {
-      return [
-        t('explanation.wordProblemIntro'),
-        t('explanation.extractNumbers', { numbers: problem.operands.join(', ') }),
-        t('explanation.performAddition', { 
-          operands: problem.operands.join(' + '),
-          result: problem.correctAnswer
-        })
-      ];
+  // Generar una explicación paso a paso
+  const generateExplanation = () => {
+    const { operands } = problem;
+    
+    // Para problemas de suma simples
+    if (operands.length === 2) {
+      return (
+        <div className="space-y-2">
+          <p>
+            {t('explanationStart', {
+              defaultValue: 'Para sumar',
+              values: { operand1: operands[0], operand2: operands[1] }
+            })}:
+          </p>
+          <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md">
+            <p className="font-medium">
+              {operands[0]} + {operands[1]} = {problem.correctAnswer}
+            </p>
+          </div>
+          {!isCorrect && (
+            <p className="text-red-500 dark:text-red-400">
+              {t('explanationWrong', {
+                defaultValue: 'Tú respondiste',
+                values: { answer: userAnswer }
+              })}.
+            </p>
+          )}
+        </div>
+      );
     }
     
-    // Para problemas numéricos - explicar suma paso a paso
-    const steps: string[] = [];
-    
-    // Paso 1: Introducción
-    steps.push(t('explanation.additionIntro', { 
-      operands: problem.operands.join(' + ')
-    }));
-    
-    // Si hay decimales, explicar alineación
-    if (problem.allowDecimals) {
-      steps.push(t('explanation.decimalAlignment'));
-    }
-    
-    // Si hay más de 2 operandos, explicar agrupación
-    if (problem.operands.length > 2) {
-      steps.push(t('explanation.groupingNumbers'));
-    }
-    
-    // Explicar el cálculo
-    let partialSum = problem.operands[0];
-    for (let i = 1; i < problem.operands.length; i++) {
-      steps.push(t('explanation.addingNumbers', {
-        current: partialSum,
-        next: problem.operands[i],
-        result: partialSum + problem.operands[i]
-      }));
-      partialSum += problem.operands[i];
-    }
-    
-    // Conclusión
-    steps.push(t('explanation.additionResult', {
-      operands: problem.operands.join(' + '),
-      result: problem.correctAnswer
-    }));
-    
-    return steps;
+    // Para problemas con más de dos operandos
+    return (
+      <div className="space-y-3">
+        <p>{t('explanationMultipleOperands', { defaultValue: 'Para resolver este problema, sumamos todos los números:' })}</p>
+        <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-md">
+          <p className="font-medium">
+            {operands.join(' + ')} = {problem.correctAnswer}
+          </p>
+        </div>
+        <p>
+          {t('explanationStepByStep', { defaultValue: 'Paso a paso:' })}
+        </p>
+        {operands.slice(0, -1).map((operand, index) => {
+          const nextOperand = operands[index + 1];
+          const partialSum = operands.slice(0, index + 2).reduce((a, b) => a + b, 0);
+          
+          return (
+            <div key={`step-${index}`} className="ml-4">
+              <p>
+                {index === 0 ? operand : partialSum - nextOperand} + {nextOperand} = {partialSum}
+              </p>
+            </div>
+          );
+        })}
+        {!isCorrect && (
+          <p className="text-red-500 dark:text-red-400 mt-2">
+            {t('explanationWrong', {
+              defaultValue: 'Tú respondiste',
+              values: { answer: userAnswer }
+            })}.
+          </p>
+        )}
+      </div>
+    );
   };
   
-  const explanationSteps = generateExplanation();
-  
   return (
-    <div className="explanation-panel bg-primary-50 dark:bg-primary-950/30 p-4 rounded-lg mt-4">
-      <h3 className="text-lg font-semibold mb-2">{t('explanation.title')}</h3>
-      
-      <div className="space-y-2">
-        {explanationSteps.map((step, index) => (
-          <p key={index} className="text-sm">
-            {index + 1}. {step}
-          </p>
-        ))}
-      </div>
-      
-      {onContinue && (
-        <div className="mt-4 text-right">
-          <Button onClick={onContinue} size="sm">
-            {t('common.continue')}
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      )}
-    </div>
+    <Card className="w-full">
+      <CardHeader className={isCorrect ? "bg-green-50 dark:bg-green-900/20" : "bg-red-50 dark:bg-red-900/20"}>
+        <CardTitle className="flex items-center">
+          {isCorrect ? (
+            <>
+              <CheckCircle className="mr-2 h-6 w-6 text-green-600 dark:text-green-400" />
+              <span className="text-green-600 dark:text-green-400">
+                {t('correct', { defaultValue: '¡Correcto!' })}
+              </span>
+            </>
+          ) : (
+            <>
+              <XCircle className="mr-2 h-6 w-6 text-red-600 dark:text-red-400" />
+              <span className="text-red-600 dark:text-red-400">
+                {t('incorrect', { defaultValue: 'Incorrecto' })}
+              </span>
+            </>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-4">
+        {generateExplanation()}
+      </CardContent>
+      <CardFooter className="flex justify-end">
+        <Button onClick={onContinue}>
+          {t('continue', { defaultValue: 'Continuar' })}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

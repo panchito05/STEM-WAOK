@@ -1,37 +1,32 @@
-// problemGenerator.ts - Generador de problemas de suma
-import { Problem, ProblemGeneratorConfig, DifficultyLevel, DisplayFormat } from '../types';
+// problemGenerator.ts - Utilidad para generar problemas de suma
+import { v4 as uuidv4 } from 'uuid';
+import { 
+  Problem, 
+  ProblemGeneratorConfig, 
+  DifficultyLevel, 
+  DisplayFormat 
+} from '../types';
 
 /**
  * Genera un conjunto de problemas de suma según la configuración especificada
  * @param config Configuración para generar problemas
  */
 export function generateProblems(config: ProblemGeneratorConfig): Problem[] {
-  const {
-    count = 5,
-    difficulty = 'beginner',
-    format = 'horizontal',
-    maxOperands = 2,
-    minValue = 1,
-    maxValue = 10,
-    allowNegatives = false,
-    allowDecimals = false,
-    decimalPlaces = 1
-  } = config;
-  
   const problems: Problem[] = [];
+  const displayFormat = config.preferredDisplayFormat || 'horizontal';
   
   // Generar la cantidad especificada de problemas
-  for (let i = 0; i < count; i++) {
-    // Crear problema según dificultad
+  for (let i = 0; i < config.count; i++) {
+    // Alternar el formato de visualización si se desea variedad
+    const currentFormat: DisplayFormat = 
+      Array.isArray(displayFormat)
+        ? displayFormat[i % displayFormat.length]
+        : displayFormat;
+    
+    // Generar un problema individual con los parámetros especificados
     const problem = generateProblem({
-      difficulty,
-      format,
-      maxOperands,
-      minValue,
-      maxValue,
-      allowNegatives,
-      allowDecimals,
-      decimalPlaces
+      ...config,
+      preferredDisplayFormat: currentFormat
     });
     
     problems.push(problem);
@@ -45,68 +40,51 @@ export function generateProblems(config: ProblemGeneratorConfig): Problem[] {
  */
 function generateProblem(params: Omit<ProblemGeneratorConfig, 'count'>): Problem {
   const {
-    difficulty,
-    format = 'horizontal',
-    maxOperands = 2,
+    difficulty = 'easy',
     minValue = 1,
     maxValue = 10,
+    maxOperands = 2,
     allowNegatives = false,
     allowDecimals = false,
-    decimalPlaces = 1
+    decimalPlaces = 1,
+    preferredDisplayFormat = 'horizontal'
   } = params;
+
+  // Determinar la cantidad de operandos según la dificultad
+  let operandCount = 2; // Por defecto
   
-  // Ajustar rangos según la dificultad
-  let operandCount = 2;
-  let min = minValue;
-  let max = maxValue;
-  
-  if (difficulty === 'beginner') {
-    max = Math.min(max, 10);
+  if (difficulty === 'easy') {
     operandCount = 2;
-  } else if (difficulty === 'easy') {
-    max = Math.min(max, 20);
-    operandCount = Math.min(maxOperands, 2);
   } else if (difficulty === 'medium') {
-    max = Math.min(max, 50);
-    operandCount = Math.min(maxOperands, 3);
-  } else if (difficulty === 'hard') {
-    max = Math.min(max, 100);
-    operandCount = Math.min(maxOperands, 3);
-  } else if (difficulty === 'expert') {
-    max = Math.min(max, 500);
-    operandCount = Math.min(maxOperands, 4);
+    operandCount = Math.min(3, maxOperands);
+  } else if (difficulty === 'hard' || difficulty === 'expert') {
+    operandCount = Math.min(Math.floor(Math.random() * 2) + 3, maxOperands);
   }
   
   // Generar operandos
   const operands: number[] = [];
-  
   for (let i = 0; i < operandCount; i++) {
-    const operand = generateRandomNumber(min, max, allowNegatives, allowDecimals, decimalPlaces);
-    operands.push(operand);
+    operands.push(generateRandomNumber(minValue, maxValue, allowNegatives, allowDecimals, decimalPlaces));
   }
   
-  // Calcular respuesta correcta
+  // Calcular la suma
   const correctAnswer = calculateSum(operands, allowDecimals, decimalPlaces);
   
-  // Generar texto de visualización
-  let displayText = '';
+  // Determinar si se usa un problema de palabra
+  const useWordProblem = preferredDisplayFormat === 'word' || 
+    (Math.random() < 0.2 && difficulty !== 'easy'); // 20% de probabilidad para niveles no fáciles
   
-  if (format === 'horizontal') {
-    displayText = operands.join(' + ') + ' = ?';
-  } else if (format === 'vertical') {
-    displayText = operands.join('\\n+') + '\\n–––––\\n?';
-  } else if (format === 'word') {
-    displayText = generateWordProblem(operands);
-  }
+  const displayText = useWordProblem ? generateWordProblem(operands) : undefined;
   
-  // Crear problema con ID temporal (se asignará uno definitivo al agregarlo al contexto)
+  // Crear el problema
   const problem: Problem = {
-    id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    id: uuidv4(),
     operands,
     correctAnswer,
-    displayFormat: format,
+    displayFormat: useWordProblem ? 'word' : preferredDisplayFormat,
     displayText,
-    difficulty
+    allowDecimals,
+    decimalPlaces
   };
   
   return problem;
@@ -122,39 +100,44 @@ function generateRandomNumber(
   allowDecimals: boolean,
   decimalPlaces: number
 ): number {
-  // Ajustar rango si se permiten negativos
+  // Ajustar el rango si se permiten negativos
   if (allowNegatives) {
-    const range = Math.abs(min) + Math.abs(max);
-    const randomValue = Math.random() * range - Math.abs(min);
-    
-    if (allowDecimals) {
-      return parseFloat(randomValue.toFixed(decimalPlaces));
-    } else {
-      return Math.round(randomValue);
-    }
-  } else {
-    // Números positivos
-    const randomValue = min + Math.random() * (max - min);
-    
-    if (allowDecimals) {
-      return parseFloat(randomValue.toFixed(decimalPlaces));
-    } else {
-      return Math.floor(randomValue);
-    }
+    const temp = Math.max(Math.abs(min), Math.abs(max));
+    min = -temp;
+    max = temp;
   }
+  
+  // Generar un número base
+  let result = Math.random() * (max - min) + min;
+  
+  if (allowDecimals) {
+    // Limitar a los lugares decimales especificados
+    const factor = Math.pow(10, decimalPlaces);
+    result = Math.round(result * factor) / factor;
+  } else {
+    // Redondear a entero
+    result = Math.round(result);
+  }
+  
+  return result;
 }
 
 /**
  * Calcula la suma de los operandos
  */
 function calculateSum(operands: number[], allowDecimals: boolean, decimalPlaces: number): number {
-  const sum = operands.reduce((total, current) => total + current, 0);
+  let sum = operands.reduce((acc, val) => acc + val, 0);
   
   if (allowDecimals) {
-    return parseFloat(sum.toFixed(decimalPlaces));
+    // Ajustar a los lugares decimales especificados
+    const factor = Math.pow(10, decimalPlaces);
+    sum = Math.round(sum * factor) / factor;
   } else {
-    return sum;
+    // Asegurar que sea un entero
+    sum = Math.round(sum);
   }
+  
+  return sum;
 }
 
 /**
@@ -162,12 +145,14 @@ function calculateSum(operands: number[], allowDecimals: boolean, decimalPlaces:
  */
 function generateWordProblem(operands: number[]): string {
   const templates = [
-    "Maria tiene {0} manzanas y Pedro le da {1} más. ¿Cuántas manzanas tiene Maria ahora?",
-    "Juan compró {0} dulces el lunes y {1} más el martes. ¿Cuántos dulces tiene en total?",
-    "En una caja hay {0} lápices rojos y {1} lápices azules. ¿Cuántos lápices hay en total?"
+    "María tiene {0} manzanas y Pedro tiene {1} manzanas. ¿Cuántas manzanas tienen en total?",
+    "Juan caminó {0} kilómetros el lunes y {1} kilómetros el martes. ¿Cuántos kilómetros caminó en total?",
+    "En una fiesta hay {0} niños y {1} niñas. ¿Cuántos niños hay en total?",
+    "Ana compró {0} lápices y {1} bolígrafos. ¿Cuántos útiles compró en total?",
+    "El lunes vendimos {0} pasteles y el martes vendimos {1} pasteles. ¿Cuántos pasteles vendimos en total?"
   ];
   
-  // Seleccionar plantilla aleatoria
+  // Seleccionar una plantilla al azar
   const templateIndex = Math.floor(Math.random() * templates.length);
   let template = templates[templateIndex];
   
@@ -184,24 +169,26 @@ function generateWordProblem(operands: number[]): string {
  */
 export function adaptDifficulty(
   previousLevel: DifficultyLevel, 
-  consecutiveCorrect: number, 
+  consecutiveCorrect: number,
   consecutiveIncorrect: number,
-  correctThreshold: number = 3,
-  incorrectThreshold: number = 2
+  correctThreshold = 3,
+  incorrectThreshold = 2
 ): DifficultyLevel {
-  const levels: DifficultyLevel[] = ['beginner', 'easy', 'medium', 'hard', 'expert'];
+  // Niveles de dificultad ordenados
+  const levels: DifficultyLevel[] = ['easy', 'medium', 'hard', 'expert'];
+  
   const currentIndex = levels.indexOf(previousLevel);
   
-  // Aumentar dificultad
+  // Subir de nivel si hay suficientes respuestas correctas consecutivas
   if (consecutiveCorrect >= correctThreshold && currentIndex < levels.length - 1) {
     return levels[currentIndex + 1];
   }
   
-  // Disminuir dificultad
+  // Bajar de nivel si hay suficientes respuestas incorrectas consecutivas
   if (consecutiveIncorrect >= incorrectThreshold && currentIndex > 0) {
     return levels[currentIndex - 1];
   }
   
-  // Mantener igual
+  // Mantener el mismo nivel si no se cumplen las condiciones
   return previousLevel;
 }

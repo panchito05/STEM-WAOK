@@ -1,12 +1,14 @@
-// types.ts - Definición de tipos para el módulo de suma
+// types.ts - Tipos para el módulo de sumas
 
-// Tipo de nivel de dificultad
+// Tipos de dificultad
 export type DifficultyLevel = 'easy' | 'medium' | 'hard' | 'expert';
 
-// Tipo de formato de visualización del problema
+// Formatos de visualización
 export type DisplayFormat = 'horizontal' | 'vertical' | 'word';
 
-// Interfaz para problemas de suma
+/**
+ * Representa un problema de suma
+ */
 export interface Problem {
   id: string;                        // ID único del problema
   operands: number[];                // Lista de operandos
@@ -17,7 +19,9 @@ export interface Problem {
   decimalPlaces?: number;            // Número de lugares decimales
 }
 
-// Interfaz para respuestas del usuario
+/**
+ * Respuesta del usuario a un problema
+ */
 export interface UserAnswer {
   problemId: string;                 // ID del problema
   problem: Problem;                  // Referencia al problema completo
@@ -28,7 +32,9 @@ export interface UserAnswer {
   status: 'correct' | 'incorrect' | 'timeout' | 'skipped' | 'revealed';  // Estado de la respuesta
 }
 
-// Interfaz para la configuración del generador de problemas
+/**
+ * Configuración para generar problemas
+ */
 export interface ProblemGeneratorConfig {
   count: number;                      // Número de problemas a generar
   difficulty: DifficultyLevel;        // Nivel de dificultad
@@ -38,10 +44,12 @@ export interface ProblemGeneratorConfig {
   allowNegatives: boolean;            // Permitir números negativos
   allowDecimals: boolean;             // Permitir números decimales
   decimalPlaces: number;              // Lugares decimales (si allowDecimals es true)
-  preferredDisplayFormat: DisplayFormat; // Formato preferido de visualización
+  preferredDisplayFormat: DisplayFormat | DisplayFormat[]; // Formato preferido de visualización
 }
 
-// Interfaz para el estado del ejercicio
+/**
+ * Estado del ejercicio
+ */
 export interface ExerciseState {
   isActive: boolean;                  // Si el ejercicio está en curso
   isComplete: boolean;                // Si el ejercicio está completado
@@ -82,7 +90,9 @@ export interface ExerciseState {
   problemTimeRemaining: number;       // Tiempo restante para problema actual
 }
 
-// Interfaz para el contexto del ejercicio
+/**
+ * Contexto para el ejercicio
+ */
 export interface ExerciseContextType {
   state: ExerciseState;
   startExercise: (settings: any) => void;
@@ -97,13 +107,17 @@ export interface ExerciseContextType {
   timerExpired: (timerType: 'global' | 'problem') => void;
 }
 
-// Interfaz para eventos de ejercicio
+/**
+ * Eventos del ejercicio para análisis y seguimiento
+ */
 export interface ExerciseEvent {
   type: 'start' | 'end' | 'answer' | 'skip' | 'solution' | 'timer_expired';
   data?: any;
 }
 
-// Resultado del ejercicio para guardar
+/**
+ * Resultado del ejercicio para guardar en la base de datos
+ */
 export interface ExerciseResult {
   id: string;                         // ID único del ejercicio
   moduleId: string;                   // ID del módulo (ej. 'addition')
@@ -117,3 +131,46 @@ export interface ExerciseResult {
   difficulty: DifficultyLevel;        // Dificultad final
   initialDifficulty: DifficultyLevel; // Dificultad inicial
 }
+
+/**
+ * Props para el componente NumericKeypad
+ */
+export interface NumericKeypadProps {
+  onNumberClick: (value: string | number) => void;
+  disabled?: boolean;
+  answer: string | number;
+  allowDecimals?: boolean;
+}
+
+/**
+ * Props para el componente ProblemDisplay
+ */
+export interface ProblemDisplayProps {
+  problem: Problem;
+  answer: string | number;
+}
+
+/**
+ * Props para el componente ResultsBoard
+ */
+export interface ResultsBoardProps {
+  score: number;
+  totalProblems: number;
+  userAnswers: UserAnswer[];
+  difficulty: DifficultyLevel;
+  timeSpent: number;
+  onRetry: () => void;
+  onHome: () => void;
+}
+
+/**
+ * Props para el componente ExplanationPanel
+ */
+export interface ExplanationPanelProps {
+  problem: Problem;
+  userAnswer?: string | number;
+  isCorrect: boolean;
+  onContinue: () => void;
+}
+
+// Añadir aquí otros tipos según sea necesario

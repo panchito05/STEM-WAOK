@@ -1,126 +1,190 @@
-// NumericKeypad.tsx - Teclado numérico para el ingreso de respuestas
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Backspace, ArrowRight } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Delete } from 'lucide-react';
+import { NumericKeypadProps } from '../types';
+import { useTranslation } from '../hooks/useTranslation';
 
-interface NumericKeypadProps {
-  onNumberClick: (value: string | number) => void;
-  onEnterClick: () => void;
-  disabled?: boolean;
-  answer: string;
-  allowDecimals?: boolean;
-}
-
-const NumericKeypad: React.FC<NumericKeypadProps> = ({ 
-  onNumberClick, 
-  onEnterClick, 
+/**
+ * Teclado numérico para ingresar respuestas a problemas
+ */
+const NumericKeypad: React.FC<NumericKeypadProps> = ({
+  onNumberClick,
+  onSubmit,
   disabled = false,
   answer,
   allowDecimals = false
 }) => {
-  // Manejar clic en número
-  const handleNumberClick = (num: number | string) => {
+  const { t } = useTranslation();
+  
+  const handleNumberClick = (value: string | number) => {
     if (disabled) return;
     
-    if (num === 'clear') {
-      onNumberClick('');
-      return;
-    }
-    
-    if (num === 'backspace') {
-      if (answer.length > 0) {
-        onNumberClick(answer.slice(0, -1));
+    // Si es borrar, eliminar el último carácter
+    if (value === 'backspace') {
+      const currentAnswer = answer.toString();
+      if (currentAnswer.length > 0) {
+        onNumberClick(currentAnswer.slice(0, -1));
       }
       return;
     }
     
-    // Evitar múltiples puntos decimales
-    if (num === '.' && (answer.includes('.') || !allowDecimals)) {
+    // Si es decimal, verificar si ya existe un punto
+    if (value === '.' && allowDecimals) {
+      const currentAnswer = answer.toString();
+      if (currentAnswer.includes('.')) {
+        return; // No agregar otro punto decimal
+      }
+    }
+    
+    // Evitar agregar decimal si no está permitido
+    if (value === '.' && !allowDecimals) {
       return;
     }
     
-    // Limitar longitud a 10 caracteres para evitar desbordamientos
-    if (answer.length >= 10) {
+    // Limitar la longitud de la respuesta (prevenir desbordamiento)
+    const currentAnswer = answer.toString();
+    if (currentAnswer.length >= 12) {
       return;
     }
     
-    // No permitir cero inicial seguido de otro dígito (excepto después del punto decimal)
-    if (answer === '0' && num !== '.') {
-      onNumberClick(num.toString());
-    } else {
-      onNumberClick(answer + num.toString());
-    }
+    // Agregar el número a la respuesta actual
+    const newAnswer = currentAnswer === '0' ? value.toString() : currentAnswer + value.toString();
+    onNumberClick(newAnswer);
+  };
+  
+  const handleSubmit = () => {
+    if (disabled || !onSubmit) return;
+    onSubmit();
   };
   
   return (
-    <div className="numeric-keypad">
+    <Card className="p-2 shadow-md bg-white dark:bg-gray-800">
       <div className="grid grid-cols-3 gap-2">
-        {/* Números 1-9 */}
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-          <Button
-            key={num}
-            variant="outline"
-            className="h-14 text-xl"
-            onClick={() => handleNumberClick(num)}
-            disabled={disabled}
-          >
-            {num}
-          </Button>
-        ))}
-        
-        {/* Botón de punto decimal */}
-        <Button
-          variant="outline"
-          className="h-14 text-xl"
-          onClick={() => handleNumberClick('.')}
-          disabled={disabled || !allowDecimals}
+        {/* Fila 1 */}
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(7)} 
+          disabled={disabled}
+          className="h-14 text-xl font-bold"
         >
-          .
+          7
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(8)} 
+          disabled={disabled}
+          className="h-14 text-xl font-bold"
+        >
+          8
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(9)} 
+          disabled={disabled}
+          className="h-14 text-xl font-bold"
+        >
+          9
         </Button>
         
-        {/* Número 0 */}
-        <Button
-          variant="outline"
-          className="h-14 text-xl"
-          onClick={() => handleNumberClick(0)}
+        {/* Fila 2 */}
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(4)} 
           disabled={disabled}
+          className="h-14 text-xl font-bold"
+        >
+          4
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(5)} 
+          disabled={disabled}
+          className="h-14 text-xl font-bold"
+        >
+          5
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(6)} 
+          disabled={disabled}
+          className="h-14 text-xl font-bold"
+        >
+          6
+        </Button>
+        
+        {/* Fila 3 */}
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(1)} 
+          disabled={disabled}
+          className="h-14 text-xl font-bold"
+        >
+          1
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(2)} 
+          disabled={disabled}
+          className="h-14 text-xl font-bold"
+        >
+          2
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(3)} 
+          disabled={disabled}
+          className="h-14 text-xl font-bold"
+        >
+          3
+        </Button>
+        
+        {/* Fila 4 */}
+        {allowDecimals ? (
+          <Button 
+            variant="outline" 
+            onClick={() => handleNumberClick('.')} 
+            disabled={disabled}
+            className="h-14 text-xl font-bold"
+          >
+            .
+          </Button>
+        ) : (
+          <Button 
+            variant="outline" 
+            disabled={true}
+            className="h-14 text-xl font-bold opacity-50"
+          >
+            .
+          </Button>
+        )}
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick(0)} 
+          disabled={disabled}
+          className="h-14 text-xl font-bold"
         >
           0
         </Button>
-        
-        {/* Botón de borrar */}
-        <Button
-          variant="outline"
-          className="h-14"
-          onClick={() => handleNumberClick('backspace')}
+        <Button 
+          variant="outline" 
+          onClick={() => handleNumberClick('backspace')} 
           disabled={disabled}
+          className="h-14 flex items-center justify-center"
         >
-          <Backspace className="h-5 w-5" />
+          <Delete className="h-6 w-6" />
         </Button>
       </div>
       
-      {/* Fila adicional para acciones */}
-      <div className="grid grid-cols-2 gap-2 mt-2">
-        <Button
-          variant="secondary"
-          className="h-14"
-          onClick={() => handleNumberClick('clear')}
-          disabled={disabled}
-        >
-          Borrar
-        </Button>
-        
-        <Button
-          variant="default"
-          className="h-14"
-          onClick={onEnterClick}
-          disabled={disabled || answer === ''}
-        >
-          <ArrowRight className="h-5 w-5 mr-2" />
-          Enviar
-        </Button>
-      </div>
-    </div>
+      {/* Botón de Enviar */}
+      <Button 
+        className="w-full mt-2 h-14 text-lg font-bold"
+        onClick={handleSubmit}
+        disabled={disabled || answer.toString().length === 0}
+      >
+        {t('submit', { defaultValue: 'Enviar' })}
+      </Button>
+    </Card>
   );
 };
 
