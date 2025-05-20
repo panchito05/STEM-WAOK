@@ -120,13 +120,13 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
   return (
     <div className="fixed inset-0 bg-white z-50">
-      {/* Close button X en rojo en la parte superior */}
+      {/* Close button X rojo en la parte superior */}
       <button
         onClick={onClose}
-        className="absolute top-4 left-1/2 transform -translate-x-1/2 p-3 rounded-full bg-red-100 hover:bg-red-200 transition-colors"
+        className="absolute top-4 left-1/2 transform -translate-x-1/2 p-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
         aria-label="Cerrar modo profesor"
       >
-        <X className="h-5 w-5 text-red-600" />
+        <X className="h-5 w-5 text-white" />
       </button>
       
       {/* Main layout with drawing area taking most of the screen */}
@@ -141,10 +141,10 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           className="absolute z-10 w-[280px]" 
           style={getPositionStyles()}
         >
-          {/* Move button para cambiar la posición */}
+          {/* Move button para cambiar la posición (en el lado izquierdo) */}
           <button
             onClick={rotatePosition}
-            className="absolute top-1 right-1 p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
+            className="absolute top-1 left-1 p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
             title="Cambiar posición"
           >
             <Move className="h-4 w-4 text-blue-600" />
