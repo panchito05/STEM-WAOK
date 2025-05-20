@@ -1310,8 +1310,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         timestamp: Date.now(),
         exerciseId: `addition_${Date.now()}`,
         
-        // Almacenar los problemas en una ubicación consistente
+        // Almacenar los problemas en todas las ubicaciones posibles para compatibilidad
         problemDetails: problemasCapturados,
+        problems: problemasCapturados,
         
         // Incluir información específica del tipo de ejercicio
         exerciseType: "addition",
@@ -1326,16 +1327,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           },
           time: timer
         }
-        
-        // Almacenar los problemas en una ubicación consistente
-        problemDetails: problemasCapturados,
-        
-        // Incluir información específica del tipo de ejercicio
-        exerciseType: "addition",
-        
-        // Incluir resumen para facilitar acceso rápido
-        summary: {
-          operation: "addition",
           level: finalLevel,
           score: {
             correct: puntajeCorregido,
