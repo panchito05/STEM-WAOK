@@ -729,31 +729,48 @@ export default function ProgressPage() {
                                             return; // Skip to next iteration
                                           }
                                           
-                                          // Determinar si el problema es correcto
+                                          // SOLUCIÓN MEJORADA: Determinar si el problema es correcto
                                           const isCorrect = 
-                                            problem.isCorrect !== undefined ? problem.isCorrect :
+                                            typeof problem.isCorrect === 'boolean' ? problem.isCorrect :
+                                            typeof problem.esCorrecta === 'boolean' ? problem.esCorrecta :
                                             problem.status === 'correct';
                                           
-                                          // Obtener el texto del problema en formato estándar
+                                          // Obtener el texto del problema en formato estándar con compatibilidad multilingüe
                                           let problemText = '';
                                           if (typeof problem.problem === 'string') {
                                             problemText = problem.problem;
+                                          } else if (typeof problem.problema === 'string') { 
+                                            // Compatibilidad con versión en español
+                                            problemText = problem.problema;
                                           } else if (problem.problem && problem.problem.operands) {
                                             // Para problemas de suma
                                             problemText = problem.problem.operands.join(' + ') + ' = ' + problem.problem.correctAnswer;
                                           } else if (problem.text) {
                                             problemText = problem.text;
+                                          } else if (problem.texto) {
+                                            problemText = problem.texto;
                                           } else {
                                             // Formato básico si no hay texto disponible
                                             problemText = `Problema ${idx + 1}`;
                                           }
                                           
-                                          // Construir información adicional
+                                          // Construir información adicional con soporte multilingüe
                                           const infoItems = [];
-                                          if (problem.level) infoItems.push(`Lvl: ${problem.level}`);
-                                          if (problem.attempts) infoItems.push(`Att: ${problem.attempts}`);
-                                          if (problem.timeSpent) infoItems.push(`T: ${problem.timeSpent}s`);
-                                          const infoText = infoItems.join(', ');
+                                          
+                                          // Nivel - buscar en múltiples campos
+                                          const level = problem.level || problem.nivel;
+                                          if (level) infoItems.push(`Nivel: ${level}`);
+                                          
+                                          // Intentos - buscar en múltiples campos
+                                          const attempts = problem.attempts || problem.intentos;
+                                          if (attempts) infoItems.push(`Intentos: ${attempts}`);
+                                          
+                                          // Tiempo - buscar en múltiples campos
+                                          const time = problem.timeSpent || problem.tiempo;
+                                          if (time) infoItems.push(`Tiempo: ${time}s`);
+                                          
+                                          // Información preformateada
+                                          const infoText = problem.info || problem.infoTexto || infoItems.join(', ');
                                           
                                           // Añadir problema estandarizado
                                           standardizedProblems.push({

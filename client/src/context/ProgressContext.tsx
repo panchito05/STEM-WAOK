@@ -362,9 +362,31 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       keysToRemove.forEach(key => localStorage.removeItem(key));
       console.log(`✅ Borradas ${keysToRemove.length} claves de localStorage`);
       
-      // Borrar específicamente la clave del store de recompensas
+      // MEJORA: Borrado completo de todas las recompensas y colecciones
       localStorage.removeItem('rewards-storage');
-      console.log(`🏆 Borrada información del Álbum de Recompensas`);
+      localStorage.removeItem('user_rewards');
+      localStorage.removeItem('user_default_rewards');
+      localStorage.removeItem('rewards_collection');
+      localStorage.removeItem('album-rewards');
+      localStorage.removeItem('rewards-unlocked');
+      
+      // Buscar claves adicionales relacionadas con recompensas
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (
+            key.includes('reward') || 
+            key.includes('album') || 
+            key.includes('collection') ||
+            key.includes('trophy') ||
+            key.includes('achievement') ||
+            key.includes('unlock')
+          )) {
+          localStorage.removeItem(key);
+          console.log(`🏆 Borrada clave adicional de recompensas: ${key}`);
+        }
+      }
+      
+      console.log(`🏆 Borrada toda la información del Álbum de Recompensas y colecciones`);
       
       // PASO 2: BORRAR DATOS DEL SERVIDOR DE FORMA AGRESIVA
       console.log("🔥 BORRADO RADICAL - Paso 2: Borrado en el servidor");
