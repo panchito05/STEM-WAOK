@@ -842,16 +842,30 @@ export default function ProgressPage() {
                                           });
                                         });
 
-                                        // Usar el componente ProblemRenderer para mostrar los problemas
+                                        // Verificar si es un ejercicio de suma para usar el componente especializado
+                                        const isAdditionExercise = selectedExercise?.operationId === 'addition';
+                                        
+                                        // Usar componente específico según el tipo de ejercicio
                                         return (
                                           <>
-                                            {/* Renderizar problemas estandarizados */}
+                                            {/* Renderizar problemas según tipo de operación */}
                                             {standardizedProblems.length > 0 && (
-                                              <ProblemRenderer
-                                                problems={standardizedProblems}
-                                                showProblemNumbers={true}
-                                                showInfoDetails={true}
-                                              />
+                                              <>
+                                                {isAdditionExercise ? (
+                                                  // Usar componente especializado para problemas de suma
+                                                  <AdditionProblemRenderer
+                                                    problems={problemsToShow}
+                                                    showProblemNumbers={true}
+                                                  />
+                                                ) : (
+                                                  // Usar componente genérico para otros tipos
+                                                  <ProblemRenderer
+                                                    problems={standardizedProblems}
+                                                    showProblemNumbers={true}
+                                                    showInfoDetails={true}
+                                                  />
+                                                )}
+                                              </>
                                             )}
 
                                             {/* Renderizar placeholders si hay */}
