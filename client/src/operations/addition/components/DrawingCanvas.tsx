@@ -1,9 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { ProblemViewer } from './ProblemViewer';
 import { AdditionProblem } from '../types';
 
 // Definir los diferentes modos de herramientas
-type ToolMode = 'pen' | 'eraser' | 'problem-view';
+type ToolMode = 'pen' | 'eraser';
 
 // Punto para optimización del dibujo
 interface Point {
@@ -18,7 +17,7 @@ interface DrawingCanvasProps {
   strokeWidth?: number;
   className?: string;
   onClear?: () => void;
-  currentProblem?: any; // Problema actual para mostrar en la vista ampliada
+  currentProblem?: AdditionProblem; // Problema actual para estampar en el canvas
 }
 
 export function DrawingCanvas({
@@ -52,8 +51,7 @@ export function DrawingCanvas({
   // Estado para mostrar un mensaje temporal del tamaño
   const [showSizeMessage, setShowSizeMessage] = useState<boolean>(false);
   
-  // Estado para mostrar el visualizador del problema
-  const [showProblemViewer, setShowProblemViewer] = useState<boolean>(false);
+  // Ya no necesitamos el estado para mostrar el visualizador del problema
   
   // Referencias para optimización de dibujo
   const lastPoint = useRef<Point | null>(null);
@@ -432,6 +430,94 @@ export function DrawingCanvas({
     }
   };
   
+  // Función para dibujar los números del problema en el canvas
+  const drawProblemNumbers = () => {
+    if (!currentProblem || !contextRef.current || !canvasRef.current) return;
+    
+    // Guardar el estado actual del canvas
+    saveCanvasState();
+    
+    const context = contextRef.current;
+    const canvas = canvasRef.current;
+    
+    // Guardar las configuraciones actuales del contexto
+    const originalStrokeStyle = context.strokeStyle;
+    const originalLineWidth = context.lineWidth;
+    const originalFont = context.font;
+    const originalTextAlign = context.textAlign;
+    const originalTextBaseline = context.textBaseline;
+    const originalGlobalCompositeOperation = context.globalCompositeOperation;
+    
+    // Configurar el contexto para dibujar texto
+    context.globalCompositeOperation = 'source-over';
+    context.strokeStyle = darkMode ? '#ffffff' : '#000000';
+    context.fillStyle = darkMode ? '#ffffff' : '#000000';
+    context.lineWidth = 2;
+    context.font = 'bold 40px monospace';
+    context.textAlign = 'right';
+    context.textBaseline = 'middle';
+    
+    // Calcular posición central
+    const centerX = canvas.width / 2 / (window.devicePixelRatio || 1);
+    const centerY = canvas.height / 2 / (window.devicePixelRatio || 1);
+    
+    // Formatear los números
+    const { operands } = currentProblem;
+    const formattedOperands = operands.map(num => num.toFixed(1));
+    
+    // Encontrar la longitud máxima para alineación
+    const parts = formattedOperands.map(num => {
+      const [intPart, decPart] = num.split('.');
+      return { intPart, decPart };
+    });
+    
+    const maxIntLength = Math.max(...parts.map(p => p.intPart.length));
+    
+    // Dibujar los operandos alineados
+    let yOffset = -40;
+    
+    // Dibujar primer operando
+    context.fillText(
+      parts[0].intPart.padStart(maxIntLength, ' '), 
+      centerX - 15, 
+      centerY + yOffset
+    );
+    context.fillText('.', centerX, centerY + yOffset);
+    context.fillText(parts[0].decPart, centerX + 30, centerY + yOffset);
+    
+    // Dibujar operador + y segundo operando
+    yOffset += 60;
+    context.textAlign = 'center';
+    context.fillText('+', centerX - (maxIntLength * 15), centerY + yOffset);
+    context.textAlign = 'right';
+    
+    context.fillText(
+      parts[1].intPart.padStart(maxIntLength, ' '), 
+      centerX - 15, 
+      centerY + yOffset
+    );
+    context.fillText('.', centerX, centerY + yOffset);
+    context.fillText(parts[1].decPart, centerX + 30, centerY + yOffset);
+    
+    // Dibujar línea
+    yOffset += 40;
+    context.beginPath();
+    context.moveTo(centerX - (maxIntLength * 18), centerY + yOffset);
+    context.lineTo(centerX + 50, centerY + yOffset);
+    context.stroke();
+    
+    // Restaurar configuraciones originales
+    context.strokeStyle = originalStrokeStyle;
+    context.lineWidth = originalLineWidth;
+    context.font = originalFont;
+    context.textAlign = originalTextAlign;
+    context.textBaseline = originalTextBaseline;
+    context.globalCompositeOperation = originalGlobalCompositeOperation;
+    
+    // Guardar el nuevo estado del canvas
+    saveCanvasState();
+  };
+  
   // Función para alternar entre modo claro y oscuro
   const toggleDarkMode = () => {
     saveCanvasState();
@@ -509,12 +595,12 @@ export function DrawingCanvas({
           </svg>
         </button>
         
-        {/* Botón para ver números ampliados */}
+        {/* Botón para dibujar números en el centro */}
         {currentProblem && (
           <button
-            onClick={() => setShowProblemViewer(!showProblemViewer)}
-            className={`p-2 rounded-full ${showProblemViewer ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
-            title="Ver números ampliados"
+            onClick={drawProblemNumbers}
+            className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+            title="Dibujar números en el centro"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
@@ -590,13 +676,7 @@ export function DrawingCanvas({
         </svg>
       </button>
 
-      {/* Visualizador de problemas ampliado */}
-      {showProblemViewer && currentProblem && (
-        <ProblemViewer 
-          problem={currentProblem} 
-          onClose={() => setShowProblemViewer(false)}
-        />
-      )}
+      {/* Ya no necesitamos el visualizador de problemas, ahora dibujamos directo en el canvas */}
     </div>
   );
 }
