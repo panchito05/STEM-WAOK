@@ -1,190 +1,196 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Delete } from 'lucide-react';
-import { NumericKeypadProps } from '../types';
-import { useTranslation } from '../hooks/useTranslation';
+import { ArrowLeft, CornerDownLeft } from 'lucide-react';
+
+export interface NumericKeypadProps {
+  onNumberClick: (value: string | number) => void;
+  onSubmit: () => void;
+  disabled?: boolean;
+  answer: string | number;
+  allowDecimals?: boolean;
+}
 
 /**
- * Teclado numérico para ingresar respuestas a problemas
+ * Componente para teclado numérico
  */
 const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onNumberClick,
   onSubmit,
   disabled = false,
-  answer,
+  answer = '',
   allowDecimals = false
 }) => {
-  const { t } = useTranslation();
-  
+  // Manejar click en números
   const handleNumberClick = (value: string | number) => {
     if (disabled) return;
     
-    // Si es borrar, eliminar el último carácter
-    if (value === 'backspace') {
-      const currentAnswer = answer.toString();
-      if (currentAnswer.length > 0) {
-        onNumberClick(currentAnswer.slice(0, -1));
-      }
+    // Si ya hay un punto decimal y se intenta agregar otro, ignorar
+    if (value === '.' && String(answer).includes('.')) {
       return;
     }
     
-    // Si es decimal, verificar si ya existe un punto
-    if (value === '.' && allowDecimals) {
-      const currentAnswer = answer.toString();
-      if (currentAnswer.includes('.')) {
-        return; // No agregar otro punto decimal
-      }
-    }
-    
-    // Evitar agregar decimal si no está permitido
-    if (value === '.' && !allowDecimals) {
+    // Si la respuesta es 0 y se ingresa un número, reemplazar el 0
+    if (answer === '0' && typeof value === 'number') {
+      onNumberClick(value);
       return;
     }
     
-    // Limitar la longitud de la respuesta (prevenir desbordamiento)
-    const currentAnswer = answer.toString();
-    if (currentAnswer.length >= 12) {
+    // Si es decimal y aún no hay un punto, agregar "0."
+    if (value === '.' && answer === '') {
+      onNumberClick('0.');
       return;
     }
     
-    // Agregar el número a la respuesta actual
-    const newAnswer = currentAnswer === '0' ? value.toString() : currentAnswer + value.toString();
-    onNumberClick(newAnswer);
+    // Concatenar el valor al final
+    const newValue = answer + value;
+    onNumberClick(newValue);
   };
   
+  // Manejar click en borrar
+  const handleBackspace = () => {
+    if (disabled || !answer) return;
+    
+    // Eliminar el último carácter
+    const newValue = String(answer).slice(0, -1);
+    onNumberClick(newValue);
+  };
+  
+  // Manejar click en enviar
   const handleSubmit = () => {
-    if (disabled || !onSubmit) return;
+    if (disabled || !answer) return;
     onSubmit();
   };
   
   return (
-    <Card className="p-2 shadow-md bg-white dark:bg-gray-800">
+    <div className="w-full">
+      {/* Respuesta actual */}
+      <div className="text-center mb-4">
+        <div className="text-2xl font-mono bg-white dark:bg-slate-800 p-3 rounded-md border border-gray-200 dark:border-gray-700">
+          {answer || '0'}
+        </div>
+      </div>
+      
+      {/* Teclado numérico */}
       <div className="grid grid-cols-3 gap-2">
         {/* Fila 1 */}
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(7)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(7)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           7
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(8)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(8)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           8
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(9)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(9)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           9
         </Button>
         
         {/* Fila 2 */}
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(4)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(4)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           4
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(5)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(5)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           5
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(6)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(6)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           6
         </Button>
         
         {/* Fila 3 */}
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(1)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(1)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           1
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(2)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(2)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           2
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(3)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(3)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           3
         </Button>
         
         {/* Fila 4 */}
         {allowDecimals ? (
-          <Button 
-            variant="outline" 
-            onClick={() => handleNumberClick('.')} 
+          <Button
+            variant="outline"
+            className="h-12 text-lg font-medium"
+            onClick={() => handleNumberClick('.')}
             disabled={disabled}
-            className="h-14 text-xl font-bold"
           >
             .
           </Button>
         ) : (
-          <Button 
-            variant="outline" 
-            disabled={true}
-            className="h-14 text-xl font-bold opacity-50"
-          >
-            .
-          </Button>
+          <div></div> // Espacio vacío si no se permiten decimales
         )}
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick(0)} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={() => handleNumberClick(0)}
           disabled={disabled}
-          className="h-14 text-xl font-bold"
         >
           0
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => handleNumberClick('backspace')} 
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium"
+          onClick={handleBackspace}
           disabled={disabled}
-          className="h-14 flex items-center justify-center"
         >
-          <Delete className="h-6 w-6" />
+          <ArrowLeft className="h-5 w-5" />
         </Button>
       </div>
       
-      {/* Botón de Enviar */}
-      <Button 
-        className="w-full mt-2 h-14 text-lg font-bold"
+      {/* Botón de enviar */}
+      <Button
+        className="w-full mt-3 h-12"
         onClick={handleSubmit}
-        disabled={disabled || answer.toString().length === 0}
+        disabled={disabled || answer === ''}
       >
-        {t('submit', { defaultValue: 'Enviar' })}
+        <CornerDownLeft className="h-5 w-5 mr-2" />
+        Enviar
       </Button>
-    </Card>
+    </div>
   );
 };
 

@@ -1,98 +1,110 @@
-// useExerciseTimer.ts - Hook personalizado para manejar el temporizador de ejercicios
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface TimerOptions {
+  initialTime: number;
+  onExpire?: () => void;
   autoStart?: boolean;
-  onTimeEnd?: () => void;
 }
 
 /**
- * Hook personalizado para manejar un temporizador de ejercicios
- * @param maxTime Tiempo máximo en segundos
- * @param options Opciones adicionales (autoStart, onTimeEnd)
+ * Hook personalizado para manejar temporizadores en ejercicios
+ * @param options Opciones de configuración del temporizador
  */
-export function useExerciseTimer(maxTime: number, options: TimerOptions = {}) {
-  const [timeLeft, setTimeLeft] = useState<number>(maxTime);
-  const [isActive, setIsActive] = useState<boolean>(options.autoStart || false);
-  const timerRef = useRef<number | null>(null);
-  const lastTickTimeRef = useRef<number>(Date.now());
+export const useExerciseTimer = (options: TimerOptions) => {
+  const { initialTime, onExpire, autoStart = false } = options;
+  
+  // Estado para el tiempo restante
+  const [timeRemaining, setTimeRemaining] = useState<number>(initialTime);
+  // Estado para controlar si el temporizador está activo
+  const [isActive, setIsActive] = useState<boolean>(autoStart);
+  // Estado para controlar si el temporizador ha expirado
+  const [isExpired, setIsExpired] = useState<boolean>(false);
+  
+  // Referencia para el intervalo del temporizador
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Función para iniciar el temporizador
   const startTimer = useCallback(() => {
-    if (timerRef.current !== null) return; // Ya está activo
-    
-    setIsActive(true);
-    lastTickTimeRef.current = Date.now();
-    
-    timerRef.current = window.setInterval(() => {
-      const now = Date.now();
-      const delta = (now - lastTickTimeRef.current) / 1000; // Tiempo transcurrido en segundos
-      lastTickTimeRef.current = now;
-      
-      setTimeLeft(prev => {
-        const newTime = Math.max(0, prev - delta);
-        
-        // Si llegamos a 0, ejecutar callback si existe
-        if (newTime === 0 && options.onTimeEnd) {
-          options.onTimeEnd();
-          pauseTimer();
-        }
-        
-        return newTime;
-      });
-    }, 100); // Actualizar cada 100ms para un conteo más preciso
-  }, [options.onTimeEnd]);
+    if (!isActive && !isExpired) {
+      setIsActive(true);
+    }
+  }, [isActive, isExpired]);
   
   // Función para pausar el temporizador
   const pauseTimer = useCallback(() => {
-    if (timerRef.current === null) return; // Ya está pausado
-    
-    clearInterval(timerRef.current);
-    timerRef.current = null;
-    setIsActive(false);
-  }, []);
+    if (isActive) {
+      setIsActive(false);
+    }
+  }, [isActive]);
   
   // Función para reiniciar el temporizador
-  const resetTimer = useCallback(() => {
-    pauseTimer();
-    setTimeLeft(maxTime);
-  }, [maxTime, pauseTimer]);
-  
-  // Función para reiniciar y empezar
-  const restartTimer = useCallback(() => {
-    resetTimer();
-    startTimer();
-  }, [resetTimer, startTimer]);
-  
-  // Limpiar intervalo al desmontar componente
-  useEffect(() => {
-    return () => {
-      if (timerRef.current !== null) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, []);
-  
-  // Auto-iniciar si está configurado
-  useEffect(() => {
-    if (options.autoStart) {
-      startTimer();
+  const resetTimer = useCallback((newTime?: number) => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
     
-    return () => pauseTimer();
-  }, [options.autoStart, startTimer, pauseTimer]);
+    setTimeRemaining(newTime !== undefined ? newTime : initialTime);
+    setIsActive(autoStart);
+    setIsExpired(false);
+  }, [initialTime, autoStart]);
   
-  // Cuando maxTime cambia, actualizar timeLeft
+  // Formatear el tiempo para mostrar
+  const formatTime = useCallback((seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }, []);
+  
+  // Efecto para manejar el temporizador
   useEffect(() => {
-    setTimeLeft(maxTime);
-  }, [maxTime]);
+    if (isActive && !isExpired) {
+      // Crear un intervalo para decrementar el tiempo cada segundo
+      timerRef.current = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            // Si el tiempo ha expirado
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+            
+            setIsActive(false);
+            setIsExpired(true);
+            
+            // Llamar al callback onExpire si existe
+            if (onExpire) {
+              onExpire();
+            }
+            
+            return 0;
+          }
+          
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (!isActive && timerRef.current) {
+      // Si el temporizador se pausó, limpiar el intervalo
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    // Limpiar el intervalo cuando el componente se desmonte
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isActive, isExpired, onExpire]);
   
   return {
-    timeLeft,
-    isTimerActive: isActive,
+    timeRemaining,
+    formattedTime: formatTime(timeRemaining),
+    isActive,
+    isExpired,
     startTimer,
     pauseTimer,
-    resetTimer,
-    restartTimer
+    resetTimer
   };
-}
+};

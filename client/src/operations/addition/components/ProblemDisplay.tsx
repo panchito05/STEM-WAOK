@@ -1,101 +1,131 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { ProblemDisplayProps } from '../types';
-import { useTranslation } from '../hooks/useTranslation';
+import { Problem } from '../types';
+import { Check, X } from 'lucide-react';
+
+export interface ProblemDisplayProps {
+  problem: Problem;
+  answer: string | number;
+  isAnswered?: boolean;
+  isCorrect?: boolean;
+}
 
 /**
- * Componente para mostrar problemas de suma en diferentes formatos
+ * Componente para mostrar un problema de suma
  */
-const ProblemDisplay: React.FC<ProblemDisplayProps> = ({ problem, answer }) => {
-  const { t } = useTranslation();
-  
-  // Renderizar problema en formato horizontal (ej: 5 + 3 = ?)
-  const renderHorizontalFormat = () => {
-    return (
-      <div className="flex items-center justify-center text-3xl md:text-4xl font-bold space-x-2">
-        {problem.operands.map((operand, index) => (
-          <React.Fragment key={`operand-${index}`}>
-            <span>{operand}</span>
-            {index < problem.operands.length - 1 && <span>+</span>}
-          </React.Fragment>
-        ))}
-        <span>=</span>
-        <span className="text-blue-600 dark:text-blue-400 min-w-[40px] text-center">
-          {answer || '?'}
-        </span>
-      </div>
-    );
+const ProblemDisplay: React.FC<ProblemDisplayProps> = ({ 
+  problem, 
+  answer = '',
+  isAnswered = false,
+  isCorrect = false
+}) => {
+  // Función para formatear un número
+  const formatNumber = (num: number): string => {
+    return num.toLocaleString();
   };
   
-  // Renderizar problema en formato vertical
-  const renderVerticalFormat = () => {
+  // Renderizar formato vertical
+  const renderVertical = () => {
     return (
-      <div className="flex flex-col items-end text-3xl md:text-4xl font-bold">
-        {/* Operandos */}
-        {problem.operands.map((operand, index) => (
-          <div 
-            key={`operand-${index}`}
-            className={index === 0 ? '' : 'border-t-0'}
-          >
-            {index === problem.operands.length - 1 && (
-              <span className="pr-2">+</span>
+      <div className="flex flex-col items-end border rounded-lg p-4 bg-white dark:bg-slate-800 shadow-sm font-mono">
+        {/* Mostrar cada operando en una línea */}
+        {problem.operands.map((op, index) => (
+          <div key={index} className="flex items-center mb-1">
+            {index < problem.operands.length - 1 ? (
+              <span className="mr-4">+</span>
+            ) : (
+              <span className="mr-4 border-t border-black dark:border-white pt-1">+</span>
             )}
-            <span>{operand}</span>
+            <span>{formatNumber(op.value)}</span>
           </div>
         ))}
         
-        {/* Línea divisoria */}
-        <div className="border-t-2 border-black dark:border-white py-1 w-full" />
+        {/* Línea de separación */}
+        <div className="w-full border-t border-black dark:border-white my-2"></div>
         
-        {/* Respuesta */}
-        <div className="text-blue-600 dark:text-blue-400 min-w-[40px] text-center">
-          {answer || '?'}
+        {/* Mostrar la respuesta del usuario o línea para responder */}
+        <div className="flex items-center">
+          <div className="w-6"></div>
+          <div className="text-lg font-semibold min-w-[80px] text-right">
+            {answer !== '' ? formatNumber(Number(answer)) : '_____'}
+          </div>
         </div>
       </div>
     );
   };
-
-  // Renderizar problema en formato de texto (problema de palabra)
+  
+  // Renderizar formato horizontal
+  const renderHorizontal = () => {
+    return (
+      <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-sm font-mono">
+        <div className="flex items-center flex-wrap">
+          {/* Mostrar operandos separados por + */}
+          {problem.operands.map((op, index) => (
+            <React.Fragment key={index}>
+              <span className="text-lg">{formatNumber(op.value)}</span>
+              {index < problem.operands.length - 1 && (
+                <span className="mx-2 text-lg">+</span>
+              )}
+            </React.Fragment>
+          ))}
+          
+          {/* Mostrar signo igual y respuesta */}
+          <span className="mx-2 text-lg">=</span>
+          <div className="text-lg font-semibold min-w-[60px] text-center px-2 border-b-2 border-dashed border-gray-300 dark:border-gray-600">
+            {answer !== '' ? formatNumber(Number(answer)) : '?'}
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Renderizar formato de problema de palabra
   const renderWordProblem = () => {
-    if (!problem.displayText) {
-      return renderHorizontalFormat(); // Fallback
-    }
+    // Crear una descripción del problema basada en los operandos
+    const description = problem.operands.map((op, index) => {
+      return op.label ? 
+        `${formatNumber(op.value)} ${op.label}` : 
+        formatNumber(op.value);
+    }).join(' + ');
     
     return (
-      <div className="flex flex-col space-y-4">
-        <p className="text-lg md:text-xl font-medium">
-          {problem.displayText}
+      <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+        <p className="mb-4 text-lg">
+          Si tenemos {description}, ¿cuál es el resultado total?
         </p>
-        <div className="flex items-center justify-center">
-          <span className="text-xl mr-2">{t('answer', { defaultValue: 'Respuesta' })}:</span>
-          <span className="text-blue-600 dark:text-blue-400 text-2xl font-bold min-w-[40px] text-center">
-            {answer || '?'}
-          </span>
+        <div className="flex items-center">
+          <span className="mr-2 text-lg">Respuesta:</span>
+          <div className="text-lg font-semibold min-w-[60px] border-b-2 border-dashed border-gray-300 dark:border-gray-600 px-2 text-center">
+            {answer !== '' ? formatNumber(Number(answer)) : '?'}
+          </div>
         </div>
       </div>
     );
   };
   
-  // Renderizar el problema según el formato especificado
-  const renderProblem = () => {
-    switch (problem.displayFormat) {
-      case 'horizontal':
-        return renderHorizontalFormat();
-      case 'vertical':
-        return renderVerticalFormat();
-      case 'word':
-        return renderWordProblem();
-      default:
-        return renderHorizontalFormat();
-    }
-  };
-  
+  // Renderizar el componente según el formato del problema
   return (
-    <Card className="w-full bg-white dark:bg-gray-800">
-      <CardContent className="flex items-center justify-center min-h-[150px] p-6">
-        {renderProblem()}
-      </CardContent>
-    </Card>
+    <div className="w-full">
+      {/* Contenido principal del problema */}
+      <div className="relative">
+        {/* Mostrar el problema según su formato */}
+        {problem.displayFormat === 'vertical' && renderVertical()}
+        {problem.displayFormat === 'horizontal' && renderHorizontal()}
+        {problem.displayFormat === 'word' && renderWordProblem()}
+        
+        {/* Mostrar indicador de correcto/incorrecto cuando se ha respondido */}
+        {isAnswered && (
+          <div className={`absolute -right-2 -top-2 w-8 h-8 rounded-full flex items-center justify-center ${
+            isCorrect ? 'bg-green-500' : 'bg-red-500'
+          }`}>
+            {isCorrect ? (
+              <Check className="w-5 h-5 text-white" />
+            ) : (
+              <X className="w-5 h-5 text-white" />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
