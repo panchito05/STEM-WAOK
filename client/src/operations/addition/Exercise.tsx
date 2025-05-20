@@ -644,6 +644,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Doble verificación con logs para diagnóstico
       console.log(`[CONTADOR] Respuestas correctas consecutivas actuales: ${newConsecutive}/${CORRECT_ANSWERS_FOR_LEVEL_UP}`);
       
+      // Trigger especial: Al llegar exactamente a 10 respuestas correctas consecutivas
+      if (newConsecutive === CORRECT_ANSWERS_FOR_LEVEL_UP) {
+        console.log(`[CONTADOR] 🎯 Se alcanzó exactamente el número objetivo de respuestas consecutivas correctas: ${newConsecutive}`);
+      }
+      
       if (newConsecutive >= CORRECT_ANSWERS_FOR_LEVEL_UP && settings.enableAdaptiveDifficulty) {
           const difficultiesOrder: DifficultyLevel[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
           const currentLevelIdx = difficultiesOrder.indexOf(adaptiveDifficulty);
