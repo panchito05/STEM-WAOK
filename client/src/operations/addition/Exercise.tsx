@@ -1225,9 +1225,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
 
-    // SOLUCIÓN OPTIMIZADA VERSIÓN 4.0: Captura los problemas en formato estándar unificado
+    // SOLUCIÓN OPTIMIZADA VERSIÓN 5.0: Captura los problemas en formato estándar unificado
     function capturarProblemasExactos() {
       console.log("Capturando problemas de suma...");
+      
+      // DIAGNÓSTICO: Imprimir información exacta para depuración
+      console.log(`DIAGNÓSTICO DE PROBLEMAS:
+        - Total problemas en lista: ${problemsList.length}
+        - Total respuestas en historial: ${userAnswersHistory.length}
+        - Respuestas nulas: ${userAnswersHistory.filter(r => r === null).length}
+      `);
       
       const problemasCapturados = [];
       
@@ -1236,7 +1243,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         const respuesta = userAnswersHistory[i];
         const problema = problemsList[i];
         
-        if (!respuesta || !problema) continue;
+        // SOLUCIÓN: No omitir problemas sin respuesta
+        if (!problema) continue; // Solo omitimos si no hay problema (no debería ocurrir)
+        
+        // Si no hay respuesta, creamos una respuesta "sin contestar" para visualización
+        // pero NO lo contamos como correcto
+        const esRespuestaNula = !respuesta;
         
         // Extraer operandos de manera segura
         let operandoA = 0;
