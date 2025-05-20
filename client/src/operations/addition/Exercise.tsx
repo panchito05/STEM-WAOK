@@ -1327,7 +1327,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           },
           time: timer
         }
-          level: finalLevel,
           score: {
             correct: puntajeCorregido,
             total: problemsList.length

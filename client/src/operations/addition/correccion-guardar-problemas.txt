@@ -1,0 +1,51 @@
+// Esta función debe reemplazar el bloque problemático en Exercise.tsx
+// El bloque comienza después de "const problemasCapturados = capturarProblemasExactos();"
+
+// Capturar los problemas exactamente como se muestran en la UI
+const problemasCapturados = capturarProblemasExactos();
+
+// Guardar los datos del ejercicio con un formato estandarizado
+saveExerciseResult({
+  operationId: "addition",
+  date: new Date().toISOString(),
+  score: puntajeCorregido,
+  totalProblems: problemsList.length,
+  timeSpent: timer,
+  difficulty: finalLevel as string,
+  
+  // Estadísticas precisas
+  accuracy: Math.round((puntajeCorregido / problemsList.length) * 100),
+  avgTimePerProblem: avgTimePerProblem,
+  avgAttempts: avgAttemptsValue,
+  revealedAnswers: revealedAnswers,
+  
+  // Datos extra con estructura clara
+  extra_data: {
+    // Metadatos para trazabilidad
+    version: "4.0",
+    timestamp: Date.now(),
+    exerciseId: `addition_${Date.now()}`,
+    
+    // Almacenar los problemas en TODAS las ubicaciones conocidas para compatibilidad
+    problemDetails: problemasCapturados,
+    problems: problemasCapturados,
+    mathProblems: problemasCapturados,
+    problemas: problemasCapturados,
+    exactProblems: problemasCapturados,
+    capturedProblems: problemasCapturados,
+    
+    // Incluir información específica del tipo de ejercicio
+    exerciseType: "addition",
+    
+    // Incluir resumen para facilitar acceso rápido
+    summary: {
+      operation: "addition",
+      level: finalLevel,
+      score: {
+        correct: puntajeCorregido,
+        total: problemsList.length
+      },
+      time: timer
+    }
+  }
+});
