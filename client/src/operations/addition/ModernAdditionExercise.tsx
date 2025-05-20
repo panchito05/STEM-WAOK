@@ -54,6 +54,22 @@ const Exercise: React.FC = () => {
     updateAnswer(value);
   };
   
+  // Manejar retroceso secuencial (botón >) que permite borrar dígitos y saltar entre contenedores
+  const handleSequentialBackspace = () => {
+    // Si el estado actual del componente es una cadena vacía, podemos informar al contexto
+    // de que queremos retroceder al contenedor anterior (si es que estamos usando contenedores)
+    if (state.currentAnswer === '') {
+      // Aquí podríamos implementar lógica adicional para saltar entre contenedores de dígitos
+      // Por ahora, simplemente enviamos un evento de retroceso al contexto
+      console.log("Retroceso secuencial activado - contenedor vacío");
+      // Como este componente no usa contenedores múltiples, no necesitamos hacer nada más
+    } else {
+      // Si hay texto, borramos el último caracter (mismo comportamiento que handleNumberClick)
+      const updatedAnswer = String(state.currentAnswer).slice(0, -1);
+      updateAnswer(updatedAnswer);
+    }
+  };
+  
   // Manejar envío de respuesta
   const handleSubmit = () => {
     const isCorrect = submitAnswer();
@@ -163,19 +179,14 @@ const Exercise: React.FC = () => {
         />
       ) : (
         <>
-          {/* Teclado numérico con retroceso secuencial */}
+          {/* Teclado numérico */}
           <NumericKeypad 
             onNumberClick={handleNumberClick} 
             onSubmit={handleSubmit}
             disabled={!state.isActive}
             answer={state.currentAnswer}
             allowDecimals={currentProblem.allowDecimals || false}
-            onSequentialBackspace={() => {
-              // Implementar lógica para retroceder entre campos
-              console.log("Retroceso secuencial activado");
-              // Aquí se podría implementar la navegación entre contenedores
-              // pero depende de la implementación del contexto
-            }}
+            onSequentialBackspace={handleSequentialBackspace}
           />
           
           {/* Botones de ayuda */}
