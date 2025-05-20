@@ -1010,7 +1010,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
     const newProblemsArray: AdditionProblem[] = [];
     for (let i = 0; i < settings.problemCount; i++) {
-      newProblemsArray.push(generateAdditionProblem(difficultyToUse));
+      const problem = generateAdditionProblem(difficultyToUse);
+      // Agregar información de índice y total a cada problema
+      problem.index = i;
+      problem.total = settings.problemCount;
+      newProblemsArray.push(problem);
     }
     setProblemsList(newProblemsArray);
     setCurrentProblemIndex(0);
@@ -2410,6 +2414,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             
             // Generar un nuevo problema
             const newProblem = generateAdditionProblem(settings.difficulty);
+            // Agregar información sobre la posición y total de problemas
+            newProblem.index = currentProblemIndex;
+            newProblem.total = settings.problemCount;
             setCurrentProblem(newProblem);
             
             // Avanzar el contador de problemas si es necesario

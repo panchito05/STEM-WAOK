@@ -16,6 +16,8 @@ export interface AdditionProblem {
   layout: ExerciseLayout;   // Formato de visualización
   answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
   answerDecimalPosition?: number; // Posición del decimal en la respuesta (si aplica)
+  index?: number;           // Índice del problema en la secuencia (para mostrar Problema X de Y)
+  total?: number;           // Total de problemas en el ejercicio
 }
 
 // Tipo genérico para un operando

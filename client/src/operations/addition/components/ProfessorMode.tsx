@@ -191,8 +191,13 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             <Move className="h-4 w-4 text-blue-600" />
           </button>
           
-          {/* Problem display */}
+          {/* Problem display with information about attempts and problem count */}
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
+            {/* Contador de problema e intentos */}
+            <div className="flex justify-between mb-2 text-xs font-medium text-gray-600">
+              <span>Problema {problem.index + 1} de {problem.total}</span>
+              <span>Intentos: {attempts}/{settings.maxAttempts}</span>
+            </div>
             {renderProblem()}
           </div>
           
