@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 
 // Definir los diferentes modos de herramientas
-type ToolMode = 'pen' | 'eraser' | 'line';
+type ToolMode = 'pen' | 'eraser' | 'highlighter' | 'line';
 
 interface DrawingCanvasProps {
   width?: number;
@@ -229,7 +229,10 @@ export function DrawingCanvas({
         context.globalCompositeOperation = 'source-over';
         
         // Ajustar grosor según la herramienta
-        if (tool === 'pen') {
+        if (tool === 'highlighter') {
+          setActiveWidth(15);
+          setActiveColor('#ffff0080'); // Amarillo transparente
+        } else if (tool === 'pen') {
           setActiveWidth(3);
           setActiveColor(darkMode ? '#ffffff' : '#333333');
         } else if (tool === 'line') {
