@@ -1,24 +1,35 @@
-// types.ts - Definición de tipos para el módulo de suma
+// types.ts - Tipos compartidos para el módulo de suma
 
-// Define los niveles de dificultad posibles
+// Niveles de dificultad disponibles
 export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
 
-// Define el tipo de problema de suma
+// Estructura de un problema de suma
 export interface Problem {
-  id: number;
-  operands: number[];
-  result: number;
-  explanation?: string;
-  difficultyLevel: DifficultyLevel;
-  hasRegrouping?: boolean;
-  problemType?: string;
+  id?: string;
+  operands?: number[];
+  correctAnswer?: any; // Puede ser string o number
+  answerMaxDigits?: number;
+  answerDecimalPosition?: number;
+  displayText?: string;
+  operacion?: string;
+  tipo?: string;
 }
 
-// Define la configuración del ejercicio
-export interface ExerciseSettings {
+// Estructura de respuesta del usuario
+export interface UserAnswer {
+  userAnswer: any; // Puede ser string o number
+  isCorrect: boolean;
+  problem?: string;
+  attempts?: number;
+  status?: string;
+  problemId?: string;
+}
+
+// Configuración del módulo de suma
+export interface ModuleSettings {
   difficulty: DifficultyLevel;
   problemCount: number;
-  timeLimit: 'none' | 'global' | 'per-problem';
+  timeLimit: string;
   timeValue: number;
   maxAttempts: number;
   showImmediateFeedback: boolean;
@@ -28,57 +39,20 @@ export interface ExerciseSettings {
   enableCompensation: boolean;
   enableRewards: boolean;
   rewardType: string;
-  language: 'spanish' | 'english';
+  language: string;
 }
 
-// Define la respuesta del usuario para un problema
-export interface UserAnswer {
-  problemId: number;
-  problem: string;
-  userAnswer: string;
-  correctAnswer: string;
-  isCorrect: boolean;
-  attempt: number;
-  timeTaken: number;
-  pointsEarned: number;
-}
-
-// Define los resultados del ejercicio
-export interface ExerciseResults {
+// Estructura de resultados para guardar en el historial
+export interface ExerciseResult {
+  operationId: string;
+  date: string;
+  score: number;
   totalProblems: number;
-  correctAnswers: number;
-  wrongAnswers: number;
-  skippedAnswers: number;
-  timeOutAnswers: number;
-  totalPoints: number;
+  timeSpent: number;
+  difficulty: string;
   accuracy: number;
-  totalTimeTaken: number;
-  averageTimePerProblem: number;
-  userAnswers: UserAnswer[];
-  difficulty: DifficultyLevel;
-  levelsImproved?: number;
-}
-
-// Define el estado actual del ejercicio
-export enum ExerciseState {
-  LOADING = 'loading',
-  READY = 'ready',
-  IN_PROGRESS = 'in_progress',
-  REVIEW_PROBLEM = 'review_problem',
-  COMPLETED = 'completed',
-}
-
-// Define el resultado de la compensación adaptativa
-export interface CompensationResult {
-  compensated: boolean;
-  newPoints: number;
-  bonusPoints: number;
-  reason: string;
-}
-
-// Define la información para la retroalimentación del nivel
-export interface LevelFeedback {
-  previousLevel: string;
-  newLevel: string;
-  consecutiveCorrectAnswers: number;
+  avgTimePerProblem: number;
+  avgAttempts: number;
+  revealedAnswers: number;
+  extra_data: Record<string, any>;
 }

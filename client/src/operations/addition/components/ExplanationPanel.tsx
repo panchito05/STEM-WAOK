@@ -1,100 +1,110 @@
 // ExplanationPanel.tsx - Componente para mostrar explicaciones de problemas
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Problem } from '../types';
-import { useTranslation } from '../hooks/useTranslation';
+import { AlertCircle, ArrowRight } from 'lucide-react';
 
 interface ExplanationPanelProps {
   problem: Problem;
-  isVisible: boolean;
+  onClose: () => void;
 }
 
-/**
- * Componente que muestra una explicación detallada del problema actual
- */
-export function ExplanationPanel({ problem, isVisible }: ExplanationPanelProps) {
-  const { t } = useTranslation();
-  
-  if (!isVisible) {
-    return null;
-  }
+const ExplanationPanel: React.FC<ExplanationPanelProps> = ({ problem, onClose }) => {
+  const operands = problem.operands || [];
+  const firstOperand = operands[0] || 0;
+  const secondOperand = operands[1] || 0;
   
   return (
-    <Card className="mt-4 bg-blue-50 border-blue-200 shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xl text-blue-700">
-          {t('exercise.help')}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col space-y-2">
-          <p className="text-gray-700">
-            {problem.explanation || 
-              `${t('exercise.explanation')}: ${problem.operands[0]} + ${problem.operands[1]} = ${problem.result}`}
-          </p>
-          
-          {/* Visualización paso a paso de la suma */}
-          {problem.hasRegrouping && (
-            <div className="mt-2 pt-3 border-t border-blue-200">
-              <h4 className="font-medium text-blue-700 mb-2">
-                {t('exercise.stepByStep')}:
-              </h4>
-              <div className="font-mono bg-white p-3 rounded-md shadow-sm">
-                <div className="flex flex-col items-end">
-                  <div className="text-xs text-gray-500 mb-1">
-                    {getCarryMarks(problem.operands[0], problem.operands[1])}
-                  </div>
-                  <div className="mb-1">
-                    {problem.operands[0]}
-                  </div>
-                  <div className="flex items-center mb-1">
-                    <span className="mr-1">+</span>
-                    <span>{problem.operands[1]}</span>
-                  </div>
-                  <div className="border-t border-gray-400 pt-1">
-                    {problem.result}
-                  </div>
+    <div className="explanation-panel bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
+      <div className="flex items-center mb-3">
+        <AlertCircle className="h-5 w-5 text-amber-600 mr-2" />
+        <h3 className="text-lg font-semibold text-amber-800">Explicación</h3>
+      </div>
+      
+      <div className="explanation-content space-y-3">
+        <p className="text-gray-700">
+          Para sumar <span className="font-bold">{firstOperand}</span> y <span className="font-bold">{secondOperand}</span>, 
+          podemos seguir estos pasos:
+        </p>
+        
+        {firstOperand >= 10 || secondOperand >= 10 ? (
+          // Explicación para números de 2 o más dígitos
+          <div className="steps space-y-2">
+            {/* Descomposición de números */}
+            <div className="step bg-white p-3 rounded border border-amber-100">
+              <p className="text-sm font-medium text-amber-800 mb-1">Paso 1: Descomponer los números</p>
+              <div className="flex items-center">
+                <div className="text-gray-700">
+                  {firstOperand} = {Math.floor(firstOperand/10)*10} + {firstOperand % 10}
+                </div>
+              </div>
+              <div className="flex items-center mt-1">
+                <div className="text-gray-700">
+                  {secondOperand} = {Math.floor(secondOperand/10)*10} + {secondOperand % 10}
                 </div>
               </div>
             </div>
-          )}
+            
+            {/* Suma de unidades */}
+            <div className="step bg-white p-3 rounded border border-amber-100">
+              <p className="text-sm font-medium text-amber-800 mb-1">Paso 2: Sumar las unidades</p>
+              <div className="flex items-center">
+                <div className="text-gray-700">
+                  {firstOperand % 10} + {secondOperand % 10} = {(firstOperand % 10) + (secondOperand % 10)}
+                </div>
+              </div>
+            </div>
+            
+            {/* Suma de decenas */}
+            <div className="step bg-white p-3 rounded border border-amber-100">
+              <p className="text-sm font-medium text-amber-800 mb-1">Paso 3: Sumar las decenas</p>
+              <div className="flex items-center">
+                <div className="text-gray-700">
+                  {Math.floor(firstOperand/10)*10} + {Math.floor(secondOperand/10)*10} = {Math.floor(firstOperand/10)*10 + Math.floor(secondOperand/10)*10}
+                </div>
+              </div>
+            </div>
+            
+            {/* Resultado final */}
+            <div className="step bg-white p-3 rounded border border-green-200">
+              <p className="text-sm font-medium text-green-800 mb-1">Paso 4: Sumar ambos resultados</p>
+              <div className="flex items-center">
+                <div className="text-gray-700">
+                  {Math.floor(firstOperand/10)*10 + Math.floor(secondOperand/10)*10} + {(firstOperand % 10) + (secondOperand % 10)} = {firstOperand + secondOperand}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Explicación simple para números pequeños
+          <div className="simple-explanation bg-white p-3 rounded border border-amber-100">
+            <div className="flex items-center space-x-2">
+              <span className="text-2xl font-bold">{firstOperand}</span>
+              <span className="text-xl">+</span>
+              <span className="text-2xl font-bold">{secondOperand}</span>
+              <ArrowRight className="h-5 w-5 text-amber-500 mx-2" />
+              <span className="text-2xl font-bold text-green-600">{firstOperand + secondOperand}</span>
+            </div>
+            <p className="text-gray-600 mt-2">
+              Al sumar {firstOperand} unidades más {secondOperand} unidades, obtenemos un total de {firstOperand + secondOperand} unidades.
+            </p>
+          </div>
+        )}
+        
+        <div className="conclusion mt-3">
+          <p className="text-gray-700">
+            La respuesta correcta es: <span className="font-bold text-green-600">{firstOperand + secondOperand}</span>
+          </p>
         </div>
-      </CardContent>
-    </Card>
+        
+        <button 
+          onClick={onClose}
+          className="w-full mt-2 py-2 px-4 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded transition-colors"
+        >
+          Entendido
+        </button>
+      </div>
+    </div>
   );
-}
+};
 
-/**
- * Genera las marcas de llevada para la visualización paso a paso
- */
-function getCarryMarks(a: number, b: number): string {
-  let carry = 0;
-  let carryMarks = '';
-  
-  const aStr = a.toString();
-  const bStr = b.toString();
-  const maxLength = Math.max(aStr.length, bStr.length);
-  
-  // Añadir espacios a la izquierda para alinear
-  const paddedLen = maxLength + 1; // +1 para el espacio adicional
-  
-  for (let i = 0; i < maxLength; i++) {
-    const digitAIndex = aStr.length - 1 - i;
-    const digitBIndex = bStr.length - 1 - i;
-    
-    const digitA = digitAIndex >= 0 ? parseInt(aStr[digitAIndex]) : 0;
-    const digitB = digitBIndex >= 0 ? parseInt(bStr[digitBIndex]) : 0;
-    
-    const sum = digitA + digitB + carry;
-    carry = sum >= 10 ? 1 : 0;
-    
-    // Añadir la marca de llevada si es necesario
-    if (carry > 0) {
-      carryMarks = '1' + carryMarks;
-    } else {
-      carryMarks = ' ' + carryMarks;
-    }
-  }
-  
-  return carryMarks.padStart(paddedLen, ' ');
-}
+export default ExplanationPanel;

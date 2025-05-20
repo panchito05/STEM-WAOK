@@ -1,5 +1,4 @@
-// Importar la versión refactorizada del ejercicio de suma
-import Exercise from "./ModernAdditionExercise";
+import Exercise from "./Exercise";
 import Settings from "./Settings";
 
 export { Exercise, Settings };
