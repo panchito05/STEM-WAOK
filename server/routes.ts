@@ -611,6 +611,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validar datos de progreso
       const validatedProgress = exerciseProgressSchema.parse(req.body);
       
+      // MEJORA: Asegurar que los problemas se guarden correctamente
+      // Preservar la estructura completa de extra_data si existe
+      if (validatedProgress.extra_data) {
+        console.log("💾 Guardando datos extra con problemas:", 
+          validatedProgress.extra_data.problems?.length || 0, "problemas");
+        
+        // Crear campo problemDetails para compatibilidad
+        if (!validatedProgress.problemDetails && validatedProgress.extra_data.problems) {
+          validatedProgress.problemDetails = validatedProgress.extra_data.problems;
+        }
+      }
+      
       // Guardar progreso
       const newProgress = await storage.insertProgressForChildProfile(profileId, validatedProgress);
       

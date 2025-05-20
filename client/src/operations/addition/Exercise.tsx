@@ -1225,9 +1225,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
     
-    // SOLUCIÓN MEJORADA: Captura los problemas en formato estándar para toda la aplicación
+    // SOLUCIÓN OPTIMIZADA VERSIÓN 2.0: Captura los problemas en formato estándar para toda la aplicación
     function capturarProblemasExactos() {
-      console.log("📸 Capturando problemas con formato estándar...");
+      console.log("📸 Capturando problemas con formato estándar (V2.0)...");
       
       // Array para almacenar los problemas con formato compatible
       const problemasCapturas = [];
@@ -1240,7 +1240,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (!respuesta || !problema) continue;
         
         // Formatear el problema exactamente como se muestra en pantalla
-        const textoProblema = `${problema.operands[0]} + ${problema.operands[1]} = ${problema.correctAnswer}`;
+        // Verificamos que existan los operandos o usamos operand1 y operand2 como alternativa
+        let operandoA = 0;
+        let operandoB = 0;
+        
+        if (Array.isArray(problema.operands) && problema.operands.length >= 2) {
+          operandoA = problema.operands[0];
+          operandoB = problema.operands[1];
+        } else {
+          // Alternativa para modelos antiguos
+          operandoA = (problema as any).operand1 || 0;
+          operandoB = (problema as any).operand2 || 0;
+        }
+        
+        // Usar la respuesta correcta del problema o calcularla
+        const respuestaCorrecta = problema.correctAnswer || (operandoA + operandoB);
+        
+        // Formatear como texto exacto
+        const textoProblema = `${operandoA} + ${operandoB} = ${respuestaCorrecta}`;
         
         // Nivel como número (1-5)
         const nivelTexto = finalLevel === "beginner" ? "1" : 
@@ -1258,14 +1275,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           level: nivelTexto,
           attempts: respuesta.attempts ? respuesta.attempts.toString() : "1",
           timeSpent: tiempoPorProblema,
-          info: `Nivel: ${nivelTexto}, Intentos: ${respuesta.attempts || 1}, Tiempo: ${tiempoPorProblema}s`
+          info: `Nivel: ${nivelTexto}, Intentos: ${respuesta.attempts || 1}, Tiempo: ${tiempoPorProblema}s`,
+          userAnswer: respuesta.userAnswer || "",
+          correctAnswer: respuestaCorrecta.toString()
         });
       }
       
-      // Guardar copia en localStorage como respaldo
+      // RESPALDO MÚLTIPLE: Guardar en varias ubicaciones para garantizar recuperación
       try {
         const timestamp = Date.now();
+        
+        // 1. Respaldo principal
         const claveEjercicio = `math_exercise_${timestamp}`;
+        
+        // 2. Respaldo por tipo de operación 
+        const claveOperacion = `operation_addition_${timestamp}`;
+        
+        // 3. Respaldo usando formato estándar
+        const claveEstandar = `backup_problemas_${timestamp}`;
+        
+        // Guardar múltiples respaldos para máxima seguridad
+        localStorage.setItem(claveEstandar, JSON.stringify(problemasCapturas));
+        localStorage.setItem(claveOperacion, JSON.stringify(problemasCapturas));
         
         // Guardar con estructura clara y nombres en español e inglés para mayor compatibilidad
         localStorage.setItem(claveEjercicio, JSON.stringify({
@@ -1315,17 +1346,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // ESTRUCTURA OPTIMIZADA: Contiene todos los campos necesarios para compatibilidad
+      // VERSIÓN 3.0: Estructura mejorada que garantiza compatibilidad universal
       extra_data: {
-        // Versión y timestamp para registro
-        version: "2.0",
+        // Metadatos para mejor trazabilidad
+        version: "3.0",
         timestamp: Date.now(),
+        exerciseId: `addition_${Date.now()}`,
         
-        // Problemas en múltiples formatos para compatibilidad con todas las partes de la aplicación
+        // Problemas en múltiples ubicaciones para máxima compatibilidad
         problems: problemasCapturados,
         mathProblems: problemasCapturados,
         capturedProblems: problemasCapturados,
         problemas: problemasCapturados,
+        problemDetails: problemasCapturados, // Campo usado por el servidor
         
         // Información del ejercicio en múltiples formatos
         summary: {
