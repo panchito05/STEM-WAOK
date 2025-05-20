@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 
 // Definir los diferentes modos de herramientas
-type ToolMode = 'pen' | 'eraser' | 'line';
+type ToolMode = 'pen' | 'eraser' | 'highlighter' | 'line';
 
 interface DrawingCanvasProps {
   width?: number;
@@ -140,27 +140,8 @@ export function DrawingCanvas({
     }
   };
   
-  // Variable para almacenar el ID del temporizador actual
-  const currentTimerRef = useRef<number | null>(null);
-  
   // Drawing functions
-  const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {    
-    // Si se está mostrando la vista previa, ocultarla inmediatamente
-    if (isShowingPreview) {
-      setIsShowingPreview(false);
-      
-      // Cancelar cualquier temporizador pendiente
-      if (currentTimerRef.current) {
-        clearTimeout(currentTimerRef.current);
-        currentTimerRef.current = null;
-      }
-    }
-    
-    // Cerrar el menú de ajuste de tamaño del borrador al dibujar
-    if (showEraserSizeMenu) {
-      setShowEraserSizeMenu(false);
-    }
-    
+  const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     const context = contextRef.current;
     if (!canvas || !context) return;
@@ -243,115 +224,32 @@ export function DrawingCanvas({
       
       if (tool === 'eraser') {
         context.globalCompositeOperation = 'destination-out';
-        context.lineWidth = eraserSize; // Asegurar que el borrador use el tamaño correcto
         setActiveWidth(eraserSize); // Usar el tamaño de borrador definido
       } else {
         context.globalCompositeOperation = 'source-over';
         
         // Ajustar grosor según la herramienta
-        if (tool === 'pen') {
-          context.lineWidth = 3;
+        if (tool === 'highlighter') {
+          setActiveWidth(15);
+          setActiveColor('#ffff0080'); // Amarillo transparente
+        } else if (tool === 'pen') {
           setActiveWidth(3);
-          const color = darkMode ? '#ffffff' : '#333333';
-          context.strokeStyle = color;
-          setActiveColor(color);
+          setActiveColor(darkMode ? '#ffffff' : '#333333');
         } else if (tool === 'line') {
-          context.lineWidth = 2;
           setActiveWidth(2);
-          context.strokeStyle = '#0000ff';
           setActiveColor('#0000ff');
         }
       }
     }
   };
   
-  // Variable para la imagen de respaldo
-  const backupImageDataRef = useRef<ImageData | null>(null);
-  
-  // Función simplificada para limpiar CUALQUIER vista previa
-  const forceCleanCanvas = () => {
-    console.log("⚠️ LIMPIANDO CANVAS - forceCleanCanvas()");
-    if (!canvasRef.current || !contextRef.current) {
-      console.log("❌ Error: No hay referencias al canvas o al contexto");
-      return;
-    }
-    
-    // Restaurar la configuración original basado en la herramienta actual
-    if (activeTool === 'eraser') {
-      console.log("🧹 Configurando para borrador");
-      contextRef.current.globalCompositeOperation = 'destination-out';
-      contextRef.current.lineWidth = eraserSize;
-    } else {
-      console.log("✏️ Configurando para lápiz");
-      contextRef.current.globalCompositeOperation = 'source-over';
-      contextRef.current.strokeStyle = activeColor;
-      contextRef.current.lineWidth = activeWidth;
-    }
-    
-    // Si tenemos una imagen de respaldo, restaurarla
-    if (backupImageDataRef.current && contextRef.current) {
-      console.log("🖼️ Restaurando imagen de respaldo");
-      // Limpiar todo el canvas primero
-      contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      
-      // Poner la imagen de respaldo
-      contextRef.current.putImageData(backupImageDataRef.current, 0, 0);
-      console.log("✅ Imagen restaurada correctamente");
-    } else {
-      console.log("⚠️ No hay imagen de respaldo disponible");
-    }
-  };
-  
-  // Estado para controlar la vista previa del borrador
-  const [isShowingPreview, setIsShowingPreview] = useState(false);
-  
-  // Estado para controlar la visibilidad del menú de ajuste de tamaño
-  const [showEraserSizeMenu, setShowEraserSizeMenu] = useState(true);
-  
   // Función para cambiar el tamaño del borrador
   const changeEraserSize = (size: number) => {
-    // Actualizar el tamaño del borrador en el estado
     setEraserSize(size);
-    
-    // Actualizar el tamaño en el contexto si está activo el borrador
-    if (contextRef.current) {
-      contextRef.current.lineWidth = size;
-      if (activeTool === 'eraser') {
-        setActiveWidth(size);
-      }
+    if (activeTool === 'eraser' && contextRef.current) {
+      setActiveWidth(size);
     }
-    
-    // Mostrar vista previa como un elemento HTML separado
-    setIsShowingPreview(true);
-    
-    // Aseguramos que el menú se mantenga abierto al ajustar el tamaño
-    setShowEraserSizeMenu(true);
-    
-    // Limpiar cualquier temporizador anterior
-    if (currentTimerRef.current) {
-      clearTimeout(currentTimerRef.current);
-    }
-    
-    // Establecer un temporizador para ocultar la vista previa después de 1 segundo
-    currentTimerRef.current = window.setTimeout(() => {
-      setIsShowingPreview(false);
-      currentTimerRef.current = null;
-    }, 1500);
   };
-  
-  // Asegurarse de limpiar al cambiar herramientas y limpiar temporizadores al desmontar
-  useEffect(() => {
-    forceCleanCanvas();
-    
-    // Cleanup function al desmontar el componente
-    return () => {
-      console.log("🧹 Limpiando temporizador al desmontar componente");
-      if (currentTimerRef.current) {
-        clearTimeout(currentTimerRef.current);
-        currentTimerRef.current = null;
-      }
-    };
-  }, [activeTool]);
   
   // Función para cambiar color
   const changeColor = (color: string) => {
@@ -367,17 +265,7 @@ export function DrawingCanvas({
   // Función para alternar entre modo claro y oscuro
   const toggleDarkMode = () => {
     saveCanvasState();
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    
-    // Comunica el cambio de modo oscuro al documento para que otros componentes puedan reaccionar
-    document.documentElement.classList.toggle('canvas-dark-mode', newDarkMode);
-    
-    // Emitir un evento personalizado para que componentes padres puedan saber del cambio
-    const event = new CustomEvent('canvasDarkModeChange', { 
-      detail: { darkMode: newDarkMode } 
-    });
-    document.dispatchEvent(event);
+    setDarkMode(!darkMode);
   };
   
   return (
@@ -394,22 +282,6 @@ export function DrawingCanvas({
         onTouchEnd={stopDrawing}
         style={{ touchAction: 'none' }}
       />
-      
-      {/* Vista previa del tamaño del borrador */}
-      {isShowingPreview && activeTool === 'eraser' && (
-        <div 
-          className="absolute"
-          style={{
-            top: '50px',
-            left: '100px',
-            width: `${eraserSize}px`,
-            height: `${eraserSize}px`,
-            borderRadius: '50%',
-            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-            pointerEvents: 'none' // Para que no interfiera con los eventos del canvas
-          }}
-        />
-      )}
       
       {/* Barra de herramientas */}
       <div className={`absolute top-20 left-4 flex flex-col gap-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-2 rounded-lg shadow`}>
@@ -437,7 +309,7 @@ export function DrawingCanvas({
         </button>
         
         {/* Control deslizante para el tamaño del borrador */}
-        {activeTool === 'eraser' && showEraserSizeMenu && (
+        {activeTool === 'eraser' && (
           <div className={`w-full px-1 py-2 ${darkMode ? 'text-white' : 'text-gray-700'}`}>
             <p className="text-xs mb-1 text-center">Tamaño: {eraserSize}</p>
             <input 
@@ -451,7 +323,16 @@ export function DrawingCanvas({
           </div>
         )}
         
-
+        {/* Marcador */}
+        <button
+          onClick={() => setTool('highlighter')}
+          className={`p-2 rounded-full ${activeTool === 'highlighter' ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+          title="Marcador"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 11l6 6 M6 18l-3 3 M12 6l6 6 M4 18L18 4"></path>
+          </svg>
+        </button>
       </div>
       
       {/* Selector de colores con modo oscuro integrado */}
