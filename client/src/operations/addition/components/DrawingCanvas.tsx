@@ -142,10 +142,12 @@ export function DrawingCanvas({
   
   // Drawing functions
   const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    // Si hay una vista previa activa, la limpiamos primero
-    if (previewTimerRef.current) {
-      clearTimeout(previewTimerRef.current);
-      previewTimerRef.current = null;
+    // Si hay una vista previa activa, la limpiamos inmediatamente
+    if (hasActivePreview) {
+      if (previewTimerRef.current) {
+        clearTimeout(previewTimerRef.current);
+        previewTimerRef.current = null;
+      }
       clearPreview();
     }
     
@@ -258,6 +260,9 @@ export function DrawingCanvas({
   // Variable para guardar el canvas temporal
   const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
   
+  // Variable global para identificar si hay una vista previa activa
+  const [hasActivePreview, setHasActivePreview] = useState(false);
+  
   // Función para limpiar la vista previa
   const clearPreview = () => {
     if (canvasRef.current && contextRef.current && tempCanvasRef.current) {
@@ -273,6 +278,8 @@ export function DrawingCanvas({
         contextRef.current.globalCompositeOperation = 'destination-out';
         contextRef.current.lineWidth = eraserSize;
       }
+      
+      setHasActivePreview(false);
     }
   };
   
@@ -321,6 +328,9 @@ export function DrawingCanvas({
         contextRef.current.beginPath();
         contextRef.current.arc(100, 50, size / 2, 0, Math.PI * 2);
         contextRef.current.fill();
+        
+        // Indica que hay una vista previa activa
+        setHasActivePreview(true);
         
         // Programa la eliminación automática después de un breve momento
         previewTimerRef.current = window.setTimeout(() => {
