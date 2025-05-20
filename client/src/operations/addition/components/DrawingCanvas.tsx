@@ -484,45 +484,10 @@ export function DrawingCanvas({
     const isAdvancedProblem = operands.length > 2;
     
     if (isAdvancedProblem) {
-      // Para problemas avanzados, mantener un formato consistente con la visualización en pantalla
+      // Para problemas avanzados, dibujar todos los operandos en formato vertical
+      let yOffset = -120; // Empezar más arriba para acomodar más números
       
-      // Calculamos el espaciado horizontal para cada operando
-      const horizontalSpacing = 30;
-      const verticalSpacing = 60;
-      
-      // Primer línea - todos los operandos en formato horizontal (como se muestra en pantalla)
-      let xOffset = -200; // Empezar en el centro-izquierda
-      let yOffset = -120; // Empezar arriba para la visualización horizontal
-      
-      // Primero crear un formato vertical igual que en pantalla
-      for (let i = 0; i < parts.length; i++) {
-        // Dibujar el operando
-        context.fillText(
-          parts[i].intPart, 
-          centerX - 15 + xOffset, 
-          centerY + yOffset
-        );
-        context.fillText('.', centerX + xOffset, centerY + yOffset);
-        context.fillText(parts[i].decPart, centerX + 20 + xOffset, centerY + yOffset);
-        
-        // Espaciado uniforme entre operandos
-        xOffset += 200;
-        
-        // Agregar el signo + entre operandos, excepto el último
-        if (i < parts.length - 1) {
-          context.fillText('+', centerX - 15 + xOffset - 100, centerY + yOffset);
-        } else {
-          // Después del último operando, agregar signo =
-          context.fillText('=', centerX - 15 + xOffset - 100, centerY + yOffset);
-          context.fillText('?', centerX - 15 + xOffset - 30, centerY + yOffset);
-        }
-      }
-      
-      // Segunda presentación: formato vertical tradicional
-      yOffset = 0; // Reiniciar el offset vertical
-      xOffset = 0; // Centrar
-      
-      // Dibujar cada operando en formato vertical
+      // Dibujar todos los operandos excepto el último
       for (let i = 0; i < parts.length - 1; i++) {
         context.fillText(
           parts[i].intPart.padStart(maxIntLength, ' '), 
@@ -531,7 +496,7 @@ export function DrawingCanvas({
         );
         context.fillText('.', decimalXPosition, centerY + yOffset);
         context.fillText(parts[i].decPart, decimalPartXPosition, centerY + yOffset);
-        yOffset += verticalSpacing;
+        yOffset += 60;
       }
       
       // Dibujar el último operando con el signo +
