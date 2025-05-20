@@ -606,17 +606,43 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setConsecutiveCorrectAnswers(newConsecutive);
       setConsecutiveIncorrectAnswers(0);
 
+      // Sistema más robusto para verificar subida de nivel
       if (newConsecutive >= CORRECT_ANSWERS_FOR_LEVEL_UP && settings.enableAdaptiveDifficulty) {
           const difficultiesOrder: DifficultyLevel[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
           const currentLevelIdx = difficultiesOrder.indexOf(adaptiveDifficulty);
+          
+          // Logs detallados para depuración
+          console.log(`[NIVEL] Verificando subida de nivel. Rachas consecutivas: ${newConsecutive}/${CORRECT_ANSWERS_FOR_LEVEL_UP}`);
+          console.log(`[NIVEL] Nivel actual: ${adaptiveDifficulty} (Índice: ${currentLevelIdx}/${difficultiesOrder.length-1})`);
+          
+          // Doble verificación para asegurar que podemos subir de nivel
           if (currentLevelIdx < difficultiesOrder.length - 1) {
               const newLevel = difficultiesOrder[currentLevelIdx + 1];
-              setAdaptiveDifficulty(newLevel);
-              updateModuleSettings("addition", { difficulty: newLevel, enableAdaptiveDifficulty: true });
-              setConsecutiveCorrectAnswers(0); // Reset racha para nuevo nivel
-              setShowLevelUpReward(true);
-              setBlockAutoAdvance(true); // Bloquear avance hasta que se cierre el modal de level up
-              eventBus.emit('levelUp', { previousLevel: adaptiveDifficulty, newLevel });
+              console.log(`[NIVEL] ¡SUBIENDO DE NIVEL! De ${adaptiveDifficulty} a ${newLevel}`);
+              
+              // Primero actualizar localStorage manualmente para asegurar persistencia
+              try {
+                  localStorage.setItem('addition_adaptiveDifficulty', newLevel);
+                  
+                  // Luego actualizar el estado para la UI
+                  setAdaptiveDifficulty(newLevel);
+                  updateModuleSettings("addition", { difficulty: newLevel, enableAdaptiveDifficulty: true });
+                  
+                  // Reiniciar contador de respuestas consecutivas
+                  setConsecutiveCorrectAnswers(0);
+                  localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+                  
+                  // Mostrar recompensa de subida de nivel
+                  setShowLevelUpReward(true);
+                  setBlockAutoAdvance(true);
+                  
+                  // Notificar al sistema de eventos
+                  eventBus.emit('levelUp', { previousLevel: adaptiveDifficulty, newLevel });
+              } catch (error) {
+                  console.error('[ERROR] No se pudo actualizar el nivel:', error);
+              }
+          } else {
+              console.log(`[NIVEL] Ya estás en el nivel máximo (${adaptiveDifficulty})`);
           }
       }
 
