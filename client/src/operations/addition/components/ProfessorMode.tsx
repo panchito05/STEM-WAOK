@@ -119,7 +119,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-gray-900 z-50">
+    <div className="fixed inset-0 bg-white dark:bg-slate-900 z-50">
       {/* Close button X rojo en la parte superior (más pequeño) */}
       <button
         onClick={onClose}
@@ -152,7 +152,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           </button>
           
           {/* Problem display */}
-          <div className="bg-white dark:bg-gray-800 p-4 shadow-sm border border-gray-200 dark:border-gray-700 rounded-md mb-2 dark:text-white">
+          <div className="bg-white dark:bg-slate-800 p-4 shadow-sm border border-gray-200 dark:border-slate-700 rounded-md mb-2 dark:text-white">
             {renderProblem()}
           </div>
           
