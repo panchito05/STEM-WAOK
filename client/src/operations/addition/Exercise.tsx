@@ -1965,7 +1965,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
         <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+              
+              {/* Botón de Recent Exercise History */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-2 text-xs flex items-center gap-1"
+                  >
+                    <History className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Historial</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-center text-xl font-bold">
+                      Historial de Ejercicios Recientes
+                    </DialogTitle>
+                  </DialogHeader>
+                  <ExerciseHistoryDialog />
+                </DialogContent>
+              </Dialog>
+            </div>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
