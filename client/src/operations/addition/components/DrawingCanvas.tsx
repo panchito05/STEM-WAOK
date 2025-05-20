@@ -476,20 +476,26 @@ export function DrawingCanvas({
     // Dibujar los operandos alineados
     let yOffset = -40;
     
+    // Posición del signo + (muy a la izquierda)
+    const signXPosition = centerX - (maxIntLength * 35) - 20;
+    
+    // Posición del punto decimal (más a la derecha)
+    const decimalXPosition = centerX + 10;
+    const decimalPartXPosition = centerX + 40;
+    
     // Dibujar primer operando
     context.fillText(
       parts[0].intPart.padStart(maxIntLength, ' '), 
       centerX - 15, 
       centerY + yOffset
     );
-    context.fillText('.', centerX, centerY + yOffset);
-    context.fillText(parts[0].decPart, centerX + 30, centerY + yOffset);
+    context.fillText('.', decimalXPosition, centerY + yOffset);
+    context.fillText(parts[0].decPart, decimalPartXPosition, centerY + yOffset);
     
     // Dibujar operador + y segundo operando
     yOffset += 60;
     context.textAlign = 'right';
     // Poner el signo + completamente a la izquierda alineado con el margen
-    const signXPosition = centerX - (maxIntLength * 30) - 10;  // Posición mucho más a la izquierda
     context.fillText('+', signXPosition, centerY + yOffset);
     // Mantener la alineación para los números
     
@@ -498,14 +504,14 @@ export function DrawingCanvas({
       centerX - 15, 
       centerY + yOffset
     );
-    context.fillText('.', centerX, centerY + yOffset);
-    context.fillText(parts[1].decPart, centerX + 30, centerY + yOffset);
+    context.fillText('.', decimalXPosition, centerY + yOffset);
+    context.fillText(parts[1].decPart, decimalPartXPosition, centerY + yOffset);
     
-    // Dibujar línea
+    // Dibujar línea - extendida hasta el signo +
     yOffset += 40;
     context.beginPath();
-    context.moveTo(centerX - (maxIntLength * 18), centerY + yOffset);
-    context.lineTo(centerX + 50, centerY + yOffset);
+    context.moveTo(signXPosition - 10, centerY + yOffset); // Extender hasta el signo +
+    context.lineTo(decimalPartXPosition + 30, centerY + yOffset); // Extender a la derecha también
     context.stroke();
     
     // Restaurar configuraciones originales
