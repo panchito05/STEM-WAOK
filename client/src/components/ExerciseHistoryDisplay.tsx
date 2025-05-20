@@ -84,9 +84,9 @@ const ExerciseHistoryDisplay: React.FC<ExerciseHistoryDisplayProps> = ({ exercis
     );
   }
 
-  // Renderizar cada problema con barra de desplazamiento
+  // Renderizar cada problema
   return (
-    <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+    <div className="space-y-2">
       {problems.map((problem, idx) => {
         // Determinar si el problema fue respondido correctamente
         const isCorrect = problem.isCorrect || problem.status === "correct";
