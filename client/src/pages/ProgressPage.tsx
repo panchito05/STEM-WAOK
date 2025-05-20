@@ -21,6 +21,8 @@ export default function ProgressPage() {
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());
   const [selectedExercise, setSelectedExercise] = useState<ExerciseResult | null>(null);
   const [localExerciseHistory, setLocalExerciseHistory] = useState<any[]>([]);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Obtener el parámetro tab de la URL para seleccionar la pestaña inicial
   const [activeTab, setActiveTab] = useState(() => {
@@ -325,13 +327,56 @@ export default function ProgressPage() {
             </TabsContent>
 
             <TabsContent value="detailed">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Barra de búsqueda */}
+              <div className="mb-6">
+                <div className="flex flex-col md:flex-row gap-4 items-center">
+                  <div className="relative w-full md:w-64">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                      </svg>
+                    </div>
+                    <input 
+                      type="text" 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full pl-10 p-2.5" 
+                      placeholder="Buscar módulos..." 
+                    />
+                  </div>
+                  
+                  {expandedCard && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setExpandedCard(null)}
+                      className="ml-auto"
+                    >
+                      Ver todos los módulos
+                    </Button>
+                  )}
+                </div>
+              </div>
+              
+              <div className={`grid ${expandedCard ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'} gap-6`}>
                 {operationModules
                   .filter(module => !module.comingSoon)
+                  .filter(module => 
+                    searchTerm === '' || 
+                    module.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    module.id.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
                   .map(module => {
                     const progress = moduleProgress[module.id];
+                    const isExpanded = expandedCard === module.id;
+                    
+                    // Si hay una tarjeta expandida y no es esta, no mostrar esta tarjeta
+                    if (expandedCard && !isExpanded) return null;
+                    
                     return (
-                      <Card key={module.id} className="overflow-hidden transition-all">
+                      <Card 
+                        key={module.id} 
+                        className={`overflow-hidden transition-all ${isExpanded ? 'col-span-full' : ''}`}
+                      >
                         <div
                           className="flex justify-between items-center p-4 border-b border-gray-200 relative overflow-hidden"
                           style={{
@@ -363,6 +408,31 @@ export default function ProgressPage() {
                                 {module.displayName}
                               </h3>
                             </div>
+                          </div>
+                          
+                          {/* Botones de expandir/contraer */}
+                          <div className="flex space-x-2">
+                            {isExpanded ? (
+                              <button 
+                                onClick={() => setExpandedCard(null)} 
+                                className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white"
+                                title="Minimizar"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={() => setExpandedCard(module.id)} 
+                                className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white"
+                                title="Expandir"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                                </svg>
+                              </button>
+                            )}
                           </div>
                         </div>
                         <CardContent className="p-5 bg-gradient-to-b from-white to-blue-50">
