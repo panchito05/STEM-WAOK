@@ -11,6 +11,7 @@ import { format, parseISO, subDays } from "date-fns";
 import { operationModules } from "@/utils/operationComponents";
 import { Loader2, RefreshCw, Check, X } from "lucide-react";
 import ProblemRenderer, { MathProblem } from "../components/ProblemRenderer";
+import AdditionProblemRenderer from '../components/AdditionProblemRenderer';
 
 export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, refreshProgress, isLoading } = useProgress();
