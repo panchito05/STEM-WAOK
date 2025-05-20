@@ -54,17 +54,22 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
   // Verificar que el score no sea mayor que totalProblems
   const validScore = Math.min(score, totalProblems);
   
-  // Asegurar que totalProblems refleje el número real de problemas
+  // Asegurar que totalProblems refleje el número real de problemas completados
+  // El userAnswers debe contener TODOS los problemas del ejercicio
   const actualTotalProblems = userAnswers.length;
   
-  // Usar el máximo entre totalProblems y actualTotalProblems para asegurar precisión
-  const finalTotalProblems = Math.max(totalProblems, actualTotalProblems);
+  // SOLUCIÓN: Corregimos para garantizar que totalProblems sea exacto
+  // Utilizamos el parámetro totalProblems directamente que se pasa desde el componente principal
+  // Ya que este valor representa la cantidad correcta de problemas generados
+  const finalTotalProblems = totalProblems;
   
   // Más logs para diagnóstico después del cálculo
-  console.log('ResultsBoard - Valores calculados:', {
+  console.log('ResultsBoard - Valores calculados (CORREGIDO):', {
     validScore,
     actualTotalProblems,
-    finalTotalProblems
+    totalProblemsOriginal: totalProblems,
+    finalTotalProblems,
+    userAnswersLongitud: userAnswers.length
   });
   
   // Calcular porcentaje de aciertos con valores corregidos
