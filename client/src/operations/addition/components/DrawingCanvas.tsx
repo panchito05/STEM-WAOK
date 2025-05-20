@@ -45,6 +45,8 @@ export function DrawingCanvas({
   const eraserSize = eraserSizes[eraserSizeIndex];
   // Estado para mostrar el indicador visual del borrador
   const [showEraserIndicator, setShowEraserIndicator] = useState<boolean>(false);
+  // Estado para mostrar un mensaje temporal del tamaño
+  const [showSizeMessage, setShowSizeMessage] = useState<boolean>(false);
   
   // Referencias para optimización de dibujo
   const lastPoint = useRef<Point | null>(null);
@@ -211,6 +213,13 @@ export function DrawingCanvas({
     if (activeTool === 'eraser' && contextRef.current) {
       contextRef.current.lineWidth = eraserSizes[newIndex];
     }
+    
+    // Mostrar mensaje temporal con el tamaño
+    setShowSizeMessage(true);
+    // Ocultar después de 2 segundos
+    setTimeout(() => {
+      setShowSizeMessage(false);
+    }, 2000);
   };
   
   const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -375,22 +384,46 @@ export function DrawingCanvas({
     }
   };
   
-  // Botón adicional para cambiar el tamaño del borrador
-  const EraserSizeButton = () => {
+  // Panel de selección de tamaños de borrador
+  const EraserSizePanel = () => {
     return (
-      <button
-        onClick={changeEraserSize}
-        className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
-        title="Cambiar tamaño del borrador"
-      >
-        <div className="flex flex-col items-center">
-          <div className="text-xs font-bold">{eraserSize}px</div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M8 12h8" />
-          </svg>
+      <div className="flex flex-col gap-2">
+        {/* Título */}
+        <div className="text-xs font-bold text-center mb-1">Tamaño del borrador</div>
+        
+        {/* Botones de tamaño */}
+        <div className="flex justify-between gap-1">
+          {eraserSizes.map((size, index) => (
+            <button
+              key={size}
+              onClick={() => {
+                setEraserSizeIndex(index);
+                if (activeTool === 'eraser' && contextRef.current) {
+                  contextRef.current.lineWidth = size;
+                }
+                
+                // Mostrar mensaje temporal con el tamaño
+                setShowSizeMessage(true);
+                // Ocultar después de 2 segundos
+                setTimeout(() => {
+                  setShowSizeMessage(false);
+                }, 2000);
+              }}
+              className={`p-1 rounded-full flex items-center justify-center ${
+                eraserSizeIndex === index 
+                  ? 'bg-blue-500 text-white' 
+                  : darkMode 
+                    ? 'bg-gray-700 hover:bg-gray-600' 
+                    : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+              title={`Borrador de ${size}px`}
+              style={{ width: '36px', height: '36px' }}
+            >
+              <div className="text-xs font-bold">{size}px</div>
+            </button>
+          ))}
         </div>
-      </button>
+      </div>
     );
   };
   
@@ -467,11 +500,14 @@ export function DrawingCanvas({
               width: `${eraserSize}px`,
               height: `${eraserSize}px`,
             }}
-          >
-            {/* Mostrar tamaño del borrador */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-70 text-white text-xs px-1 rounded">
-              {eraserSize}px
-            </div>
+          />
+        )}
+        
+        {/* Mensaje temporal del tamaño del borrador */}
+        {showSizeMessage && activeTool === 'eraser' && (
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-80 text-white text-2xl px-6 py-4 rounded-lg z-50 flex flex-col items-center shadow-lg">
+            <div className="text-xl font-bold mb-1">Tamaño del borrador</div>
+            <div className="text-4xl font-bold">{eraserSize}px</div>
           </div>
         )}
       </div>
@@ -501,8 +537,12 @@ export function DrawingCanvas({
           </svg>
         </button>
         
-        {/* Botón para cambiar tamaño del borrador (solo visible cuando el borrador está activo) */}
-        {activeTool === 'eraser' && <EraserSizeButton />}
+        {/* Panel de selección de tamaños de borrador (solo visible cuando el borrador está activo) */}
+        {activeTool === 'eraser' && (
+          <div className="mt-2 border-t pt-2 border-gray-200 dark:border-gray-700">
+            <EraserSizePanel />
+          </div>
+        )}
         
 
         
