@@ -472,17 +472,29 @@ export default function ProgressPage() {
                                     <div className="bg-blue-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Score</p>
                                       <p className="text-center text-lg font-bold text-blue-600">
-                                        {exercise.score}/{exercise.totalProblems}
+                                        {/* Mostrar correctamente el score teniendo en cuenta las respuestas reveladas */}
+                                        {Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/{exercise.totalProblems}
                                       </p>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Accuracy</p>
                                       <p className="text-center text-lg font-bold text-green-600">
-                                        {exercise.score && exercise.totalProblems ?
-                                          `${Math.round((exercise.score / exercise.totalProblems) * 100)}%` :
-                                          exercise.extraData?.accuracy ? 
-                                            `${Math.round(exercise.extraData.accuracy)}%` : 
-                                            '0%'}
+                                        {(() => {
+                                          // Obtener el número de respuestas reveladas
+                                          const revealed = exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0;
+                                          // Calcular problemas intentados (excluyendo los revelados)
+                                          const attemptedProblems = exercise.totalProblems - revealed;
+                                          
+                                          // Calcular accuracy excluyendo respuestas reveladas
+                                          if (attemptedProblems > 0) {
+                                            // Restar las respuestas reveladas del score para accuracy
+                                            const correctAnswers = Math.max(0, exercise.score - revealed);
+                                            return `${Math.round((correctAnswers / attemptedProblems) * 100)}%`;
+                                          } else if (exercise.extraData?.accuracy) {
+                                            return `${Math.round(exercise.extraData.accuracy)}%`;
+                                          }
+                                          return '0%';
+                                        })()}
                                       </p>
                                     </div>
                                     <div className="bg-purple-50 p-3 rounded-md">
