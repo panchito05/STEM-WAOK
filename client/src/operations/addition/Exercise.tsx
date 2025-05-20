@@ -1225,7 +1225,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
     
-    // SOLUCIÓN OPTIMIZADA VERSIÓN 2.0: Captura los problemas en formato estándar para toda la aplicación
+    // Función mejorada para capturar los problemas exactamente como se muestran
     function capturarProblemasExactos() {
       console.log("Capturando problemas de suma...");
       
@@ -1283,37 +1283,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }
       
       return problemasCapturados;
-          fecha: new Date().toISOString(),
-          date: new Date().toISOString(),
-          operacion: "addition",
-          operation: "addition",
-          nivel: finalLevel,
-          level: finalLevel,
-          puntuacion: {
-            correctas: puntajeCorregido,
-            total: problemsList.length
-          },
-          score: {
-            correct: puntajeCorregido,
-            total: problemsList.length
-          },
-          // Guardar los problemas con múltiples nombres para compatibilidad
-          problems: problemasCapturas,
-          problemas: problemasCapturas
-        }));
-        
-        console.log(`✅ Respaldo completo guardado en localStorage: ${claveEjercicio}`);
-      } catch (error) {
-        console.error("Error al guardar respaldo:", error);
-      }
-      
-      return problemasCapturas;
     }
     
     // Capturar los problemas exactamente como se muestran en la UI
-    const problemasCapturados = capturarProblemasExactos();
-    
-    // Generar problemas capturados con el formato específico para sumas
     const problemasCapturados = capturarProblemasExactos();
     
     // SOLUCIÓN OPTIMIZADA: Guardar datos con formato estándar
