@@ -43,8 +43,17 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
   onRetry,
   onHome
 }) => {
-  // Calcular porcentaje de aciertos
-  const percentage = Math.round((score / totalProblems) * 100);
+  // Verificar que el score no sea mayor que totalProblems
+  const validScore = Math.min(score, totalProblems);
+  
+  // Asegurar que totalProblems refleje el número real de problemas
+  const actualTotalProblems = userAnswers.length;
+  
+  // Usar el máximo entre totalProblems y actualTotalProblems para asegurar precisión
+  const finalTotalProblems = Math.max(totalProblems, actualTotalProblems);
+  
+  // Calcular porcentaje de aciertos con valores corregidos
+  const percentage = Math.round((validScore / finalTotalProblems) * 100);
   
   // Guardar los resultados en el almacenamiento local
   useEffect(() => {
@@ -52,8 +61,8 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
     const resultData = {
       module: 'addition',
       date: new Date().toISOString(),
-      score,
-      totalProblems,
+      score: validScore,
+      totalProblems: finalTotalProblems,
       percentage,
       difficulty,
       timeSpent,
@@ -161,7 +170,7 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
           
           <div className="text-center">
             <div className="text-3xl font-semibold">
-              {score} / {totalProblems}
+              {validScore} / {finalTotalProblems}
             </div>
             <div className="text-sm text-gray-500 mt-1">Problemas correctos</div>
           </div>
