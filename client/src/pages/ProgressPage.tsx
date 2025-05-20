@@ -396,7 +396,7 @@ export default function ProgressPage() {
                             </svg>
                           </div>
 
-                          <div className="flex items-center relative z-10">
+                          <div className="flex items-center justify-between w-full relative z-10">
                             <div className="flex items-center">
                               <div className="mr-3 bg-white/25 p-2 rounded-lg shadow-inner">
                                 {module.icon === "Plus" && <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>}
@@ -408,40 +408,27 @@ export default function ProgressPage() {
                                 {module.displayName}
                               </h3>
                             </div>
-                          </div>
-                          
-                          {/* Botones de expandir/contraer */}
-                          <div className="flex space-x-2">
-                            {isExpanded ? (
-                              <Button 
-                                variant="ghost"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setExpandedCard(null);
-                                }}
-                                className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white"
-                                title="Minimizar"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </Button>
-                            ) : (
-                              <Button 
-                                variant="ghost"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  console.log("Expandiendo tarjeta:", module.id);
-                                  setExpandedCard(module.id);
-                                }}
-                                className="p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white"
-                                title="Expandir"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
-                                </svg>
-                              </Button>
-                            )}
+
+                            {/* Botones de expandir/contraer */}
+                            <div>
+                              {isExpanded ? (
+                                <Button 
+                                  variant="secondary"
+                                  onClick={() => setExpandedCard(null)}
+                                  className="px-3 py-1 bg-white/30 hover:bg-white/40 text-white font-medium text-sm"
+                                >
+                                  Minimizar
+                                </Button>
+                              ) : (
+                                <Button 
+                                  variant="secondary"
+                                  onClick={() => setExpandedCard(module.id)}
+                                  className="px-3 py-1 bg-white/30 hover:bg-white/40 text-white font-medium text-sm"
+                                >
+                                  Expandir
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <CardContent className="p-5 bg-gradient-to-b from-white to-blue-50">
