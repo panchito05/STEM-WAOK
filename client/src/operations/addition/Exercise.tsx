@@ -1286,7 +1286,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
 
-    // SOLUCIÓN OPTIMIZADA VERSIÓN 5.0: Captura los problemas en formato estándar unificado
+    // SOLUCIÓN OPTIMIZADA VERSIÓN 6.0: Captura los problemas en formato estándar unificado
     function capturarProblemasExactos() {
       console.log("Capturando problemas de suma...");
       
@@ -1297,6 +1297,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         - Respuestas nulas: ${userAnswersHistory.filter(r => r === null).length}
       `);
       
+      // FIX CRÍTICO: Verificamos si hay respuestas pendientes y las actualizamos
+      // Esto asegura que todas las respuestas estén actualizadas antes de capturar los problemas
+      if (currentProblem && currentProblemIndex < problemsList.length) {
+        const currentAnswer = digitAnswers.join("");
+        console.log(`⚠️ Último problema - Estado antes de captura:`, {
+          índice: currentProblemIndex,
+          problema: currentProblem.id,
+          respuestaActual: currentAnswer,
+          existeEnHistorial: userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"
+        });
+        
+        if (currentAnswer && currentAnswer.length > 0) {
+          // Verificar si el último problema tiene respuesta pendiente de registrar
+          const existingAnswer = userAnswersHistory[currentProblemIndex];
+          if (!existingAnswer) {
+            console.log("⚠️ ALERTA: Detectada respuesta sin registrar - Registrando inmediatamente");
+            
+            // Crear y registrar la respuesta
+            const isCorrect = parseFloat(currentAnswer) === currentProblem.correctAnswer;
+            userAnswersHistory[currentProblemIndex] = {
+              problemId: currentProblem.id,
+              problem: currentProblem,
+              userAnswer: parseFloat(currentAnswer),
+              isCorrect: isCorrect,
+              status: isCorrect ? 'correct' : 'incorrect',
+              attempts: currentAttempts || 1,
+              timestamp: Date.now()
+            };
+            
+            console.log("✅ Respuesta registrada para problema:", currentProblem.id);
+          }
+        }
+      }
+      
       const problemasCapturados = [];
       
       // Procesar cada problema completado
@@ -1306,6 +1340,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // SOLUCIÓN: No omitir problemas sin respuesta
         if (!problema) continue; // Solo omitimos si no hay problema (no debería ocurrir)
+        
+        // DIAGNÓSTICO: Detectar problemas sin respuesta en tiempo real
+        if (!respuesta) {
+          console.log(`⚠️ Problema #${i+1} sin respuesta registrada:`, problema.id);
+        }
         
         // Si no hay respuesta, creamos una respuesta "sin contestar" para visualización
         // pero NO lo contamos como correcto
