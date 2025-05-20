@@ -62,46 +62,46 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   
   // Format the problem for display
   const renderProblem = () => {
-    if (showVerticalFormat && problem.operands.length === 2) {
-      // Vertical format (for addition with 2 operands)
-      const firstOperand = problem.operands[0];
-      const secondOperand = problem.operands[1];
+    // Siempre mostrar formato vertical mejorado para cualquier número de operandos
+    if (showVerticalFormat) {
+      // Formatear todos los operandos como strings con decimales
+      const formattedOperands = problem.operands.map(op => op.toFixed(1));
       
-      // Convertir operandos a strings con formato
-      const firstOperandStr = firstOperand.toFixed(1);
-      const secondOperandStr = secondOperand.toFixed(1);
+      // Dividir cada operando en parte entera y decimal
+      const parts = formattedOperands.map(str => {
+        const [intPart, decPart = '0'] = str.split('.');
+        return { intPart, decPart };
+      });
       
-      // Calcular ancho máximo para alinear (para puntos decimales)
-      const firstParts = firstOperandStr.split('.');
-      const secondParts = secondOperandStr.split('.');
-      
-      // Obtener partes enteras y decimales
-      const firstInt = firstParts[0];
-      const firstDec = firstParts[1] || '0';
-      const secondInt = secondParts[0];
-      const secondDec = secondParts[1] || '0';
-      
-      // Calcular máximo de caracteres para cada parte
-      const maxIntWidth = Math.max(firstInt.length, secondInt.length);
-      
-      // Crear strings alineados
-      const paddedFirstInt = firstInt.padStart(maxIntWidth, ' ');
-      const paddedSecondInt = secondInt.padStart(maxIntWidth, ' ');
+      // Calcular el ancho máximo de la parte entera para alinear correctamente
+      const maxIntWidth = Math.max(...parts.map(p => p.intPart.length));
       
       return (
-        <div className="font-mono text-2xl whitespace-pre">
-          <div className="text-right">{paddedFirstInt}.{firstDec}</div>
+        <div className="font-mono text-xl whitespace-pre">
+          {/* Mostrar todos los operandos excepto el último */}
+          {parts.slice(0, -1).map((part, idx) => (
+            <div key={idx} className="text-right">
+              {part.intPart.padStart(maxIntWidth, ' ')}.{part.decPart}
+            </div>
+          ))}
+          
+          {/* Mostrar el último operando con el signo + */}
           <div className="flex items-center justify-end">
             <span className="mr-2">+</span>
-            <span>{paddedSecondInt}.{secondDec}</span>
+            <span>
+              {parts[parts.length - 1].intPart.padStart(maxIntWidth, ' ')}.
+              {parts[parts.length - 1].decPart}
+            </span>
           </div>
+          
+          {/* Línea divisoria */}
           <div className="border-t border-black mt-1 w-full"></div>
         </div>
       );
     } else {
-      // Horizontal format (fallback)
+      // Formato horizontal (alternativa)
       return (
-        <div className="font-mono text-2xl">
+        <div className="font-mono text-xl">
           {problem.operands.map((op, index) => (
             <React.Fragment key={index}>
               <span>{op.toFixed(1)}</span>
