@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Problem } from '../types';
 import { Check, X } from 'lucide-react';
-import NumberDuplicator from './NumberDuplicator';
-import ClickableNumber from './ClickableNumber';
 
 export interface ProblemDisplayProps {
   problem: Problem;
@@ -20,31 +18,6 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   isAnswered = false,
   isCorrect = false
 }) => {
-  const [showDuplicator, setShowDuplicator] = useState(false);
-  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
-  
-  // Función para manejar el clic en un número y duplicarlo
-  const handleNumberClick = () => {
-    console.log("Número clickeado, mostrando duplicador");
-    // Extraer solo los valores numéricos de los operandos
-    const numberValues = problem.operands.map(op => op.value);
-    
-    // Calcular el resultado si no está proporcionado
-    let calculatedResult = 0;
-    // Sumar todos los operandos para obtener el resultado
-    problem.operands.forEach(op => {
-      calculatedResult += op.value;
-    });
-    
-    // Añadir el resultado como último número
-    numberValues.push(calculatedResult);
-    
-    // Activar el duplicador con los números
-    setSelectedNumbers(numberValues);
-    setShowDuplicator(true);
-    
-    console.log("Números a mostrar:", numberValues);
-  };
   // Función para formatear un número
   const formatNumber = (num: number): string => {
     return num.toLocaleString();
@@ -62,10 +35,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             ) : (
               <span className="mr-4 border-t border-black dark:border-white pt-1">+</span>
             )}
-            <ClickableNumber
-              value={op.value}
-              onClick={handleNumberClick}
-            />
+            <span>{formatNumber(op.value)}</span>
           </div>
         ))}
         
@@ -91,19 +61,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
           {/* Mostrar operandos separados por + */}
           {problem.operands.map((op, index) => (
             <React.Fragment key={index}>
-              <div className="relative">
-                <button 
-                  className="text-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700"
-                  onClick={() => handleNumberClick()}
-                  title="Haz clic para ver en grande"
-                  aria-label="Ver número en grande"
-                >
-                  {formatNumber(op.value)}
-                </button>
-                <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                  👁️
-                </div>
-              </div>
+              <span className="text-lg">{formatNumber(op.value)}</span>
               {index < problem.operands.length - 1 && (
                 <span className="mx-2 text-lg">+</span>
               )}
@@ -124,8 +82,9 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   const renderWordProblem = () => {
     // Crear una descripción del problema basada en los operandos
     const description = problem.operands.map((op, index) => {
-      // Usar valor directamente ya que no todas las implementaciones tienen etiqueta
-      return formatNumber(op.value);
+      return op.label ? 
+        `${formatNumber(op.value)} ${op.label}` : 
+        formatNumber(op.value);
     }).join(' + ');
     
     return (
@@ -165,25 +124,6 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             )}
           </div>
         )}
-        
-        {/* Botón específico para mostrar los números duplicados */}
-        <div className="mt-4 flex justify-center">
-          <button
-            onClick={handleNumberClick}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-colors flex items-center space-x-2"
-            aria-label="Ver números en grande"
-          >
-            <span role="img" aria-label="Ver">👁️</span>
-            <span>Ver números en grande</span>
-          </button>
-        </div>
-        
-        {/* Duplicador de números que aparece al hacer clic */}
-        <NumberDuplicator 
-          numbers={selectedNumbers} 
-          visible={showDuplicator} 
-          onClose={() => setShowDuplicator(false)} 
-        />
       </div>
     </div>
   );
