@@ -1737,9 +1737,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     let currentFocus = focusedDigitIndex;
     const maxDigits = currentProblem.answerMaxDigits;
 
-    if (value === "backspace") {
-      handleBackspace();
-    } else if (/[0-9]/.test(value)) {
+    if (/[0-9]/.test(value)) {
       newAnswers[currentFocus] = value;
       if (inputDirection === 'rtl') {
         if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
@@ -2227,6 +2225,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
                 if (key === "sequential_backspace") {
                   handleSequentialBackspace();
+                } else if (key === "backspace") {
+                  handleBackspace();
                 } else {
                   handleDigitInput(key);
                 }
