@@ -48,13 +48,13 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
               <span className="mr-4 border-t border-black dark:border-white pt-1">+</span>
             )}
             <button 
-              className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700 flex items-center gap-1 relative group"
+              className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700 flex items-center justify-between"
               onClick={() => handleNumberClick()}
               title="Haz clic para ver en grande" 
               aria-label="Ver número en grande"
             >
               {formatNumber(op.value)}
-              <span className="text-xs text-blue-500 ml-1 bg-blue-100 dark:bg-blue-900 rounded p-1 absolute -top-2 -right-2 group-hover:animate-pulse">⇱</span>
+              <span className="text-xs text-blue-500 ml-1">👁️</span>
             </button>
           </div>
         ))}
@@ -82,13 +82,13 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
           {problem.operands.map((op, index) => (
             <React.Fragment key={index}>
               <button 
-                className="text-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700 flex items-center gap-1 relative group"
+                className="text-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700 flex items-center justify-between"
                 onClick={() => handleNumberClick()}
                 title="Haz clic para ver en grande"
                 aria-label="Ver número en grande"
               >
                 {formatNumber(op.value)}
-                <span className="text-xs text-blue-500 ml-1 bg-blue-100 dark:bg-blue-900 rounded p-1 absolute -top-2 -right-2 group-hover:animate-pulse">⇱</span>
+                <span className="text-xs text-blue-500 ml-1">👁️</span>
               </button>
               {index < problem.operands.length - 1 && (
                 <span className="mx-2 text-lg">+</span>
