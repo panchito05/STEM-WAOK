@@ -1,7 +1,13 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 
 // Definir los diferentes modos de herramientas
 type ToolMode = 'pen' | 'eraser' | 'highlighter' | 'line';
+
+// Punto para optimización del dibujo
+interface Point {
+  x: number;
+  y: number;
+}
 
 interface DrawingCanvasProps {
   width?: number;
@@ -32,6 +38,11 @@ export function DrawingCanvas({
   
   // Estado para tamaño del borrador
   const [eraserSize, setEraserSize] = useState<number>(15);
+  
+  // Referencias para optimización de dibujo
+  const lastPoint = useRef<Point | null>(null);
+  const pointsQueue = useRef<Point[]>([]);
+  const animationFrameId = useRef<number | null>(null);
   
   // Estado para guardar la imagen del canvas antes de cambiar herramientas
   const canvasImageRef = useRef<string | null>(null);
@@ -140,35 +151,51 @@ export function DrawingCanvas({
     }
   };
   
-  // Drawing functions
-  const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
+  // Función optimizada para dibujar usando requestAnimationFrame
+  const drawPointsOptimized = useCallback(() => {
     const context = contextRef.current;
-    if (!canvas || !context) return;
+    const points = pointsQueue.current;
     
-    setIsDrawing(true);
-    
-    // Get the correct coordinates
-    let x: number, y: number;
-    
-    if ('touches' in event) {
-      // Touch event
-      const rect = canvas.getBoundingClientRect();
-      x = event.touches[0].clientX - rect.left;
-      y = event.touches[0].clientY - rect.top;
-    } else {
-      // Mouse event
-      const rect = canvas.getBoundingClientRect();
-      x = event.nativeEvent.offsetX;
-      y = event.nativeEvent.offsetY;
+    if (!context || points.length === 0 || !lastPoint.current) {
+      // Si no hay puntos para dibujar, cancelamos la animación
+      animationFrameId.current = null;
+      return;
     }
     
     context.beginPath();
-    context.moveTo(x, y);
-  };
+    context.moveTo(lastPoint.current.x, lastPoint.current.y);
+    
+    // Dibujamos todos los puntos acumulados de una vez para mayor eficiencia
+    for (const point of points) {
+      context.lineTo(point.x, point.y);
+      lastPoint.current = point; // Actualizamos el último punto
+    }
+    
+    context.stroke();
+    
+    // Limpiamos la cola de puntos después de dibujarlos
+    pointsQueue.current = [];
+    
+    // Continuamos la animación si seguimos dibujando
+    if (isDrawing) {
+      animationFrameId.current = requestAnimationFrame(drawPointsOptimized);
+    } else {
+      animationFrameId.current = null;
+    }
+  }, [isDrawing]);
   
-  const draw = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
+  // Cleanup de animación al desmontar
+  useEffect(() => {
+    return () => {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, []);
+
+  // Drawing functions optimizadas
+  const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    event.preventDefault(); // Prevenir comportamiento por defecto
     
     const canvas = canvasRef.current;
     const context = contextRef.current;
@@ -179,7 +206,6 @@ export function DrawingCanvas({
     
     if ('touches' in event) {
       // Touch event
-      event.preventDefault(); // Prevent scrolling while drawing
       const rect = canvas.getBoundingClientRect();
       x = event.touches[0].clientX - rect.left;
       y = event.touches[0].clientY - rect.top;
@@ -190,18 +216,70 @@ export function DrawingCanvas({
       y = event.nativeEvent.offsetY;
     }
     
-    context.lineTo(x, y);
-    context.stroke();
+    // Iniciamos el dibujo
+    setIsDrawing(true);
+    context.beginPath();
+    
+    // Guardamos el punto inicial
+    lastPoint.current = { x, y };
+    pointsQueue.current = [];
+    
+    // Iniciamos la animación para dibujo fluido
+    if (!animationFrameId.current) {
+      animationFrameId.current = requestAnimationFrame(drawPointsOptimized);
+    }
+  };
+  
+  const draw = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    event.preventDefault(); // Prevenir scrolling y comportamientos por defecto
+    
+    if (!isDrawing) return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    // Get the correct coordinates
+    let x: number, y: number;
+    
+    if ('touches' in event) {
+      // Touch event
+      const rect = canvas.getBoundingClientRect();
+      x = event.touches[0].clientX - rect.left;
+      y = event.touches[0].clientY - rect.top;
+    } else {
+      // Mouse event
+      const rect = canvas.getBoundingClientRect();
+      x = event.nativeEvent.offsetX;
+      y = event.nativeEvent.offsetY;
+    }
+    
+    // Añadimos el punto a la cola para ser dibujado en el próximo frame
+    pointsQueue.current.push({ x, y });
+    
+    // Nos aseguramos de que la animación esté activa
+    if (!animationFrameId.current) {
+      animationFrameId.current = requestAnimationFrame(drawPointsOptimized);
+    }
   };
   
   const stopDrawing = () => {
     if (!isDrawing) return;
     
-    const context = contextRef.current;
-    if (!context) return;
+    // Dibujamos los puntos restantes
+    if (pointsQueue.current.length > 0) {
+      drawPointsOptimized();
+    }
     
-    context.closePath();
+    // Finalizamos el dibujo
+    const context = contextRef.current;
+    if (context) {
+      context.closePath();
+    }
+    
     setIsDrawing(false);
+    
+    // Guardamos el estado del canvas después de terminar el trazo
+    saveCanvasState();
   };
   
   // Expose clear method
