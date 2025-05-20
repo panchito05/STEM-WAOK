@@ -19,19 +19,29 @@ const ClickableNumber: React.FC<ClickableNumberProps> = ({
   };
 
   return (
-    <button
-      className="relative group cursor-pointer bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900 border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 transition-all duration-200 transform hover:scale-105 active:scale-95"
+    <div 
+      className="relative inline-block"
       onClick={onClick}
-      title="Haz clic para ver este número en grande"
-      aria-label="Ver número en grande"
+      style={{ cursor: 'pointer' }}
     >
-      <span className="font-mono">{formatNumber(value)}</span>
+      <div
+        className="relative group bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900 border border-gray-300 dark:border-gray-700 rounded-md px-4 py-2 transition-colors"
+      >
+        {/* Número formateado */}
+        <span className="font-mono text-xl font-bold">{formatNumber(value)}</span>
+        
+        {/* Área ampliada para mejor clickabilidad */}
+        <div className="absolute inset-0" title="Haz clic para ver este número en grande"></div>
+      </div>
       
-      {/* Icono indicador flotante */}
+      {/* Indicador visual de que es clickeable */}
       <div className="absolute -top-2 -right-2 flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full shadow-md text-xs animate-pulse">
         <span role="img" aria-label="Ver">👁️</span>
       </div>
-    </button>
+
+      {/* Área adicional extendida para mejorar clickabilidad */}
+      <div className="absolute inset-0 cursor-pointer z-10" aria-label="Ver número en grande"></div>
+    </div>
   );
 };
 

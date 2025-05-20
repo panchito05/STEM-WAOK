@@ -148,10 +148,13 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
     <div className="w-full">
       {/* Contenido principal del problema */}
       <div className="relative">
-        {/* Mostrar el problema según su formato */}
-        {problem.displayFormat === 'vertical' && renderVertical()}
-        {problem.displayFormat === 'horizontal' && renderHorizontal()}
-        {problem.displayFormat === 'word' && renderWordProblem()}
+        {/* Envolvemos todo el problema con un área clickeable */}
+        <div onClick={handleNumberClick} className="cursor-pointer">
+          {/* Mostrar el problema según su formato */}
+          {problem.displayFormat === 'vertical' && renderVertical()}
+          {problem.displayFormat === 'horizontal' && renderHorizontal()}
+          {problem.displayFormat === 'word' && renderWordProblem()}
+        </div>
         
         {/* Mostrar indicador de correcto/incorrecto cuando se ha respondido */}
         {isAnswered && (
