@@ -1968,27 +1968,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <div className="flex items-center gap-2">
               <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
               
-              {/* Botón de Recent Exercise History */}
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="ml-2 text-xs flex items-center gap-1"
-                  >
-                    <History className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Historial</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-center text-xl font-bold">
-                      Historial de Ejercicios Recientes
-                    </DialogTitle>
-                  </DialogHeader>
-                  <ExerciseHistoryDialog />
-                </DialogContent>
-              </Dialog>
+              {/* Botón de acceso directo a la página de Progress/Historial */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="ml-2 text-xs flex items-center gap-1"
+                onClick={() => {
+                  // Guardar el estado actual si es necesario
+                  if (exerciseStarted && !exerciseCompleted) {
+                    localStorage.setItem("addition_exercise_state", JSON.stringify({
+                      timer,
+                      currentProblemIndex,
+                      adaptiveDifficulty
+                    }));
+                  }
+                  // Redirigir a la página de progreso
+                  window.location.href = "/progress";
+                }}
+              >
+                <History className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Historial</span>
+              </Button>
             </div>
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
