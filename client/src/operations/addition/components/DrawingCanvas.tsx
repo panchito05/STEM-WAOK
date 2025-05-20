@@ -84,8 +84,8 @@ export function DrawingCanvas({
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    // For high resolution screens
-    const dpr = window.devicePixelRatio || 1;
+    // For high resolution screens - using a higher DPR for better quality
+    const dpr = Math.max(window.devicePixelRatio || 1, 2); // Usar al menos 2x para mejor calidad
     const rect = canvas.getBoundingClientRect();
     
     // Guarda el estado actual antes de resetear el canvas
@@ -93,13 +93,25 @@ export function DrawingCanvas({
       saveCanvasState();
     }
     
+    // Establecer tamaños físicos del canvas (buffer de renderizado)
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
+    
+    // Mantener el tamaño de visualización CSS para alineación correcta
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
     
     const context = canvas.getContext('2d');
     if (!context) return;
     
+    // Escalar el contexto para el ratio de píxeles
     context.scale(dpr, dpr);
+    
+    // Configurar antialiasing para texto más nítido
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'high';
+    
+    // Configurar otros aspectos del trazo
     context.lineCap = 'round';
     context.strokeStyle = activeColor;
     context.lineWidth = activeWidth;
@@ -122,7 +134,8 @@ export function DrawingCanvas({
       const canvas = canvasRef.current;
       if (!canvas || !contextRef.current) return;
       
-      const dpr = window.devicePixelRatio || 1;
+      // Usar un DPR mayor para mejor calidad
+      const dpr = Math.max(window.devicePixelRatio || 1, 2);
       const rect = canvas.getBoundingClientRect();
       
       // Save the current drawing
@@ -130,18 +143,28 @@ export function DrawingCanvas({
       const img = new Image();
       
       img.onload = () => {
+        // Actualizar dimensiones físicas del canvas
         canvas.width = rect.width * dpr;
         canvas.height = rect.height * dpr;
+        
+        // Mantener dimensiones visuales CSS
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
         
         const context = contextRef.current;
         if (!context) return;
         
         context.scale(dpr, dpr);
+        
+        // Mejorar calidad de renderizado
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        
         context.lineCap = 'round';
         context.strokeStyle = strokeColor;
         context.lineWidth = strokeWidth;
         
-        // Restore the previous drawing
+        // Restore the previous drawing - ajustar para escala
         context.drawImage(img, 0, 0, rect.width, rect.height);
       };
       
