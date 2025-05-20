@@ -406,6 +406,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [waitingForContinue, setWaitingForContinue] = useState(false);
   const waitingRef = useRef(waitingForContinue); // Ref para el estado de waitingForContinue
   const continueButtonRef = useRef<HTMLButtonElement | null>(null); // Ref para el botón Continuar
+  const [problemStartTime, setProblemStartTime] = useState<number>(0); // Tiempo de inicio para cada problema
 
   const [blockAutoAdvance, setBlockAutoAdvance] = useState(false);
   const [autoContinue, setAutoContinue] = useState(() => {
