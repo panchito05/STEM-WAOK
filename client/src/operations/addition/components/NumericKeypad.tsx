@@ -8,6 +8,7 @@ export interface NumericKeypadProps {
   disabled?: boolean;
   answer: string | number;
   allowDecimals?: boolean;
+  onSequentialBackspace?: () => void;
 }
 
 /**
@@ -18,7 +19,8 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
   onSubmit,
   disabled = false,
   answer = '',
-  allowDecimals = false
+  allowDecimals = false,
+  onSequentialBackspace
 }) => {
   // Manejar click en números
   const handleNumberClick = (value: string | number) => {
@@ -53,6 +55,22 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
     // Eliminar el último carácter
     const newValue = String(answer).slice(0, -1);
     onNumberClick(newValue);
+  };
+  
+  // Manejar click en retroceso secuencial (borra y salta al anterior contenedor)
+  const handleSequentialBackspace = () => {
+    if (disabled) return;
+    
+    // Si hay texto para borrar, borramos un caracter
+    if (answer) {
+      // Eliminar el último carácter
+      const newValue = String(answer).slice(0, -1);
+      onNumberClick(newValue);
+    } 
+    // Si ya no hay texto y existe la función para saltar al contenedor anterior
+    else if (onSequentialBackspace) {
+      onSequentialBackspace();
+    }
   };
   
   // Manejar click en enviar
@@ -151,18 +169,14 @@ const NumericKeypad: React.FC<NumericKeypadProps> = ({
         </Button>
         
         {/* Fila 4 */}
-        {allowDecimals ? (
-          <Button
-            variant="outline"
-            className="h-12 text-lg font-medium"
-            onClick={() => handleNumberClick('.')}
-            disabled={disabled}
-          >
-            .
-          </Button>
-        ) : (
-          <div></div> // Espacio vacío si no se permiten decimales
-        )}
+        <Button
+          variant="outline"
+          className="h-12 text-lg font-medium bg-red-50 text-red-600 hover:bg-red-100"
+          onClick={handleSequentialBackspace}
+          disabled={disabled}
+        >
+          <span className="text-xl font-bold">&gt;</span>
+        </Button>
         <Button
           variant="outline"
           className="h-12 text-lg font-medium"
