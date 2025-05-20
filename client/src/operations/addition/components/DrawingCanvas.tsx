@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { ProblemViewer } from './ProblemViewer';
+import { AdditionProblem } from '../types';
 
 // Definir los diferentes modos de herramientas
-type ToolMode = 'pen' | 'eraser';
+type ToolMode = 'pen' | 'eraser' | 'problem-view';
 
 // Punto para optimización del dibujo
 interface Point {
@@ -16,6 +18,7 @@ interface DrawingCanvasProps {
   strokeWidth?: number;
   className?: string;
   onClear?: () => void;
+  currentProblem?: any; // Problema actual para mostrar en la vista ampliada
 }
 
 export function DrawingCanvas({
@@ -25,7 +28,8 @@ export function DrawingCanvas({
   strokeWidth = 3,
   className = '',
   onClear,
-  position = 'right' // Nueva propiedad para posicionar los controles: 'left' o 'right'
+  position = 'right', // Nueva propiedad para posicionar los controles: 'left' o 'right'
+  currentProblem = null
 }: DrawingCanvasProps & { position?: 'left' | 'right' }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -47,6 +51,9 @@ export function DrawingCanvas({
   const [showEraserIndicator, setShowEraserIndicator] = useState<boolean>(false);
   // Estado para mostrar un mensaje temporal del tamaño
   const [showSizeMessage, setShowSizeMessage] = useState<boolean>(false);
+  
+  // Estado para mostrar el visualizador del problema
+  const [showProblemViewer, setShowProblemViewer] = useState<boolean>(false);
   
   // Referencias para optimización de dibujo
   const lastPoint = useRef<Point | null>(null);
