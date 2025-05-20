@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { useTheme } from '@/context/ThemeContext';
 
 // Definir los diferentes modos de herramientas
 type ToolMode = 'pen' | 'eraser' | 'line';
@@ -29,10 +28,7 @@ export function DrawingCanvas({
   const [activeColor, setActiveColor] = useState<string>(strokeColor);
   const [activeWidth, setActiveWidth] = useState<number>(strokeWidth);
   const [activeTool, setActiveTool] = useState<ToolMode>('pen');
-  
-  // Obtener el tema actual del contexto global
-  const { theme, toggleTheme } = useTheme();
-  const isDarkTheme = theme === 'dark';
+  const [darkMode, setDarkMode] = useState<boolean>(false);
   
   // Estado para tamaño del borrador
   const [eraserSize, setEraserSize] = useState<number>(15);
@@ -256,7 +252,7 @@ export function DrawingCanvas({
         if (tool === 'pen') {
           context.lineWidth = 3;
           setActiveWidth(3);
-          const color = isDarkTheme ? '#ffffff' : '#333333';
+          const color = darkMode ? '#ffffff' : '#333333';
           context.strokeStyle = color;
           setActiveColor(color);
         } else if (tool === 'line') {
@@ -368,17 +364,27 @@ export function DrawingCanvas({
     }
   };
   
-  // Función para alternar entre modo claro y oscuro - ahora delega al ThemeContext
-  const handleThemeToggle = () => {
+  // Función para alternar entre modo claro y oscuro
+  const toggleDarkMode = () => {
     saveCanvasState();
-    toggleTheme(); // Usa la función del contexto ThemeContext
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    
+    // Comunica el cambio de modo oscuro al documento para que otros componentes puedan reaccionar
+    document.documentElement.classList.toggle('canvas-dark-mode', newDarkMode);
+    
+    // Emitir un evento personalizado para que componentes padres puedan saber del cambio
+    const event = new CustomEvent('canvasDarkModeChange', { 
+      detail: { darkMode: newDarkMode } 
+    });
+    document.dispatchEvent(event);
   };
   
   return (
     <div className={`drawing-canvas-container relative ${className}`}>
       <canvas
         ref={canvasRef}
-        className={`drawing-canvas cursor-crosshair ${isDarkTheme ? 'bg-slate-900' : 'bg-white'} w-full h-full`}
+        className={`drawing-canvas cursor-crosshair ${darkMode ? 'bg-gray-900' : 'bg-white'} w-full h-full`}
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
@@ -399,18 +405,18 @@ export function DrawingCanvas({
             width: `${eraserSize}px`,
             height: `${eraserSize}px`,
             borderRadius: '50%',
-            backgroundColor: isDarkTheme ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
             pointerEvents: 'none' // Para que no interfiera con los eventos del canvas
           }}
         />
       )}
       
       {/* Barra de herramientas */}
-      <div className={`absolute top-20 left-4 flex flex-col gap-2 ${isDarkTheme ? 'bg-slate-800 text-white' : 'bg-white'} p-2 rounded-lg shadow`}>
+      <div className={`absolute top-20 left-4 flex flex-col gap-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-white'} p-2 rounded-lg shadow`}>
         {/* Lápiz */}
         <button
           onClick={() => setTool('pen')}
-          className={`p-2 rounded-full ${activeTool === 'pen' ? 'bg-blue-500 text-white' : isDarkTheme ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+          className={`p-2 rounded-full ${activeTool === 'pen' ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
           title="Lápiz"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -421,7 +427,7 @@ export function DrawingCanvas({
         {/* Borrador con un solo botón */}
         <button
           onClick={() => setTool('eraser')}
-          className={`p-2 rounded-full ${activeTool === 'eraser' ? 'bg-blue-500 text-white' : isDarkTheme ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'}`}
+          className={`p-2 rounded-full ${activeTool === 'eraser' ? 'bg-blue-500 text-white' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}
           title="Borrador"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -432,7 +438,7 @@ export function DrawingCanvas({
         
         {/* Control deslizante para el tamaño del borrador */}
         {activeTool === 'eraser' && showEraserSizeMenu && (
-          <div className={`w-full px-1 py-2 ${isDarkTheme ? 'text-white' : 'text-gray-700'}`}>
+          <div className={`w-full px-1 py-2 ${darkMode ? 'text-white' : 'text-gray-700'}`}>
             <p className="text-xs mb-1 text-center">Tamaño: {eraserSize}</p>
             <input 
               type="range" 
@@ -449,72 +455,63 @@ export function DrawingCanvas({
       </div>
       
       {/* Selector de colores con modo oscuro integrado */}
-      <div className={`absolute top-4 left-4 flex items-center gap-2 ${isDarkTheme ? 'bg-slate-800' : 'bg-white'} p-2 rounded-lg shadow`}>
+      <div className={`absolute top-4 left-4 flex items-center gap-2 ${darkMode ? 'bg-gray-800' : 'bg-white'} p-2 rounded-lg shadow`}>
         {/* Botón de modo oscuro */}
         <button
-          onClick={handleThemeToggle}
-          className={`mr-1 p-1.5 ${isDarkTheme ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-full`}
-          title={isDarkTheme ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+          onClick={toggleDarkMode}
+          className={`mr-1 p-1.5 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-full`}
+          title={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
         >
-          {isDarkTheme ? (
+          {darkMode ? (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+              <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
             </svg>
           ) : (
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
           )}
         </button>
         
         {/* Separador vertical */}
-        <div className={`h-6 w-px ${isDarkTheme ? 'bg-slate-600' : 'bg-gray-300'}`}></div>
+        <div className={`h-6 w-px ${darkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
         
-        {/* Colores para dibujo */}
-        {isDarkTheme ? (
-          // Colores para modo oscuro - más brillantes
+        {darkMode ? (
+          // Colores para modo oscuro (pizarra negra)
           <>
-            <button onClick={() => changeColor('#FFFFFF')} className="w-6 h-6 rounded-full bg-white border border-gray-300" title="Blanco"/>
-            <button onClick={() => changeColor('#FF6B6B')} className="w-6 h-6 rounded-full bg-red-400" title="Rojo"/>
-            <button onClick={() => changeColor('#4ECDC4')} className="w-6 h-6 rounded-full bg-teal-400" title="Verde azulado"/>
-            <button onClick={() => changeColor('#FFE66D')} className="w-6 h-6 rounded-full bg-yellow-300" title="Amarillo"/>
-            <button onClick={() => changeColor('#6A8CFF')} className="w-6 h-6 rounded-full bg-blue-400" title="Azul"/>
+            <button onClick={() => changeColor('#ffffff')} className="w-6 h-6 rounded-full bg-white border border-gray-300" title="Blanco"></button>
+            <button onClick={() => changeColor('#00ffff')} className="w-6 h-6 rounded-full bg-cyan-400 border border-gray-300" title="Cian"></button>
+            <button onClick={() => changeColor('#ff00ff')} className="w-6 h-6 rounded-full bg-pink-500 border border-gray-300" title="Magenta"></button>
+            <button onClick={() => changeColor('#ffff00')} className="w-6 h-6 rounded-full bg-yellow-400 border border-gray-300" title="Amarillo"></button>
+            <button onClick={() => changeColor('#00ff00')} className="w-6 h-6 rounded-full bg-green-500 border border-gray-300" title="Verde"></button>
           </>
         ) : (
-          // Colores para modo claro - más oscuros
+          // Colores para modo claro (pizarra blanca)
           <>
-            <button onClick={() => changeColor('#333333')} className="w-6 h-6 rounded-full bg-gray-800" title="Negro"/>
-            <button onClick={() => changeColor('#E74C3C')} className="w-6 h-6 rounded-full bg-red-600" title="Rojo"/>
-            <button onClick={() => changeColor('#16A085')} className="w-6 h-6 rounded-full bg-teal-600" title="Verde azulado"/>
-            <button onClick={() => changeColor('#F39C12')} className="w-6 h-6 rounded-full bg-yellow-600" title="Amarillo"/>
-            <button onClick={() => changeColor('#3498DB')} className="w-6 h-6 rounded-full bg-blue-600" title="Azul"/>
+            <button onClick={() => changeColor('#333333')} className="w-6 h-6 rounded-full bg-gray-800 border border-gray-300" title="Negro"></button>
+            <button onClick={() => changeColor('#ff0000')} className="w-6 h-6 rounded-full bg-red-500 border border-gray-300" title="Rojo"></button>
+            <button onClick={() => changeColor('#0000ff')} className="w-6 h-6 rounded-full bg-blue-500 border border-gray-300" title="Azul"></button>
+            <button onClick={() => changeColor('#00ff00')} className="w-6 h-6 rounded-full bg-green-500 border border-gray-300" title="Verde"></button>
+            <button onClick={() => changeColor('#ffff00')} className="w-6 h-6 rounded-full bg-yellow-400 border border-gray-300" title="Amarillo"></button>
           </>
         )}
       </div>
       
-      {/* Botón Borrar Todo */}
+      {/* Botón para borrar todo */}
       <button
         onClick={clearCanvas}
-        className={`absolute bottom-4 right-4 p-2 ${isDarkTheme ? 'bg-slate-700 hover:bg-slate-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-full shadow`}
+        className={`absolute bottom-4 right-4 p-2 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} rounded-full`}
         title="Borrar todo"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 6h18"></path>
-          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
           <line x1="10" y1="11" x2="10" y2="17"></line>
           <line x1="14" y1="11" x2="14" y2="17"></line>
         </svg>
       </button>
-      
     </div>
   );
 }
+
+export default DrawingCanvas;

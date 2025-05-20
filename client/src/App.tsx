@@ -22,7 +22,6 @@ import { SettingsProvider } from "@/context/SettingsContext";
 import { ProgressProvider } from "@/context/ProgressContext";
 import { ChildProfilesProvider } from "@/context/ChildProfilesContext";
 import { ExerciseProvider } from "@/context/ExerciseContext";
-import { ThemeProvider } from "@/context/ThemeContext";
 import { AccessibleDndContextProvider } from "@/components/AccessibleDndContext";
 import LevelUpHandler from "@/components/LevelUpHandler";
 
@@ -49,25 +48,23 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <ChildProfilesProvider>
-            <SettingsProvider>
-              <ProgressProvider>
-                <ExerciseProvider>
-                  <AccessibleDndContextProvider>
-                    <Layout>
-                      <Router />
-                    </Layout>
-                    <Toaster />
-                    <LevelUpHandler />
-                  </AccessibleDndContextProvider>
-                </ExerciseProvider>
-              </ProgressProvider>
-            </SettingsProvider>
-          </ChildProfilesProvider>
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <ChildProfilesProvider>
+          <SettingsProvider>
+            <ProgressProvider>
+              <ExerciseProvider>
+                <AccessibleDndContextProvider>
+                  <Layout>
+                    <Router />
+                  </Layout>
+                  <Toaster />
+                  <LevelUpHandler />
+                </AccessibleDndContextProvider>
+              </ExerciseProvider>
+            </ProgressProvider>
+          </SettingsProvider>
+        </ChildProfilesProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -3,7 +3,6 @@ import { X, Check, Trash, Move } from 'lucide-react';
 import { AdditionProblem } from '../types';
 import { DrawingCanvas } from './DrawingCanvas';
 import NumericKeypad from './SimpleNumericKeypad';
-import { useTheme } from '@/context/ThemeContext';
 
 interface ProfessorModeProps {
   problem: AdditionProblem;
@@ -22,10 +21,6 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [position, setPosition] = useState<'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'>('topLeft');
   const canvasRef = useRef<any>(null);
-  
-  // Obtener el tema actual del contexto global
-  const { theme } = useTheme();
-  const isDarkTheme = theme === 'dark';
   
   // Reset state when problem changes
   useEffect(() => {
@@ -79,7 +74,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             <span className="mr-2">+</span>
             <span>{secondOperand.toFixed(1)}</span>
           </div>
-          <div className="border-t border-black dark:border-white mt-1 w-full"></div>
+          <div className="border-t border-black mt-1 w-full"></div>
         </div>
       );
     } else {
@@ -124,7 +119,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   return (
-    <div className={`fixed inset-0 ${isDarkTheme ? 'bg-slate-900' : 'bg-white'} z-50`}>
+    <div className="fixed inset-0 bg-white z-50">
       {/* Close button X rojo en la parte superior (más pequeño) */}
       <button
         onClick={onClose}
@@ -150,30 +145,30 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           {/* Move button para cambiar la posición (en el lado izquierdo) */}
           <button
             onClick={rotatePosition}
-            className="absolute top-1 left-1 p-1.5 rounded-full bg-blue-100 dark:bg-blue-700 hover:bg-blue-200 dark:hover:bg-blue-600 transition-colors"
+            className="absolute top-1 left-1 p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
             title="Cambiar posición"
           >
-            <Move className="h-4 w-4 text-blue-600 dark:text-blue-200" />
+            <Move className="h-4 w-4 text-blue-600" />
           </button>
           
           {/* Problem display */}
-          <div className={`${isDarkTheme ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-gray-200 text-gray-900'} p-4 shadow-sm border rounded-md mb-2`}>
+          <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             {renderProblem()}
           </div>
           
           {/* Answer input */}
           <div className="flex items-center mb-2">
-            <div className={`font-medium mr-2 ${isDarkTheme ? 'text-white' : 'text-gray-900'}`}>Respuesta:</div>
+            <div className="font-medium mr-2">Respuesta:</div>
             <div className="flex-1 flex">
-              <div className={`flex-1 ${isDarkTheme ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'} border rounded p-2 text-lg text-center min-h-[40px]`}>
+              <div className="flex-1 bg-white border border-gray-300 rounded p-2 text-lg text-center min-h-[40px]">
                 {userAnswer}
               </div>
               <button
                 onClick={() => setUserAnswer('')}
-                className={`ml-2 p-2 rounded ${isDarkTheme ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-200 hover:bg-gray-100'} border`}
+                className="ml-2 p-2 rounded bg-white border border-gray-200 hover:bg-gray-100"
                 title="Borrar respuesta"
               >
-                <Trash className={`h-4 w-4 ${isDarkTheme ? 'text-gray-300' : 'text-gray-600'}`} />
+                <Trash className="h-4 w-4 text-gray-600" />
               </button>
             </div>
           </div>
@@ -184,7 +179,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             disabled={!userAnswer}
             className={`w-full mb-2 py-3 px-4 rounded-md text-white font-medium text-base
               ${!userAnswer 
-                ? `${isDarkTheme ? 'bg-gray-600' : 'bg-gray-300'} cursor-not-allowed` 
+                ? 'bg-gray-300 cursor-not-allowed' 
                 : isCorrect === null 
                   ? 'bg-blue-600 hover:bg-blue-700' 
                   : isCorrect 
@@ -201,7 +196,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           </button>
           
           {/* Numeric keypad */}
-          <div className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 rounded-md p-2">
+          <div className="bg-white shadow-sm border border-gray-200 rounded-md p-2">
             <NumericKeypad
               onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
               onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
