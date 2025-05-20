@@ -170,10 +170,10 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
               </div>
               <button
                 onClick={() => setUserAnswer('')}
-                className="ml-2 p-2 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
+                className={`ml-2 p-2 rounded ${isDarkTheme ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-200 hover:bg-gray-100'} border`}
                 title="Borrar respuesta"
               >
-                <Trash className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                <Trash className={`h-4 w-4 ${isDarkTheme ? 'text-gray-300' : 'text-gray-600'}`} />
               </button>
             </div>
           </div>
@@ -184,7 +184,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             disabled={!userAnswer}
             className={`w-full mb-2 py-3 px-4 rounded-md text-white font-medium text-base
               ${!userAnswer 
-                ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' 
+                ? `${isDarkTheme ? 'bg-gray-600' : 'bg-gray-300'} cursor-not-allowed` 
                 : isCorrect === null 
                   ? 'bg-blue-600 hover:bg-blue-700' 
                   : isCorrect 
