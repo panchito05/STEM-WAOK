@@ -134,7 +134,12 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       <div className="h-full w-full">
         {/* Full screen drawing canvas as background - expanded to full screen */}
         <div className="absolute inset-0 w-full h-full">
-          <DrawingCanvas width={window.innerWidth} height={window.innerHeight} className="w-full h-full" />
+          <DrawingCanvas 
+            width={window.innerWidth} 
+            height={window.innerHeight} 
+            className="w-full h-full" 
+            position={position.includes('Right') ? 'left' : 'right'} 
+          />
         </div>
         
         {/* Problem and keypad container with dynamic positioning */}
