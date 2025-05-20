@@ -1282,17 +1282,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           problem: `${operandoA} + ${operandoB} = ${respuestaCorrecta}`, // Para compatibilidad
           
           // Información sobre la respuesta del usuario
-          userAnswer: respuesta.userAnswer,
-          isCorrect: respuesta.isCorrect,
-          status: respuesta.status || (respuesta.isCorrect ? "correct" : "incorrect"),
+          // Si no hay respuesta (null), creamos información "no contestado"
+          userAnswer: esRespuestaNula ? null : respuesta.userAnswer,
+          isCorrect: esRespuestaNula ? false : respuesta.isCorrect,
+          status: esRespuestaNula ? "unanswered" : (respuesta.status || (respuesta.isCorrect ? "correct" : "incorrect")),
           
           // Metadatos adicionales
           level: (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty),
-          attempts: respuesta.attempts || currentAttempts || 1,
+          attempts: esRespuestaNula ? 0 : (respuesta.attempts || currentAttempts || 1),
           timeSpent: Math.round(timer / problemsList.length),
           
           // Campo info para visualización rápida
-          info: `Nivel: ${finalLevel}, Intentos: ${respuesta.attempts || 1}, Tiempo: ${Math.round(timer / problemsList.length)}s`
+          info: esRespuestaNula 
+            ? `Nivel: ${finalLevel}, Sin respuesta, Tiempo: ${Math.round(timer / problemsList.length)}s` 
+            : `Nivel: ${finalLevel}, Intentos: ${respuesta.attempts || 1}, Tiempo: ${Math.round(timer / problemsList.length)}s`
         };
         
         problemasCapturados.push(problemaCompleto);
