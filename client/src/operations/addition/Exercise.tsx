@@ -2215,7 +2215,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               variant="outline"
               className={`text-lg sm:text-xl h-11 sm:h-12 ${
                 key === "sequential_backspace" 
-                  ? "bg-red-50 hover:bg-red-100 text-red-600 active:bg-red-200" 
+                  ? "bg-white hover:bg-red-50 text-red-600 active:bg-red-100 shadow-sm" 
                   : key === "" 
                     ? "invisible pointer-events-none" 
                     : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100"
