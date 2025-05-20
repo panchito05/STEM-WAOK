@@ -1288,7 +1288,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas exactamente como se muestran en la UI
     const problemasCapturados = capturarProblemasExactos();
     
-    // SOLUCIÓN OPTIMIZADA: Guardar datos con formato estándar
+    // Guardar datos con formato estándar
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
@@ -1326,14 +1326,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           },
           time: timer
         }
-      }
-      
-      // Datos extra con estructura clara
-      extra_data: {
-        // Metadatos para trazabilidad
-        version: "4.0",
-        timestamp: Date.now(),
-        exerciseId: `addition_${Date.now()}`,
         
         // Almacenar los problemas en una ubicación consistente
         problemDetails: problemasCapturados,
