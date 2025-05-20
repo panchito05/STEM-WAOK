@@ -84,9 +84,9 @@ const ExerciseHistoryDisplay: React.FC<ExerciseHistoryDisplayProps> = ({ exercis
     );
   }
 
-  // Renderizar cada problema
+  // Renderizar cada problema con soporte para scroll cuando hay muchos problemas
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-2">
       {problems.map((problem, idx) => {
         // Determinar si el problema fue respondido correctamente
         const isCorrect = problem.isCorrect || problem.status === "correct";
