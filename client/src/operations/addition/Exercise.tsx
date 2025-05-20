@@ -18,6 +18,7 @@ import { MathProblem } from '../../components/ProblemRenderer';
 import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus from '@/lib/eventBus'; // Eliminado 'on', 'off' ya que no se usan directamente aquí
 import LevelUpHandler from "@/components/LevelUpHandler";
+import { Link } from "wouter";
 import { useRewardsStore, awardReward, getRewardProbability, selectRandomReward } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
 import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
@@ -2001,11 +2002,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                 </span>
                 {/* Botón para ir a la página de progreso/historial */}
-                <Button variant="ghost" size="sm" onClick={() => {
-                  window.location.href = "/progress";
-                }} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                  <History className="h-4 w-4" /> {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
-                </Button>
+                <Link href="/progress">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                    <History className="h-4 w-4" /> {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
+                  </Button>
+                </Link>
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> {currentTranslations.settings}
                 </Button>
