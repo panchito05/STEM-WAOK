@@ -142,14 +142,8 @@ export function DrawingCanvas({
   
   // Drawing functions
   const startDrawing = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    // Si hay una vista previa activa, la limpiamos inmediatamente
-    if (hasActivePreview) {
-      if (previewTimerRef.current) {
-        clearTimeout(previewTimerRef.current);
-        previewTimerRef.current = null;
-      }
-      clearPreview();
-    }
+    // Limpia el canvas de cualquier vista previa
+    forceCleanCanvas();
     
     const canvas = canvasRef.current;
     const context = contextRef.current;
@@ -255,91 +249,82 @@ export function DrawingCanvas({
     }
   };
   
-  // Variable para gestionar el temporizador de visualización
-  const previewTimerRef = useRef<number | null>(null);
-  // Variable para guardar el canvas temporal
-  const tempCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  // Variable para la imagen de respaldo
+  const backupImageDataRef = useRef<ImageData | null>(null);
   
-  // Variable global para identificar si hay una vista previa activa
-  const [hasActivePreview, setHasActivePreview] = useState(false);
-  
-  // Función para limpiar la vista previa
-  const clearPreview = () => {
-    if (canvasRef.current && contextRef.current && tempCanvasRef.current) {
-      // Restaurar imagen original
+  // Función simplificada para limpiar CUALQUIER vista previa
+  const forceCleanCanvas = () => {
+    if (!canvasRef.current || !contextRef.current) return;
+    
+    // Restaurar la configuración original basado en la herramienta actual
+    if (activeTool === 'eraser') {
+      contextRef.current.globalCompositeOperation = 'destination-out';
+      contextRef.current.lineWidth = eraserSize;
+    } else {
+      contextRef.current.globalCompositeOperation = 'source-over';
+      contextRef.current.strokeStyle = activeColor;
+      contextRef.current.lineWidth = activeWidth;
+    }
+    
+    // Si tenemos una imagen de respaldo, restaurarla
+    if (backupImageDataRef.current && contextRef.current) {
+      // Limpiar todo el canvas primero
       contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      const tempCtx = tempCanvasRef.current.getContext('2d');
-      if (tempCtx) {
-        contextRef.current.drawImage(tempCanvasRef.current, 0, 0);
-      }
       
-      // Asegurar que se mantenga la configuración correcta para el borrador
-      if (activeTool === 'eraser') {
-        contextRef.current.globalCompositeOperation = 'destination-out';
-        contextRef.current.lineWidth = eraserSize;
-      }
-      
-      setHasActivePreview(false);
+      // Poner la imagen de respaldo
+      contextRef.current.putImageData(backupImageDataRef.current, 0, 0);
     }
   };
   
   // Función para cambiar el tamaño del borrador
   const changeEraserSize = (size: number) => {
-    // Limpiar cualquier vista previa anterior
-    if (previewTimerRef.current) {
-      clearTimeout(previewTimerRef.current);
-      previewTimerRef.current = null;
-    }
-    
-    setEraserSize(size);
-    
-    // Actualizar lineWidth directamente en el contexto
-    if (contextRef.current) {
+    // Guardar una copia del canvas actual antes de dibujar la vista previa
+    if (canvasRef.current && contextRef.current) {
+      // Guardar el estado actual del canvas
+      backupImageDataRef.current = contextRef.current.getImageData(
+        0, 0, canvasRef.current.width, canvasRef.current.height
+      );
+      
+      // Limpiar completamente el canvas
+      contextRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      
+      // Restaurar la imagen original
+      if (backupImageDataRef.current) {
+        contextRef.current.putImageData(backupImageDataRef.current, 0, 0);
+      }
+      
+      // Actualizar el tamaño del borrador
+      setEraserSize(size);
+      
+      // Actualizar el tamaño en el contexto
       contextRef.current.lineWidth = size;
-    }
-    
-    if (activeTool === 'eraser' && contextRef.current) {
       setActiveWidth(size);
       
-      // Visual preview - dibuja un punto para mostrar el tamaño actual
-      if (canvasRef.current && contextRef.current) {
-        // Guardar el estado actual del canvas para restaurarlo después
-        if (!tempCanvasRef.current) {
-          tempCanvasRef.current = document.createElement('canvas');
-        }
-        
-        tempCanvasRef.current.width = canvasRef.current.width;
-        tempCanvasRef.current.height = canvasRef.current.height;
-        
-        const tempCtx = tempCanvasRef.current.getContext('2d');
-        if (tempCtx && canvasRef.current) {
-          tempCtx.clearRect(0, 0, tempCanvasRef.current.width, tempCanvasRef.current.height);
-          tempCtx.drawImage(canvasRef.current, 0, 0);
-        }
-        
-        // Guarda el estado actual para restaurarlo después
-        const currentCompositeOperation = contextRef.current.globalCompositeOperation;
-        
-        // Configurar para dibujar un punto de muestra
-        contextRef.current.globalCompositeOperation = 'source-over';
-        contextRef.current.fillStyle = darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
-        
-        // Dibuja un círculo temporal que muestra el tamaño actual
-        contextRef.current.beginPath();
-        contextRef.current.arc(100, 50, size / 2, 0, Math.PI * 2);
-        contextRef.current.fill();
-        
-        // Indica que hay una vista previa activa
-        setHasActivePreview(true);
-        
-        // Programa la eliminación automática después de un breve momento
-        previewTimerRef.current = window.setTimeout(() => {
-          clearPreview();
-          previewTimerRef.current = null;
-        }, 1000);
-      }
+      // Guarda el modo de composición original
+      const originalCompositeOperation = contextRef.current.globalCompositeOperation;
+      
+      // Cambiar a modo dibujo normal para la vista previa
+      contextRef.current.globalCompositeOperation = 'source-over';
+      
+      // Configurar estilo de relleno
+      contextRef.current.fillStyle = darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+      
+      // Dibujar círculo de vista previa
+      contextRef.current.beginPath();
+      contextRef.current.arc(100, 50, size / 2, 0, Math.PI * 2);
+      contextRef.current.fill();
+      
+      // Restaurar configuración original después de un tiempo
+      setTimeout(() => {
+        forceCleanCanvas();
+      }, 1000);
     }
   };
+  
+  // Asegurarse de limpiar al cambiar herramientas
+  useEffect(() => {
+    forceCleanCanvas();
+  }, [activeTool]);
   
   // Función para cambiar color
   const changeColor = (color: string) => {
