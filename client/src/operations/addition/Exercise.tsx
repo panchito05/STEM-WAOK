@@ -1660,32 +1660,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }, 10);
   };
 
-  const handleDigitInput = (value: string) => {
-    if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
-    if (!exerciseStarted) startExercise();
-
-    let newAnswers = [...digitAnswers];
-    let currentFocus = focusedDigitIndex;
-    const maxDigits = currentProblem.answerMaxDigits;
-
-    if (value === "backspace") {
-      newAnswers[currentFocus] = "";
-    } else if (/[0-9]/.test(value)) {
-      newAnswers[currentFocus] = value;
-      if (inputDirection === 'rtl') {
-        if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
-      } else {
-        if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
-      }
-    }
-    setDigitAnswers(newAnswers);
-  };
-  
-  // Función para manejar el retroceso secuencial que salta entre contenedores
+  // Función para manejar el retroceso secuencial que permite saltar entre contenedores
   const handleSequentialBackspace = () => {
     if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
     if (!exerciseStarted) startExercise();
-    
+
     let newAnswers = [...digitAnswers];
     let currentFocus = focusedDigitIndex;
     
@@ -1711,6 +1690,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       newAnswers[currentFocus] = "";
       setDigitAnswers(newAnswers);
     }
+  };
+
+  const handleDigitInput = (value: string) => {
+    if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
+    if (!exerciseStarted) startExercise();
+
+    let newAnswers = [...digitAnswers];
+    let currentFocus = focusedDigitIndex;
+    const maxDigits = currentProblem.answerMaxDigits;
+
+    if (value === "backspace") {
+      newAnswers[currentFocus] = "";
+    } else if (/[0-9]/.test(value)) {
+      newAnswers[currentFocus] = value;
+      if (inputDirection === 'rtl') {
+        if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
+      } else {
+        if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
+      }
+    }
+    setDigitAnswers(newAnswers);
   };
 
   useEffect(() => {
