@@ -1,39 +1,38 @@
-// Tipos para el módulo de suma (addition)
+// Definición de tipos para el módulo de suma
 
-// Niveles de dificultad disponibles
+// Niveles de dificultad estandarizados para todos los módulos
 export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
 
-// Formato de visualización para problemas
+// Formatos de visualización para los problemas
 export type ExerciseLayout = 'horizontal' | 'vertical';
-export type DisplayFormat = ExerciseLayout | 'word';
 
-// Estado de la respuesta del usuario
-export type AnswerStatus = 'correct' | 'incorrect' | 'skipped' | 'timeout' | 'revealed';
-
-// Estructura específica para problemas de suma
+// Definición de un problema de suma específico
 export interface AdditionProblem {
   id: string;
-  num1: number;   // Primer operando (compatibilidad con código legacy)
-  num2: number;   // Segundo operando (compatibilidad con código legacy)
-  operands: number[];  // Todos los operandos del problema
-  correctAnswer: number;  // La respuesta correcta (suma de operandos)
-  layout: ExerciseLayout;  // Diseño del problema (horizontal/vertical)
+  operands: number[];       // Operandos de la suma (puede ser más de 2 en niveles avanzados)
+  num1?: number;            // Campo legacy para compatibilidad
+  num2?: number;            // Campo legacy para compatibilidad
+  correctAnswer: number;    // Respuesta correcta
+  layout: ExerciseLayout;   // Formato de visualización
   answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
-  answerDecimalPosition?: number;  // Posición del decimal en la respuesta (si aplica)
+  answerDecimalPosition?: number; // Posición del decimal en la respuesta (si aplica)
 }
 
-// Operando individual para un problema
+// Tipo genérico para un operando
 export interface Operand {
   value: number;
-  label?: string; // Para problemas de palabras
+  // Podríamos añadir más propiedades en el futuro como:
+  // label?: string;
+  // displayType?: string;
 }
 
-// Estructura de un problema matemático
+// Tipo genérico para cualquier problema matemático
 export interface Problem {
   id: string;
   operands: Operand[];
-  displayFormat: DisplayFormat;
+  operator?: string;       // El operador matemático (no usado en suma, pero útil para otros módulos)
   correctAnswer: number;
+  displayFormat: string;   // Cómo mostrar el problema (horizontal, vertical, word)
   difficulty: DifficultyLevel;
   allowDecimals: boolean;
   maxAttempts: number;
@@ -43,94 +42,56 @@ export interface Problem {
 export interface UserAnswer {
   problemId: string;
   problem: Problem;
-  userAnswer: number | null;
+  userAnswer: number;
   isCorrect: boolean;
-  status: AnswerStatus;
+  status: string;          // 'correct', 'incorrect', 'skipped', etc.
   attempts: number;
   timestamp: number;
+  timeTaken?: number;      // Tiempo que le tomó al usuario responder
+  mistakes?: number[];     // Lista de respuestas incorrectas
 }
 
-// Configuraciones para un módulo específico
-export interface ModuleSettings {
-  difficulty: DifficultyLevel;
-  problemCount: number;
-  hasTimeLimit: boolean;
-  timeLimit: number;
-  hasPerProblemTimer: boolean;
-  problemTimeLimit?: number;
-  showExplanations: boolean;
-  language: string;
-  maxAttempts?: number;
-  showImmediateFeedback?: boolean;
-  enableSoundEffects?: boolean;
-  enableAnimations?: boolean;
-  showAnswerWithExplanation?: boolean; 
-  allowSkipping?: boolean;
-  enableHints?: boolean;
-}
-
-// Estado del ejercicio
-export interface ExerciseState {
-  problems: Problem[];
-  userAnswers: UserAnswer[];
-  currentProblemIndex: number;
-  currentAnswer: string;
-  settings: ModuleSettings;
-  score: number;
-  isComplete: boolean;
-  isActive: boolean;
-  showExplanation: boolean;
-  startTime: number;
-  endTime: number | null;
-  consecutiveCorrect: number;
-  consecutiveIncorrect: number;
-  attempts: number;
-}
-
-// Resultado de un ejercicio completado
+// Resultado de un ejercicio completo
 export interface ExerciseResult {
-  id: string;
-  moduleId: string;
+  operationId: string;
+  date: string;
   score: number;
   totalProblems: number;
   timeSpent: number;
-  date: string;
-  problems: Problem[];
-  settings: ModuleSettings;
-  userAnswers: UserAnswer[];
-  extra_data?: Record<string, any>; // Datos adicionales flexibles para guardar información específica
+  difficulty: string;
+  accuracy: number;
+  avgTimePerProblem: number;
+  avgAttempts: number;
+  revealedAnswers: number;
+  extra_data?: {
+    version?: string;
+    timestamp?: number;
+    exerciseId?: string;
+    problemDetails?: any[];
+    problems?: any[];
+    capturedProblems?: any[];
+    exerciseType?: string;
+    [key: string]: any;
+  };
 }
 
-// Configuración para el generador de problemas
-export interface ProblemGeneratorConfig {
-  difficulty: DifficultyLevel;
-  problemCount: number;
-  maxOperands?: number;
-  minValue?: number;
-  maxValue?: number;
-  allowNegatives?: boolean;
-  allowDecimals?: boolean;
-  decimalPlaces?: number;
-  preferredDisplayFormat?: DisplayFormat | DisplayFormat[];
+// Props para el componente Exercise
+export interface ExerciseProps {
+  settings: {
+    difficulty: string;
+    problemCount: number;
+    timeValue: number;
+    hasTimerEnabled: boolean;
+    timeLimit?: string;
+    maxAttempts: number;
+    showImmediateFeedback: boolean;
+    enableSoundEffects: boolean;
+    showAnswerWithExplanation: boolean;
+    enableAdaptiveDifficulty: boolean;
+    enableCompensation: boolean;
+    enableRewards: boolean;
+    rewardType: string;
+    language: string;
+  };
+  onOpenSettings: () => void;
 }
-
-// Tipos para el contexto del ejercicio
-export interface ExerciseContextType {
-  state: ExerciseState;
-  updateAnswer: (value: string | number) => void;
-  submitAnswer: () => boolean;
-  skipProblem: () => void;
-  showSolution: () => void;
-  nextProblem: () => void;
-  resetExercise: (settings?: Partial<ModuleSettings>) => void;
-}
-
-// Eventos para el reducer del contexto
-export type ExerciseEvent =
-  | { type: 'UPDATE_ANSWER'; payload: string }
-  | { type: 'SUBMIT_ANSWER' }
-  | { type: 'SKIP_PROBLEM' }
-  | { type: 'SHOW_SOLUTION' }
-  | { type: 'NEXT_PROBLEM' }
-  | { type: 'COMPLETE_EXERCISE' }
-  | { type: 'RESET_EXERCISE'; payload?: Partial<ModuleSettings> };

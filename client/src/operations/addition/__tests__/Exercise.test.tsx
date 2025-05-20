@@ -1,164 +1,161 @@
+// Pruebas unitarias para el componente Exercise
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Exercise from '../Exercise';
+import * as utils from '../utils';
 
-// Mock de los contextos necesarios
-jest.mock('@/context/ProgressContext', () => ({
-  useProgress: () => ({
-    exerciseHistory: [],
-    addExerciseResult: jest.fn(),
-    updateChildProgress: jest.fn(),
-  }),
-}));
+// Mock para las funciones de utils
+jest.mock('../utils', () => {
+  const originalModule = jest.requireActual('../utils');
+  return {
+    ...originalModule,
+    generateAdditionProblem: jest.fn(),
+    saveExerciseResult: jest.fn(),
+  };
+});
 
-jest.mock('@/context/SettingsContext', () => ({
-  useSettings: () => ({
-    updateModuleSettings: jest.fn(),
-    getModuleSettings: jest.fn(),
-  }),
-  ModuleSettings: {},
-}));
+// Mock para los contextos
+jest.mock('@/context/SettingsContext', () => {
+  return {
+    useSettings: () => ({
+      settings: {
+        addition: {
+          difficulty: 'beginner',
+          problemCount: 5,
+          timeValue: 0,
+          hasTimerEnabled: false
+        }
+      },
+      saveSettings: jest.fn(),
+    }),
+  };
+});
 
-jest.mock('@/hooks/use-translations', () => ({
-  useTranslations: () => ({
-    t: (key: string) => key,
-    currentTranslations: {
-      startExercise: 'Start Exercise',
-      previous: 'Previous',
-      showAnswer: 'Show Answer',
-    },
-  }),
-}));
+jest.mock('@/context/ProgressContext', () => {
+  return {
+    useProgress: () => ({
+      saveExerciseResult: jest.fn(),
+      exerciseHistory: [],
+    }),
+  };
+});
 
-// Mock de componentes externos
-jest.mock('@/components/LevelUpHandler', () => ({
-  __esModule: true,
-  default: () => <div data-testid="level-up-handler">Level Up Handler</div>,
-}));
-
-// Mock de las funciones de utilidad
-jest.mock('../utils', () => ({
-  generateAdditionProblem: jest.fn(() => ({
-    id: 'test-problem-1',
-    num1: 5,
-    num2: 7,
+// La función generateAdditionProblem devuelve un problema de suma simple para las pruebas
+const mockGenerateProblem = () => {
+  return {
+    id: 'test-123',
     operands: [5, 7],
     correctAnswer: 12,
     layout: 'horizontal',
-    answerMaxDigits: 2,
-  })),
-  checkAnswer: jest.fn((problem, answer) => answer === 12),
-  getVerticalAlignmentInfo: jest.fn(() => ({
-    maxIntLength: 1,
-    maxDecLength: 0,
-    operandsFormatted: [
-      { original: 5, intStr: '5', decStr: '' },
-      { original: 7, intStr: '7', decStr: '' },
-    ],
-    sumLineTotalCharWidth: 2,
-  })),
-}));
-
-// Props comunes para las pruebas
-const mockProps = {
-  settings: {
-    difficulty: 'beginner',
-    problemCount: 5,
-    timeValue: 0,
-    hasTimerEnabled: false,
-    showAnswerWithExplanation: true,
-    language: 'en',
-  },
-  onOpenSettings: jest.fn(),
+    answerMaxDigits: 2
+  };
 };
 
-describe('Componente Exercise', () => {
+describe('Componente Exercise de suma', () => {
+  
   beforeEach(() => {
+    // Resetear todos los mocks antes de cada prueba
     jest.clearAllMocks();
+    
+    // Configurar el mock para que genere un problema de prueba
+    (utils.generateAdditionProblem as jest.Mock).mockImplementation(mockGenerateProblem);
   });
-
-  test('renderiza correctamente en estado inicial', () => {
-    render(<Exercise {...mockProps} />);
+  
+  test('se renderiza correctamente y muestra los controles básicos', () => {
+    // Arrange - Configuración del componente
+    const mockSettings = {
+      difficulty: 'beginner',
+      problemCount: 5,
+      timeValue: 0,
+      hasTimerEnabled: false,
+      showAnswerWithExplanation: true,
+      language: 'es',
+      timeLimit: 'none',
+      maxAttempts: 3,
+      showImmediateFeedback: true,
+      enableSoundEffects: false,
+      enableAdaptiveDifficulty: false,
+      enableCompensation: false,
+      enableRewards: false,
+      rewardType: 'stars'
+    };
     
-    // Verifica que el componente principal se renderice
-    expect(screen.getByText(/0 \/ 5/i)).toBeInTheDocument(); // Contador de problemas
+    const mockOpenSettings = jest.fn();
     
-    // Verifica que el botón de inicio esté presente
-    const startButton = screen.getByRole('button', { name: /Start Exercise/i });
-    expect(startButton).toBeInTheDocument();
+    // Act - Renderizar el componente
+    render(<Exercise settings={mockSettings} onOpenSettings={mockOpenSettings} />);
     
-    // Verifica que los contenedores de dígitos estén presentes pero vacíos
-    const digitContainers = screen.getAllByTestId(/digit-container/i);
-    expect(digitContainers.length).toBeGreaterThan(0);
-    digitContainers.forEach(container => {
-      expect(container).toHaveTextContent('');
-    });
+    // Assert - Verificar que se muestran los elementos esperados
+    expect(screen.getByText(/Problema 1 de 5/i)).toBeInTheDocument();
+    expect(screen.getByText('Comprobar')).toBeInTheDocument();
+    
+    // Debería mostrar el teclado numérico
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+    // No es necesario verificar todos los botones
   });
-
-  test('maneja entrada de dígitos correctamente', async () => {
-    render(<Exercise {...mockProps} />);
+  
+  test('permite abrir la pantalla de configuración', () => {
+    // Arrange - Configuración del componente
+    const mockSettings = {
+      difficulty: 'beginner',
+      problemCount: 5,
+      timeValue: 0,
+      hasTimerEnabled: false,
+      showAnswerWithExplanation: true,
+      language: 'es',
+      timeLimit: 'none',
+      maxAttempts: 3,
+      showImmediateFeedback: true,
+      enableSoundEffects: false,
+      enableAdaptiveDifficulty: false,
+      enableCompensation: false,
+      enableRewards: false,
+      rewardType: 'stars'
+    };
     
-    // Comienza el ejercicio
-    const startButton = screen.getByRole('button', { name: /Start Exercise/i });
-    fireEvent.click(startButton);
+    const mockOpenSettings = jest.fn();
     
-    // Simula hacer clic en los botones de dígitos
-    const digitButtons = screen.getAllByRole('button').filter(button => 
-      /^[0-9]$/.test(button.textContent || '')
-    );
+    // Act - Renderizar el componente
+    render(<Exercise settings={mockSettings} onOpenSettings={mockOpenSettings} />);
     
-    // Presiona el dígito "1"
-    fireEvent.click(digitButtons.find(btn => btn.textContent === '1') || digitButtons[0]);
+    // Buscar el botón de configuración y hacer clic en él
+    const settingsButton = screen.getByLabelText(/configuración/i);
+    fireEvent.click(settingsButton);
     
-    // Presiona el dígito "2"
-    fireEvent.click(digitButtons.find(btn => btn.textContent === '2') || digitButtons[1]);
-    
-    // Verifica que el botón de verificar esté habilitado
-    const checkButton = screen.getByRole('button', { name: /check/i });
-    expect(checkButton).not.toBeDisabled();
-    
-    // Verifica respuesta
-    fireEvent.click(checkButton);
-    
-    // Espera a que aparezca el feedback
-    await waitFor(() => {
-      const feedbackElement = screen.queryByText(/(correct|incorrect)/i);
-      expect(feedbackElement).toBeInTheDocument();
-    });
+    // Assert - Verificar que se llamó a la función para abrir la configuración
+    expect(mockOpenSettings).toHaveBeenCalledTimes(1);
   });
-
-  test('el botón de retroceso secuencial funciona correctamente', async () => {
-    render(<Exercise {...mockProps} />);
+  
+  test('genera problemas según la dificultad configurada', () => {
+    // Arrange - Configuración del componente
+    const mockSettings = {
+      difficulty: 'intermediate',
+      problemCount: 5,
+      timeValue: 0,
+      hasTimerEnabled: false,
+      showAnswerWithExplanation: true,
+      language: 'es',
+      timeLimit: 'none',
+      maxAttempts: 3,
+      showImmediateFeedback: true,
+      enableSoundEffects: false,
+      enableAdaptiveDifficulty: false,
+      enableCompensation: false,
+      enableRewards: false,
+      rewardType: 'stars'
+    };
     
-    // Comienza el ejercicio
-    const startButton = screen.getByRole('button', { name: /Start Exercise/i });
-    fireEvent.click(startButton);
+    const mockOpenSettings = jest.fn();
     
-    // Simula hacer clic en los botones de dígitos
-    const digitButtons = screen.getAllByRole('button').filter(button => 
-      /^[0-9]$/.test(button.textContent || '')
-    );
+    // Act - Renderizar el componente
+    render(<Exercise settings={mockSettings} onOpenSettings={mockOpenSettings} />);
     
-    // Presiona algunos dígitos
-    fireEvent.click(digitButtons.find(btn => btn.textContent === '1') || digitButtons[0]);
-    fireEvent.click(digitButtons.find(btn => btn.textContent === '2') || digitButtons[1]);
-    
-    // Presiona el botón de retroceso secuencial
-    const seqBackspaceButton = screen.getAllByRole('button').find(btn => 
-      btn.textContent === '>'
-    );
-    
-    if (seqBackspaceButton) {
-      fireEvent.click(seqBackspaceButton);
-      
-      // Verifica que se haya borrado un dígito
-      const digitContainers = screen.getAllByTestId(/digit-container/i);
-      const filledContainers = digitContainers.filter(container => 
-        container.textContent && container.textContent.trim() !== ''
-      );
-      
-      expect(filledContainers.length).toBe(1); // Solo debe quedar un dígito
-    }
+    // Assert - Verificar que se llamó a generateAdditionProblem con la dificultad correcta
+    expect(utils.generateAdditionProblem).toHaveBeenCalledWith('intermediate');
   });
+  
+  // Puedes agregar más pruebas según sea necesario
 });

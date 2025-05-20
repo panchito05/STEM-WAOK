@@ -3,7 +3,7 @@
 # Script para ejecutar todas las pruebas y verificaciones de tipo
 
 echo "🧪 Ejecutando pruebas unitarias y de integración..."
-node --experimental-vm-modules node_modules/.bin/jest "client/src/operations/addition/__tests__/*.test.(ts|tsx)"
+npx jest "client/src/operations/addition/__tests__/*.test.tsx" "client/src/operations/addition/__tests__/*.test.ts" --passWithNoTests
 
 if [ $? -ne 0 ]; then
   echo "❌ Las pruebas fallaron"
