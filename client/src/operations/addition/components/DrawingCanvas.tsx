@@ -487,9 +487,10 @@ export function DrawingCanvas({
     
     // Dibujar operador + y segundo operando
     yOffset += 60;
-    context.textAlign = 'center';
-    context.fillText('+', centerX - (maxIntLength * 15), centerY + yOffset);
     context.textAlign = 'right';
+    // Poner el signo + a la izquierda alineado con el margen de los números
+    context.fillText('+', centerX - (maxIntLength * 20), centerY + yOffset);
+    // Mantener la alineación para los números
     
     context.fillText(
       parts[1].intPart.padStart(maxIntLength, ' '), 
