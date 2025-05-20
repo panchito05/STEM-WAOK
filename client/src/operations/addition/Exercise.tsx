@@ -1077,15 +1077,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const completeExercise = () => {
-    // SOLUCIÓN: Al completar el ejercicio, verificamos que el último problema tenga respuesta
-    // Si el problema actual tiene respuesta pero no está en userAnswersHistory, lo añadimos
+    // SOLUCIÓN MEJORADA: Gestión robusta del último problema 
+    // Con logs detallados para identificar el origen del problema
+    console.log("INICIO COMPLETE EXERCISE - Estado actual:", {
+      problemsList: problemsList.map(p => p.id),
+      userAnswersHistory: userAnswersHistory.map(a => a ? `${a.problemId} - ${a.isCorrect}` : 'null'),
+      currentProblemIndex,
+      currentAnswer: digitAnswers.join(""),
+      problemaActual: currentProblem ? currentProblem.id : 'ninguno',
+      respuestaCorrecta: currentProblem ? currentProblem.correctAnswer : 'ninguna',
+    });
+    
+    // Si el problema actual tiene respuesta pero no está en userAnswersHistory, la añadimos
     if (currentProblem && currentProblemIndex < problemsList.length) {
       const currentAnswer = digitAnswers.join("");
+      
+      console.log(`Verificando última respuesta - Problema ${currentProblemIndex+1}:`, {
+        digitosActuales: digitAnswers,
+        respuestaActual: currentAnswer,
+        respuestaCorrecta: currentProblem.correctAnswer,
+        existeRespuesta: userAnswersHistory[currentProblemIndex] ? 'SI' : 'NO'
+      });
+      
       if (currentAnswer && currentAnswer.length > 0) {
         // Verificar si ya existe respuesta en el historial
         const existingAnswer = userAnswersHistory[currentProblemIndex];
+        
         if (!existingAnswer) {
-          console.log("Último problema sin respuesta registrada - Registrando respuesta actual:", currentAnswer);
+          console.log("DETECTADO: Último problema sin respuesta registrada - Forzando registro:", {
+            problema: currentProblem.id,
+            respuesta: currentAnswer
+          });
           
           // Calcular si la respuesta es correcta
           const isCorrect = parseFloat(currentAnswer) === currentProblem.correctAnswer;
@@ -1101,12 +1123,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             timestamp: Date.now()
           };
           
-          // Actualizar historial de respuestas
-          setUserAnswersHistory(prev => {
-            const newHistory = [...prev];
-            newHistory[currentProblemIndex] = answer;
-            return newHistory;
-          });
+          // FORZAR actualización de respuesta - Más fiable que setState
+          const newHistory = [...userAnswersHistory];
+          newHistory[currentProblemIndex] = answer;
+          setUserAnswersHistory(newHistory);
+          
+          // Forzar sincronización (importante!)
+          setTimeout(() => {
+            console.log("Verificación después de actualizar:", {
+              respuestasActualizadas: newHistory.map(a => a ? `${a.problemId} - ${a.isCorrect}` : 'null'),
+            });
+          }, 50);
         }
       }
     }
