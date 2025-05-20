@@ -385,6 +385,92 @@ export default function ProgressPage() {
                               </div>
                             </div>
 
+                            {/* Nuevas métricas */}
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Avg. Time per Problem</p>
+                                <p className="text-2xl font-bold text-purple-600">
+                                  {(() => {
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    if (moduleExercises.length === 0) return '0s';
+                                    
+                                    const totalTime = moduleExercises.reduce((acc, ex) => acc + (ex.timeSpent || 0), 0);
+                                    const totalProblems = moduleExercises.reduce((acc, ex) => acc + (ex.totalProblems || 0), 0);
+                                    
+                                    return totalProblems > 0 ? `${Math.round(totalTime / totalProblems)}s` : '0s';
+                                  })()}
+                                </p>
+                              </div>
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Highest Level</p>
+                                <p className="text-2xl font-bold text-emerald-600">
+                                  {(() => {
+                                    const difficulties = ['beginner', 'elementary', 'intermediate', 'advanced', 'expert'];
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    if (moduleExercises.length === 0) return 'N/A';
+                                    
+                                    // Mapear dificultades a índices para comparación
+                                    const difficultyIndex: Record<string, number> = {
+                                      'beginner': 0,
+                                      'elementary': 1,
+                                      'intermediate': 2,
+                                      'advanced': 3,
+                                      'expert': 4
+                                    };
+                                    
+                                    let highestLevel = -1;
+                                    moduleExercises.forEach(ex => {
+                                      const levelIndex = difficultyIndex[ex.difficulty as string] || -1;
+                                      if (levelIndex > highestLevel) highestLevel = levelIndex;
+                                    });
+                                    
+                                    // Traducir al español
+                                    const levelNames: Record<number, string> = {
+                                      0: 'Principiante',
+                                      1: 'Elemental',
+                                      2: 'Intermedio',
+                                      3: 'Avanzado',
+                                      4: 'Experto'
+                                    };
+                                    
+                                    return highestLevel >= 0 ? levelNames[highestLevel] : 'N/A';
+                                  })()}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Longest Streak</p>
+                                <p className="text-2xl font-bold text-amber-600">
+                                  {(() => {
+                                    // Calcular la racha más larga de respuestas correctas consecutivas
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    let longestStreak = 0;
+                                    
+                                    moduleExercises.forEach(ex => {
+                                      const streak = ex.extraData?.longestStreak || ex.extraData?.consecutiveCorrect || 0;
+                                      if (streak > longestStreak) longestStreak = streak;
+                                    });
+                                    
+                                    return longestStreak;
+                                  })()}
+                                </p>
+                              </div>
+                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                                <p className="text-sm text-gray-500">Answers Revealed</p>
+                                <p className="text-2xl font-bold text-red-600">
+                                  {(() => {
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    const totalRevealed = moduleExercises.reduce((acc, ex) => 
+                                      acc + (ex.revealedAnswers || ex.extraData?.revealedAnswers || 0), 0);
+                                    
+                                    return totalRevealed;
+                                  })()}
+                                </p>
+                              </div>
+                            </div>
+
                             <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
                               <div className="flex justify-between items-baseline mb-2">
                                 <p className="text-sm text-gray-500">Average Accuracy</p>
@@ -397,6 +483,130 @@ export default function ProgressPage() {
                                   className="bg-blue-600 h-2.5 rounded-full"
                                   style={{ width: `${progress?.averageScore ? Math.round(progress.averageScore * 100) : 0}%` }}
                                 ></div>
+                              </div>
+                            </div>
+                            
+                            {/* Progreso de nivel */}
+                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div className="flex justify-between items-baseline mb-2">
+                                <p className="text-sm text-gray-500">Level Progress</p>
+                                <p className="font-semibold text-green-600">
+                                  {(() => {
+                                    // Calcular el progreso hacia el siguiente nivel (asumiendo que 10 respuestas correctas consecutivas = nivel)
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    if (moduleExercises.length === 0) return '0/10';
+                                    
+                                    // Obtener el último ejercicio para ver el progreso actual
+                                    const lastExercise = moduleExercises[moduleExercises.length - 1];
+                                    const currentStreak = lastExercise?.extraData?.currentStreak || 0;
+                                    
+                                    return `${currentStreak}/10`;
+                                  })()}
+                                </p>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                <div 
+                                  className="bg-green-500 h-2.5 rounded-full" 
+                                  style={{ 
+                                    width: `${(() => {
+                                      const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                      if (moduleExercises.length === 0) return 0;
+                                      
+                                      const lastExercise = moduleExercises[moduleExercises.length - 1];
+                                      const currentStreak = lastExercise?.extraData?.currentStreak || 0;
+                                      
+                                      return Math.min(100, (currentStreak / 10) * 100);
+                                    })()}%` 
+                                  }}
+                                ></div>
+                              </div>
+                            </div>
+                            
+                            {/* Gráfico de distribución de dificultad */}
+                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <p className="text-sm text-gray-500 mb-2">Difficulty Distribution</p>
+                              <div className="flex h-8 rounded-md overflow-hidden">
+                                {(() => {
+                                  const difficulties = ['beginner', 'elementary', 'intermediate', 'advanced', 'expert'];
+                                  const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                  
+                                  // Contar ejercicios por nivel de dificultad
+                                  const countByDifficulty = difficulties.reduce((acc, diff) => {
+                                    acc[diff] = moduleExercises.filter(ex => ex.difficulty === diff).length;
+                                    return acc;
+                                  }, {} as Record<string, number>);
+                                  
+                                  const total = moduleExercises.length;
+                                  
+                                  // Colores para cada nivel
+                                  const colors: Record<string, string> = {
+                                    'beginner': 'bg-blue-400',
+                                    'elementary': 'bg-green-400',
+                                    'intermediate': 'bg-yellow-400',
+                                    'advanced': 'bg-orange-400',
+                                    'expert': 'bg-red-400'
+                                  };
+                                  
+                                  return difficulties.map(diff => {
+                                    const count = countByDifficulty[diff] || 0;
+                                    const percentage = total > 0 ? (count / total) * 100 : 0;
+                                    
+                                    return percentage > 0 ? (
+                                      <div 
+                                        key={diff}
+                                        className={`${colors[diff]} h-full`} 
+                                        style={{ width: `${percentage}%` }}
+                                        title={`${diff}: ${count} exercises (${Math.round(percentage)}%)`}
+                                      ></div>
+                                    ) : null;
+                                  });
+                                })()}
+                              </div>
+                              <div className="flex justify-between text-xs mt-1 text-gray-500">
+                                <span>Principiante</span>
+                                <span>Experto</span>
+                              </div>
+                            </div>
+
+                            {/* Mejora en tiempo */}
+                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div className="flex justify-between items-baseline mb-2">
+                                <p className="text-sm text-gray-500">Time Improvement</p>
+                                <p className="font-semibold text-indigo-600">
+                                  {(() => {
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    if (moduleExercises.length < 2) return 'Not enough data';
+                                    
+                                    // Calcular el tiempo promedio de los primeros ejercicios vs los más recientes
+                                    const sortedExercises = [...moduleExercises].sort((a, b) => {
+                                      const dateA = new Date(a.date || a.createdAt || '').getTime(); 
+                                      const dateB = new Date(b.date || b.createdAt || '').getTime();
+                                      return dateA - dateB;
+                                    });
+                                    
+                                    const firstExercises = sortedExercises.slice(0, Math.min(3, sortedExercises.length));
+                                    const lastExercises = sortedExercises.slice(-Math.min(3, sortedExercises.length));
+                                    
+                                    const firstAvgTime = firstExercises.reduce((acc, ex) => {
+                                      const problemCount = ex.totalProblems || 1;
+                                      return acc + ((ex.timeSpent || 0) / problemCount);
+                                    }, 0) / firstExercises.length;
+                                    
+                                    const lastAvgTime = lastExercises.reduce((acc, ex) => {
+                                      const problemCount = ex.totalProblems || 1;
+                                      return acc + ((ex.timeSpent || 0) / problemCount);
+                                    }, 0) / lastExercises.length;
+                                    
+                                    const improvement = firstAvgTime - lastAvgTime;
+                                    const percentImprovement = firstAvgTime > 0 
+                                      ? (improvement / firstAvgTime) * 100 
+                                      : 0;
+                                    
+                                    return improvement > 0 
+                                      ? `${Math.round(percentImprovement)}% faster` 
+                                      : `${Math.abs(Math.round(percentImprovement))}% slower`;
+                                  })()}
+                                </p>
                               </div>
                             </div>
                           </div>
