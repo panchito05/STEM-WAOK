@@ -21,8 +21,11 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [position, setPosition] = useState<'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'>('topLeft');
   const [darkMode, setDarkMode] = useState<boolean>(false);
-  const canvasRef = useRef<any>(null);
-  const drawingCanvasRef = useRef<any>(null);
+  // Solo necesitamos una referencia para el canvas, utilizamos tipo más específico
+  const drawingCanvasRef = useRef<{
+    clearCanvas: () => void;
+    toggleDarkMode: () => void;
+  } | null>(null);
   
   // Reset state when problem changes
   useEffect(() => {
@@ -30,8 +33,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     setIsCorrect(null);
     
     // Clear canvas when problem changes
-    if (canvasRef.current && canvasRef.current.clear) {
-      canvasRef.current.clear();
+    if (drawingCanvasRef.current) {
+      drawingCanvasRef.current.clearCanvas();
     }
   }, [problem]);
   
@@ -52,8 +55,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         setIsCorrect(null);
         
         // Clear canvas
-        if (canvasRef.current && canvasRef.current.clear) {
-          canvasRef.current.clear();
+        if (drawingCanvasRef.current) {
+          drawingCanvasRef.current.clearCanvas();
         }
         
         // Move to next problem
