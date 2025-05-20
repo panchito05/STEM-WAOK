@@ -163,13 +163,19 @@ const Exercise: React.FC = () => {
         />
       ) : (
         <>
-          {/* Teclado numérico */}
+          {/* Teclado numérico con retroceso secuencial */}
           <NumericKeypad 
             onNumberClick={handleNumberClick} 
             onSubmit={handleSubmit}
             disabled={!state.isActive}
             answer={state.currentAnswer}
             allowDecimals={currentProblem.allowDecimals || false}
+            onSequentialBackspace={() => {
+              // Implementar lógica para retroceder entre campos
+              console.log("Retroceso secuencial activado");
+              // Aquí se podría implementar la navegación entre contenedores
+              // pero depende de la implementación del contexto
+            }}
           />
           
           {/* Botones de ayuda */}

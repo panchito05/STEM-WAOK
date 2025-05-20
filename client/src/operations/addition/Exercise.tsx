@@ -1680,6 +1680,52 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
     setDigitAnswers(newAnswers);
   };
+  
+  // Maneja el borrado secuencial con salto entre contenedores
+  const handleSequentialBackspace = () => {
+    if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
+    if (!exerciseStarted) startExercise();
+    
+    let newAnswers = [...digitAnswers];
+    let currentFocus = focusedDigitIndex;
+    
+    // Si el campo actual está vacío, intentamos movernos al siguiente campo
+    if (newAnswers[currentFocus] === "") {
+      if (inputDirection === 'rtl') {
+        // En modo RTL (derecha a izquierda), si estamos en un índice < maxDigits-1, avanzamos a la derecha
+        if (currentFocus < currentProblem.answerMaxDigits - 1) {
+          setFocusedDigitIndex(currentFocus + 1);
+          // Usar setTimeout para permitir que React actualice el estado antes de enfocar
+          setTimeout(() => {
+            try {
+              const el = boxRefsArrayRef.current[currentFocus + 1];
+              if (el) el.focus();
+            } catch (err) {
+              console.error("Error al enfocar el siguiente campo:", err);
+            }
+          }, 10);
+        }
+      } else {
+        // En modo LTR (izquierda a derecha), si estamos en un índice > 0, retrocedemos
+        if (currentFocus > 0) {
+          setFocusedDigitIndex(currentFocus - 1);
+          // Usar setTimeout para permitir que React actualice el estado antes de enfocar
+          setTimeout(() => {
+            try {
+              const el = boxRefsArrayRef.current[currentFocus - 1];
+              if (el) el.focus();
+            } catch (err) {
+              console.error("Error al enfocar el campo anterior:", err);
+            }
+          }, 10);
+        }
+      }
+    } else {
+      // Si el campo actual no está vacío, lo borramos
+      newAnswers[currentFocus] = "";
+      setDigitAnswers(newAnswers);
+    }
+  };
 
   useEffect(() => {
     const handlePhysicalKeyDown = (event: KeyboardEvent) => {
