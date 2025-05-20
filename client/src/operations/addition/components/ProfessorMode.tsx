@@ -64,30 +64,30 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     if (showVerticalFormat) {
       // Vertical format (for addition)
       return (
-        <div className="font-mono text-3xl whitespace-pre text-center">
+        <div className="font-mono text-2xl whitespace-pre">
           {problem.operands.map((op, index) => (
             <React.Fragment key={index}>
               {index === problem.operands.length - 1 && (
                 <div className="flex items-center">
                   <span className="mr-2">+</span>
-                  <span>{op.toFixed(2)}</span>
+                  <span>{op.toFixed(1)}</span>
                 </div>
               )} 
               {index !== problem.operands.length - 1 && (
-                <div>{op.toFixed(2)}</div>
+                <div>{op.toFixed(1)}</div>
               )}
             </React.Fragment>
           ))}
-          <div className="border-t border-black mt-2 mb-4 w-full"></div>
+          <div className="border-t border-black mt-1 w-full"></div>
         </div>
       );
     } else {
       // Horizontal format
       return (
-        <div className="font-mono text-3xl text-center">
+        <div className="font-mono text-2xl">
           {problem.operands.map((op, index) => (
             <React.Fragment key={index}>
-              <span>{op.toFixed(2)}</span>
+              <span>{op.toFixed(1)}</span>
               {index < problem.operands.length - 1 && <span> + </span>}
             </React.Fragment>
           ))}
@@ -98,58 +98,50 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
   
   return (
-    <div className="fixed inset-0 bg-white z-50 flex flex-col">
+    <div className="fixed inset-0 bg-white z-50">
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+        className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100 transition-colors"
         aria-label="Cerrar modo profesor"
       >
-        <X className="h-6 w-6 text-gray-800" />
+        <X className="h-5 w-5 text-gray-800" />
       </button>
       
-      {/* Main content */}
-      <div className="flex flex-col h-full w-full max-w-4xl mx-auto px-4 py-16">
-        {/* Problem display */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100 mb-4">
-          {renderProblem()}
+      {/* Main layout with problem in top-left and drawing area taking most of the screen */}
+      <div className="h-full w-full flex flex-col">
+        <div className="flex w-full">
+          {/* Problem display in top-left corner */}
+          <div className="absolute top-2 left-2 bg-white p-2 shadow-sm border border-gray-200 rounded-md">
+            {renderProblem()}
+          </div>
+          
+          {/* Drawing canvas taking full screen */}
+          <div className="w-full h-[calc(100vh-160px)]" ref={canvasRef}>
+            <DrawingCanvas height={window.innerHeight - 160} />
+          </div>
         </div>
         
-        {/* Drawing canvas */}
-        <div className="flex-grow relative mb-4" ref={canvasRef}>
-          <DrawingCanvas height={window.innerHeight * 0.5} />
-        </div>
-        
-        {/* Answer input and keypad */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-xl font-medium">Tu respuesta:</div>
-            <div className="flex-1 mx-4">
-              <div className="p-3 bg-white rounded border border-gray-200 text-2xl text-center min-h-[3rem]">
+        {/* Simple numeric keypad at bottom */}
+        <div className="fixed bottom-0 left-0 w-full bg-gray-50 border-t border-gray-200">
+          <div className="flex items-center px-4 py-2">
+            <div className="mr-2">Respuesta:</div>
+            <div className="flex-1 mx-2">
+              <div className="p-2 bg-white rounded border border-gray-200 text-xl text-center">
                 {userAnswer}
               </div>
             </div>
             <button
               onClick={() => setUserAnswer('')}
-              className="p-2 rounded hover:bg-gray-200 transition-colors"
+              className="p-1 rounded hover:bg-gray-200 transition-colors mr-2"
               title="Borrar respuesta"
             >
-              <Trash className="h-5 w-5 text-gray-600" />
+              <Trash className="h-4 w-4 text-gray-600" />
             </button>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-4">
-            <NumericKeypad
-              onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
-              onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
-              onDotClick={() => setUserAnswer(prev => prev.includes('.') ? prev : `${prev}.`)}
-              hideArrows={true}
-            />
-            
             <button
               onClick={checkAnswer}
               disabled={!userAnswer}
-              className={`mt-4 p-4 rounded-lg flex items-center justify-center text-white font-medium text-lg
+              className={`py-2 px-4 rounded flex items-center text-white text-sm
                 ${!userAnswer 
                   ? 'bg-gray-300 cursor-not-allowed' 
                   : isCorrect === null 
@@ -159,13 +151,22 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
                       : 'bg-red-600'}`}
             >
               {isCorrect === null ? (
-                <>Comprobar respuesta</>
+                <>Comprobar</>
               ) : isCorrect ? (
-                <>¡Correcto! <Check className="ml-2 h-5 w-5" /></>
+                <>¡Correcto! <Check className="ml-1 h-4 w-4" /></>
               ) : (
-                <>Incorrecto, intenta de nuevo</>
+                <>Incorrecto</>
               )}
             </button>
+          </div>
+          
+          <div className="px-2 pb-2">
+            <NumericKeypad
+              onNumberClick={(num: number | string) => setUserAnswer(prev => `${prev}${num}`)}
+              onBackspaceClick={() => setUserAnswer(prev => prev.slice(0, -1))}
+              onDotClick={() => setUserAnswer(prev => prev.includes('.') ? prev : `${prev}.`)}
+              hideArrows={true}
+            />
           </div>
         </div>
       </div>
