@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Problem } from '../types';
 import { Check, X } from 'lucide-react';
 import NumberDuplicator from './NumberDuplicator';
+import ClickableNumber from './ClickableNumber';
 
 export interface ProblemDisplayProps {
   problem: Problem;
@@ -27,12 +28,22 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
     console.log("Número clickeado, mostrando duplicador");
     // Extraer solo los valores numéricos de los operandos
     const numberValues = problem.operands.map(op => op.value);
-    // Añadir el resultado como último número si está disponible
-    if (problem.result) {
-      numberValues.push(problem.result);
-    }
+    
+    // Calcular el resultado si no está proporcionado
+    let calculatedResult = 0;
+    // Sumar todos los operandos para obtener el resultado
+    problem.operands.forEach(op => {
+      calculatedResult += op.value;
+    });
+    
+    // Añadir el resultado como último número
+    numberValues.push(calculatedResult);
+    
+    // Activar el duplicador con los números
     setSelectedNumbers(numberValues);
     setShowDuplicator(true);
+    
+    console.log("Números a mostrar:", numberValues);
   };
   // Función para formatear un número
   const formatNumber = (num: number): string => {
@@ -51,19 +62,10 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             ) : (
               <span className="mr-4 border-t border-black dark:border-white pt-1">+</span>
             )}
-            <div className="relative">
-              <button 
-                className="cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900 p-2 rounded transition-colors border border-gray-300 dark:border-gray-700"
-                onClick={() => handleNumberClick()}
-                title="Haz clic para ver en grande" 
-                aria-label="Ver número en grande"
-              >
-                {formatNumber(op.value)}
-              </button>
-              <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                👁️
-              </div>
-            </div>
+            <ClickableNumber
+              value={op.value}
+              onClick={handleNumberClick}
+            />
           </div>
         ))}
         
