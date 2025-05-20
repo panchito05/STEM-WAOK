@@ -1225,107 +1225,77 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
 
-    // SOLUCIÓN OPTIMIZADA VERSIÓN 2.0: Captura los problemas en formato estándar para toda la aplicación
+    // SOLUCIÓN OPTIMIZADA VERSIÓN 4.0: Captura los problemas en formato estándar unificado
     function capturarProblemasExactos() {
-      console.log("📸 Capturando problemas con formato estándar (V2.0)...");
-
-      // Array para almacenar los problemas con formato compatible
-      const problemasCapturas = [];
-
+      console.log("Capturando problemas de suma...");
+      
+      const problemasCapturados = [];
+      
       // Procesar cada problema completado
       for (let i = 0; i < problemsList.length; i++) {
         const respuesta = userAnswersHistory[i];
         const problema = problemsList[i];
-
+        
         if (!respuesta || !problema) continue;
-
-        // Formatear el problema exactamente como se muestra en pantalla
-        // Verificamos que existan los operandos o usamos operand1 y operand2 como alternativa
+        
+        // Extraer operandos de manera segura
         let operandoA = 0;
         let operandoB = 0;
-
+        
         if (Array.isArray(problema.operands) && problema.operands.length >= 2) {
           operandoA = problema.operands[0];
           operandoB = problema.operands[1];
         } else {
           // Alternativa para modelos antiguos
-          operandoA = (problema as any).operand1 || 0;
-          operandoB = (problema as any).operand2 || 0;
+          operandoA = (problema.operand1 !== undefined) ? problema.operand1 : 0;
+          operandoB = (problema.operand2 !== undefined) ? problema.operand2 : 0;
         }
-
+        
         // Usar la respuesta correcta del problema o calcularla
         const respuestaCorrecta = problema.correctAnswer || (operandoA + operandoB);
-
-        // Formatear como texto exacto
-        const textoProblema = `${operandoA} + ${operandoB} = ${respuestaCorrecta}`;
-
-        // Nivel como número (1-5)
-        const nivelTexto = finalLevel === "beginner" ? "1" :
-                         finalLevel === "elementary" ? "2" :
-                         finalLevel === "intermediate" ? "3" :
-                         finalLevel === "advanced" ? "4" : "5";
-
-        // Tiempo promedio
-        const tiempoPorProblema = Math.round(timer / problemsList.length);
-
-        // Crear objeto con el formato estándar para toda la aplicación
-        problemasCapturas.push({
-          problem: textoProblema,
+        
+        // Crear un objeto que incluya TODOS los datos necesarios para este tipo de problema
+        const problemaCompleto = {
+          // Metadatos para identificación
+          id: problema.id || `problema-${i}`,
+          tipo: "suma",
+          
+          // Datos específicos del problema de suma
+          operands: [operandoA, operandoB],
+          operacion: "+",
+          correctAnswer: respuestaCorrecta.toString(),
+          
+          // Formato visual del problema (para mostrar exactamente como se vio)
+          displayText: `${operandoA} + ${operandoB} = ${respuestaCorrecta}`,
+          problem: `${operandoA} + ${operandoB} = ${respuestaCorrecta}`, // Para compatibilidad
+          
+          // Información sobre la respuesta del usuario
+          userAnswer: respuesta.userAnswer,
           isCorrect: respuesta.isCorrect,
-          level: nivelTexto,
-          attempts: respuesta.attempts ? respuesta.attempts.toString() : "1",
-          timeSpent: tiempoPorProblema,
-          info: `Nivel: ${nivelTexto}, Intentos: ${respuesta.attempts || 1}, Tiempo: ${tiempoPorProblema}s`,
-          userAnswer: respuesta.userAnswer || "",
-          correctAnswer: respuestaCorrecta.toString()
-        });
+          status: respuesta.status || (respuesta.isCorrect ? "correct" : "incorrect"),
+          
+          // Metadatos adicionales
+          level: (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty),
+          attempts: respuesta.attempts || currentAttempts || 1,
+          timeSpent: Math.round(timer / problemsList.length),
+          
+          // Campo info para visualización rápida
+          info: `Nivel: ${finalLevel}, Intentos: ${respuesta.attempts || 1}, Tiempo: ${Math.round(timer / problemsList.length)}s`
+        };
+        
+        problemasCapturados.push(problemaCompleto);
       }
-
-      // RESPALDO MÚLTIPLE: Guardar en varias ubicaciones para garantizar recuperación
+      
+      // Respaldo simple en localStorage (solo para depuración)
       try {
         const timestamp = Date.now();
-
-        // 1. Respaldo principal
-        const claveEjercicio = `math_exercise_${timestamp}`;
-
-        // 2. Respaldo por tipo de operación
-        const claveOperacion = `operation_addition_${timestamp}`;
-
-        // 3. Respaldo usando formato estándar
-        const claveEstandar = `backup_problemas_${timestamp}`;
-
-        // Guardar múltiples respaldos para máxima seguridad
-        localStorage.setItem(claveEstandar, JSON.stringify(problemasCapturas));
-        localStorage.setItem(claveOperacion, JSON.stringify(problemasCapturas));
-
-        // Guardar con estructura clara y nombres en español e inglés para mayor compatibilidad
-        localStorage.setItem(claveEjercicio, JSON.stringify({
-          id: timestamp,
-          fecha: new Date().toISOString(),
-          date: new Date().toISOString(),
-          operacion: "addition",
-          operation: "addition",
-          nivel: finalLevel,
-          level: finalLevel,
-          puntuacion: {
-            correctas: puntajeCorregido,
-            total: problemsList.length
-          },
-          score: {
-            correct: puntajeCorregido,
-            total: problemsList.length
-          },
-          // Guardar los problemas con múltiples nombres para compatibilidad
-          problems: problemasCapturas,
-          problemas: problemasCapturas
-        }));
-
-        console.log(`✅ Respaldo completo guardado en localStorage: ${claveEjercicio}`);
+        const claveRespaldo = `math_addition_${timestamp}`;
+        localStorage.setItem(claveRespaldo, JSON.stringify(problemasCapturados));
       } catch (error) {
-        console.error("Error al guardar respaldo:", error);
+        console.error("Error al guardar respaldo local:", error);
       }
-
-      return problemasCapturas;
+      
+      return problemasCapturados;
     }
 
     // Capturar los problemas exactamente como se muestran en la UI
