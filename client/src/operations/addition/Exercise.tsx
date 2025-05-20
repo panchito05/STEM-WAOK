@@ -1738,7 +1738,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const maxDigits = currentProblem.answerMaxDigits;
 
     if (value === "backspace") {
-      newAnswers[currentFocus] = "";
+      handleBackspace();
     } else if (/[0-9]/.test(value)) {
       newAnswers[currentFocus] = value;
       if (inputDirection === 'rtl') {
