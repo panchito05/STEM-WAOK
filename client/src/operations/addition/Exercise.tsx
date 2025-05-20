@@ -1223,14 +1223,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
     - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
     
-    // NUEVO ENFOQUE: Capturar problemas directamente desde la UI
-    function captureProblemsFromUI() {
+    // Importar el tipo MathProblem del nuevo componente ProblemRenderer
+    import { MathProblem } from '../../components/ProblemRenderer';
+
+    // NUEVO ENFOQUE MEJORADO: Capturar problemas directamente desde la UI
+    function captureProblemsFromUI(): MathProblem[] {
       console.log("📸 Capturando problemas directamente de la UI...");
       
       // Array para almacenar los problemas capturados
-      const uiProblems = [];
+      const uiProblems: MathProblem[] = [];
       
-      // Para cada problema en userAnswersHistory, crear un objeto con el formato exacto
+      // Para cada problema en userAnswersHistory, crear un objeto con el formato estándar
       for (let i = 0; i < problemsList.length; i++) {
         const answer = userAnswersHistory[i];
         const problem = problemsList[i];
@@ -1240,43 +1243,67 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Formatear el problema exactamente como se muestra en la UI
         const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
         
-        // Información adicional que se muestra debajo
+        // Obtener el nivel de dificultad como texto
         const levelText = finalLevel === "beginner" ? "1" : 
                          finalLevel === "elementary" ? "2" : 
                          finalLevel === "intermediate" ? "3" : 
                          finalLevel === "advanced" ? "4" : "5";
                          
-        const infoText = `Lvl: ${levelText}, Att: ${answer.attempts || 1}, T: ${Math.round(timer / problemsList.length)}s`;
+        // Tiempo promedio por problema
+        const timePerProblem = Math.round(timer / problemsList.length);
         
-        // Construir el objeto completo con todos los detalles
+        // Información adicional para mostrar debajo del problema
+        const infoText = `Nivel: ${levelText}, Intentos: ${answer.attempts || 1}, Tiempo: ${timePerProblem}s`;
+        
+        // Construir objeto estandarizado usando la interfaz MathProblem
         uiProblems.push({
           problemNumber: i + 1,
           problem: problemText,
           isCorrect: answer.isCorrect,
           info: infoText,
-          // Datos técnicos adicionales que pueden ser útiles
           attempts: (answer.attempts || 1).toString(),
-          timeSpent: Math.round(timer / problemsList.length),
+          timeSpent: timePerProblem,
           level: levelText,
-          // La respuesta del usuario si es diferente de la correcta
+          // Solo incluir la respuesta del usuario si fue incorrecta
           userAnswer: answer.userAnswer !== problem.correctAnswer ? answer.userAnswer : undefined
         });
       }
       
-      // Guardar en localStorage como respaldo
+      // Guardar en localStorage como respaldo con una estructura bien definida
       try {
-        const exerciseKey = `exercise_${Date.now()}`;
-        localStorage.setItem(exerciseKey, JSON.stringify({
+        const timestamp = Date.now();
+        const exerciseKey = `math_exercise_${timestamp}`;
+        const exerciseData = {
+          id: timestamp,
           date: new Date().toISOString(),
+          operation: "addition",
+          level: finalLevel,
+          score: {
+            correct: puntajeCorregido,
+            total: problemsList.length
+          },
+          timeSpent: timer,
           problems: uiProblems
-        }));
-        console.log(`✅ Problemas guardados en localStorage con clave: ${exerciseKey}`);
+        };
+        
+        // Guardar en localStorage
+        localStorage.setItem(exerciseKey, JSON.stringify(exerciseData));
+        console.log(`✅ Ejercicio guardado en localStorage con clave: ${exerciseKey}`);
+        
+        // También guardar la referencia en un índice para facilitar la búsqueda
+        const exerciseIndex = JSON.parse(localStorage.getItem("math_exercises_index") || "[]");
+        exerciseIndex.push({
+          key: exerciseKey,
+          id: timestamp,
+          date: exerciseData.date,
+          operation: "addition"
+        });
+        localStorage.setItem("math_exercises_index", JSON.stringify(exerciseIndex));
       } catch (error) {
         console.error("Error al guardar en localStorage:", error);
       }
       
       console.log("📊 Total de problemas capturados:", uiProblems.length);
-      console.log("🔍 PROBLEMAS CAPTURADOS DESDE UI:", uiProblems);
       
       return uiProblems;
     }
@@ -1284,7 +1311,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas directamente de la UI
     const uiCapturedProblems = captureProblemsFromUI();
     
-    // Guardar el resultado utilizando el nuevo enfoque
+    // Guardar el resultado utilizando la estructura mejorada con formato estandarizado
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
@@ -1299,22 +1326,38 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       avgAttempts: avgAttemptsValue,
       revealedAnswers: revealedAnswers,
       
-      // NUEVO ENFOQUE: Guardar los problemas capturados directamente de la UI
-      // Estructura simplificada y clara
+      // ESTRUCTURA MEJORADA: Formato estandarizado para facilitar la recuperación
       extra_data: {
-        // Campo principal donde se buscarán los problemas
-        uiProblems: uiCapturedProblems,
+        // Versión del formato de datos (para futuras migraciones)
+        version: "2.0",
         
-        // Para compatibilidad con el código existente, incluir en lugares alternativos
+        // Timestamp para relacionar con localStorage
+        timestamp: Date.now(),
+        
+        // Campo principal estandarizado donde se buscarán los problemas
+        mathProblems: uiCapturedProblems,
+        
+        // Información consolidada del ejercicio
+        exerciseSummary: {
+          operation: "addition",
+          level: finalLevel,
+          score: {
+            correct: puntajeCorregido,
+            total: problemsList.length
+          },
+          timeSpent: timer,
+          date: new Date().toISOString()
+        },
+        
+        // Para compatibilidad con código existente (para transición gradual)
+        uiProblems: uiCapturedProblems,
         exactProblems: uiCapturedProblems,
         capturedProblems: uiCapturedProblems,
         
-        // También guardar la fecha de captura para poder relacionar con localStorage
-        captureTimestamp: Date.now(),
-        
-        // Incluir capturas anteriores para mayor compatibilidad
+        // Incluir captura con formato consistente
         screenshot: { 
-          ...screenshotData,
+          timestamp: Date.now(),
+          operation: "addition",
           problemReview: uiCapturedProblems 
         }
       }
