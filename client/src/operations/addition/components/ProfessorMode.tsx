@@ -60,6 +60,14 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     
     // Si la respuesta es correcta o se agotaron los intentos
     if (result || newAttempts >= settings.maxAttempts) {
+      // Log de diagnóstico para ver los valores que se están pasando
+      console.log("[PROFESOR-DIAGNÓSTICO] Valores enviados a onCorrectAnswer:", {
+        result,
+        userAnswer,
+        parsedUserAnswer: Number(userAnswer),
+        attemptsCount: newAttempts
+      });
+      
       setTimeout(() => {
         // Reset state
         setUserAnswer('');
@@ -72,6 +80,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         }
         
         // Move to next problem, indicando si fue correcto, la respuesta del usuario y el número de intentos
+        // NOTA: Podría ser que el número de intentos (newAttempts) esté causando el problema de los números entre paréntesis
         onCorrectAnswer(result, Number(userAnswer), newAttempts);
       }, 1000); // Short delay before moving to next problem
     }
