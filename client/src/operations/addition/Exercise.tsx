@@ -23,6 +23,7 @@ import { Link } from "wouter";
 import { useRewardsStore, awardReward, getRewardProbability, selectRandomReward } from '@/lib/rewards-system';
 import RewardAnimation from '@/components/rewards/RewardAnimation';
 import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
+import { saveExerciseResult } from "@/services/progressService"; // Importamos el servicio para guardar resultados
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -2456,6 +2457,32 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               
               // Asegurarnos de que tenemos todas las respuestas registradas para el ResultsBoard
               console.log("[PROFESOR] Ejercicio completado - Historial de respuestas:", userAnswersHistory);
+              
+              // Calcular estadísticas finales
+              const totalCorrect = userAnswersHistory.filter(a => a && a.isCorrect).length;
+              const totalIncorrect = userAnswersHistory.filter(a => a && !a.isCorrect).length;
+              const totalProblems = problems.length;
+              const totalTime = timer;
+              
+              // Crear el objeto de resultado para guardar en el historial
+              const exerciseResult = {
+                module: "addition",
+                score: totalCorrect,
+                totalProblems: totalProblems,
+                timeSpent: Math.round(totalTime),
+                settings: settings,
+                userAnswers: userAnswersHistory.filter(a => a !== null),
+                timestamp: Date.now(),
+                extra_data: {
+                  mode: "professor"
+                }
+              };
+              
+              // Guardar el resultado en el historial de progreso
+              saveExerciseResult(exerciseResult);
+              
+              // Marcar el ejercicio como completado para mostrar el ResultsBoard
+              setExerciseCompleted(true);
             } else {
               // Si no es el último problema, avanzar al siguiente
               setCurrentProblemIndex(prev => prev + 1);
