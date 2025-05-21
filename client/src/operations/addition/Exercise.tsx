@@ -2421,14 +2421,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newProblem.total = settings.problemCount;
             setCurrentProblem(newProblem);
             
-            // Avanzar el contador de problemas si es necesario
-            if (currentProblemIndex < settings.problemCount - 1) {
+            // Verificar si hemos llegado al final de todos los problemas
+            // Si el índice actual es el último problema configurado, completar el ejercicio
+            if (currentProblemIndex >= settings.problemCount - 1) {
+              // Marcar el ejercicio como completado para mostrar ResultsBoard
+              setExerciseCompleted(true);
+              
+              // Guardar el tiempo final
+              setTimer(prev => prev + (Date.now() - problemStartTime) / 1000);
+              
+              // Cerrar el modo profesor
+              setShowProfessorMode(false);
+            } else {
+              // Si no es el último problema, avanzar al siguiente
               setCurrentProblemIndex(prev => prev + 1);
+              
+              // Reiniciar temporizador para el nuevo problema
+              const newStartTime = Date.now();
+              setProblemStartTime(newStartTime);
             }
-            
-            // Reiniciar temporizador para el nuevo problema
-            const newStartTime = Date.now();
-            setProblemStartTime(newStartTime);
           }}
           showVerticalFormat={true}
           settings={{
