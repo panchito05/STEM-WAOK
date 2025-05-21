@@ -2517,18 +2517,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 console.log("[PROFESOR] Operandos extraídos:", operands);
                 
                 // Crear un objeto con todos los datos necesarios para visualización
+                // Asegurando que no se incluya la respuesta del usuario en el formato del problema
                 const problemData = {
                   id: answer.problemId || `problem-${index + 1}`,
                   problemNumber: index + 1,
+                  // Formato más limpio para el problema, sin incluir respuesta del usuario
                   problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
+                  // Evitamos guardar la respuesta del usuario en campos que afecten la visualización
+                  displayText: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
                   operand1: operands[0],
                   operand2: operands[1],
                   operation: '+',
                   result: correctAnswer,
-                  userAnswer: answer.userAnswer || correctAnswer,
-                  isCorrect: answer.isCorrect === undefined ? true : answer.isCorrect, // En modo profesor todo es correcto
-                  status: answer.status || "correct",
-                  attempts: answer.attempts || 1,
+                  correctAnswer: correctAnswer,
+                  // En modo profesor, usamos la respuesta correcta como la del usuario para evitar los paréntesis
+                  userAnswer: correctAnswer, // Siempre usamos la respuesta correcta para el Modo Profesor
+                  isCorrect: true, // En modo profesor todo se considera correcto
+                  status: "correct",
+                  attempts: 1, // Fijamos siempre en 1 para el Modo Profesor
                   level: settings.difficulty,
                   timeSpent: 0 // No tenemos tiempo por problema en modo profesor
                 };
