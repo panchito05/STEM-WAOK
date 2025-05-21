@@ -257,7 +257,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
                 <line x1="8" y1="12" x2="8" y2="12"></line>
                 <line x1="8" y1="16" x2="8" y2="16"></line>
               </svg>
-              <span className="text-gray-700">Problema {(problem.index ?? 0) + 1} de {problem.total || 1}</span>
+              <span className="text-gray-700">Problema {(problem.index ?? 0) + 1} de {problem.total ? (problem.newTotal ?? problem.total) : 1}</span>
             </div>
             <span className="text-gray-700">Intentos: {attempts}/{settings.maxAttempts}</span>
           </div>
