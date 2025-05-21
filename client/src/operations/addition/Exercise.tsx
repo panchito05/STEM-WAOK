@@ -2461,18 +2461,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               // Calcular estadísticas finales
               const totalCorrect = userAnswersHistory.filter(a => a && a.isCorrect).length;
               const totalIncorrect = userAnswersHistory.filter(a => a && !a.isCorrect).length;
-              const totalProblems = problems.length;
+              const totalProblems = currentProblemIndex + 1; // Cantidad total de problemas resueltos
               const totalTime = timer;
               
               // Crear el objeto de resultado para guardar en el historial
               const exerciseResult = {
                 module: "addition",
+                operationId: "addition",
                 score: totalCorrect,
                 totalProblems: totalProblems,
                 timeSpent: Math.round(totalTime),
                 settings: settings,
                 userAnswers: userAnswersHistory.filter(a => a !== null),
                 timestamp: Date.now(),
+                date: new Date().toISOString(),
+                difficulty: settings.difficulty,
                 extra_data: {
                   mode: "professor"
                 }
