@@ -2502,55 +2502,38 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 let correctAnswer = 0;
                 
                 if (answer.problem && answer.problem.operands) {
-                  // Extraer los operandos originales del problema
-                  operands = [...answer.problem.operands];
+                  operands = answer.problem.operands;
                   correctAnswer = answer.problem.correctAnswer;
-                  console.log("[PROFESOR] Operandos originales extraídos:", operands);
                 } else if (currentProblem) {
-                  // Usar el problema actual como respaldo (solo en casos extremos)
-                  operands = [...currentProblem.operands];
+                  // Usar el problema actual como respaldo
+                  operands = currentProblem.operands;
                   correctAnswer = currentProblem.correctAnswer;
-                  console.log("[PROFESOR] Usando operandos del problema actual como respaldo:", operands);
                 } else {
-                  // Valores por defecto solo en caso de error (no debería ocurrir)
+                  // Valores por defecto en caso extremo
                   operands = [1, 2];
                   correctAnswer = 3;
-                  console.warn("[PROFESOR] Usando valores predeterminados porque no hay datos de problema disponibles");
                 }
+                
+                console.log("[PROFESOR] Operandos extraídos:", operands);
                 
                 // Crear un objeto con todos los datos necesarios para visualización
                 const problemData = {
                   id: answer.problemId || `problem-${index + 1}`,
                   problemNumber: index + 1,
-                  // Construir el texto del problema SIN incluir userAnswer
-                  // Agregar logs para diagnóstico del problema de los paréntesis
                   problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
-                  // Log para verificar el formato exacto del problema
-                  _debug_problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
                   operand1: operands[0],
                   operand2: operands[1],
                   operation: '+',
                   result: correctAnswer,
-                  // Eliminamos la propiedad userAnswer para evitar los números entre paréntesis
-                  userAnswer: undefined,
-                  isCorrect: true, // En modo profesor todo es correcto
-                  status: "correct",
+                  userAnswer: answer.userAnswer || correctAnswer,
+                  isCorrect: answer.isCorrect === undefined ? true : answer.isCorrect, // En modo profesor todo es correcto
+                  status: answer.status || "correct",
                   attempts: answer.attempts || 1,
                   level: settings.difficulty,
                   timeSpent: 0 // No tenemos tiempo por problema en modo profesor
                 };
                 
-                // Logs detallados para diagnóstico de los números en paréntesis
-              console.log("[PROFESOR] Problema formateado para guardar:", {
-                ...problemData,
-                problemText: problemData.problem,
-                userAnswerValue: problemData.userAnswer
-              });
-              
-              // Verificar si hay algún procesamiento adicional que pueda estar añadiendo paréntesis
-              console.log("[DIAGNÓSTICO-PARÉNTESIS] ¿El texto del problema ya contiene paréntesis?", 
-                problemData.problem.includes("("),
-                "Texto del problema:", problemData.problem);
+                console.log("[PROFESOR] Problema formateado para guardar:", problemData);
                 return problemData;
               });
                 
