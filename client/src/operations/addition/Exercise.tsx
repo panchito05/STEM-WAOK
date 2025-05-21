@@ -2381,7 +2381,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           currentProblemIndex={currentProblemIndex}
           totalProblems={problemsList.length}
           onClose={() => setShowProfessorMode(false)}
-          onCorrectAnswer={(wasCorrect: boolean) => {
+          onCorrectAnswer={(wasCorrect: boolean, userAnswer: number, attempts: number) => {
             // Actualizar contadores de respuestas consecutivas
             if (wasCorrect) {
               const newConsecutive = consecutiveCorrectAnswers + 1;
@@ -2414,6 +2414,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setUserAnswersHistory(prev => [...prev, null]);
             }
             
+            // Registrar la respuesta actual en el historial de respuestas
+            const currentAnswer = {
+              problemId: currentProblem.id,
+              problem: currentProblem,
+              userAnswer: userAnswer,
+              isCorrect: wasCorrect,
+              status: wasCorrect ? 'correct' : 'incorrect',
+              attempts: attempts,
+              timestamp: Date.now()
+            };
+            
+            // Actualizar el historial de respuestas reemplazando el valor en la posición actual
+            setUserAnswersHistory(prev => {
+              const newHistory = [...prev];
+              newHistory[currentProblemIndex] = currentAnswer;
+              return newHistory;
+            });
+
+            // Calcular el tiempo usado en este problema
+            const problemTime = (Date.now() - problemStartTime) / 1000;
+            
             // Generar un nuevo problema
             const newProblem = generateAdditionProblem(settings.difficulty);
             // Agregar información sobre la posición y total de problemas
@@ -2432,6 +2453,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               
               // Cerrar el modo profesor
               setShowProfessorMode(false);
+              
+              // Asegurarnos de que tenemos todas las respuestas registradas para el ResultsBoard
+              console.log("[PROFESOR] Ejercicio completado - Historial de respuestas:", userAnswersHistory);
             } else {
               // Si no es el último problema, avanzar al siguiente
               setCurrentProblemIndex(prev => prev + 1);

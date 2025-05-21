@@ -7,7 +7,7 @@ import NumericKeypad from './SimpleNumericKeypad';
 interface ProfessorModeProps {
   problem: AdditionProblem;
   onClose: () => void;
-  onCorrectAnswer: (wasCorrect: boolean) => void;
+  onCorrectAnswer: (wasCorrect: boolean, userAnswer: number, attempts: number) => void;
   showVerticalFormat?: boolean;
   currentProblemIndex?: number; // Índice actual del problema
   totalProblems?: number; // Número total de problemas
@@ -71,8 +71,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           canvasRef.current.clear();
         }
         
-        // Move to next problem, indicando si fue correcto para compensación si es necesario
-        onCorrectAnswer(result);
+        // Move to next problem, indicando si fue correcto, la respuesta del usuario y el número de intentos
+        onCorrectAnswer(result, Number(userAnswer), newAttempts);
       }, 1000); // Short delay before moving to next problem
     }
   };
