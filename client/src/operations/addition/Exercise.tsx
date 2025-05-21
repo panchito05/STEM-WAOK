@@ -1939,7 +1939,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               if (problem.operands && problem.operands.length > 0) {
                 if (problem.operands.length === 2) {
                   problemDisplay = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
-                  if (answer.userAnswer !== problem.correctAnswer && !isNaN(answer.userAnswer)) {
+                  
+                  // Verificar si NO estamos en modo profesor antes de mostrar respuesta entre paréntesis
+                  const isProfessorMode = settings.mode === "professor" || (exerciseHistory[0]?.extra_data?.mode === "professor");
+                  
+                  // Solo mostrar respuesta del usuario entre paréntesis si:
+                  // 1. No estamos en modo profesor
+                  // 2. La respuesta es incorrecta
+                  // 3. La respuesta del usuario es un número válido
+                  // 4. Convertimos ambos valores a números para comparación precisa
+                  if (!isProfessorMode && 
+                      Number(answer.userAnswer) !== Number(problem.correctAnswer) && 
+                      !isNaN(answer.userAnswer)) {
                     problemDisplay += ` (${answer.userAnswer})`;
                   }
                 }
