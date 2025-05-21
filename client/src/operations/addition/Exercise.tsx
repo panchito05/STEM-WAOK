@@ -2222,6 +2222,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         </div>
+        <div className="flex justify-between text-xs text-gray-600 mb-2">
+          <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
+          {settings.maxAttempts > 0 && !viewingPrevious && (
+            <span className={`${currentAttempts > 0 && currentAttempts < settings.maxAttempts ? "text-amber-800" : currentAttempts >= settings.maxAttempts ? "text-red-700" : "text-gray-700"}`}>
+              {currentTranslations.attempts}: {currentAttempts}/{settings.maxAttempts}
+            </span>
+          )}
+        </div>
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-xs mx-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
