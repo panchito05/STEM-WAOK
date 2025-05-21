@@ -2520,14 +2520,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 const problemData = {
                   id: answer.problemId || `problem-${index + 1}`,
                   problemNumber: index + 1,
-                  // Construir el texto del problema sin el userAnswer que causa los números parentéticos
                   problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
                   operand1: operands[0],
                   operand2: operands[1],
                   operation: '+',
                   result: correctAnswer,
-                  // En modo profesor, establecemos userAnswer solo para comparación interna, no para mostrar
-                  userAnswer: correctAnswer,
+                  userAnswer: answer.userAnswer || correctAnswer,
                   isCorrect: answer.isCorrect === undefined ? true : answer.isCorrect, // En modo profesor todo es correcto
                   status: answer.status || "correct",
                   attempts: answer.attempts || 1,
