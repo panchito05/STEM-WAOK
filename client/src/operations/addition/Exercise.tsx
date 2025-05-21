@@ -2464,7 +2464,34 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               const totalProblems = currentProblemIndex + 1; // Cantidad total de problemas resueltos
               const totalTime = timer;
               
-              // Crear el objeto de resultado para guardar en el historial
+              // Preparar los problemas en formato compatible con Problem Review
+              const detailedProblems = userAnswersHistory
+                .filter(a => a !== null)
+                .map((answer, index) => {
+                  if (!answer) return null;
+                  
+                  // Obtener los operandos del problema actual
+                  const operands = answer.problem.operands || [];
+                  
+                  return {
+                    id: answer.problemId,
+                    problemNumber: index + 1,
+                    problem: `${operands[0]} + ${operands[1]} = ${answer.problem.correctAnswer}`,
+                    operand1: operands[0],
+                    operand2: operands[1],
+                    operation: '+',
+                    result: answer.problem.correctAnswer,
+                    userAnswer: answer.userAnswer,
+                    isCorrect: answer.isCorrect,
+                    status: answer.status,
+                    attempts: answer.attempts || 1,
+                    level: settings.difficulty,
+                    timeSpent: 0 // No tenemos tiempo por problema en modo profesor
+                  };
+                })
+                .filter(p => p !== null);
+              
+              // Crear el objeto de resultado para guardar en el historial con los problemas detallados
               const exerciseResult = {
                 module: "addition",
                 operationId: "addition",
@@ -2476,8 +2503,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 timestamp: Date.now(),
                 date: new Date().toISOString(),
                 difficulty: settings.difficulty,
+                // Guardar los problemas detallados en todos los formatos posibles
+                problemDetails: detailedProblems,
                 extra_data: {
-                  mode: "professor"
+                  mode: "professor",
+                  problems: detailedProblems,
+                  exactProblems: detailedProblems,
+                  capturedProblems: detailedProblems,
+                  mathProblems: detailedProblems,
+                  problemDetails: detailedProblems
                 }
               };
               
