@@ -13,6 +13,7 @@ import { ProfessorModeReview } from './ProfessorModeReview';
 import { ExplanationBankDialog } from './ExplanationBankDialog';
 import { professorModeEvents } from '../services/ProfessorModeEventSystem';
 import { professorModeStorage } from '../services/ProfessorModeStorage';
+import { compensationService } from '../services/CompensationService';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
@@ -147,7 +148,7 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
     setHasSessionToRestore(false);
   };
 
-  // Guardar el estado actual
+  // Guardar el estado actual con reintentos automáticos
   const saveCurrentState = () => {
     // Actualizar el tiempo total en el estado antes de guardar
     setState(prev => ({
@@ -157,7 +158,40 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
     
     // Guardar después de que el estado se actualice
     setTimeout(() => {
-      professorModeStorage.saveState(state);
+      // Función de guardado con reintentos
+      const attemptSave = (remainingAttempts = 3, delay = 1000) => {
+        try {
+          professorModeStorage.saveState(state);
+          // Log de éxito solo en desarrollo
+          if (process.env.NODE_ENV === 'development') {
+            console.log("[PROFESOR] Estado guardado exitosamente");
+          }
+        } catch (error) {
+          console.error("[PROFESOR] Error al guardar el estado:", error);
+          
+          // Reintentar si quedan intentos
+          if (remainingAttempts > 0) {
+            console.log(`[PROFESOR] Reintentando guardado (${remainingAttempts} intentos restantes)...`);
+            setTimeout(() => attemptSave(remainingAttempts - 1, delay * 1.5), delay);
+          } else {
+            // Notificar al usuario solo si fallan todos los intentos
+            toast({
+              title: t('professorMode.saveError'),
+              description: t('professorMode.saveErrorDescription'),
+              variant: "destructive",
+            });
+            
+            // Emitir evento de error
+            professorModeEvents.emit('error', {
+              message: 'Failed to save state after multiple attempts',
+              error
+            });
+          }
+        }
+      };
+      
+      // Iniciar el proceso de guardado con reintentos
+      attemptSave();
     }, 0);
   };
 
@@ -185,31 +219,41 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
   };
 
   // Añade un problema de compensación cuando es necesario
-  const addCompensationProblem = () => {
-    // Solo añadir si está habilitada la compensación
-    if (!state.settings.enableCompensation) return;
+  const addCompensationProblem = (reason: 'incorrect_answer' | 'skipped' | 'revealed' = 'incorrect_answer') => {
+    // Verificar si debemos añadir compensación usando el servicio centralizado
+    if (!compensationService.shouldAddCompensation(state.settings, false, reason)) {
+      return;
+    }
 
-    const newProblem = {
-      ...generateAdditionProblem(state.settings.difficulty),
-      id: uuidv4()
-    };
+    try {
+      // Generar el problema de compensación usando el servicio centralizado
+      const { newProblem, updatedProblems } = compensationService.generateCompensationProblem(
+        state.settings,
+        state.problems,
+        reason
+      );
 
-    setState(prev => ({
-      ...prev,
-      problems: [...prev.problems, newProblem]
-    }));
+      // Actualizar el estado con los nuevos problemas
+      setState(prev => ({
+        ...prev,
+        problems: updatedProblems
+      }));
 
-    // Emitir evento de problema de compensación
-    professorModeEvents.emit('problem:compensation', {
-      problemId: newProblem.id,
-      currentProblemCount: state.problems.length + 1
-    });
-
-    toast({
-      title: t('exercises.compensationProblemAdded'),
-      description: t('exercises.compensationProblemDescription'),
-      variant: "default",
-    });
+      // Mostrar notificación
+      toast({
+        title: t('exercises.compensationProblemAdded'),
+        description: t('exercises.compensationProblemDescription'),
+        variant: "default",
+      });
+    } catch (error) {
+      console.error('Error adding compensation problem:', error);
+      
+      // Emitir evento de error
+      professorModeEvents.emit('error', {
+        message: 'Failed to add compensation problem',
+        error
+      });
+    }
   };
 
   // Actualiza el estado de la respuesta del estudiante

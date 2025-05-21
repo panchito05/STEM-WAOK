@@ -16,32 +16,151 @@ const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 horas
 export class ProfessorModeStorage {
   
   /**
-   * Guarda el estado actual del modo profesor
+   * Guarda el estado actual del modo profesor con mecanismo de reintentos
+   * @param state Estado a guardar
+   * @param retryOptions Opciones de reintento
+   * @returns Promise que se resuelve cuando el guardado se completa o falla definitivamente
    */
-  saveState(state: ProfessorModeState): void {
+  saveState(
+    state: ProfessorModeState, 
+    retryOptions: { maxAttempts?: number, delayMs?: number } = {}
+  ): Promise<boolean> {
+    const { maxAttempts = 3, delayMs = 1000 } = retryOptions;
+    
+    // Implementar función de reintento recursiva
+    const attemptSave = async (remainingAttempts: number, delay: number): Promise<boolean> => {
+      try {
+        const sessionId = this.getCurrentSessionId() || this.createNewSessionId();
+        
+        // Verificar si hay espacio disponible en localStorage
+        if (!this.hasEnoughStorageSpace(state)) {
+          // Si no hay espacio, intentar limpiar datos antiguos
+          this.cleanupOldSessions();
+          
+          // Verificar nuevamente después de la limpieza
+          if (!this.hasEnoughStorageSpace(state)) {
+            throw new Error('Not enough storage space available');
+          }
+        }
+        
+        // Guardar el estado completo
+        localStorage.setItem(
+          `${STORAGE_PREFIX}session_${sessionId}`,
+          JSON.stringify({
+            timestamp: Date.now(),
+            state
+          })
+        );
+        
+        // Emitir evento de guardado exitoso
+        professorModeEvents.emit('settings:updated', { 
+          action: 'state_saved', 
+          sessionId 
+        });
+        
+        return true;
+      } catch (error) {
+        console.error(`Error al guardar el estado (intento ${maxAttempts - remainingAttempts + 1}/${maxAttempts}):`, error);
+        
+        // Si quedan intentos, reintentar después de un delay
+        if (remainingAttempts > 1) {
+          // Emitir evento de reintento
+          professorModeEvents.emit('settings:updated', { 
+            action: 'save_retry', 
+            remainingAttempts: remainingAttempts - 1
+          });
+          
+          // Esperar antes de reintentar con backoff exponencial
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return attemptSave(remainingAttempts - 1, delay * 1.5);
+        }
+        
+        // Si ya no quedan intentos, emitir evento de error
+        professorModeEvents.emit('error', { 
+          message: 'Error al guardar la sesión después de múltiples intentos',
+          error
+        });
+        
+        return false;
+      }
+    };
+    
+    // Iniciar el proceso de reintento y devolver la promesa
+    return attemptSave(maxAttempts, delayMs);
+  }
+  
+  /**
+   * Comprueba si hay suficiente espacio en localStorage para guardar el estado
+   */
+  private hasEnoughStorageSpace(state: ProfessorModeState): boolean {
     try {
-      const sessionId = this.getCurrentSessionId() || this.createNewSessionId();
+      // Estimar el tamaño del estado serializado (aproximado)
+      const serializedState = JSON.stringify({
+        timestamp: Date.now(),
+        state
+      });
       
-      // Guardar el estado completo
-      localStorage.setItem(
-        `${STORAGE_PREFIX}session_${sessionId}`,
-        JSON.stringify({
-          timestamp: Date.now(),
-          state
-        })
-      );
+      // Calcular espacio aproximado requerido en bytes (añadiendo un margen)
+      const requiredSpace = serializedState.length * 2;
       
-      // Emitir evento de guardado exitoso
+      // Verificar espacio disponible (estimación)
+      const testKey = `${STORAGE_PREFIX}space_test_${Date.now()}`;
+      const testValue = 'A'.repeat(requiredSpace);
+      
+      try {
+        localStorage.setItem(testKey, testValue);
+        localStorage.removeItem(testKey);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    } catch (e) {
+      console.error('Error al verificar espacio disponible:', e);
+      return false;
+    }
+  }
+  
+  /**
+   * Limpia sesiones antiguas para liberar espacio
+   */
+  private cleanupOldSessions(): void {
+    try {
+      // Recopilar todas las claves de sesión
+      const sessionKeys: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith(`${STORAGE_PREFIX}session_`)) {
+          sessionKeys.push(key);
+        }
+      }
+      
+      // Si hay menos de 2 sesiones, no eliminar nada
+      if (sessionKeys.length < 2) return;
+      
+      // Ordenar por antigüedad (basado en timestamp en el nombre o en los datos)
+      sessionKeys.sort((a, b) => {
+        try {
+          const dataA = JSON.parse(localStorage.getItem(a) || '{}');
+          const dataB = JSON.parse(localStorage.getItem(b) || '{}');
+          return (dataA.timestamp || 0) - (dataB.timestamp || 0);
+        } catch {
+          // Si hay error al parsear, ordenar por nombre de clave
+          return a.localeCompare(b);
+        }
+      });
+      
+      // Eliminar las sesiones más antiguas (dejar solo la más reciente)
+      for (let i = 0; i < sessionKeys.length - 1; i++) {
+        localStorage.removeItem(sessionKeys[i]);
+      }
+      
+      // Emitir evento de limpieza
       professorModeEvents.emit('settings:updated', { 
-        action: 'state_saved', 
-        sessionId 
+        action: 'old_sessions_cleaned', 
+        count: sessionKeys.length - 1
       });
-    } catch (error) {
-      console.error('Error al guardar el estado del modo profesor:', error);
-      professorModeEvents.emit('error', { 
-        message: 'Error al guardar la sesión',
-        error
-      });
+    } catch (e) {
+      console.error('Error al limpiar sesiones antiguas:', e);
     }
   }
   
