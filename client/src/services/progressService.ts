@@ -18,15 +18,29 @@ export async function saveExerciseResult(result: ExerciseResult): Promise<void> 
     
     // Limpiar problemas para guardar solo lo esencial
     const sanitizedAnswers = result.userAnswers.map(answer => {
-      // Si problem es un objeto Problem, convertirlo a una versión simplificada
+      // Si problem es un objeto Problem, convertirlo a una versión simplificada y preservar la información necesaria
       const simplifiedProblem = typeof answer.problem === 'string' 
         ? answer.problem 
         : `${answer.problem.operands?.join(' + ')} = ${answer.problem.correctAnswer}`;
+      
+      // Extraer los operandos para mostrarlos correctamente en el Problem Review
+      let operandInfo = {};
+      if (typeof answer.problem !== 'string' && answer.problem.operands) {
+        operandInfo = {
+          operand1: answer.problem.operands[0],
+          operand2: answer.problem.operands[1],
+          operation: '+',
+          result: answer.problem.correctAnswer
+        };
+      }
         
       return {
         ...answer,
         problem: simplifiedProblem,
-        problemId: typeof answer.problem === 'string' ? answer.problemId : answer.problem.id
+        problemId: typeof answer.problem === 'string' ? answer.problemId : answer.problem.id,
+        ...operandInfo, // Agregamos información de los operandos para el Problem Review
+        // Guardamos información adicional útil para la visualización
+        correctAnswer: typeof answer.problem !== 'string' ? answer.problem.correctAnswer : undefined
       };
     });
     
