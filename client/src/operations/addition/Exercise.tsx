@@ -2464,6 +2464,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               const totalProblems = currentProblemIndex + 1; // Cantidad total de problemas resueltos
               const totalTime = timer;
               
+              // ⚠️ DIAGNÓSTICO DEL ERROR: Problema con conteo de problemas
+              console.log("=== DIAGNÓSTICO DE SCORE EN MODO PROFESOR ===");
+              console.log("currentProblemIndex:", currentProblemIndex);
+              console.log("problemsList.length:", problemsList.length);
+              console.log("totalCorrect:", totalCorrect);
+              console.log("totalIncorrect:", totalIncorrect);
+              console.log("totalProblems:", totalProblems);
+              console.log("solucionesRespondidas:", [...userAnswersHistory.entries()].map(([i, a]) => a ? `Índice ${i}: ${a.isCorrect ? "correcto" : "incorrecto"}` : `Índice ${i}: null`));
+              
               // Log de diagnóstico: Verificar estado de userAnswersHistory
               console.log("[PROFESOR] Ejercicio completado - Historial de respuestas:", userAnswersHistory);
               console.log("[PROFESOR] userAnswersHistory longitud:", userAnswersHistory.length);
@@ -2539,15 +2548,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
               console.log("[PROFESOR] detailedProblems final:", detailedProblems);
               
-              // Log adicional para diagnóstico
-              console.log("💾 Guardando datos extra con problemas:", detailedProblems.length, "problemas");
+              // ⚠️ DIAGNÓSTICO DEL ERROR: Problema con Score vs TotalProblems
+              console.log("=== DIAGNÓSTICO DE OBJETO FINAL ===");
+              console.log("Problemas detallados encontrados:", detailedProblems.length);
+              console.log("Valores para crear el resultado:");
+              console.log("- Score (totalCorrect):", totalCorrect);
+              console.log("- TotalProblems (currentProblemIndex + 1):", totalProblems);
+              console.log("- Cantidad en problemsList:", problemsList.length);
+              
+              // PUNTO CLAVE: totalProblems (calculado como currentProblemIndex + 1)
+              // no coincide con problemsList.length (total de problemas generados)
+              // o detailedProblems.length (problemas que vemos en la UI)
               
               // Crear el objeto de resultado para guardar en el historial con los problemas detallados
               const exerciseResult = {
                 module: "addition",
                 operationId: "addition",
-                score: totalCorrect,
-                totalProblems: totalProblems,
+                // ⚠️ PRUEBA DIAGNÓSTICA: Enviamos valor real de problemas resueltos
+                score: detailedProblems.length, // CAMBIADO: usar longitud de problemas detallados en lugar de totalCorrect
+                totalProblems: problemsList.length, // CAMBIADO: usar problemsList.length en lugar de currentProblemIndex + 1
                 timeSpent: Math.round(totalTime),
                 settings: settings,
                 userAnswers: respuestasParaGuardar, // Usar las respuestas procesadas
