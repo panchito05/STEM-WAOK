@@ -199,7 +199,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             {/* Contador de problema e intentos */}
             <div className="flex justify-between mb-2 text-xs font-medium text-gray-600">
-              <span>Problema {currentProblemIndex + 1} de {totalProblems}</span>
+              <span>Problema {Math.min(currentProblemIndex + 1, totalProblems)} de {totalProblems}</span>
               <span>Intentos: {attempts}/{settings.maxAttempts}</span>
             </div>
             {renderProblem()}

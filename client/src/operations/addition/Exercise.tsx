@@ -2443,18 +2443,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newProblem.total = settings.problemCount;
             setCurrentProblem(newProblem);
             
-            // 🔍 DIAGNÓSTICO: Log justo antes de verificar fin de ejercicio
-            console.log("⚠️ VERIFICANDO FIN DE EJERCICIO - Modo Profesor:");
-            console.log("currentProblemIndex:", currentProblemIndex);
-            console.log("settings.problemCount:", settings.problemCount);
-            console.log("Condición currentProblemIndex >= settings.problemCount - 1:", currentProblemIndex >= settings.problemCount - 1);
-            console.log("problemsList.length:", problemsList.length);
-            console.log("userAnswersHistory:", userAnswersHistory);
+            // Verificación de finalización del ejercicio en Modo Profesor
+            // La condición se mantiene por compatibilidad, pero utilizamos problemsList.length
+            // para calcular el porcentaje de progreso en la UI
             
             // Verificar si hemos llegado al final de todos los problemas
             // Si el índice actual es el último problema configurado, completar el ejercicio
             if (currentProblemIndex >= settings.problemCount - 1) {
-              console.log("🏁 EJERCICIO COMPLETADO - Se cumplió la condición para finalizar");
+              // Ejercicio completado
               
               // Marcar el ejercicio como completado para mostrar ResultsBoard
               setExerciseCompleted(true);
@@ -2558,31 +2554,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
               console.log("[PROFESOR] detailedProblems final:", detailedProblems);
               
-              // 🔎 DIAGNÓSTICO DEL ERROR: Explicación del problema
-              console.log("=== DIAGNÓSTICO DEL PROBLEMA DE SCORE EN MODO PROFESOR ===");
-              
-              // 🔍 Diagnóstico básico
-              console.log("Problemas detallados encontrados:", detailedProblems.length);
-              console.log("Valores clave:");
-              console.log("- Score (totalCorrect):", totalCorrect);
-              console.log("- settings.problemCount (configuración inicial):", settings.problemCount);
-              console.log("- currentProblemIndex (índice actual):", currentProblemIndex);
-              console.log("- totalProblems (currentProblemIndex + 1):", totalProblems);
-              console.log("- problemsList.length (total de problemas en lista):", problemsList.length);
-              
-              // 🔍 CAUSA DEL PROBLEMA IDENTIFICADA:
-              // 1. En Modo Profesor, currentProblemIndex no se incrementa de la misma manera que en modo normal
-              // 2. El contador problemsList.length se actualiza correctamente cuando se añaden problemas
-              // 3. Pero userAnswersHistory puede tener valores null que crean inconsistencia
-              // 4. Conclusión: totalProblems = currentProblemIndex + 1 no es confiable en Modo Profesor
+              // En Modo Profesor, aseguramos valores correctos para el historial
+              // Solución: Usamos datos de problemas reales en lugar de índices que pueden tener inconsistencias
+              const problemsResueltos = detailedProblems.length; 
+              const problemsConfigured = settings.problemCount;
               
               // Crear el objeto de resultado para guardar en el historial con los problemas detallados
               const exerciseResult = {
                 module: "addition",
                 operationId: "addition",
-                // Solución: Con los valores correctos para modo profesor
-                score: respuestasParaGuardar.length, // Número de respuestas reales guardadas 
-                totalProblems: settings.problemCount, // Usar el valor original configurado
+                // Solución definitiva: Valores correctos para el Modo Profesor
+                score: problemsResueltos, // Total de problemas REALMENTE completados
+                totalProblems: problemsConfigured, // Total de problemas CONFIGURADOS originalmente
                 timeSpent: Math.round(totalTime),
                 settings: settings,
                 userAnswers: respuestasParaGuardar, // Usar las respuestas procesadas
