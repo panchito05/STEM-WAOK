@@ -1938,25 +1938,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               let problemDisplay = '';
               if (problem.operands && problem.operands.length > 0) {
                 if (problem.operands.length === 2) {
+                  // SOLUCIÓN DIRECTA: Siempre mostrar el problema sin paréntesis en modo profesor
+                  // En otros casos, solo mostrar paréntesis si la respuesta es incorrecta
+                  
+                  // 1. Primero construimos el problema básico
                   problemDisplay = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
                   
-                  // Solo mostrar la respuesta del usuario entre paréntesis cuando:
-                  // 1. La respuesta es incorrecta (comparando como números para evitar errores de tipo)
-                  // 2. La respuesta del usuario es un número válido
-                  // 3. No estamos en modo profesor
+                  // 2. Verificamos si estamos en modo profesor por cualquier medio posible
+                  const isProfessorMode = 
+                      // Verificación por datos existentes
+                      answer.modeProfessor === true ||
+                      // Verificación por configuraciones 
+                      (typeof settings === 'object' &&
+                        (settings.mode === "professor" ||
+                         settings.experimentalMode === "professor" ||
+                         settings.teacherMode === true)) ||
+                      // Verificación por historial
+                      (exerciseHistory && exerciseHistory[0]?.extra_data?.mode === "professor");
                   
-                  // Determinar si estamos en modo profesor
-                  // Verificamos múltiples propiedades donde podría indicarse el modo profesor
-                  // Como sabemos que settings.mode no siempre está disponible en la interfaz,
-                  // vamos a verificar múltiples ubicaciones donde podría estar la indicación del modo profesor
-                  const isProfessorMode = typeof settings === 'object' && 
-                                      ('mode' in settings && settings.mode === "professor" ||
-                                      'teacherMode' in settings && settings.teacherMode === true ||
-                                      exerciseHistory && exerciseHistory[0]?.extra_data?.mode === "professor");
-                  
+                  // 3. SOLO añadimos paréntesis si: 
+                  //    - NO es modo profesor
+                  //    - La respuesta es incorrecta
+                  //    - La respuesta del usuario es un número válido
                   if (!isProfessorMode && 
                       Number(answer.userAnswer) !== Number(problem.correctAnswer) && 
-                      !isNaN(answer.userAnswer)) {
+                      !isNaN(Number(answer.userAnswer))) {
                     problemDisplay += ` (${answer.userAnswer})`;
                   }
                 }
