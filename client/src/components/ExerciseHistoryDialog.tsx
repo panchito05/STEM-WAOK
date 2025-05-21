@@ -162,14 +162,23 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                       <div className="flex justify-between items-center">
                         <div>
                           <span className="font-medium">(#{index + 1})</span> {
-                            // Si estamos en modo profesor, asegurarnos de que no se muestren los paréntesis
-                            // Verificar diferentes formas en que se puede indicar el modo profesor en los datos
-                            (selectedExercise.extra_data?.mode === "professor" || 
-                             selectedExercise.extra_data?.screenshot?.mode === "professor" || 
-                             selectedExercise.settings?.mode === "professor") ? 
-                              // Eliminar cualquier contenido entre paréntesis de la cadena del problema
-                              problem.problem.replace(/\s*\(\d+\)$/, '') : 
-                              problem.problem
+                            // Este código se ejecuta tanto en el modo normal como en el modo profesor
+                            // Para el modo profesor, debemos asegurarnos de eliminar CUALQUIER paréntesis
+                            // independientemente de cómo estén detectados
+                            
+                            // Primero determinamos si estamos en modo profesor por cualquier indicador
+                            const esModoProfesor = 
+                              selectedExercise.extra_data?.mode === "professor" || 
+                              selectedExercise.extra_data?.screenshot?.mode === "professor" || 
+                              selectedExercise.settings?.mode === "professor" ||
+                              problem.modeProfessor === true;
+                            
+                            // Siempre eliminar los paréntesis al final en modo profesor
+                            const textoProblema = esModoProfesor
+                              ? problem.problem.replace(/\s*\(.*?\)$/g, '')  // Expresión más amplia para capturar cualquier paréntesis
+                              : problem.problem;
+                            
+                            textoProblema  // Mostramos el texto final
                           }
                         </div>
                         <div>

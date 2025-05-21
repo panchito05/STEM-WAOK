@@ -2494,15 +2494,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               if (respuestasParaGuardar.length === 0 && currentProblem) {
                 console.log("[PROFESOR] No hay respuestas guardadas. Creando respuesta para el problema actual:", currentProblem);
                 
-                // Crear manualmente una respuesta básica
+                // Crear manualmente una respuesta básica - MODO PROFESOR
                 const respuestaManual = {
                   problemId: currentProblem.id,
                   problem: currentProblem,
-                  userAnswer: currentProblem.correctAnswer, // En modo profesor asumimos que la respuesta es correcta - usando exactamente el mismo valor para evitar diferencias
+                  userAnswer: currentProblem.correctAnswer, // Mismo valor que la respuesta correcta
                   isCorrect: true,
                   status: "correct",
                   attempts: 1,
-                  timestamp: Date.now()
+                  timestamp: Date.now(),
+                  modeProfessor: true // Marcador explícito de modo profesor
                 };
                 
                 // Agregar esta respuesta a nuestro arreglo para procesar
