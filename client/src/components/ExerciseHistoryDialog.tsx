@@ -163,7 +163,10 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                         <div>
                           <span className="font-medium">(#{index + 1})</span> {
                             // Si estamos en modo profesor, asegurarnos de que no se muestren los paréntesis
-                            selectedExercise.extra_data?.mode === "professor" ? 
+                            // Verificar diferentes formas en que se puede indicar el modo profesor en los datos
+                            (selectedExercise.extra_data?.mode === "professor" || 
+                             selectedExercise.extra_data?.screenshot?.mode === "professor" || 
+                             selectedExercise.settings?.mode === "professor") ? 
                               // Eliminar cualquier contenido entre paréntesis de la cadena del problema
                               problem.problem.replace(/\s*\(\d+\)$/, '') : 
                               problem.problem

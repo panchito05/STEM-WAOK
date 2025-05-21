@@ -1940,14 +1940,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 if (problem.operands.length === 2) {
                   problemDisplay = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
                   
-                  // Verificar si NO estamos en modo profesor antes de mostrar respuesta entre paréntesis
-                  const isProfessorMode = settings.mode === "professor" || (exerciseHistory[0]?.extra_data?.mode === "professor");
+                  // Solo mostrar la respuesta del usuario entre paréntesis cuando:
+                  // 1. La respuesta es incorrecta (comparando como números para evitar errores de tipo)
+                  // 2. La respuesta del usuario es un número válido
+                  // 3. No estamos en modo profesor
                   
-                  // Solo mostrar respuesta del usuario entre paréntesis si:
-                  // 1. No estamos en modo profesor
-                  // 2. La respuesta es incorrecta
-                  // 3. La respuesta del usuario es un número válido
-                  // 4. Convertimos ambos valores a números para comparación precisa
+                  // Determinar si estamos en modo profesor
+                  // Verificamos múltiples propiedades donde podría indicarse el modo profesor
+                  // Como sabemos que settings.mode no siempre está disponible en la interfaz,
+                  // vamos a verificar múltiples ubicaciones donde podría estar la indicación del modo profesor
+                  const isProfessorMode = typeof settings === 'object' && 
+                                      ('mode' in settings && settings.mode === "professor" ||
+                                      'teacherMode' in settings && settings.teacherMode === true ||
+                                      exerciseHistory && exerciseHistory[0]?.extra_data?.mode === "professor");
+                  
                   if (!isProfessorMode && 
                       Number(answer.userAnswer) !== Number(problem.correctAnswer) && 
                       !isNaN(answer.userAnswer)) {
@@ -2492,7 +2498,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 const respuestaManual = {
                   problemId: currentProblem.id,
                   problem: currentProblem,
-                  userAnswer: parseInt(currentProblem.correctAnswer.toString()), // En modo profesor asumimos que la respuesta es correcta
+                  userAnswer: currentProblem.correctAnswer, // En modo profesor asumimos que la respuesta es correcta - usando exactamente el mismo valor para evitar diferencias
                   isCorrect: true,
                   status: "correct",
                   attempts: 1,
