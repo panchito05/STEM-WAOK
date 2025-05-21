@@ -2535,12 +2535,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   console.warn("[PROFESOR] Usando valores predeterminados porque no hay datos de problema disponibles");
                 }
                 
-                // Crear un objeto con todos los datos necesarios para visualización
+                // Crear un objeto con todos los datos necesarios para visualización - MODO PROFESOR
                 const problemData = {
                   id: answer.problemId || `problem-${index + 1}`,
                   problemNumber: index + 1,
-                  // Construir el texto del problema SIN incluir userAnswer
-                  // Agregar logs para diagnóstico del problema de los paréntesis
+                  // Construir el texto del problema SIN incluir userAnswer ni paréntesis
                   problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
                   // Log para verificar el formato exacto del problema
                   _debug_problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
@@ -2548,13 +2547,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   operand2: operands[1],
                   operation: '+',
                   result: correctAnswer,
-                  // Eliminamos la propiedad userAnswer para evitar los números entre paréntesis
-                  userAnswer: undefined,
+                  // En lugar de undefined, asignamos el mismo valor que correctAnswer para evitar diferencias
+                  userAnswer: correctAnswer, // El mismo valor que correctAnswer para no mostrar paréntesis
                   isCorrect: true, // En modo profesor todo es correcto
                   status: "correct",
                   attempts: answer.attempts || 1,
                   level: settings.difficulty,
-                  timeSpent: 0 // No tenemos tiempo por problema en modo profesor
+                  timeSpent: 0, // No tenemos tiempo por problema en modo profesor
+                  modeProfessor: true // Marcador explícito de modo profesor
                 };
                 
                 // Logs detallados para diagnóstico de los números en paréntesis
