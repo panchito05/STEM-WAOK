@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
 import { AdditionProblem } from '../types';
@@ -9,6 +9,12 @@ import { ProfessorProblemDisplay } from './ProfessorProblemDisplay';
 import { ProfessorExplanation } from './ProfessorExplanation';
 import { StudentAnswerCapture } from './StudentAnswerCapture';
 import { ProfessorResultsBoard } from './ProfessorResultsBoard';
+import { ProfessorModeReview } from './ProfessorModeReview';
+import { ExplanationBankDialog } from './ExplanationBankDialog';
+import { professorModeEvents } from '../services/ProfessorModeEventSystem';
+import { professorModeStorage } from '../services/ProfessorModeStorage';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 
 interface ProfessorModeContainerProps {
   initialSettings: ProfessorModeSettings;
@@ -32,6 +38,7 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const problemTimerRef = useRef<number>(0);
   const totalTimerRef = useRef<number>(0);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Estado de la máquina de estados del modo profesor
   const [state, setState] = useState<ProfessorModeState>({
@@ -43,8 +50,48 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
     totalTime: 0
   });
 
-  // Inicialización - Generar problemas iniciales
+  // Estados de UI adicionales
+  const [isExplanationBankOpen, setIsExplanationBankOpen] = useState(false);
+  const [hasSessionToRestore, setHasSessionToRestore] = useState(false);
+
+  // Inicialización - Comprobar sesión guardada y generar problemas iniciales
   useEffect(() => {
+    // Comprobar si hay una sesión guardada
+    const savedState = professorModeStorage.loadState();
+    if (savedState) {
+      setHasSessionToRestore(true);
+    } else {
+      // Si no hay sesión guardada, generar problemas nuevos
+      generateInitialProblems();
+    }
+
+    // Iniciar el temporizador global
+    startGlobalTimer();
+    
+    // Configurar guardado automático cada 30 segundos
+    autoSaveTimerRef.current = setInterval(() => {
+      saveCurrentState();
+    }, 30000); // 30 segundos
+
+    // Emitir evento de inicio de sesión
+    professorModeEvents.emit('settings:updated', { 
+      action: 'session_started',
+      settings: initialSettings
+    });
+
+    // Limpiar timers al desmontar
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      if (autoSaveTimerRef.current) {
+        clearInterval(autoSaveTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Generar problemas iniciales
+  const generateInitialProblems = useCallback(() => {
     // Generar los problemas iniciales
     const initialProblems = Array.from({ length: initialSettings.problemCount }, () => 
       generateAdditionProblem(initialSettings.difficulty)
@@ -59,16 +106,60 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       problems: initialProblems
     }));
 
-    // Iniciar el temporizador global
-    startGlobalTimer();
-
-    // Limpiar timers al desmontar
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
+    // Emitir evento de problemas generados
+    professorModeEvents.emit('problem:start', {
+      problemCount: initialProblems.length,
+      difficulty: initialSettings.difficulty
+    });
   }, [initialSettings]);
+
+  // Restaurar sesión guardada
+  const restoreSession = () => {
+    const savedState = professorModeStorage.loadState();
+    if (savedState) {
+      setState(savedState);
+      
+      // Actualizar el contador de tiempo total
+      if (savedState.totalTime > 0) {
+        totalTimerRef.current = savedState.totalTime;
+      }
+      
+      // Emitir evento de sesión restaurada
+      professorModeEvents.emit('settings:updated', { 
+        action: 'session_restored',
+        problemCount: savedState.problems.length
+      });
+      
+      toast({
+        title: t('professorMode.sessionRestored'),
+        description: t('professorMode.sessionRestoredDescription'),
+        variant: "default",
+      });
+    }
+    
+    setHasSessionToRestore(false);
+  };
+
+  // Iniciar nueva sesión descartando la guardada
+  const startNewSession = () => {
+    generateInitialProblems();
+    professorModeStorage.clearCurrentSession();
+    setHasSessionToRestore(false);
+  };
+
+  // Guardar el estado actual
+  const saveCurrentState = () => {
+    // Actualizar el tiempo total en el estado antes de guardar
+    setState(prev => ({
+      ...prev,
+      totalTime: totalTimerRef.current
+    }));
+    
+    // Guardar después de que el estado se actualice
+    setTimeout(() => {
+      professorModeStorage.saveState(state);
+    }, 0);
+  };
 
   // Inicia el temporizador global
   const startGlobalTimer = () => {
@@ -107,6 +198,12 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       ...prev,
       problems: [...prev.problems, newProblem]
     }));
+
+    // Emitir evento de problema de compensación
+    professorModeEvents.emit('problem:compensation', {
+      problemId: newProblem.id,
+      currentProblemCount: state.problems.length + 1
+    });
 
     toast({
       title: t('exercises.compensationProblemAdded'),
@@ -154,18 +251,29 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
         studentAnswers: newAnswers
       };
     });
+    
+    // Guardar el estado después de actualizar la respuesta
+    setTimeout(saveCurrentState, 0);
   };
 
   // Avanza al siguiente problema
   const goToNextProblem = () => {
     const nextIndex = state.currentProblemIndex + 1;
     
-    // Si no hay más problemas, mostrar resultados
+    // Si no hay más problemas, mostrar pantalla de revisión
     if (nextIndex >= state.problems.length) {
       setState(prev => ({
         ...prev,
-        displayMode: 'results'
+        displayMode: 'review'
       }));
+      
+      // Emitir evento de ejercicio finalizado
+      professorModeEvents.emit('exercise:finished', {
+        totalProblems: state.problems.length,
+        answeredProblems: state.studentAnswers.length,
+        correctAnswers: state.studentAnswers.filter(a => a.isCorrect).length
+      });
+      
       return;
     }
 
@@ -175,6 +283,12 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       currentProblemIndex: nextIndex,
       displayMode: 'problem'
     }));
+    
+    // Emitir evento de inicio de problema
+    professorModeEvents.emit('problem:start', {
+      problemIndex: nextIndex,
+      problemId: state.problems[nextIndex].id
+    });
   };
 
   // Manejador para iniciar explicación
@@ -183,12 +297,48 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       ...prev,
       displayMode: 'explanation'
     }));
+    
+    // Emitir evento de explicación iniciada
+    professorModeEvents.emit('problem:explanation', {
+      problemId: getCurrentProblem()?.id,
+      problemIndex: state.currentProblemIndex
+    });
   };
 
   // Manejador para guardar dibujo
   const handleSaveDrawing = (drawingData: string) => {
     updateStudentAnswer({
       explanationDrawing: drawingData
+    });
+    
+    // Emitir evento de dibujo actualizado
+    professorModeEvents.emit('drawing:updated', {
+      problemId: getCurrentProblem()?.id,
+      hasDrawing: true
+    });
+    
+    // Si está habilitado el guardado en el banco de explicaciones
+    // y es una explicación útil (más de unas pocas líneas),
+    // guardarla automáticamente
+    const currentProblem = getCurrentProblem();
+    if (currentProblem && drawingData.length > 1000) {
+      professorModeStorage.saveExplanationToBank(
+        'addition',
+        state.settings.difficulty,
+        currentProblem.operands,
+        drawingData
+      );
+    }
+  };
+
+  // Manejador para utilizar explicación del banco
+  const handleUseExplanationFromBank = (drawingData: string) => {
+    handleSaveDrawing(drawingData);
+    
+    toast({
+      title: t('professorMode.explanationApplied'),
+      description: t('professorMode.explanationAppliedDescription'),
+      variant: "default",
     });
   };
 
@@ -204,6 +354,12 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
   const handleSkipProblem = () => {
     updateStudentAnswer({
       status: 'skipped'
+    });
+
+    // Emitir evento de problema omitido
+    professorModeEvents.emit('problem:skipped', {
+      problemId: getCurrentProblem()?.id,
+      problemIndex: state.currentProblemIndex
     });
 
     // Añadir problema de compensación si está habilitado
@@ -228,6 +384,14 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       attempts: (getCurrentAnswer()?.attempts || 0) + 1
     });
 
+    // Emitir evento de respuesta
+    professorModeEvents.emit('problem:answered', {
+      problemId: currentProblem.id,
+      isCorrect,
+      userAnswer: answer,
+      correctAnswer: currentProblem.correctAnswer
+    });
+
     // Si es incorrecta y compensación está habilitada, añadir problema
     if (!isCorrect && state.settings.enableCompensation) {
       addCompensationProblem();
@@ -241,7 +405,7 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       description: isCorrect
         ? t('exercises.correctAnswerMessage')
         : t('exercises.incorrectAnswerMessage', { correctAnswer: currentProblem.correctAnswer }),
-      variant: isCorrect ? "success" : "destructive",
+      variant: isCorrect ? "default" : "destructive",
     });
 
     // Avanzar al siguiente problema
@@ -257,6 +421,12 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
     updateStudentAnswer({
       status: 'revealed',
       isCorrect: false
+    });
+
+    // Emitir evento de respuesta revelada
+    professorModeEvents.emit('problem:revealed', {
+      problemId: currentProblem.id,
+      correctAnswer: currentProblem.correctAnswer
     });
 
     // Añadir problema de compensación
@@ -275,11 +445,31 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
     goToNextProblem();
   };
 
-  // Manejador para finalizar el ejercicio
+  // Manejador para editar explicación en fase de revisión
+  const handleEditExplanation = (problemIndex: number) => {
+    setState(prev => ({
+      ...prev,
+      currentProblemIndex: problemIndex,
+      displayMode: 'explanation'
+    }));
+  };
+
+  // Manejador para volver a la fase de revisión
+  const handleBackToReview = () => {
+    setState(prev => ({
+      ...prev,
+      displayMode: 'review'
+    }));
+  };
+
+  // Manejador para finalizar el ejercicio después de la revisión
   const handleFinishExercise = () => {
-    // Detener el timer
+    // Detener los timers
     if (timerRef.current) {
       clearInterval(timerRef.current);
+    }
+    if (autoSaveTimerRef.current) {
+      clearInterval(autoSaveTimerRef.current);
     }
 
     // Crear el objeto de resultado
@@ -301,6 +491,9 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       }
     };
 
+    // Limpiar la sesión guardada
+    professorModeStorage.clearCurrentSession();
+
     // Notificar que el ejercicio está completo
     onComplete(result);
   };
@@ -309,37 +502,102 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
   const currentProblem = getCurrentProblem();
   const currentAnswer = getCurrentAnswer();
 
-  // Si no hay problemas, mostrar mensaje de carga
+  // Si hay una sesión para restaurar, mostrar diálogo
+  if (hasSessionToRestore) {
+    return (
+      <div className="p-4">
+        <Alert className="mb-4">
+          <AlertTitle>{t('professorMode.sessionFound')}</AlertTitle>
+          <AlertDescription>
+            {t('professorMode.sessionFoundDescription')}
+          </AlertDescription>
+        </Alert>
+        
+        <div className="flex justify-center gap-4 mt-4">
+          <Button onClick={restoreSession} variant="default">
+            {t('professorMode.restoreSession')}
+          </Button>
+          <Button onClick={startNewSession} variant="outline">
+            {t('professorMode.startNewSession')}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Si no hay problemas generados, mostrar carga
   if (state.problems.length === 0) {
     return <div className="text-center p-4">{t('common.loading')}</div>;
   }
 
+  // Renderizar el banco de explicaciones si está abierto
+  const explanationBankDialog = (
+    <ExplanationBankDialog
+      open={isExplanationBankOpen}
+      onOpenChange={setIsExplanationBankOpen}
+      onSelectExplanation={handleUseExplanationFromBank}
+      currentOperands={currentProblem?.operands}
+    />
+  );
+
   // Renderizar el componente adecuado según el estado actual
   switch (state.displayMode) {
     case 'problem':
-      return currentProblem ? (
-        <StudentAnswerCapture
-          problem={currentProblem}
-          currentProblemIndex={state.currentProblemIndex}
-          totalProblems={state.problems.length}
-          drawing={currentAnswer?.explanationDrawing}
-          onSubmitAnswer={handleSubmitAnswer}
-          onRevealAnswer={handleRevealAnswer}
-        />
-      ) : null;
+      return (
+        <>
+          {currentProblem && (
+            <StudentAnswerCapture
+              problem={currentProblem}
+              currentProblemIndex={state.currentProblemIndex}
+              totalProblems={state.problems.length}
+              drawing={currentAnswer?.explanationDrawing}
+              onSubmitAnswer={handleSubmitAnswer}
+              onRevealAnswer={handleRevealAnswer}
+            />
+          )}
+          {explanationBankDialog}
+        </>
+      );
 
     case 'explanation':
-      return currentProblem ? (
-        <ProfessorExplanation
-          problem={currentProblem}
-          currentProblemIndex={state.currentProblemIndex}
-          totalProblems={state.problems.length}
-          initialDrawing={currentAnswer?.explanationDrawing}
-          onSaveDrawing={handleSaveDrawing}
-          onContinue={handleFinishExplanation}
-          onChangePosition={() => {}}
-        />
-      ) : null;
+      return (
+        <>
+          {currentProblem && (
+            <ProfessorExplanation
+              problem={currentProblem}
+              currentProblemIndex={state.currentProblemIndex}
+              totalProblems={state.problems.length}
+              initialDrawing={currentAnswer?.explanationDrawing}
+              onSaveDrawing={handleSaveDrawing}
+              onContinue={state.displayMode === 'review' ? handleBackToReview : handleFinishExplanation}
+              onChangePosition={() => {}}
+            />
+          )}
+          <div className="mt-2 flex justify-center">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsExplanationBankOpen(true)}
+            >
+              {t('professorMode.openExplanationBank')}
+            </Button>
+          </div>
+          {explanationBankDialog}
+        </>
+      );
+
+    case 'review':
+      return (
+        <>
+          <ProfessorModeReview
+            studentAnswers={state.studentAnswers}
+            onSubmit={() => setState(prev => ({ ...prev, displayMode: 'results' }))}
+            onBack={() => setState(prev => ({ ...prev, displayMode: 'problem', currentProblemIndex: 0 }))}
+            onEditExplanation={handleEditExplanation}
+          />
+          {explanationBankDialog}
+        </>
+      );
 
     case 'results':
       return (
