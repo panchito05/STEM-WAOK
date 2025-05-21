@@ -2443,9 +2443,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newProblem.total = settings.problemCount;
             setCurrentProblem(newProblem);
             
+            // 🔍 DIAGNÓSTICO: Log justo antes de verificar fin de ejercicio
+            console.log("⚠️ VERIFICANDO FIN DE EJERCICIO - Modo Profesor:");
+            console.log("currentProblemIndex:", currentProblemIndex);
+            console.log("settings.problemCount:", settings.problemCount);
+            console.log("Condición currentProblemIndex >= settings.problemCount - 1:", currentProblemIndex >= settings.problemCount - 1);
+            console.log("problemsList.length:", problemsList.length);
+            console.log("userAnswersHistory:", userAnswersHistory);
+            
             // Verificar si hemos llegado al final de todos los problemas
             // Si el índice actual es el último problema configurado, completar el ejercicio
             if (currentProblemIndex >= settings.problemCount - 1) {
+              console.log("🏁 EJERCICIO COMPLETADO - Se cumplió la condición para finalizar");
+              
               // Marcar el ejercicio como completado para mostrar ResultsBoard
               setExerciseCompleted(true);
               
@@ -2463,6 +2473,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               const totalIncorrect = userAnswersHistory.filter(a => a && !a.isCorrect).length;
               const totalProblems = currentProblemIndex + 1; // Cantidad total de problemas resueltos
               const totalTime = timer;
+              
+              // ⚠️ DIAGNÓSTICO DEL ERROR: Problema con conteo de problemas
+              console.log("=== DIAGNÓSTICO DE SCORE EN MODO PROFESOR ===");
+              console.log("currentProblemIndex:", currentProblemIndex);
+              console.log("problemsList.length:", problemsList.length);
+              console.log("totalCorrect:", totalCorrect);
+              console.log("totalIncorrect:", totalIncorrect);
+              console.log("totalProblems:", totalProblems);
+              console.log("solucionesRespondidas:", [...userAnswersHistory.entries()].map(([i, a]) => a ? `Índice ${i}: ${a.isCorrect ? "correcto" : "incorrecto"}` : `Índice ${i}: null`));
               
               // Log de diagnóstico: Verificar estado de userAnswersHistory
               console.log("[PROFESOR] Ejercicio completado - Historial de respuestas:", userAnswersHistory);
@@ -2539,15 +2558,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
               console.log("[PROFESOR] detailedProblems final:", detailedProblems);
               
-              // Log adicional para diagnóstico
-              console.log("💾 Guardando datos extra con problemas:", detailedProblems.length, "problemas");
+              // 🔎 DIAGNÓSTICO DEL ERROR: Explicación del problema
+              console.log("=== DIAGNÓSTICO DEL PROBLEMA DE SCORE EN MODO PROFESOR ===");
+              
+              // 🔍 Diagnóstico básico
+              console.log("Problemas detallados encontrados:", detailedProblems.length);
+              console.log("Valores clave:");
+              console.log("- Score (totalCorrect):", totalCorrect);
+              console.log("- settings.problemCount (configuración inicial):", settings.problemCount);
+              console.log("- currentProblemIndex (índice actual):", currentProblemIndex);
+              console.log("- totalProblems (currentProblemIndex + 1):", totalProblems);
+              console.log("- problemsList.length (total de problemas en lista):", problemsList.length);
+              
+              // 🔍 CAUSA DEL PROBLEMA IDENTIFICADA:
+              // 1. En Modo Profesor, currentProblemIndex no se incrementa de la misma manera que en modo normal
+              // 2. El contador problemsList.length se actualiza correctamente cuando se añaden problemas
+              // 3. Pero userAnswersHistory puede tener valores null que crean inconsistencia
+              // 4. Conclusión: totalProblems = currentProblemIndex + 1 no es confiable en Modo Profesor
               
               // Crear el objeto de resultado para guardar en el historial con los problemas detallados
               const exerciseResult = {
                 module: "addition",
                 operationId: "addition",
-                score: totalCorrect,
-                totalProblems: totalProblems,
+                // Solución: Con los valores correctos para modo profesor
+                score: respuestasParaGuardar.length, // Número de respuestas reales guardadas 
+                totalProblems: settings.problemCount, // Usar el valor original configurado
                 timeSpent: Math.round(totalTime),
                 settings: settings,
                 userAnswers: respuestasParaGuardar, // Usar las respuestas procesadas
