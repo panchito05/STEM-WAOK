@@ -2149,7 +2149,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-start justify-center relative`}>
           {/* Información de contador de problemas e intentos - colocada en la esquina superior izquierda */}
-          <div className="absolute top-2 left-2 right-2 flex items-center justify-between w-full">
+          <div className="absolute top-2 left-2 flex items-center justify-between w-full max-w-[200px]">
             <div className="text-xs font-medium text-gray-600">
               Problema {currentProblemIndex + 1} de {problemsList.length}
             </div>
