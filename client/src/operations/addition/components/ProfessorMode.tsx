@@ -182,10 +182,10 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           className="absolute z-10 w-[280px]" 
           style={getPositionStyles()}
         >
-          {/* Move button para cambiar la posición (en el lado izquierdo) */}
+          {/* Move button para cambiar la posición (centrado) */}
           <button
             onClick={rotatePosition}
-            className="absolute top-1 left-1 p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
+            className="absolute top-1 left-1/2 transform -translate-x-1/2 p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
             title="Cambiar posición"
           >
             <Move className="h-4 w-4 text-blue-600" />
