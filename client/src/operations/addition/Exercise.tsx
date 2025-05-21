@@ -2502,34 +2502,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 let correctAnswer = 0;
                 
                 if (answer.problem && answer.problem.operands) {
-                  operands = answer.problem.operands;
+                  // Extraer los operandos originales del problema
+                  operands = [...answer.problem.operands];
                   correctAnswer = answer.problem.correctAnswer;
+                  console.log("[PROFESOR] Operandos originales extraídos:", operands);
                 } else if (currentProblem) {
-                  // Usar el problema actual como respaldo
-                  operands = currentProblem.operands;
+                  // Usar el problema actual como respaldo (solo en casos extremos)
+                  operands = [...currentProblem.operands];
                   correctAnswer = currentProblem.correctAnswer;
+                  console.log("[PROFESOR] Usando operandos del problema actual como respaldo:", operands);
                 } else {
-                  // Valores por defecto en caso extremo
+                  // Valores por defecto solo en caso de error (no debería ocurrir)
                   operands = [1, 2];
                   correctAnswer = 3;
+                  console.warn("[PROFESOR] Usando valores predeterminados porque no hay datos de problema disponibles");
                 }
-                
-                console.log("[PROFESOR] Operandos extraídos:", operands);
                 
                 // Crear un objeto con todos los datos necesarios para visualización
                 const problemData = {
                   id: answer.problemId || `problem-${index + 1}`,
                   problemNumber: index + 1,
-                  // Construir el texto del problema sin el userAnswer que causa los números parentéticos
+                  // Construir el texto del problema SIN incluir userAnswer
                   problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
                   operand1: operands[0],
                   operand2: operands[1],
                   operation: '+',
                   result: correctAnswer,
-                  // En modo profesor, establecemos userAnswer solo para comparación interna, no para mostrar
-                  userAnswer: correctAnswer,
-                  isCorrect: answer.isCorrect === undefined ? true : answer.isCorrect, // En modo profesor todo es correcto
-                  status: answer.status || "correct",
+                  // NO INCLUIR userAnswer para evitar los números entre paréntesis
+                  // userAnswer: undefined, 
+                  isCorrect: true, // En modo profesor todo es correcto
+                  status: "correct",
                   attempts: answer.attempts || 1,
                   level: settings.difficulty,
                   timeSpent: 0 // No tenemos tiempo por problema en modo profesor

@@ -55,7 +55,10 @@ const ProblemRenderer: React.FC<ProblemRendererProps> = ({
           )}
 
           <div className="problem-text text-lg font-bold">
-            {problem.problem}
+            {/* Eliminar cualquier texto entre paréntesis que pueda aparecer al final */}
+            {typeof problem.problem === 'string' 
+              ? problem.problem.replace(/\s*\(\d+\)$/, '') 
+              : problem.problem}
           </div>
 
           <div className={`problem-status text-sm mt-1 ${
@@ -63,6 +66,7 @@ const ProblemRenderer: React.FC<ProblemRendererProps> = ({
           }`}>
             {problem.isCorrect ? '✓ Correcto' : '✗ Incorrecto'}
             
+            {/* Solo mostrar la respuesta dada si es incorrecta */}
             {!problem.isCorrect && problem.userAnswer !== undefined && (
               <span className="ml-2">
                 (Respuesta dada: {problem.userAnswer})
