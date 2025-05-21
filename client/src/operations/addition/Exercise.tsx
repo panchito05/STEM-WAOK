@@ -2095,8 +2095,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
-        <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
+        <div className="flex justify-end text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
               <button
                 className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 w-auto hover:bg-indigo-50"
@@ -2223,6 +2222,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         </div>
+        
+        {/* Problem and attempts counter added below the check button and above the numpad */}
+        <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 max-w-xs mx-auto">
+          <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
+          {settings.maxAttempts > 0 && (
+            <span className={`font-medium p-1 rounded ${currentAttempts > 0 && currentAttempts < settings.maxAttempts ? "bg-amber-100 text-amber-800" : currentAttempts >= settings.maxAttempts ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}>
+              {currentTranslations.attempts}: {currentAttempts}/{settings.maxAttempts}
+            </span>
+          )}
+        </div>
+        
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-xs mx-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
