@@ -2096,6 +2096,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+            <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
             <div className="flex items-center gap-2">
               <button
                 className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 w-auto hover:bg-indigo-50"
@@ -2146,9 +2147,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-center justify-center`}>
+        <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-start justify-center relative`}>
+          {/* Información de contador de problemas e intentos - colocada en la esquina superior izquierda */}
+          <div className="absolute top-2 left-2 flex items-center justify-between w-full max-w-[200px]">
+            <div className="text-xs font-medium text-gray-600">
+              Problema {currentProblemIndex + 1} de {problemsList.length}
+            </div>
+            <div className="text-xs font-medium text-gray-600">
+              Intentos: {currentAttempts}/{settings.maxAttempts}
+            </div>
+          </div>
+          
           {currentProblem.layout === 'horizontal' ? (
-            <div className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
+            <div className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap mx-auto mt-5">
               <span>{currentProblem.operands[0]}</span>
               <span className="text-gray-600 mx-1">+</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
@@ -2161,7 +2172,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <span className="text-gray-600 mx-1">=</span>
             </div>
           ) : (
-            <div className="inline-block text-right my-1 sm:my-2">
+            <div className="inline-block text-right my-1 sm:my-2 mx-auto mt-5">
               {operandsFormatted.map((op, index) => (
                 <div key={`op-${index}-${currentProblem.id}`} className={verticalOperandStyle}>
                   {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>+</span>}
@@ -2220,14 +2231,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <div className={`mt-2 sm:mt-3 text-center font-medium text-sm sm:text-base ${feedbackColor === "green" ? "text-green-600" : feedbackColor === "blue" ? "text-blue-700" : "text-red-600"}`}>
               {feedbackMessage}
             </div>
-          )}
-        </div>
-        <div className="flex justify-between text-xs text-gray-600 mb-2">
-          <span>{currentTranslations.problem} {currentProblemIndex + 1} {currentTranslations.of} {problemsList.length}</span>
-          {settings.maxAttempts > 0 && !viewingPrevious && (
-            <span className={`${currentAttempts > 0 && currentAttempts < settings.maxAttempts ? "text-amber-800" : currentAttempts >= settings.maxAttempts ? "text-red-700" : "text-gray-700"}`}>
-              {currentTranslations.attempts}: {currentAttempts}/{settings.maxAttempts}
-            </span>
           )}
         </div>
         <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-xs mx-auto">
