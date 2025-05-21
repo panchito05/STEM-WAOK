@@ -79,9 +79,9 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           canvasRef.current.clear();
         }
         
-        // Move to next problem, indicando si fue correcto, la respuesta del usuario y el número de intentos
-        // NOTA: Podría ser que el número de intentos (newAttempts) esté causando el problema de los números entre paréntesis
-        onCorrectAnswer(result, Number(userAnswer), newAttempts);
+        // Move to next problem, indicando si fue correcto y la respuesta del usuario, pero NO pasamos el número de intentos
+        // ya que esto causa que aparezcan números en paréntesis en el historial
+        onCorrectAnswer(result, Number(userAnswer), 1); // Pasamos 1 como valor fijo de intentos para evitar mostrar (N) en la interfaz
       }, 1000); // Short delay before moving to next problem
     }
   };
