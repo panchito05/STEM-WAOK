@@ -9,6 +9,8 @@ interface ProfessorModeProps {
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
+  currentProblemIndex?: number; // Índice actual del problema
+  totalProblems?: number; // Número total de problemas
   settings: {
     maxAttempts: number;
     enableCompensation: boolean;
@@ -20,6 +22,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   onClose,
   onCorrectAnswer,
   showVerticalFormat = true,
+  currentProblemIndex = 0,
+  totalProblems = 1,
   settings
 }) => {
   const [userAnswer, setUserAnswer] = useState<string>('');
