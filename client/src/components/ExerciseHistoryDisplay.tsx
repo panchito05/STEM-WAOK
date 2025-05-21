@@ -94,17 +94,10 @@ const ExerciseHistoryDisplay: React.FC<ExerciseHistoryDisplayProps> = ({ exercis
         // Intentar obtener el texto del problema
         let problemText = null;
         
-        // Limpiamos cualquier texto que pueda contener números entre paréntesis
-        const cleanupParenthesis = (text) => {
-          if (!text) return text;
-          // Buscar patrones como "14 (10)" y dejar solo "14"
-          return text.replace(/(\d+)\s*\(\d+\)/, '$1');
-        };
-        
         if (problem.problem) {
-          problemText = cleanupParenthesis(problem.problem);
+          problemText = problem.problem;
         } else if (problem.displayText) {
-          problemText = cleanupParenthesis(problem.displayText);
+          problemText = problem.displayText;
         } else if (problem.operands && problem.operacion) {
           problemText = `${problem.operands.join(' ' + problem.operacion + ' ')} = ${problem.correctAnswer}`;
         } else if (problem.operands && Array.isArray(problem.operands)) {
