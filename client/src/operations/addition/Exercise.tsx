@@ -2387,10 +2387,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       {/* Modo Profesor - Nueva implementación con canvas para dibujo */}
       {showProfessorMode && (
         <ProfessorMode
-          problem={{
-            ...currentProblem,
-            newTotal: problemsList.length
-          }}
+          problem={currentProblem}
+          totalProblems={problemsList.length}
+          problemIndex={currentProblemIndex}
           onClose={() => setShowProfessorMode(false)}
           onCorrectAnswer={(wasCorrect: boolean) => {
             // Actualizar contadores de respuestas consecutivas
