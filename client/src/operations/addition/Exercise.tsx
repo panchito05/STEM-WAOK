@@ -2531,8 +2531,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   operand2: operands[1],
                   operation: '+',
                   result: correctAnswer,
-                  // NO INCLUIR userAnswer para evitar los números entre paréntesis
-                  // userAnswer: undefined, 
+                  // Eliminamos la propiedad userAnswer para evitar los números entre paréntesis
+                  userAnswer: undefined,
                   isCorrect: true, // En modo profesor todo es correcto
                   status: "correct",
                   attempts: answer.attempts || 1,
