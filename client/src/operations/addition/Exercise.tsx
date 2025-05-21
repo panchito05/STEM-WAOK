@@ -1938,31 +1938,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               let problemDisplay = '';
               if (problem.operands && problem.operands.length > 0) {
                 if (problem.operands.length === 2) {
-                  // SOLUCIÓN DIRECTA: Siempre mostrar el problema sin paréntesis en modo profesor
-                  // En otros casos, solo mostrar paréntesis si la respuesta es incorrecta
-                  
-                  // 1. Primero construimos el problema básico
                   problemDisplay = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
-                  
-                  // 2. Verificamos si estamos en modo profesor por cualquier medio posible
-                  const isProfessorMode = 
-                      // Verificación por datos existentes
-                      answer.modeProfessor === true ||
-                      // Verificación por configuraciones 
-                      (typeof settings === 'object' &&
-                        (settings.mode === "professor" ||
-                         settings.experimentalMode === "professor" ||
-                         settings.teacherMode === true)) ||
-                      // Verificación por historial
-                      (exerciseHistory && exerciseHistory[0]?.extra_data?.mode === "professor");
-                  
-                  // 3. SOLO añadimos paréntesis si: 
-                  //    - NO es modo profesor
-                  //    - La respuesta es incorrecta
-                  //    - La respuesta del usuario es un número válido
-                  if (!isProfessorMode && 
-                      Number(answer.userAnswer) !== Number(problem.correctAnswer) && 
-                      !isNaN(Number(answer.userAnswer))) {
+                  if (answer.userAnswer !== problem.correctAnswer && !isNaN(answer.userAnswer)) {
                     problemDisplay += ` (${answer.userAnswer})`;
                   }
                 }
@@ -2500,16 +2477,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               if (respuestasParaGuardar.length === 0 && currentProblem) {
                 console.log("[PROFESOR] No hay respuestas guardadas. Creando respuesta para el problema actual:", currentProblem);
                 
-                // Crear manualmente una respuesta básica - MODO PROFESOR
+                // Crear manualmente una respuesta básica
                 const respuestaManual = {
                   problemId: currentProblem.id,
                   problem: currentProblem,
-                  userAnswer: currentProblem.correctAnswer, // Mismo valor que la respuesta correcta
+                  userAnswer: parseInt(currentProblem.correctAnswer.toString()), // En modo profesor asumimos que la respuesta es correcta
                   isCorrect: true,
                   status: "correct",
                   attempts: 1,
-                  timestamp: Date.now(),
-                  modeProfessor: true // Marcador explícito de modo profesor
+                  timestamp: Date.now()
                 };
                 
                 // Agregar esta respuesta a nuestro arreglo para procesar
@@ -2542,11 +2518,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   console.warn("[PROFESOR] Usando valores predeterminados porque no hay datos de problema disponibles");
                 }
                 
-                // Crear un objeto con todos los datos necesarios para visualización - MODO PROFESOR
+                // Crear un objeto con todos los datos necesarios para visualización
                 const problemData = {
                   id: answer.problemId || `problem-${index + 1}`,
                   problemNumber: index + 1,
-                  // Construir el texto del problema SIN incluir userAnswer ni paréntesis
+                  // Construir el texto del problema SIN incluir userAnswer
+                  // Agregar logs para diagnóstico del problema de los paréntesis
                   problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
                   // Log para verificar el formato exacto del problema
                   _debug_problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
@@ -2554,14 +2531,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   operand2: operands[1],
                   operation: '+',
                   result: correctAnswer,
-                  // En lugar de undefined, asignamos el mismo valor que correctAnswer para evitar diferencias
-                  userAnswer: correctAnswer, // El mismo valor que correctAnswer para no mostrar paréntesis
+                  // Eliminamos la propiedad userAnswer para evitar los números entre paréntesis
+                  userAnswer: undefined,
                   isCorrect: true, // En modo profesor todo es correcto
                   status: "correct",
                   attempts: answer.attempts || 1,
                   level: settings.difficulty,
-                  timeSpent: 0, // No tenemos tiempo por problema en modo profesor
-                  modeProfessor: true // Marcador explícito de modo profesor
+                  timeSpent: 0 // No tenemos tiempo por problema en modo profesor
                 };
                 
                 // Logs detallados para diagnóstico de los números en paréntesis

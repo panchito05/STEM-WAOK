@@ -161,25 +161,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                          className={`p-3 rounded-lg ${problem.isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="font-medium">(#{index + 1})</span> {
-                            // Este código se ejecuta tanto en el modo normal como en el modo profesor
-                            // Para el modo profesor, debemos asegurarnos de eliminar CUALQUIER paréntesis
-                            // independientemente de cómo estén detectados
-                            
-                            // Primero determinamos si estamos en modo profesor por cualquier indicador
-                            const esModoProfesor = 
-                              selectedExercise.extra_data?.mode === "professor" || 
-                              selectedExercise.extra_data?.screenshot?.mode === "professor" || 
-                              selectedExercise.settings?.mode === "professor" ||
-                              problem.modeProfessor === true;
-                            
-                            // Siempre eliminar los paréntesis al final en modo profesor
-                            const textoProblema = esModoProfesor
-                              ? problem.problem.replace(/\s*\(.*?\)$/g, '')  // Expresión más amplia para capturar cualquier paréntesis
-                              : problem.problem;
-                            
-                            textoProblema  // Mostramos el texto final
-                          }
+                          <span className="font-medium">(#{index + 1})</span> {problem.problem}
                         </div>
                         <div>
                           {problem.isCorrect 
