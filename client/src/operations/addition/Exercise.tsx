@@ -2443,15 +2443,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newProblem.total = settings.problemCount;
             setCurrentProblem(newProblem);
             
-            // Verificación de finalización del ejercicio en Modo Profesor
-            // La condición se mantiene por compatibilidad, pero utilizamos problemsList.length
-            // para calcular el porcentaje de progreso en la UI
-            
             // Verificar si hemos llegado al final de todos los problemas
             // Si el índice actual es el último problema configurado, completar el ejercicio
             if (currentProblemIndex >= settings.problemCount - 1) {
-              // Ejercicio completado
-              
               // Marcar el ejercicio como completado para mostrar ResultsBoard
               setExerciseCompleted(true);
               
@@ -2470,105 +2464,42 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               const totalProblems = currentProblemIndex + 1; // Cantidad total de problemas resueltos
               const totalTime = timer;
               
-              // ⚠️ DIAGNÓSTICO DEL ERROR: Problema con conteo de problemas
-              console.log("=== DIAGNÓSTICO DE SCORE EN MODO PROFESOR ===");
-              console.log("currentProblemIndex:", currentProblemIndex);
-              console.log("problemsList.length:", problemsList.length);
-              console.log("totalCorrect:", totalCorrect);
-              console.log("totalIncorrect:", totalIncorrect);
-              console.log("totalProblems:", totalProblems);
-              console.log("solucionesRespondidas:", [...userAnswersHistory.entries()].map(([i, a]) => a ? `Índice ${i}: ${a.isCorrect ? "correcto" : "incorrecto"}` : `Índice ${i}: null`));
-              
-              // Log de diagnóstico: Verificar estado de userAnswersHistory
-              console.log("[PROFESOR] Ejercicio completado - Historial de respuestas:", userAnswersHistory);
-              console.log("[PROFESOR] userAnswersHistory longitud:", userAnswersHistory.length);
-              console.log("[PROFESOR] userAnswersHistory filtrado:", userAnswersHistory.filter(a => a !== null));
-              
-              // Crear un respaldo del problema actual para forzar al menos una respuesta
-              let respuestasParaGuardar = [...userAnswersHistory].filter(a => a !== null);
-              console.log("[PROFESOR] Respuestas filtradas para guardar:", respuestasParaGuardar);
-              
-              // Si no hay respuestas guardadas, crear una para el problema actual
-              if (respuestasParaGuardar.length === 0 && currentProblem) {
-                console.log("[PROFESOR] No hay respuestas guardadas. Creando respuesta para el problema actual:", currentProblem);
-                
-                // Crear manualmente una respuesta básica
-                const respuestaManual = {
-                  problemId: currentProblem.id,
-                  problem: currentProblem,
-                  userAnswer: parseInt(currentProblem.correctAnswer.toString()), // En modo profesor asumimos que la respuesta es correcta
-                  isCorrect: true,
-                  status: "correct",
-                  attempts: 1,
-                  timestamp: Date.now()
-                };
-                
-                // Agregar esta respuesta a nuestro arreglo para procesar
-                respuestasParaGuardar = [respuestaManual];
-                console.log("[PROFESOR] Respuesta manual creada:", respuestaManual);
-              }
-              
-              // Preparar los problemas en formato compatible con Problem Review - USANDO respuestasParaGuardar
-              const detailedProblems = respuestasParaGuardar.map((answer, index) => {
-                console.log("[PROFESOR] Procesando respuesta:", answer);
-                
-                // Obtener los operandos del problema actual de forma segura
-                let operands = [];
-                let correctAnswer = 0;
-                
-                if (answer.problem && answer.problem.operands) {
-                  operands = answer.problem.operands;
-                  correctAnswer = answer.problem.correctAnswer;
-                } else if (currentProblem) {
-                  // Usar el problema actual como respaldo
-                  operands = currentProblem.operands;
-                  correctAnswer = currentProblem.correctAnswer;
-                } else {
-                  // Valores por defecto en caso extremo
-                  operands = [1, 2];
-                  correctAnswer = 3;
-                }
-                
-                console.log("[PROFESOR] Operandos extraídos:", operands);
-                
-                // Crear un objeto con todos los datos necesarios para visualización
-                const problemData = {
-                  id: answer.problemId || `problem-${index + 1}`,
-                  problemNumber: index + 1,
-                  problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
-                  operand1: operands[0],
-                  operand2: operands[1],
-                  operation: '+',
-                  result: correctAnswer,
-                  userAnswer: answer.userAnswer || correctAnswer,
-                  isCorrect: answer.isCorrect === undefined ? true : answer.isCorrect, // En modo profesor todo es correcto
-                  status: answer.status || "correct",
-                  attempts: answer.attempts || 1,
-                  level: settings.difficulty,
-                  timeSpent: 0 // No tenemos tiempo por problema en modo profesor
-                };
-                
-                console.log("[PROFESOR] Problema formateado para guardar:", problemData);
-                return problemData;
-              });
-                
-              console.log("[PROFESOR] detailedProblems final:", detailedProblems);
-              
-              // En Modo Profesor, aseguramos valores correctos para el historial
-              // Solución: Usamos datos de problemas reales en lugar de índices que pueden tener inconsistencias
-              const problemsResueltos = detailedProblems.length; 
-              const problemsConfigured = settings.problemCount;
+              // Preparar los problemas en formato compatible con Problem Review
+              const detailedProblems = userAnswersHistory
+                .filter(a => a !== null)
+                .map((answer, index) => {
+                  if (!answer) return null;
+                  
+                  // Obtener los operandos del problema actual
+                  const operands = answer.problem.operands || [];
+                  
+                  return {
+                    id: answer.problemId,
+                    problemNumber: index + 1,
+                    problem: `${operands[0]} + ${operands[1]} = ${answer.problem.correctAnswer}`,
+                    operand1: operands[0],
+                    operand2: operands[1],
+                    operation: '+',
+                    result: answer.problem.correctAnswer,
+                    userAnswer: answer.userAnswer,
+                    isCorrect: answer.isCorrect,
+                    status: answer.status,
+                    attempts: answer.attempts || 1,
+                    level: settings.difficulty,
+                    timeSpent: 0 // No tenemos tiempo por problema en modo profesor
+                  };
+                })
+                .filter(p => p !== null);
               
               // Crear el objeto de resultado para guardar en el historial con los problemas detallados
               const exerciseResult = {
                 module: "addition",
                 operationId: "addition",
-                // Solución definitiva: Valores correctos para el Modo Profesor
-                score: problemsResueltos, // Total de problemas REALMENTE completados
-                totalProblems: problemsConfigured, // Total de problemas CONFIGURADOS originalmente
+                score: totalCorrect,
+                totalProblems: totalProblems,
                 timeSpent: Math.round(totalTime),
                 settings: settings,
-                userAnswers: respuestasParaGuardar, // Usar las respuestas procesadas
+                userAnswers: userAnswersHistory.filter(a => a !== null),
                 timestamp: Date.now(),
                 date: new Date().toISOString(),
                 difficulty: settings.difficulty,
@@ -2576,8 +2507,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 problemDetails: detailedProblems,
                 extra_data: {
                   mode: "professor",
-                  version: "3.0",
-                  timestamp: Date.now(),
                   problems: detailedProblems,
                   exactProblems: detailedProblems,
                   capturedProblems: detailedProblems,
