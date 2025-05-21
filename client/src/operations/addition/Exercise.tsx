@@ -2523,7 +2523,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   id: answer.problemId || `problem-${index + 1}`,
                   problemNumber: index + 1,
                   // Construir el texto del problema SIN incluir userAnswer
+                  // Agregar logs para diagnóstico del problema de los paréntesis
                   problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
+                  // Log para verificar el formato exacto del problema
+                  _debug_problem: `${operands[0]} + ${operands[1]} = ${correctAnswer}`,
                   operand1: operands[0],
                   operand2: operands[1],
                   operation: '+',
@@ -2537,7 +2540,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   timeSpent: 0 // No tenemos tiempo por problema en modo profesor
                 };
                 
-                console.log("[PROFESOR] Problema formateado para guardar:", problemData);
+                // Logs detallados para diagnóstico de los números en paréntesis
+              console.log("[PROFESOR] Problema formateado para guardar:", {
+                ...problemData,
+                problemText: problemData.problem,
+                userAnswerValue: problemData.userAnswer
+              });
+              
+              // Verificar si hay algún procesamiento adicional que pueda estar añadiendo paréntesis
+              console.log("[DIAGNÓSTICO-PARÉNTESIS] ¿El texto del problema ya contiene paréntesis?", 
+                problemData.problem.includes("("),
+                "Texto del problema:", problemData.problem);
                 return problemData;
               });
                 
