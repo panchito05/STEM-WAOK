@@ -57,7 +57,7 @@ const ProblemRenderer: React.FC<ProblemRendererProps> = ({
           <div className="problem-text text-lg font-bold">
             {/* Eliminar cualquier texto entre paréntesis que pueda aparecer al final */}
             {typeof problem.problem === 'string' 
-              ? problem.problem.replace(/\s*\(\d+\)$/, '') 
+              ? problem.problem.replace(/\s+\(\d+\)$/, '') 
               : problem.problem}
           </div>
 
