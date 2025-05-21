@@ -6,6 +6,8 @@ import NumericKeypad from './SimpleNumericKeypad';
 
 interface ProfessorModeProps {
   problem: AdditionProblem;
+  totalProblems: number; // Total actual de problemas para mostrar
+  problemIndex: number;  // Índice actual del problema (0-based)
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
@@ -17,6 +19,8 @@ interface ProfessorModeProps {
 
 export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   problem,
+  totalProblems,
+  problemIndex,
   onClose,
   onCorrectAnswer,
   showVerticalFormat = true,
@@ -257,7 +261,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
                 <line x1="8" y1="12" x2="8" y2="12"></line>
                 <line x1="8" y1="16" x2="8" y2="16"></line>
               </svg>
-              <span className="text-gray-700">Problema {(problem.index ?? 0) + 1} de {problem.total || 1}</span>
+              <span className="text-gray-700">Problema {problemIndex + 1} de {totalProblems}</span>
             </div>
             <span className="text-gray-700">Intentos: {attempts}/{settings.maxAttempts}</span>
           </div>
