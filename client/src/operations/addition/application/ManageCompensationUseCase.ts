@@ -1,162 +1,158 @@
 import { v4 as uuidv4 } from 'uuid';
-import { AdditionProblem } from '../domain/AdditionProblem';
-import { AdditionSettings, ProfessorModeSettings } from '../domain/AdditionSettings';
-import { GenerateProblemUseCase, generateProblemUseCase } from './GenerateProblemUseCase';
-import { EventBus, eventBus } from '../infrastructure/EventBus';
+import { AdditionProblem, DifficultyLevel, ProblemStatus } from '../domain/AdditionProblem';
+import { ProfessorModeSettings } from '../domain/AdditionSettings';
+import { generateProblemUseCase } from './GenerateProblemUseCase';
+import { eventBus } from '../infrastructure/EventBus';
 
 /**
  * Caso de uso para gestionar problemas de compensación
+ * Los problemas de compensación se generan cuando un estudiante contesta 
+ * incorrectamente o salta un problema.
  */
-export class ManageCompensationUseCase {
-  constructor(
-    private problemGenerator: GenerateProblemUseCase,
-    private eventBus: EventBus
-  ) {}
-
+class ManageCompensationUseCase {
   /**
-   * Genera un problema de compensación
-   * @param settings Configuración del ejercicio
-   * @param currentProblems Lista actual de problemas
-   * @param reason Razón de la compensación
-   * @returns Nuevo problema y lista actualizada
-   */
-  generateCompensationProblem(
-    settings: AdditionSettings,
-    currentProblems: AdditionProblem[],
-    reason: 'incorrect_answer' | 'skipped' | 'revealed' = 'incorrect_answer'
-  ): {
-    newProblem: AdditionProblem;
-    updatedProblems: AdditionProblem[];
-  } {
-    // Verificar si la compensación está habilitada
-    this.assertCompensationEnabled(settings);
-
-    // Determinar dificultad para el problema de compensación
-    const difficultyForCompensation = this.getCompensationDifficulty(settings);
-
-    // Generar problema básico
-    const basicProblem = this.problemGenerator.execute({
-      ...settings,
-      difficulty: difficultyForCompensation
-    });
-
-    // Marcar como problema de compensación
-    const newProblem: AdditionProblem = {
-      ...basicProblem,
-      isCompensation: true,
-      compensationReason: reason
-    };
-
-    // Actualizar lista de problemas
-    const updatedProblems = [...currentProblems, newProblem];
-
-    // Emitir evento
-    this.emitCompensationEvent(newProblem, reason, updatedProblems.length);
-
-    return { newProblem, updatedProblems };
-  }
-
-  /**
-   * Determina si se debe añadir un problema de compensación
-   * @param settings Configuración del ejercicio
+   * Verifica si se debe añadir un problema de compensación
+   * @param settings Configuración del modo profesor
    * @param isCorrect Si la respuesta fue correcta
-   * @param status Estado del problema
-   * @returns Si se debe añadir compensación
+   * @param status Estado opcional del problema
+   * @returns Si se debe añadir un problema de compensación
    */
   shouldAddCompensation(
-    settings: AdditionSettings,
+    settings: ProfessorModeSettings,
     isCorrect: boolean,
     status?: string
   ): boolean {
-    // Verificar si la compensación está habilitada en la configuración
-    if (!this.isCompensationEnabled(settings)) {
+    // Requisitos para generar problema de compensación:
+    // 1. La compensación debe estar habilitada en la configuración
+    // 2. La respuesta debe ser incorrecta, o el problema fue omitido o revelado
+    
+    // Verificar si la compensación está habilitada
+    if (!settings.enableCompensation) {
       return false;
     }
-
-    // Añadir problema de compensación si:
-    // 1. La respuesta es incorrecta
-    // 2. El problema fue omitido
-    // 3. La respuesta fue revelada
-    return (
-      !isCorrect ||
-      status === 'skipped' ||
-      status === 'revealed'
-    );
-  }
-
-  /**
-   * Cuenta el número de problemas de compensación
-   * @param problems Lista de problemas
-   * @returns Número de problemas de compensación
-   */
-  countCompensationProblems(problems: AdditionProblem[]): number {
-    return problems.filter(p => p.isCompensation).length;
-  }
-
-  /**
-   * Verifica si la compensación está habilitada
-   * @param settings Configuración del ejercicio
-   * @returns Si la compensación está habilitada
-   */
-  private isCompensationEnabled(settings: AdditionSettings): boolean {
-    // Verificar si es configuración del modo profesor
-    if ('enableCompensation' in settings) {
-      return (settings as ProfessorModeSettings).enableCompensation;
-    }
-    return false;
-  }
-
-  /**
-   * Verifica que la compensación esté habilitada, lanzando error si no
-   * @param settings Configuración del ejercicio
-   */
-  private assertCompensationEnabled(settings: AdditionSettings): void {
-    if (!this.isCompensationEnabled(settings)) {
-      throw new Error('Compensation is not enabled in settings');
-    }
-  }
-
-  /**
-   * Determina la dificultad para el problema de compensación
-   * @param settings Configuración del ejercicio
-   * @returns Nivel de dificultad
-   */
-  private getCompensationDifficulty(settings: AdditionSettings): any {
-    // Si es configuración del modo profesor y tiene dificultad adaptativa
-    if (
-      'enableAdaptiveDifficulty' in settings &&
-      (settings as ProfessorModeSettings).enableAdaptiveDifficulty &&
-      (settings as ProfessorModeSettings).adaptiveDifficulty
-    ) {
-      return (settings as ProfessorModeSettings).adaptiveDifficulty;
+    
+    // Si la respuesta es correcta, no necesita compensación
+    if (isCorrect) {
+      return false;
     }
     
-    // Usar dificultad normal
-    return settings.difficulty;
+    // Estados que requieren compensación
+    const requiresCompensation = status === ProblemStatus.SKIPPED || 
+                               status === ProblemStatus.REVEALED ||
+                               status === ProblemStatus.TIMED_OUT ||
+                               status === undefined;
+    
+    return requiresCompensation;
   }
 
   /**
-   * Emite un evento cuando se añade un problema de compensación
-   * @param problem Problema añadido
-   * @param reason Razón de la compensación
-   * @param totalProblems Total de problemas
+   * Genera un problema de compensación y actualiza la lista de problemas
+   * @param settings Configuración del modo profesor
+   * @param currentProblems Lista actual de problemas
+   * @param reason Motivo de la compensación
+   * @returns Nuevo problema y lista actualizada
    */
-  private emitCompensationEvent(
-    problem: AdditionProblem,
-    reason: string,
-    totalProblems: number
-  ): void {
-    this.eventBus.emit('problem:compensation', {
-      problemId: problem.id,
+  generateCompensationProblem(
+    settings: ProfessorModeSettings,
+    currentProblems: AdditionProblem[],
+    reason: string = 'incorrect_answer'
+  ): { newProblem: AdditionProblem; updatedProblems: AdditionProblem[] } {
+    // Verificar si la compensación está habilitada
+    if (!settings.enableCompensation) {
+      throw new Error('Compensation is not enabled in settings');
+    }
+    
+    // Generar un nuevo problema con la misma configuración
+    const baseProblem = generateProblemUseCase.execute(settings);
+    
+    // Adaptar el problema como compensación
+    const compensationProblem: AdditionProblem = {
+      ...baseProblem,
+      isCompensation: true,
+      compensationReason: reason
+    };
+    
+    // Actualizar lista de problemas
+    const updatedProblems = [...currentProblems, compensationProblem];
+    
+    // Emitir evento de compensación generada
+    eventBus.emit('problem:compensation', {
+      problemId: compensationProblem.id,
       reason,
-      currentProblemCount: totalProblems,
-      difficulty: problem.difficulty
+      currentProblemCount: updatedProblems.length
     });
+    
+    return {
+      newProblem: compensationProblem,
+      updatedProblems
+    };
+  }
+
+  /**
+   * Cuenta la cantidad de problemas de compensación en una lista
+   * @param problems Lista de problemas
+   * @returns Cantidad de problemas de compensación
+   */
+  countCompensationProblems(problems: AdditionProblem[]): number {
+    return problems.filter(problem => problem.isCompensation).length;
+  }
+
+  /**
+   * Calcula la proporción de problemas de compensación
+   * @param problems Lista de problemas
+   * @returns Proporción como porcentaje
+   */
+  getCompensationRatio(problems: AdditionProblem[]): number {
+    if (problems.length === 0) return 0;
+    
+    const compensationCount = this.countCompensationProblems(problems);
+    return (compensationCount / problems.length) * 100;
+  }
+
+  /**
+   * Decide si se deben aplicar adaptaciones adicionales
+   * @param settings Configuración actual
+   * @param problems Lista de problemas actual
+   * @returns Configuración adaptada
+   */
+  adaptDifficulty(
+    settings: ProfessorModeSettings,
+    problems: AdditionProblem[]
+  ): ProfessorModeSettings {
+    // Este es un ejemplo de cómo se podría adaptar la dificultad
+    // basándose en el rendimiento del estudiante
+    
+    // Si no hay problemas o la adaptación no está habilitada, devolver configuración original
+    if (problems.length === 0 || !(settings as any).enableAdaptiveDifficulty) {
+      return settings;
+    }
+    
+    // Calcular ratio de compensación
+    const compensationRatio = this.getCompensationRatio(problems);
+    
+    // Copiar configuración para modificar
+    const adaptedSettings = { ...settings };
+    
+    // Adaptación basada en el desempeño
+    if (compensationRatio > 30 && (adaptedSettings as any).adaptiveDifficulty) {
+      // Muchos problemas de compensación - Reducir dificultad
+      const currentIndex = Object.values(DifficultyLevel).indexOf(settings.difficulty);
+      if (currentIndex > 0) {
+        const lowerDifficulty = Object.values(DifficultyLevel)[currentIndex - 1];
+        (adaptedSettings as any).adaptedDifficulty = lowerDifficulty;
+      }
+    } else if (compensationRatio < 10 && (adaptedSettings as any).adaptiveDifficulty) {
+      // Pocos problemas de compensación - Aumentar dificultad
+      const currentIndex = Object.values(DifficultyLevel).indexOf(settings.difficulty);
+      if (currentIndex < Object.values(DifficultyLevel).length - 1) {
+        const higherDifficulty = Object.values(DifficultyLevel)[currentIndex + 1];
+        (adaptedSettings as any).adaptedDifficulty = higherDifficulty;
+      }
+    }
+    
+    return adaptedSettings;
   }
 }
 
 // Exportar una instancia única del caso de uso
-export const manageCompensationUseCase = new ManageCompensationUseCase(
-  generateProblemUseCase,
-  eventBus
-);
+export const manageCompensationUseCase = new ManageCompensationUseCase();

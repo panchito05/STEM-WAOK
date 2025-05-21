@@ -1,117 +1,142 @@
-import { v4 as uuidv4 } from 'uuid';
-import { generateAdditionProblem } from '../problemGenerator';
-import { AdditionProblem } from '../types';
-import { ProfessorModeSettings } from '../ProfessorModeTypes';
-import { professorModeEvents } from './ProfessorModeEventSystem';
+import { ProblemStatus, AdditionProblem } from '../domain/AdditionProblem';
+import { ProfessorModeSettings } from '../domain/AdditionSettings';
+import { ProfessorStudentAnswer } from '../domain/AdditionResult';
+import { manageCompensationUseCase } from '../application/ManageCompensationUseCase';
+import { eventBus } from '../infrastructure/EventBus';
 
 /**
- * Servicio centralizado para manejar los problemas de compensación
- * en el modo profesor y modo estándar
+ * Servicio centralizado para la gestión de problemas de compensación
+ * Este servicio es usado por componentes de la capa de presentación
+ * para determinar cuándo y cómo generar problemas de compensación
  */
-class CompensationService {
+export class CompensationService {
   /**
-   * Genera un problema de compensación basado en la configuración actual
-   * 
-   * @param settings Configuración actual del ejercicio
-   * @param currentProblems Lista actual de problemas
-   * @param reason Razón por la que se añade el problema de compensación
-   * @returns El nuevo problema y la lista actualizada de problemas
+   * Verifica si es necesario generar un problema de compensación
+   * @param settings Configuración del modo profesor
+   * @param answer Respuesta del estudiante
+   * @returns Si se debe generar compensación
    */
-  generateCompensationProblem(
-    settings: ProfessorModeSettings | any,
-    currentProblems: AdditionProblem[],
-    reason: 'incorrect_answer' | 'skipped' | 'revealed' = 'incorrect_answer'
-  ): { 
-    newProblem: AdditionProblem,
-    updatedProblems: AdditionProblem[] 
-  } {
-    // Verificar si la compensación está habilitada
-    if (!settings.enableCompensation) {
-      throw new Error('Compensation is not enabled in settings');
-    }
-
-    // Determinar dificultad para el problema de compensación
-    const difficultyForCompensation = settings.enableAdaptiveDifficulty
-      ? settings.adaptiveDifficulty || settings.difficulty
-      : settings.difficulty;
-
-    // Generar el nuevo problema
-    const newProblem = {
-      ...generateAdditionProblem(difficultyForCompensation),
-      id: uuidv4(),
-      isCompensation: true,
-      compensationReason: reason
-    };
-
-    // Actualizar la lista de problemas
-    const updatedProblems = [...currentProblems, newProblem];
-
-    // Emitir el evento de problema de compensación añadido
-    professorModeEvents.emit('problem:compensation', {
-      problemId: newProblem.id,
-      reason,
-      currentProblemCount: updatedProblems.length,
-      difficulty: difficultyForCompensation
-    });
-
-    return { newProblem, updatedProblems };
-  }
-
-  /**
-   * Determina si se debe añadir un problema de compensación
-   * 
-   * @param settings Configuración actual del ejercicio
-   * @param isCorrect Si la respuesta actual fue correcta
-   * @param problemStatus Estado del problema ('skipped', 'revealed', etc.)
-   * @returns Si se debe añadir un problema de compensación
-   */
-  shouldAddCompensation(
-    settings: ProfessorModeSettings | any,
-    isCorrect: boolean,
-    problemStatus?: string
+  needsCompensation(
+    settings: ProfessorModeSettings, 
+    answer: ProfessorStudentAnswer
   ): boolean {
-    // Si la compensación no está habilitada, nunca añadir
+    // Verificar si la compensación está habilitada
     if (!settings.enableCompensation) {
       return false;
     }
-
-    // Añadir problema de compensación si:
-    // 1. La respuesta es incorrecta
-    // 2. El problema fue omitido
-    // 3. La respuesta fue revelada
-    return (
-      !isCorrect ||
-      problemStatus === 'skipped' ||
-      problemStatus === 'revealed'
-    );
+    
+    // Si la respuesta es correcta, no se necesita compensación
+    if (answer.isCorrect) {
+      return false;
+    }
+    
+    // Estados que requieren compensación
+    const compensationStates = [
+      ProblemStatus.INCORRECT,
+      ProblemStatus.SKIPPED,
+      ProblemStatus.REVEALED,
+      ProblemStatus.TIMED_OUT
+    ];
+    
+    // Verificar si el estado requiere compensación
+    return answer.status !== undefined && compensationStates.includes(answer.status as ProblemStatus);
   }
 
   /**
-   * Obtiene la razón para añadir un problema de compensación
-   * 
-   * @param isCorrect Si la respuesta actual fue correcta
-   * @param problemStatus Estado del problema ('skipped', 'revealed', etc.)
-   * @returns La razón para añadir el problema de compensación
+   * Genera problemas de compensación según sea necesario
+   * @param settings Configuración del modo profesor
+   * @param problems Lista actual de problemas
+   * @param answers Lista de respuestas de estudiantes
+   * @returns Lista actualizada de problemas
    */
-  getCompensationReason(
-    isCorrect: boolean,
-    problemStatus?: string
-  ): 'incorrect_answer' | 'skipped' | 'revealed' {
-    if (problemStatus === 'skipped') return 'skipped';
-    if (problemStatus === 'revealed') return 'revealed';
-    return 'incorrect_answer';
+  processAndGenerateCompensations(
+    settings: ProfessorModeSettings,
+    problems: AdditionProblem[],
+    answers: ProfessorStudentAnswer[]
+  ): AdditionProblem[] {
+    // Verificar si la compensación está habilitada
+    if (!settings.enableCompensation) {
+      return problems;
+    }
+    
+    let updatedProblems = [...problems];
+    
+    // Procesar cada respuesta
+    for (const answer of answers) {
+      // Verificar si se necesita compensación
+      if (this.needsCompensation(settings, answer)) {
+        try {
+          // Determinar razón de compensación
+          let reason = 'incorrect_answer';
+          if (answer.status === ProblemStatus.SKIPPED) {
+            reason = 'skipped';
+          } else if (answer.status === ProblemStatus.REVEALED) {
+            reason = 'revealed_answer';
+          } else if (answer.status === ProblemStatus.TIMED_OUT) {
+            reason = 'timed_out';
+          }
+          
+          // Generar problema de compensación
+          const { updatedProblems: newProblems } = manageCompensationUseCase.generateCompensationProblem(
+            settings,
+            updatedProblems,
+            reason
+          );
+          
+          updatedProblems = newProblems;
+          
+        } catch (error) {
+          console.error('Error generating compensation problem:', error);
+          // Emitir error para ser mostrado en la UI
+          eventBus.emit('compensation:error', { 
+            error: error instanceof Error ? error.message : String(error),
+            problemId: answer.problemId
+          });
+        }
+      }
+    }
+    
+    return updatedProblems;
   }
 
   /**
-   * Calcula cuántos problemas de compensación se han añadido
-   * 
+   * Calcula estadísticas de compensación
    * @param problems Lista de problemas
-   * @returns Número de problemas de compensación
+   * @returns Estadísticas
    */
-  countCompensationProblems(problems: AdditionProblem[]): number {
-    return problems.filter(p => p.isCompensation).length;
+  getCompensationStats(problems: AdditionProblem[]): {
+    total: number;
+    compensationCount: number;
+    ratio: number;
+  } {
+    const total = problems.length;
+    const compensationCount = problems.filter(p => p.isCompensation).length;
+    const ratio = total > 0 ? (compensationCount / total) * 100 : 0;
+    
+    return {
+      total,
+      compensationCount,
+      ratio
+    };
+  }
+
+  /**
+   * Filtra problemas para mostrar o excluir compensaciones
+   * @param problems Lista de problemas
+   * @param includeCompensations Si se deben incluir las compensaciones
+   * @returns Lista filtrada
+   */
+  filterProblems(
+    problems: AdditionProblem[],
+    includeCompensations: boolean = true
+  ): AdditionProblem[] {
+    if (includeCompensations) {
+      return problems;
+    }
+    
+    return problems.filter(problem => !problem.isCompensation);
   }
 }
 
-// Exportar una única instancia del servicio
+// Exportar una instancia única del servicio
 export const compensationService = new CompensationService();

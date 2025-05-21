@@ -6,6 +6,11 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Obtener el directorio actual (equivalente a __dirname en CommonJS)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Colores para la consola
 const colors = {

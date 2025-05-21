@@ -1,126 +1,133 @@
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  AdditionProblem, 
-  DifficultyLevel, 
-  DisplayFormat 
+import {
+  AdditionProblem,
+  DifficultyLevel,
+  DisplayFormat,
+  createBasicAdditionProblem
 } from '../domain/AdditionProblem';
-import { AdditionSettings } from '../domain/AdditionSettings';
+import {
+  AdditionSettings,
+  DIFFICULTY_RANGES
+} from '../domain/AdditionSettings';
+import { eventBus } from '../infrastructure/EventBus';
 
 /**
  * Caso de uso para generar problemas de suma
+ * Utiliza los parámetros de la configuración para crear problemas adaptados
  */
-export class GenerateProblemUseCase {
+class GenerateProblemUseCase {
   /**
-   * Genera un problema de suma basado en la configuración
-   * @param settings Configuración del ejercicio
-   * @returns Un problema de suma
+   * Genera un único problema de suma basado en la configuración
+   * @param settings Configuración para generar el problema
+   * @returns Problema de suma generado
    */
   execute(settings: AdditionSettings): AdditionProblem {
-    // Determinar el rango de valores para los operandos según dificultad
-    const range = this.getOperandRangeByDifficulty(settings.difficulty, settings.maxOperandValue);
+    const {
+      difficulty,
+      allowNegatives,
+      allowDecimals,
+      displayFormat,
+      maxOperandValue
+    } = settings;
+
+    // Obtener rango de valores según dificultad
+    const range = DIFFICULTY_RANGES[difficulty] || DIFFICULTY_RANGES[DifficultyLevel.EASY];
     
-    // Determinar si se permiten negativos
-    const allowNegatives = settings.allowNegatives;
-    
-    // Generar los operandos
-    const operands = this.generateOperands(range, allowNegatives, settings.allowDecimals);
-    
-    // Calcular la respuesta correcta
-    const correctAnswer = operands.reduce((sum, operand) => sum + operand, 0);
-    
-    // Crear el problema
-    return {
-      id: uuidv4(),
-      operands,
-      correctAnswer,
-      difficulty: settings.difficulty,
-      displayFormat: settings.displayFormat || DisplayFormat.STANDARD,
-      maxAttempts: 1,
-      allowDecimals: settings.allowDecimals
-    };
-  }
-  
-  /**
-   * Genera múltiples problemas de suma
-   * @param settings Configuración del ejercicio
-   * @param count Número de problemas a generar
-   * @returns Lista de problemas de suma
-   */
-  executeMultiple(settings: AdditionSettings, count: number): AdditionProblem[] {
-    return Array.from({ length: count }, () => this.execute(settings));
-  }
-  
-  /**
-   * Determina el rango de valores para los operandos según dificultad
-   * @param difficulty Nivel de dificultad
-   * @param maxValue Valor máximo configurado (opcional)
-   * @returns Rango de valores [min, max]
-   */
-  private getOperandRangeByDifficulty(
-    difficulty: DifficultyLevel, 
-    maxValue?: number
-  ): [number, number] {
-    // Valores por defecto según dificultad
-    switch (difficulty) {
-      case DifficultyLevel.BEGINNER:
-        return [1, maxValue || 10];
-      case DifficultyLevel.EASY:
-        return [1, maxValue || 20];
-      case DifficultyLevel.MEDIUM:
-        return [1, maxValue || 50];
-      case DifficultyLevel.HARD:
-        return [1, maxValue || 100];
-      case DifficultyLevel.EXPERT:
-        return [10, maxValue || 1000];
-      default:
-        return [1, maxValue || 20];
-    }
-  }
-  
-  /**
-   * Genera operandos aleatorios según el rango y configuración
-   * @param range Rango de valores [min, max]
-   * @param allowNegatives Si se permiten valores negativos
-   * @param allowDecimals Si se permiten valores decimales
-   * @returns Lista de operandos
-   */
-  private generateOperands(
-    range: [number, number], 
-    allowNegatives: boolean,
-    allowDecimals: boolean
-  ): number[] {
-    // Por defecto, generar 2 operandos
-    const operandCount = 2;
+    // Ajustar valores según configuración
+    const minValue = range.minValue;
+    const maxValue = Math.min(range.maxValue, maxOperandValue);
+    const operandCount = range.operandCount;
     
     // Generar operandos aleatorios
-    return Array.from({ length: operandCount }, () => {
-      let value = this.getRandomNumber(range[0], range[1], allowDecimals);
+    const operands = this.generateOperands(
+      minValue,
+      maxValue,
+      operandCount,
+      allowNegatives,
+      allowDecimals,
+      range.decimalPlaces
+    );
+    
+    // Calcular suma correcta
+    const correctAnswer = operands.reduce((sum, val) => sum + val, 0);
+    
+    // Crear ID único para el problema
+    const id = uuidv4();
+    
+    // Crear problema
+    const problem: AdditionProblem = {
+      id,
+      operands,
+      correctAnswer,
+      difficulty,
+      displayFormat: displayFormat || DisplayFormat.STANDARD,
+      maxAttempts: 1,
+      allowDecimals: allowDecimals
+    };
+    
+    // Emitir evento de problema generado
+    eventBus.emit('problem:generated', { problem });
+    
+    return problem;
+  }
+
+  /**
+   * Genera múltiples problemas de suma
+   * @param settings Configuración para generar los problemas
+   * @param count Cantidad de problemas a generar
+   * @returns Lista de problemas generados
+   */
+  executeMultiple(settings: AdditionSettings, count: number): AdditionProblem[] {
+    const problems: AdditionProblem[] = [];
+    
+    // Generar la cantidad requerida de problemas
+    for (let i = 0; i < count; i++) {
+      problems.push(this.execute(settings));
+    }
+    
+    return problems;
+  }
+
+  /**
+   * Genera operandos aleatorios según los parámetros especificados
+   */
+  private generateOperands(
+    minValue: number,
+    maxValue: number,
+    count: number,
+    allowNegatives: boolean,
+    allowDecimals: boolean,
+    decimalPlaces: number = 1
+  ): number[] {
+    const operands: number[] = [];
+    
+    for (let i = 0; i < count; i++) {
+      // Generar valor base
+      let operand = this.getRandomNumber(minValue, maxValue);
       
-      // Aplicar negativos si está permitido (con 30% de probabilidad)
+      // Aplicar signo negativo con cierta probabilidad si está permitido
       if (allowNegatives && Math.random() < 0.3) {
-        value = -value;
+        operand = -operand;
       }
       
-      return value;
-    });
-  }
-  
-  /**
-   * Genera un número aleatorio en un rango
-   * @param min Valor mínimo
-   * @param max Valor máximo
-   * @param allowDecimals Si se permiten valores decimales
-   * @returns Número aleatorio
-   */
-  private getRandomNumber(min: number, max: number, allowDecimals: boolean): number {
-    if (allowDecimals) {
-      // Generar valor decimal con máximo 1 decimal
-      const value = Math.random() * (max - min) + min;
-      return Math.round(value * 10) / 10;
-    } else {
-      // Generar valor entero
-      return Math.floor(Math.random() * (max - min + 1)) + min;
+      // Aplicar decimales con cierta probabilidad si está permitido
+      if (allowDecimals && Math.random() < 0.4) {
+        const decimal = Math.random();
+        const factor = Math.pow(10, decimalPlaces);
+        operand = Math.round((operand + decimal) * factor) / factor;
+      }
+      
+      operands.push(operand);
     }
+    
+    return operands;
+  }
+
+  /**
+   * Genera un número aleatorio en el rango especificado
+   */
+  private getRandomNumber(min: number, max: number): number {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 }
 
