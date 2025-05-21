@@ -406,8 +406,8 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       problemIndex: state.currentProblemIndex
     });
 
-    // Añadir problema de compensación si está habilitado
-    addCompensationProblem();
+    // Añadir problema de compensación con razón específica
+    addCompensationProblem('skipped');
     
     // Avanzar al siguiente problema
     goToNextProblem();
@@ -436,9 +436,9 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       correctAnswer: currentProblem.correctAnswer
     });
 
-    // Si es incorrecta y compensación está habilitada, añadir problema
-    if (!isCorrect && state.settings.enableCompensation) {
-      addCompensationProblem();
+    // Si es incorrecta, añadir problema de compensación con razón específica
+    if (!isCorrect) {
+      addCompensationProblem('incorrect_answer');
     }
 
     // Mostrar toast con el resultado
@@ -473,8 +473,8 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       correctAnswer: currentProblem.correctAnswer
     });
 
-    // Añadir problema de compensación
-    addCompensationProblem();
+    // Añadir problema de compensación con razón específica
+    addCompensationProblem('revealed');
 
     // Mostrar toast con la respuesta correcta
     toast({
