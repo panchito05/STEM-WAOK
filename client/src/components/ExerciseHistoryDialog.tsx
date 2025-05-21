@@ -161,7 +161,13 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
                          className={`p-3 rounded-lg ${problem.isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="font-medium">(#{index + 1})</span> {problem.problem}
+                          <span className="font-medium">(#{index + 1})</span> {
+                            // Si estamos en modo profesor, asegurarnos de que no se muestren los paréntesis
+                            selectedExercise.extra_data?.mode === "professor" ? 
+                              // Eliminar cualquier contenido entre paréntesis de la cadena del problema
+                              problem.problem.replace(/\s*\(\d+\)$/, '') : 
+                              problem.problem
+                          }
                         </div>
                         <div>
                           {problem.isCorrect 
