@@ -875,17 +875,8 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
     }, 500);
   };
 
-  // Manejador para finalizar el ejercicio después de la revisión
-  const handleFinishExercise = () => {
-    console.log("🏁 Iniciando finalización del ejercicio con mejora de integridad de datos");
-    
-    // Detener los timers activos
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    if (autoSaveTimerRef.current) {
-      clearInterval(autoSaveTimerRef.current);
-    }
+  // Esta función duplicada ha sido completamente eliminada
+  /* Este código fue eliminado para resolver los conflictos de duplicación */
 
     // Análisis inicial de integridad
     console.log("1. Diagnóstico inicial:", {
