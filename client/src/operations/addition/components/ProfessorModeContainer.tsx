@@ -728,8 +728,10 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
         };
       }),
       // Preparar datos adicionales en formato compatible con el historial estándar
+      // IMPORTANTE: Usamos normalizedAnswers en lugar de state.studentAnswers para garantizar la integridad
       extraData: {
-        problemDetails: state.studentAnswers.map(answer => {
+        // Usar datos normalizados para incluir todos los problemas
+        problemDetails: normalizedAnswers.map(answer => {
           const problem = state.problems.find(p => p.id === answer.problemId);
           return {
             ...answer,
@@ -739,23 +741,42 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
             userAnswer: answer.answer
           };
         }),
-        userAnswers: state.studentAnswers.map(answer => ({
+        // Usar datos normalizados para incluir todos los problemas
+        userAnswers: normalizedAnswers.map(answer => ({
           problemId: answer.problemId,
           userAnswer: answer.answer,
           isCorrect: answer.isCorrect,
           attempts: answer.attempts || 1,
-          time: answer.timestamp ? (answer.timestamp - (state.studentAnswers[0]?.timestamp || 0)) / 1000 : 0
+          time: answer.timestamp ? (answer.timestamp - (normalizedAnswers[0]?.timestamp || 0)) / 1000 : 0
         })),
         mode: 'professor',
-        version: '4.0',
-        totalTime: Math.round(totalTimerRef.current)
+        version: '4.1', // Actualizamos versión para reflejar mejoras
+        totalTime: Math.round(totalTimerRef.current),
+        // Incluir metadata para facilitar diagnóstico
+        metadata: {
+          timestamp_guardado: Date.now(),
+          version_feature: "integridad_mejorada",
+          total_problemas_originales: state.problems.length,
+          total_respuestas_originales: state.studentAnswers.length,
+          total_respuestas_sinteticas: syntheticAnswers.length,
+          total_respuestas_normalizadas: normalizedAnswers.length,
+          puntaje_forzado: puntajeForzado
+        }
       },
-      // Mantener el formato antiguo para compatibilidad
+      // Mantener el formato antiguo para compatibilidad pero con datos normalizados
       extra_data: {
         mode: 'professor',
-        version: '4.0',
-        problems: state.studentAnswers,
-        totalTime: Math.round(totalTimerRef.current)
+        version: '4.1', // Actualizamos versión
+        // CRUCIAL: Usar datos normalizados en lugar de solo las respuestas registradas
+        problems: normalizedAnswers,
+        totalTime: Math.round(totalTimerRef.current),
+        // Incluir datos adicionales para diagnóstico
+        problemas_completos: state.problems.map(p => ({...p})),
+        diagnostico: {
+          respuestas_originales: state.studentAnswers.length,
+          problemas_totales: state.problems.length,
+          normalizacion_aplicada: syntheticAnswers.length > 0
+        }
       }
     };
 
