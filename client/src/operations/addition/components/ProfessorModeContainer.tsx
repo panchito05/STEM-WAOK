@@ -527,11 +527,46 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       timestamp: Date.now(),
       date: new Date().toISOString(),
       difficulty: state.settings.difficulty,
-      problemDetails: state.studentAnswers,
+      // Usar formato estandarizado para problemDetails que coincida con el formato esperado por ExerciseHistoryDisplay
+      problemDetails: state.studentAnswers.map(answer => {
+        const problem = state.problems.find(p => p.id === answer.problemId);
+        return {
+          ...answer,
+          problem: problem || undefined,
+          operands: problem?.operands || [],
+          correctAnswer: problem?.correctAnswer,
+          userAnswer: answer.answer
+        };
+      }),
+      // Preparar datos adicionales en formato compatible con el historial estándar
+      extraData: {
+        problemDetails: state.studentAnswers.map(answer => {
+          const problem = state.problems.find(p => p.id === answer.problemId);
+          return {
+            ...answer,
+            problem: problem || undefined,
+            operands: problem?.operands || [],
+            correctAnswer: problem?.correctAnswer,
+            userAnswer: answer.answer
+          };
+        }),
+        userAnswers: state.studentAnswers.map(answer => ({
+          problemId: answer.problemId,
+          userAnswer: answer.answer,
+          isCorrect: answer.isCorrect,
+          attempts: answer.attempts || 1,
+          time: answer.timestamp ? (answer.timestamp - (state.studentAnswers[0]?.timestamp || 0)) / 1000 : 0
+        })),
+        mode: 'professor',
+        version: '4.0',
+        totalTime: Math.round(totalTimerRef.current)
+      },
+      // Mantener el formato antiguo para compatibilidad
       extra_data: {
         mode: 'professor',
         version: '4.0',
-        problems: state.studentAnswers
+        problems: state.studentAnswers,
+        totalTime: Math.round(totalTimerRef.current)
       }
     };
 

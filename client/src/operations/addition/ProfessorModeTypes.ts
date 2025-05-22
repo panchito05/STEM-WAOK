@@ -88,9 +88,21 @@ export interface ProfessorModeResult {
   difficulty: string;
   // Problemas detallados con sus respuestas y explicaciones
   problemDetails: ProfessorStudentAnswer[];
+  
+  // Campo extraData compatible con el formato estándar de ExerciseHistoryDisplay
+  extraData?: {
+    problemDetails?: any[];
+    userAnswers?: any[];
+    mode: 'professor';
+    version: string;
+    totalTime: number;
+  };
+  
+  // Mantener campo original para compatibilidad
   extra_data: {
     mode: 'professor';
     version: string;
     problems: ProfessorStudentAnswer[];
+    totalTime?: number;
   };
 }
