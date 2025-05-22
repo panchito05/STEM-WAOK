@@ -515,11 +515,11 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
     }));
   };
 
-  // Manejador para finalizar el ejercicio - Versión simplificada y corregida
+  // REEMPLAZADO 100% POR LA LÓGICA DEL MODO NORMAL
   const handleFinishExercise = () => {
-    console.log("🏁 Iniciando finalización del ejercicio con solución simplificada");
+    console.log("🏁 NUEVO SISTEMA: Finalizando ejercicio con código del modo normal");
     
-    // Detener los timers activos
+    // Detener timers activos (como en el modo normal)
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
@@ -527,7 +527,7 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       clearInterval(autoSaveTimerRef.current);
     }
 
-    // Diagnóstico básico
+    // PASO 1: Diagnóstico inicial - Estado actual
     console.log("1. Estado al finalizar:", {
       problemas: state.problems.length,
       respuestas: state.studentAnswers.length
