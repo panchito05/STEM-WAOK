@@ -515,9 +515,9 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
     }));
   };
 
-  // Manejador para finalizar el ejercicio después de la revisión
+  // Manejador para finalizar el ejercicio - Versión simplificada y corregida
   const handleFinishExercise = () => {
-    console.log("🏁 Iniciando finalización del ejercicio - Versión corregida");
+    console.log("🏁 Iniciando finalización del ejercicio con solución simplificada");
     
     // Detener los timers activos
     if (timerRef.current) {
@@ -527,26 +527,19 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       clearInterval(autoSaveTimerRef.current);
     }
 
-    // Diagnóstico inicial del estado
-    console.log("1. Estado al finalizar ejercicio:", {
-      problemas_totales: state.problems.length,
-      respuestas_totales: state.studentAnswers.length,
-      indice_actual: state.currentProblemIndex,
-      respuestas_correctas: state.studentAnswers.filter(a => a.isCorrect).length
+    // Diagnóstico básico
+    console.log("1. Estado al finalizar:", {
+      problemas: state.problems.length,
+      respuestas: state.studentAnswers.length
     });
-    
-    // ============================================================
-    // FASE 1: PREPARACIÓN - ANÁLISIS Y NORMALIZACIÓN DE DATOS
-    // ============================================================
     
     // SOLUCIÓN CLAVE 1: Detectar problemas sin respuesta
     const problemIdsWithAnswers = new Set(state.studentAnswers.map(a => a.problemId));
     const problemsWithoutAnswers = state.problems.filter(p => !problemIdsWithAnswers.has(p.id));
     
-    console.log("2. Problemas sin respuesta:", problemsWithoutAnswers.length, 
-      problemsWithoutAnswers.map(p => `${p.id}: ${p.operands[0]} + ${p.operands[1]} = ${p.correctAnswer}`));
+    console.log("2. Problemas sin respuesta:", problemsWithoutAnswers.length);
     
-    // SOLUCIÓN CLAVE 2: Crear respuestas sintéticas para problemas faltantes
+    // SOLUCIÓN CLAVE 2: Crear respuestas para problemas faltantes
     const syntheticAnswers = problemsWithoutAnswers.map(problem => ({
       problemId: problem.id,
       problem: problem,
@@ -555,153 +548,76 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       attempts: 1,
       status: 'answered',
       timestamp: Date.now(),
-      _syntheticAnswer: true,
-      _generatedBy: 'FinalNormalization'
+      _syntheticAnswer: true
     }));
     
     // Combinar respuestas originales y sintéticas
     const normalizedAnswers = [...state.studentAnswers, ...syntheticAnswers];
     
-    // SOLUCIÓN CLAVE 3: Verificación de integridad final
-    const normalizedAnswerIds = new Set(normalizedAnswers.map(a => a.problemId));
-    const allProblemsHaveAnswers = state.problems.every(p => normalizedAnswerIds.has(p.id));
-    
-    if (!allProblemsHaveAnswers) {
-      console.error("⚠️ Error crítico: Aún hay problemas sin respuesta después de normalización");
-      // Análisis de problemas restantes
-      const problemsStillMissing = state.problems.filter(p => !normalizedAnswerIds.has(p.id));
-      console.error("Problemas aún sin respuesta:", problemsStillMissing.map(p => p.id));
-    } else {
-      console.log("✅ Normalización exitosa - Todos los problemas tienen respuesta");
-    }
-    
-    // SOLUCIÓN CLAVE 4: Forzar puntaje correcto - como en el modo normal
+    // SOLUCIÓN CLAVE 3: Forzar puntaje correcto
     const finalScore = state.problems.length;
     
-    console.log("3. Normalización completada:", {
-      problemas_totales: state.problems.length,
+    console.log("3. Normalización completa:", {
+      total_problemas: state.problems.length,
       respuestas_originales: state.studentAnswers.length,
-      respuestas_sinteticas: syntheticAnswers.length,
-      respuestas_normalizadas: normalizedAnswers.length,
-      puntaje_final: finalScore,
-      integridad_completa: allProblemsHaveAnswers
+      respuestas_generadas: syntheticAnswers.length,
+      total_respuestas: normalizedAnswers.length
     });
     
-    // ============================================================
-    // FASE 2: CREACIÓN DEL RESULTADO - SIMILITUD CON MODO NORMAL
-    // ============================================================
-    
-    // Capturar los problemas exactamente - simulando el modo normal
-    const problemDetails = normalizedAnswers.map(answer => {
-      const problem = state.problems.find(p => p.id === answer.problemId);
-      
-      if (!problem) {
-        console.error(`⚠️ Problema no encontrado para respuesta: ${answer.problemId}`);
-        return null;
-      }
-      
-      return {
-        // Metadatos para identificación
-        id: `${answer.problemId}_${Date.now()}`,
-        problemId: answer.problemId,
-        
-        // Datos específicos del problema
-        operands: problem.operands,
-        correctAnswer: problem.correctAnswer,
-        
-        // Formato visual del problema (como en modo normal)
-        displayText: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
-        problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
-        
-        // Información de la respuesta
-        userAnswer: answer.answer,
-        isCorrect: answer.isCorrect,
-        status: answer.status,
-        
-        // Metadatos adicionales (similares a modo normal)
-        attempts: answer.attempts || 1,
-        timestamp: answer.timestamp,
-        explanationDrawing: answer.explanationDrawing,
-        
-        // Identificación de respuestas generadas
-        _synthetic: answer._syntheticAnswer,
-        _syntheticReason: answer._syntheticAnswer ? 'missing_answer' : undefined
-      };
-    }).filter(item => item !== null);
-    
-    // Construir resultado en formato similar al modo normal
+    // Construir resultado
     const result = {
-      // Identificación del tipo de ejercicio
       module: "addition",
       operationId: "professor",
-      
-      // SOLUCIÓN CLAVE: Datos básicos consistentes
       score: finalScore,
       totalProblems: state.problems.length,
       timeSpent: Math.round(totalTimerRef.current),
-      
-      // Metadatos temporales
       timestamp: Date.now(),
       date: new Date().toISOString(),
-      
-      // Información sobre la dificultad
       difficulty: state.settings.difficulty || "custom",
       settings: state.settings,
       
-      // Estadísticas como en modo normal (para consistencia)
-      accuracy: Math.round((finalScore / state.problems.length) * 100),
-      avgTimePerProblem: Math.round(totalTimerRef.current / state.problems.length),
-      avgAttempts: 1, // En modo profesor generalmente es 1
+      // Detalles de todos los problemas (normalizados)
+      problemDetails: normalizedAnswers.map(answer => {
+        const problem = state.problems.find(p => p.id === answer.problemId);
+        return {
+          id: `${answer.problemId}_${Date.now()}`,
+          problemId: answer.problemId,
+          operands: problem ? problem.operands : [],
+          correctAnswer: problem ? problem.correctAnswer : 0,
+          userAnswer: answer.answer,
+          isCorrect: answer.isCorrect,
+          attempts: answer.attempts || 1,
+          timestamp: answer.timestamp,
+          status: answer.status || (answer.isCorrect ? 'correct' : 'incorrect'),
+          _synthetic: answer._syntheticAnswer
+        };
+      }),
       
-      // SOLUCIÓN CLAVE: Detalles de problemas normalizados
-      problemDetails: problemDetails,
-      
-      // Datos adicionales para diagnóstico
+      // Datos adicionales de diagnóstico
       extraData: {
         mode: 'professor',
-        version: '4.3.0',
+        version: '5.0.0',
         totalTime: Math.round(totalTimerRef.current),
-        
-        // Estadísticas de normalización
         diagnostico: {
-          timestamp_guardado: Date.now(),
-          version_feature: '3.0.0',
+          timestamp: Date.now(),
           total_problemas: state.problems.length,
           respuestas_originales: state.studentAnswers.length,
-          respuestas_sinteticas: syntheticAnswers.length,
-          respuestas_normalizadas: normalizedAnswers.length,
-          puntaje_final: finalScore,
-          integridad_datos: allProblemsHaveAnswers ? 'completa' : 'incompleta'
+          respuestas_generadas: syntheticAnswers.length,
+          total_respuestas: normalizedAnswers.length,
+          puntaje: finalScore
         }
       },
       
-      // Compatibilidad con formato antiguo
+      // Compatible con formato antiguo
       extra_data: {
         mode: 'professor',
-        version: '4.3.0',
-        
-        // Incluir problemas en formato compatible
+        version: '5.0.0',
         problems: normalizedAnswers,
-        problemDetails: problemDetails,
-        
-        // Datos de tiempo
-        totalTime: Math.round(totalTimerRef.current),
-        
-        // Diagnóstico
-        diagnostico: {
-          respuestas_originales: state.studentAnswers.length,
-          respuestas_sinteticas: syntheticAnswers.length,
-          respuestas_normalizadas: normalizedAnswers.length,
-          problemas_totales: state.problems.length,
-          normalizacion_aplicada: syntheticAnswers.length > 0,
-          puntaje_final: finalScore,
-          timestamp: Date.now(),
-          version_feature: '3.0.0'
-        }
+        totalTime: Math.round(totalTimerRef.current)
       }
     };
     
-    // Limpiar la sesión guardada
+    // Limpiar sesión guardada
     localStorage.removeItem('professor_mode_state');
     
     // Cambiar al modo de resultados
@@ -959,7 +875,7 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       difficulty: state.settings.difficulty,
       // Usar formato estandarizado para problemDetails que coincida con el formato esperado por ExerciseHistoryDisplay
       // IMPORTANTE: Usamos respuestasNormalizadas en lugar de state.studentAnswers para incluir todos los problemas
-      problemDetails: respuestasNormalizadas.map(answer => {
+      problemDetails: normalizedAnswers.map(answer => {
         const problem = state.problems.find(p => p.id === answer.problemId);
         return {
           ...answer,
