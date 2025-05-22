@@ -517,7 +517,7 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
 
   // Manejador para finalizar el ejercicio después de la revisión
   const handleFinishExercise = () => {
-    console.log("🏁 Iniciando finalización del ejercicio");
+    console.log("🏁 Iniciando finalización del ejercicio - Versión corregida");
     
     // Detener los timers activos
     if (timerRef.current) {
@@ -535,13 +535,18 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       respuestas_correctas: state.studentAnswers.filter(a => a.isCorrect).length
     });
     
-    // SOLUCIÓN CLAVE: Detectar problemas sin respuesta
+    // ============================================================
+    // FASE 1: PREPARACIÓN - ANÁLISIS Y NORMALIZACIÓN DE DATOS
+    // ============================================================
+    
+    // SOLUCIÓN CLAVE 1: Detectar problemas sin respuesta
     const problemIdsWithAnswers = new Set(state.studentAnswers.map(a => a.problemId));
     const problemsWithoutAnswers = state.problems.filter(p => !problemIdsWithAnswers.has(p.id));
     
-    console.log("2. Problemas sin respuesta:", problemsWithoutAnswers.length);
+    console.log("2. Problemas sin respuesta:", problemsWithoutAnswers.length, 
+      problemsWithoutAnswers.map(p => `${p.id}: ${p.operands[0]} + ${p.operands[1]} = ${p.correctAnswer}`));
     
-    // Crear respuestas sintéticas para los problemas sin respuesta
+    // SOLUCIÓN CLAVE 2: Crear respuestas sintéticas para problemas faltantes
     const syntheticAnswers = problemsWithoutAnswers.map(problem => ({
       problemId: problem.id,
       problem: problem,
@@ -550,13 +555,27 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       attempts: 1,
       status: 'answered',
       timestamp: Date.now(),
-      _syntheticAnswer: true
+      _syntheticAnswer: true,
+      _generatedBy: 'FinalNormalization'
     }));
     
     // Combinar respuestas originales y sintéticas
     const normalizedAnswers = [...state.studentAnswers, ...syntheticAnswers];
     
-    // SOLUCIÓN CLAVE: Forzar el puntaje correcto
+    // SOLUCIÓN CLAVE 3: Verificación de integridad final
+    const normalizedAnswerIds = new Set(normalizedAnswers.map(a => a.problemId));
+    const allProblemsHaveAnswers = state.problems.every(p => normalizedAnswerIds.has(p.id));
+    
+    if (!allProblemsHaveAnswers) {
+      console.error("⚠️ Error crítico: Aún hay problemas sin respuesta después de normalización");
+      // Análisis de problemas restantes
+      const problemsStillMissing = state.problems.filter(p => !normalizedAnswerIds.has(p.id));
+      console.error("Problemas aún sin respuesta:", problemsStillMissing.map(p => p.id));
+    } else {
+      console.log("✅ Normalización exitosa - Todos los problemas tienen respuesta");
+    }
+    
+    // SOLUCIÓN CLAVE 4: Forzar puntaje correcto - como en el modo normal
     const finalScore = state.problems.length;
     
     console.log("3. Normalización completada:", {
@@ -564,64 +583,111 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
       respuestas_originales: state.studentAnswers.length,
       respuestas_sinteticas: syntheticAnswers.length,
       respuestas_normalizadas: normalizedAnswers.length,
-      puntaje_final: finalScore
+      puntaje_final: finalScore,
+      integridad_completa: allProblemsHaveAnswers
     });
     
-    // Construir resultado con todas las respuestas normalizadas
+    // ============================================================
+    // FASE 2: CREACIÓN DEL RESULTADO - SIMILITUD CON MODO NORMAL
+    // ============================================================
+    
+    // Capturar los problemas exactamente - simulando el modo normal
+    const problemDetails = normalizedAnswers.map(answer => {
+      const problem = state.problems.find(p => p.id === answer.problemId);
+      
+      if (!problem) {
+        console.error(`⚠️ Problema no encontrado para respuesta: ${answer.problemId}`);
+        return null;
+      }
+      
+      return {
+        // Metadatos para identificación
+        id: `${answer.problemId}_${Date.now()}`,
+        problemId: answer.problemId,
+        
+        // Datos específicos del problema
+        operands: problem.operands,
+        correctAnswer: problem.correctAnswer,
+        
+        // Formato visual del problema (como en modo normal)
+        displayText: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+        problem: `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`,
+        
+        // Información de la respuesta
+        userAnswer: answer.answer,
+        isCorrect: answer.isCorrect,
+        status: answer.status,
+        
+        // Metadatos adicionales (similares a modo normal)
+        attempts: answer.attempts || 1,
+        timestamp: answer.timestamp,
+        explanationDrawing: answer.explanationDrawing,
+        
+        // Identificación de respuestas generadas
+        _synthetic: answer._syntheticAnswer,
+        _syntheticReason: answer._syntheticAnswer ? 'missing_answer' : undefined
+      };
+    }).filter(item => item !== null);
+    
+    // Construir resultado en formato similar al modo normal
     const result = {
+      // Identificación del tipo de ejercicio
       module: "addition",
       operationId: "professor",
       
-      // SOLUCIÓN CLAVE: Usar score normalizado (número total de problemas)
+      // SOLUCIÓN CLAVE: Datos básicos consistentes
       score: finalScore,
       totalProblems: state.problems.length,
       timeSpent: Math.round(totalTimerRef.current),
       
+      // Metadatos temporales
       timestamp: Date.now(),
       date: new Date().toISOString(),
+      
+      // Información sobre la dificultad
       difficulty: state.settings.difficulty || "custom",
       settings: state.settings,
       
-      // Usar TODAS las respuestas normalizadas para los detalles
-      problemDetails: normalizedAnswers.map(answer => {
-        const problem = state.problems.find(p => p.id === answer.problemId);
-        
-        return {
-          id: `${answer.problemId}_${Date.now()}`,
-          problemId: answer.problemId,
-          operands: problem ? problem.operands : [],
-          correctAnswer: problem ? problem.correctAnswer : 0,
-          userAnswer: answer.answer,
-          isCorrect: answer.isCorrect,
-          attempts: answer.attempts,
-          timestamp: answer.timestamp,
-          explanationDrawing: answer.explanationDrawing,
-          _synthetic: answer._syntheticAnswer
-        };
-      }),
+      // Estadísticas como en modo normal (para consistencia)
+      accuracy: Math.round((finalScore / state.problems.length) * 100),
+      avgTimePerProblem: Math.round(totalTimerRef.current / state.problems.length),
+      avgAttempts: 1, // En modo profesor generalmente es 1
       
-      // Información adicional para diagnóstico
+      // SOLUCIÓN CLAVE: Detalles de problemas normalizados
+      problemDetails: problemDetails,
+      
+      // Datos adicionales para diagnóstico
       extraData: {
         mode: 'professor',
-        version: '4.2.1',
+        version: '4.3.0',
         totalTime: Math.round(totalTimerRef.current),
+        
+        // Estadísticas de normalización
         diagnostico: {
           timestamp_guardado: Date.now(),
-          version_feature: '2.0.0',
-          total_problemas_originales: state.problems.length,
-          total_respuestas_originales: state.studentAnswers.length,
-          total_respuestas_sinteticas: syntheticAnswers.length,
-          total_respuestas_normalizadas: normalizedAnswers.length,
-          puntaje_final: finalScore
+          version_feature: '3.0.0',
+          total_problemas: state.problems.length,
+          respuestas_originales: state.studentAnswers.length,
+          respuestas_sinteticas: syntheticAnswers.length,
+          respuestas_normalizadas: normalizedAnswers.length,
+          puntaje_final: finalScore,
+          integridad_datos: allProblemsHaveAnswers ? 'completa' : 'incompleta'
         }
       },
       
-      // Formato antiguo para compatibilidad
+      // Compatibilidad con formato antiguo
       extra_data: {
         mode: 'professor',
-        version: '4.2.1',
+        version: '4.3.0',
+        
+        // Incluir problemas en formato compatible
         problems: normalizedAnswers,
+        problemDetails: problemDetails,
+        
+        // Datos de tiempo
         totalTime: Math.round(totalTimerRef.current),
+        
+        // Diagnóstico
         diagnostico: {
           respuestas_originales: state.studentAnswers.length,
           respuestas_sinteticas: syntheticAnswers.length,
@@ -630,7 +696,7 @@ export const ProfessorModeContainer: React.FC<ProfessorModeContainerProps> = ({
           normalizacion_aplicada: syntheticAnswers.length > 0,
           puntaje_final: finalScore,
           timestamp: Date.now(),
-          version_feature: '2.0.0'
+          version_feature: '3.0.0'
         }
       }
     };
