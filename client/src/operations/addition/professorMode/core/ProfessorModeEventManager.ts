@@ -1,84 +1,159 @@
 /**
  * Gestor de Eventos para el Modo Profesor
  * 
- * Este módulo implementa un sistema de eventos que permite
- * la comunicación desacoplada entre los distintos componentes
- * del Modo Profesor, mejorando la arquitectura y mantenibilidad.
+ * Implementa un sistema de publicación/suscripción (pub/sub) que facilita
+ * la comunicación desacoplada entre componentes del Modo Profesor.
+ * 
+ * @author Equipo de Desarrollo Math-W-A-O-K
+ * @version 2.0.0
  */
 
-import { ProfessorModeEvents } from '../domain/ProfessorModeTypes';
-
-type EventCallback = (data: any) => void;
+import { ProfessorModeEvents } from "../domain/ProfessorModeTypes";
 
 /**
- * Gestor de eventos para permitir comunicación entre componentes
- * sin acoplamiento directo, implementando un patrón pub/sub.
+ * Tipo para los manejadores de eventos específicos
+ */
+type EventHandler<K extends keyof ProfessorModeEvents> = (data: ProfessorModeEvents[K]) => void;
+
+/**
+ * Implementación del gestor de eventos para el Modo Profesor
  */
 export class ProfessorModeEventManager {
-  private eventListeners: Map<string, EventCallback[]> = new Map();
-  private debugMode: boolean = false;
+  /**
+   * Versión del componente para diagnóstico
+   */
+  static readonly VERSION = "2.0.0";
   
   /**
-   * Activa o desactiva el modo debug para registrar todos los eventos
+   * Mapa de suscriptores a eventos
    */
-  setDebugMode(enabled: boolean): void {
-    this.debugMode = enabled;
-  }
+  private static subscribers = new Map<
+    keyof ProfessorModeEvents,
+    Set<EventHandler<any>>
+  >();
   
   /**
-   * Suscribe una función callback a un tipo de evento específico
+   * Registro cronológico de eventos para diagnóstico
    */
-  on<K extends keyof ProfessorModeEvents>(
-    eventType: K, 
-    callback: (data: ProfessorModeEvents[K]) => void
+  private static eventLog: Array<{
+    event: keyof ProfessorModeEvents;
+    data: any;
+    timestamp: number;
+  }> = [];
+  
+  /**
+   * Número máximo de eventos a mantener en el registro
+   */
+  private static readonly MAX_EVENT_LOG_SIZE = 100;
+  
+  /**
+   * Suscribe un manejador a un tipo de evento específico
+   */
+  static subscribe<K extends keyof ProfessorModeEvents>(
+    event: K,
+    handler: EventHandler<K>
   ): () => void {
-    if (!this.eventListeners.has(eventType as string)) {
-      this.eventListeners.set(eventType as string, []);
+    // Obtener o crear el conjunto de manejadores para este evento
+    if (!this.subscribers.has(event)) {
+      this.subscribers.set(event, new Set());
     }
     
-    const callbacks = this.eventListeners.get(eventType as string) || [];
-    callbacks.push(callback as EventCallback);
+    // Añadir el manejador al conjunto
+    const handlers = this.subscribers.get(event)!;
+    handlers.add(handler as EventHandler<any>);
     
-    // Retornar función para cancelar la suscripción
+    // Retornar función para cancelar suscripción
     return () => {
-      const updatedCallbacks = (this.eventListeners.get(eventType as string) || [])
-        .filter(cb => cb !== callback);
-      this.eventListeners.set(eventType as string, updatedCallbacks);
+      handlers.delete(handler as EventHandler<any>);
+      if (handlers.size === 0) {
+        this.subscribers.delete(event);
+      }
     };
   }
   
   /**
-   * Emite un evento con datos específicos
+   * Publica un evento con datos asociados a todos los suscriptores
    */
-  emit<K extends keyof ProfessorModeEvents>(
-    eventType: K, 
+  static publish<K extends keyof ProfessorModeEvents>(
+    event: K,
     data: ProfessorModeEvents[K]
   ): void {
-    if (this.debugMode) {
-      console.log(`[ProfessorModeEvents] Emitiendo evento "${eventType}"`, data);
+    // Registrar evento para diagnóstico
+    this.logEvent(event, data);
+    
+    // Verificar si hay suscriptores para este evento
+    if (!this.subscribers.has(event)) {
+      return;
     }
     
-    const callbacks = this.eventListeners.get(eventType as string) || [];
-    callbacks.forEach(callback => {
+    // Notificar a todos los suscriptores
+    const handlers = this.subscribers.get(event)!;
+    handlers.forEach(handler => {
       try {
-        callback(data);
+        handler(data);
       } catch (error) {
-        console.error(`Error al procesar evento "${eventType}":`, error);
+        console.error(`❌ Error al manejar evento ${String(event)}:`, error);
       }
     });
   }
   
   /**
-   * Elimina todos los listeners de un tipo de evento específico
+   * Registra un evento en el log cronológico
    */
-  removeAllListeners(eventType?: keyof ProfessorModeEvents): void {
-    if (eventType) {
-      this.eventListeners.delete(eventType as string);
-    } else {
-      this.eventListeners.clear();
+  private static logEvent<K extends keyof ProfessorModeEvents>(
+    event: K,
+    data: ProfessorModeEvents[K]
+  ): void {
+    // Añadir evento al registro
+    this.eventLog.push({
+      event,
+      data,
+      timestamp: Date.now()
+    });
+    
+    // Limitar tamaño del registro
+    if (this.eventLog.length > this.MAX_EVENT_LOG_SIZE) {
+      this.eventLog = this.eventLog.slice(-this.MAX_EVENT_LOG_SIZE);
     }
   }
+  
+  /**
+   * Obtiene el registro de eventos para diagnóstico
+   */
+  static getEventLog(): Array<{
+    event: keyof ProfessorModeEvents;
+    data: any;
+    timestamp: number;
+  }> {
+    return [...this.eventLog];
+  }
+  
+  /**
+   * Limpia todas las suscripciones
+   */
+  static clearAllSubscriptions(): void {
+    this.subscribers.clear();
+  }
+  
+  /**
+   * Devuelve estadísticas de los eventos actuales
+   */
+  static getStats(): {
+    eventTypes: string[];
+    subscriberCounts: Record<string, number>;
+    totalEvents: number;
+  } {
+    const eventTypes = Array.from(this.subscribers.keys()).map(String);
+    
+    const subscriberCounts: Record<string, number> = {};
+    this.subscribers.forEach((handlers, event) => {
+      subscriberCounts[String(event)] = handlers.size;
+    });
+    
+    return {
+      eventTypes,
+      subscriberCounts,
+      totalEvents: this.eventLog.length
+    };
+  }
 }
-
-// Exportar una instancia singleton para uso en toda la aplicación
-export const professorModeEvents = new ProfessorModeEventManager();

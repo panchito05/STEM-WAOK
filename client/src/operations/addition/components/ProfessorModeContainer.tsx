@@ -1,10 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
-import { AdditionProblem } from '../types';
+import { AdditionProblem } from '../domain/AdditionProblem';
 import { generateAdditionProblem } from '../problemGenerator';
 import { useToast } from '@/hooks/use-toast';
-import { ProfessorModeState, ProfessorStudentAnswer, ProfessorModeResult, ProfessorModeSettings } from '../ProfessorModeTypes';
+import { 
+  ProfessorModeState, 
+  ProfessorStudentAnswer, 
+  ProfessorModeResult, 
+  ProfessorModeSettings,
+  ProfessorModeDiagnostic
+} from '../professorMode/domain/ProfessorModeTypes';
+import { ProfessorModeDataIntegrity } from '../professorMode/core/ProfessorModeDataIntegrity';
+import { ProfessorModeStorageService } from '../professorMode/core/ProfessorModeStorageService';
+import { ProfessorModeEventManager } from '../professorMode/core/ProfessorModeEventManager';
 import { ProfessorProblemDisplay } from './ProfessorProblemDisplay';
 import { ProfessorExplanation } from './ProfessorExplanation';
 import { StudentAnswerCapture } from './StudentAnswerCapture';
