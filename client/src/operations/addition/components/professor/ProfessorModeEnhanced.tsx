@@ -292,6 +292,48 @@ const ProfessorModeContent: React.FC<ProfessorModeEnhancedProps> = ({
             </div>
           )}
           
+          {/* Teclado numérico mejorado */}
+          <div className="grid grid-cols-3 gap-2 mb-2">
+            {/* Números 1-9 */}
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+              <button
+                key={num}
+                onClick={() => setUserAnswer(state.userAnswer + num.toString())}
+                disabled={state.isProcessing}
+                className="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded p-3 text-lg font-medium text-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {num}
+              </button>
+            ))}
+            
+            {/* Fila inferior: 0, punto decimal, borrar */}
+            <button
+              onClick={() => setUserAnswer(state.userAnswer + '.')}
+              disabled={state.isProcessing || state.userAnswer.includes('.')}
+              className="bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded p-3 text-lg font-medium text-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Punto decimal"
+            >
+              .
+            </button>
+            
+            <button
+              onClick={() => setUserAnswer(state.userAnswer + '0')}
+              disabled={state.isProcessing}
+              className="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded p-3 text-lg font-medium text-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              0
+            </button>
+            
+            <button
+              onClick={() => setUserAnswer(state.userAnswer.slice(0, -1))}
+              disabled={state.isProcessing || !state.userAnswer}
+              className="bg-red-50 hover:bg-red-100 border border-red-200 rounded p-3 text-lg font-medium text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Borrar último dígito"
+            >
+              ⌫
+            </button>
+          </div>
+
           {/* Mensaje de progreso */}
           {state.attempts > 0 && state.attempts < settings.maxAttempts && !state.isProcessing && (
             <div className="mt-2 text-center text-sm text-gray-600">
