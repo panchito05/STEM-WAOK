@@ -7,10 +7,8 @@ import NumericKeypad from './SimpleNumericKeypad';
 interface ProfessorModeProps {
   problem: AdditionProblem;
   onClose: () => void;
-  onCorrectAnswer: (wasCorrect: boolean, userAnswer: number, attempts: number) => void;
+  onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
-  currentProblemIndex?: number; // Índice actual del problema
-  totalProblems?: number; // Número total de problemas
   settings: {
     maxAttempts: number;
     enableCompensation: boolean;
@@ -22,8 +20,6 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   onClose,
   onCorrectAnswer,
   showVerticalFormat = true,
-  currentProblemIndex = 0,
-  totalProblems = 1,
   settings
 }) => {
   const [userAnswer, setUserAnswer] = useState<string>('');
@@ -71,8 +67,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           canvasRef.current.clear();
         }
         
-        // Move to next problem, indicando si fue correcto, la respuesta del usuario y el número de intentos
-        onCorrectAnswer(result, Number(userAnswer), newAttempts);
+        // Move to next problem, indicando si fue correcto para compensación si es necesario
+        onCorrectAnswer(result);
       }, 1000); // Short delay before moving to next problem
     }
   };
@@ -186,10 +182,10 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           className="absolute z-10 w-[280px]" 
           style={getPositionStyles()}
         >
-          {/* Move button para cambiar la posición (centrado) */}
+          {/* Move button para cambiar la posición (en el lado izquierdo) */}
           <button
             onClick={rotatePosition}
-            className="absolute top-1 left-1/2 transform -translate-x-1/2 p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
+            className="absolute top-1 left-1 p-1.5 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors"
             title="Cambiar posición"
           >
             <Move className="h-4 w-4 text-blue-600" />
@@ -199,7 +195,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             {/* Contador de problema e intentos */}
             <div className="flex justify-between mb-2 text-xs font-medium text-gray-600">
-              <span>Problema {currentProblemIndex + 1} de {totalProblems}</span>
+              <span>Problema {problem.index + 1} de {problem.total}</span>
               <span>Intentos: {attempts}/{settings.maxAttempts}</span>
             </div>
             {renderProblem()}
