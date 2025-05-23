@@ -2,7 +2,7 @@ import React, { useEffect, useCallback } from 'react';
 import { AdditionProblem } from '../../types';
 import { CloseButton } from './CloseButton';
 import { DrawingArea } from './DrawingArea';
-import { ControlPanel } from './ControlPanel';
+import { ControlPanelEnhanced } from './ControlPanelEnhanced';
 import { ProfessorProvider, useProfessorContext } from './context/ProfessorContext';
 import { useProfessorStateMachine } from './state/StateMachine';
 import { InputValidator, ErrorHandler, TimingUtils } from './utils/ValidationUtils';
@@ -183,26 +183,122 @@ const ProfessorModeContent: React.FC<ProfessorModeEnhancedProps> = ({
           problem={problem}
         />
         
-        {/* Panel de control mejorado */}
-        <ControlPanelEnhanced
-          problem={problem}
-          position={state.position}
-          onPositionChange={(pos) => {
-            // Persistir posición automáticamente
-            try {
-              localStorage.setItem('professor_position', pos);
-            } catch (error) {
-              ErrorHandler.logError('PositionSave', error);
-            }
-          }}
-          userAnswer={state.userAnswer}
-          onAnswerChange={setUserAnswer}
-          attempts={state.attempts}
-          maxAttempts={settings.maxAttempts}
-          isCorrect={state.isCorrect}
-          onCheck={checkAnswer}
-          showVerticalFormat={showVerticalFormat}
-        />
+        {/* Panel de control mejorado - Usando componentes existentes temporalmente */}
+        <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm w-full z-40">
+          {/* Mostrar problema */}
+          <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center text-sm font-medium text-gray-700">
+                <span>Problema {(problem.index ?? 0) + 1} de {problem.total ?? 1}</span>
+              </div>
+              <div className="text-sm font-medium text-blue-600">
+                Intentos: {state.attempts}/{settings.maxAttempts}
+              </div>
+            </div>
+            
+            {/* Problema matemático mejorado */}
+            <div className="bg-gray-50 p-3 rounded border-2 border-dashed border-gray-200">
+              <div className="font-mono text-xl whitespace-pre select-none text-center">
+                {problem.operands.map((op, index) => (
+                  <span key={index}>
+                    <span className="mx-1">{typeof op === 'number' ? op : parseFloat(op.toString())}</span>
+                    {index < problem.operands.length - 1 && (
+                      <span className="mx-2 text-blue-600 font-bold">+</span>
+                    )}
+                  </span>
+                ))}
+                <span className="mx-2">=</span>
+                <span className="text-gray-400 italic">?</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Campo de respuesta mejorado */}
+          <div className="mb-2">
+            <div className="flex items-center mb-1">
+              <div className="font-medium mr-2">Respuesta:</div>
+              {state.userAnswer.trim() && !isNaN(parseFloat(state.userAnswer)) && (
+                <span className="text-green-600">✓</span>
+              )}
+            </div>
+            
+            <div className="flex">
+              <div className={`flex-1 border rounded p-2 text-lg text-center min-h-[40px] transition-all duration-200 ${
+                state.isProcessing 
+                  ? 'bg-gray-100 border-gray-200 text-gray-500' 
+                  : state.userAnswer.trim() && !isNaN(parseFloat(state.userAnswer))
+                    ? 'bg-green-50 border-green-300 text-green-900'
+                    : 'bg-white border-gray-300 text-gray-900'
+              }`}>
+                {state.userAnswer || (
+                  <span className="text-gray-400 italic">
+                    {state.isProcessing ? 'Esperando...' : 'Escribe tu respuesta'}
+                  </span>
+                )}
+              </div>
+              
+              <button
+                onClick={() => setUserAnswer('')}
+                disabled={state.isProcessing || !state.userAnswer.trim()}
+                className="ml-2 p-2 rounded bg-white border border-gray-200 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Borrar respuesta"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+          
+          {/* Botón de verificar mejorado */}
+          <button
+            onClick={checkAnswer}
+            disabled={!state.userAnswer.trim() || state.isProcessing}
+            className={`w-full mb-2 py-3 px-4 rounded-md font-medium text-base transition-all duration-200 flex items-center justify-center ${
+              state.isProcessing
+                ? 'bg-blue-500 text-white cursor-wait'
+                : !state.userAnswer.trim()
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : state.isCorrect === true
+                    ? 'bg-green-600 text-white transform scale-105 shadow-lg'
+                    : state.isCorrect === false
+                      ? 'bg-red-600 text-white'
+                      : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg active:transform active:scale-95'
+            }`}
+          >
+            {state.isProcessing ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Verificando...
+              </>
+            ) : state.isCorrect === true ? (
+              <>
+                ✓ ¡Correcto! Excelente trabajo
+              </>
+            ) : state.isCorrect === false ? (
+              <>
+                ✕ Incorrecto. Inténtalo de nuevo
+              </>
+            ) : (
+              !state.userAnswer.trim() ? 'Escribe una respuesta primero' : 'Comprobar Respuesta'
+            )}
+          </button>
+          
+          {/* Indicadores de estado */}
+          {state.isProcessing && (
+            <div className="mt-2 text-center">
+              <div className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 mr-2"></div>
+                Verificando...
+              </div>
+            </div>
+          )}
+          
+          {/* Mensaje de progreso */}
+          {state.attempts > 0 && state.attempts < settings.maxAttempts && !state.isProcessing && (
+            <div className="mt-2 text-center text-sm text-gray-600">
+              {settings.maxAttempts - state.attempts} intento{settings.maxAttempts - state.attempts !== 1 ? 's' : ''} restante{settings.maxAttempts - state.attempts !== 1 ? 's' : ''}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
