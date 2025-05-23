@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { AdditionProblem } from '../types';
 import { CloseButton } from './professor/CloseButton';
 import { DrawingArea } from './professor/DrawingArea';
+import { useProgress } from '../../../context/ProgressContext';
 
 interface ProfessorModeProps {
   problem: AdditionProblem;
@@ -43,6 +44,97 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     totalAttempts: 0,
     revealedAnswers: 0
   });
+
+  // Obtener función de guardado del contexto
+  const { saveExerciseResult } = useProgress();
+
+  // FUNCIÓN PARA GUARDAR DATOS EXACTAMENTE COMO EL MODO NORMAL
+  const saveExerciseDataLikeNormalMode = async (stats: any, history: any[]) => {
+    try {
+      // Crear los problemas capturados exactamente como el modo normal
+      const problemasCapturados = history.map((item, index) => ({
+        problem: `${item.problem.operands.join(' + ')} = ${calculateCorrectAnswer(item.problem)}`,
+        userAnswer: item.userAnswer.toString(),
+        correctAnswer: calculateCorrectAnswer(item.problem).toString(),
+        isCorrect: item.isCorrect,
+        attempts: item.attempts,
+        timeSpent: item.timeSpent,
+        level: "beginner",
+        problemId: `profesor_${index + 1}`,
+        timestamp: Date.now() - ((history.length - index) * item.timeSpent * 1000)
+      }));
+
+      // Calcular estadísticas exactas
+      const accuracy = stats.totalProblems > 0 ? Math.round((stats.correctAnswers / stats.totalProblems) * 100) : 0;
+      const avgTimePerProblem = stats.totalProblems > 0 ? Math.round(stats.totalTime / stats.totalProblems) : 0;
+      const avgAttempts = stats.totalProblems > 0 ? (stats.totalAttempts / stats.totalProblems).toFixed(1) : '1.0';
+
+      // ESTRUCTURA EXACTA COMO EL MODO NORMAL - VERSIÓN 4.0
+      const exerciseData = {
+        operationId: "addition",
+        date: new Date().toISOString(),
+        score: stats.correctAnswers,
+        totalProblems: stats.totalProblems,
+        timeSpent: stats.totalTime,
+        difficulty: "beginner",
+        
+        // Estadísticas precisas
+        accuracy: accuracy,
+        avgTimePerProblem: avgTimePerProblem,
+        avgAttempts: parseFloat(avgAttempts),
+        revealedAnswers: stats.revealedAnswers,
+        
+        // Datos extra con estructura clara - EXACTA COMO EL MODO NORMAL
+        extra_data: {
+          // Metadatos para trazabilidad
+          version: "4.0",
+          timestamp: Date.now(),
+          exerciseId: `professor_mode_${Date.now()}`,
+          exerciseType: "professor_mode_addition",
+          source: "profesor_mode",
+          
+          // Almacenar los problemas en TODAS las ubicaciones posibles para máxima compatibilidad
+          problemDetails: problemasCapturados,
+          problems: problemasCapturados,
+          capturedProblems: problemasCapturados,
+          exactProblems: problemasCapturados,
+          mathProblems: problemasCapturados,
+          problemas: problemasCapturados,
+          
+          // Datos de la pantalla de resumen (screenshot data)
+          screenshot: {
+            scoreData: {
+              score: { value: `${stats.correctAnswers} / ${stats.totalProblems}`, bgColor: "bg-blue-50", textColor: "text-indigo-600" },
+              accuracy: { value: `${accuracy}%`, bgColor: "bg-green-50", textColor: "text-green-600" },
+              avgTime: { value: `${avgTimePerProblem}s`, bgColor: "bg-purple-50", textColor: "text-purple-600" },
+              avgAttempts: { value: avgAttempts, bgColor: "bg-amber-50", textColor: "text-amber-600" },
+              revealed: { value: "0", bgColor: "bg-red-50", textColor: "text-red-600" },
+              finalLevel: { value: "1", bgColor: "bg-teal-50", textColor: "text-teal-600" }
+            },
+            exactProblems: problemasCapturados
+          },
+          
+          // Configuraciones usadas
+          settings: {
+            maxAttempts: settings.maxAttempts,
+            enableCompensation: settings.enableCompensation,
+            mode: "professor",
+            showVerticalFormat: showVerticalFormat
+          }
+        }
+      };
+
+      console.log("🔥 MODO PROFESOR: Guardando ejercicio con datos:", exerciseData);
+      
+      // Guardar usando la misma función que el modo normal
+      await saveExerciseResult(exerciseData);
+      
+      console.log("✅ MODO PROFESOR: Ejercicio guardado exitosamente en Progress and History");
+      
+    } catch (error) {
+      console.error("❌ Error guardando ejercicio del Modo Profesor:", error);
+    }
+  };
 
   // Calcular respuesta correcta
   const calculateCorrectAnswer = useCallback((prob: AdditionProblem): number => {
@@ -101,6 +193,18 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         
         // Verificar si es el último problema (por ejemplo, problema 3 de 3)
         if (problemHistory.length + 1 >= 3) { // +1 porque acabamos de resolver uno más
+          // GUARDAR DATOS ANTES DE COMPLETAR
+          const finalStats = {
+            totalTime: Math.floor((Date.now() - exerciseStartTime) / 1000),
+            totalProblems: problemHistory.length + 1,
+            correctAnswers: exerciseStats.correctAnswers + 1,
+            totalAttempts: exerciseStats.totalAttempts + currentAttempts,
+            revealedAnswers: 0
+          };
+          
+          // Guardar ejercicio en Progress and History
+          saveExerciseDataLikeNormalMode(finalStats, [...problemHistory, problemData]);
+          
           setExerciseCompleted(true);
         } else {
           onCorrectAnswer(true);
@@ -113,6 +217,18 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           
           // También verificar si era el último problema, aunque fuera incorrecto
           if (problemHistory.length + 1 >= 3) {
+            // GUARDAR DATOS ANTES DE COMPLETAR (RESPUESTA INCORRECTA)
+            const finalStats = {
+              totalTime: Math.floor((Date.now() - exerciseStartTime) / 1000),
+              totalProblems: problemHistory.length + 1,
+              correctAnswers: exerciseStats.correctAnswers, // No sumar porque fue incorrecto
+              totalAttempts: exerciseStats.totalAttempts + currentAttempts,
+              revealedAnswers: 0
+            };
+            
+            // Guardar ejercicio en Progress and History
+            saveExerciseDataLikeNormalMode(finalStats, [...problemHistory, problemData]);
+            
             setExerciseCompleted(true);
           } else {
             onCorrectAnswer(false);
