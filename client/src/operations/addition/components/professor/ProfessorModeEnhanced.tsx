@@ -184,7 +184,7 @@ const ProfessorModeContent: React.FC<ProfessorModeEnhancedProps> = ({
         />
         
         {/* Panel de control mejorado */}
-        <ControlPanel
+        <ControlPanelEnhanced
           problem={problem}
           position={state.position}
           onPositionChange={(pos) => {

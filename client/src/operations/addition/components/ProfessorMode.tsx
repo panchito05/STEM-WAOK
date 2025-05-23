@@ -1,6 +1,6 @@
 import React from 'react';
 import { AdditionProblem } from '../types';
-import { ProfessorModeModular } from './professor';
+import { ProfessorModeEnhanced } from './professor/ProfessorModeEnhanced';
 
 interface ProfessorModeProps {
   problem: AdditionProblem;
@@ -13,9 +13,9 @@ interface ProfessorModeProps {
   };
 }
 
-// Componente wrapper que utiliza la nueva estructura modular
+// Componente wrapper que utiliza la nueva arquitectura mejorada
 export const ProfessorMode: React.FC<ProfessorModeProps> = (props) => {
-  return <ProfessorModeModular {...props} />;
+  return <ProfessorModeEnhanced {...props} />;
 };
 
 export default ProfessorMode;
