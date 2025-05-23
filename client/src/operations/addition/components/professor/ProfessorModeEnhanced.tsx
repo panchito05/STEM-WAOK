@@ -223,19 +223,26 @@ const ProfessorModeContent: React.FC<ProfessorModeEnhancedProps> = ({
             </div>
             
             <div className="flex">
-              <div className={`flex-1 border rounded p-2 text-lg text-center min-h-[40px] transition-all duration-200 ${
-                state.isProcessing 
-                  ? 'bg-gray-100 border-gray-200 text-gray-500' 
-                  : state.userAnswer.trim() && !isNaN(parseFloat(state.userAnswer))
-                    ? 'bg-green-50 border-green-300 text-green-900'
-                    : 'bg-white border-gray-300 text-gray-900'
-              }`}>
-                {state.userAnswer || (
-                  <span className="text-gray-400 italic">
-                    {state.isProcessing ? 'Esperando...' : 'Escribe tu respuesta'}
-                  </span>
-                )}
-              </div>
+              <input
+                type="text"
+                value={state.userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                disabled={state.isProcessing}
+                placeholder={state.isProcessing ? 'Esperando...' : 'Escribe tu respuesta'}
+                className={`flex-1 border rounded p-2 text-lg text-center min-h-[40px] transition-all duration-200 ${
+                  state.isProcessing 
+                    ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' 
+                    : state.userAnswer.trim() && !isNaN(parseFloat(state.userAnswer))
+                      ? 'bg-green-50 border-green-300 text-green-900 focus:border-green-500'
+                      : 'bg-white border-gray-300 text-gray-900 focus:border-blue-500'
+                } focus:outline-none focus:ring-2 focus:ring-blue-200`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && state.userAnswer.trim() && !state.isProcessing) {
+                    checkAnswer();
+                  }
+                }}
+                autoFocus
+              />
               
               <button
                 onClick={() => setUserAnswer('')}
