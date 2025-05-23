@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { AdditionProblem } from '../types';
 import { CloseButton } from './professor/CloseButton';
 import { DrawingArea } from './professor/DrawingArea';
+import { useProgress } from '../../../context/ProgressContext';
 
 interface ProfessorModeProps {
   problem: AdditionProblem;
@@ -22,6 +23,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   showVerticalFormat = true,
   settings
 }) => {
+  const { saveExerciseResult } = useProgress();
   const [userAnswer, setUserAnswer] = useState('');
   const [attempts, setAttempts] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -102,6 +104,15 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         // Verificar si es el último problema (por ejemplo, problema 3 de 3)
         if (problemHistory.length + 1 >= 3) { // +1 porque acabamos de resolver uno más
           setExerciseCompleted(true);
+          // GUARDAR PROGRESO AUTOMÁTICAMENTE - Igual que el modo normal
+          setTimeout(async () => {
+            try {
+              await saveProgress();
+              console.log("🎉 Ejercicio del Modo Profesor completado y guardado");
+            } catch (error) {
+              console.error("❌ Error guardando ejercicio del Modo Profesor:", error);
+            }
+          }, 500);
         } else {
           onCorrectAnswer(true);
         }
@@ -114,6 +125,15 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           // También verificar si era el último problema, aunque fuera incorrecto
           if (problemHistory.length + 1 >= 3) {
             setExerciseCompleted(true);
+            // GUARDAR PROGRESO AUTOMÁTICAMENTE - También para problemas incorrectos
+            setTimeout(async () => {
+              try {
+                await saveProgress();
+                console.log("🎉 Ejercicio del Modo Profesor completado y guardado");
+              } catch (error) {
+                console.error("❌ Error guardando ejercicio del Modo Profesor:", error);
+              }
+            }, 500);
           } else {
             onCorrectAnswer(false);
           }
@@ -157,6 +177,107 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+
+  // Función para guardar progreso igual que el modo normal
+  const saveProgress = useCallback(async () => {
+    try {
+      // Calcular estadísticas finales
+      const accuracy = exerciseStats.totalProblems > 0 ? Math.round((exerciseStats.correctAnswers / exerciseStats.totalProblems) * 100) : 0;
+      const avgTime = exerciseStats.totalProblems > 0 ? Math.round(exerciseStats.totalTime / exerciseStats.totalProblems) : 0;
+      const avgAttempts = exerciseStats.totalProblems > 0 ? (exerciseStats.totalAttempts / exerciseStats.totalProblems) : 1.0;
+
+      // Crear estructura de datos idéntica al modo normal
+      const screenshotData = {
+        title: "Addition Exercise Complete!",
+        scoreData: {
+          totalTime: formatTime(exerciseStats.totalTime),
+          score: {
+            value: `${exerciseStats.correctAnswers} / ${exerciseStats.totalProblems}`,
+            bgColor: "bg-blue-50",
+            textColor: "text-indigo-600"
+          },
+          accuracy: {
+            value: `${accuracy}%`,
+            bgColor: "bg-green-50",
+            textColor: "text-green-600"
+          },
+          avgTime: {
+            value: `${avgTime}s`,
+            bgColor: "bg-purple-50",
+            textColor: "text-purple-600"
+          },
+          avgAttempts: {
+            value: avgAttempts.toFixed(1),
+            bgColor: "bg-amber-50",
+            textColor: "text-amber-600"
+          },
+          revealed: {
+            value: exerciseStats.revealedAnswers.toString(),
+            bgColor: "bg-red-50",
+            textColor: "text-red-600"
+          },
+          finalLevel: {
+            value: "1",
+            bgColor: "bg-teal-50",
+            textColor: "text-teal-600"
+          }
+        }
+      };
+
+      // Convertir historial de problemas al formato esperado
+      const exactProblems = problemHistory.map((item, index) => ({
+        problem: `${item.problem.operands.join(' + ')} = ${calculateCorrectAnswer(item.problem)}`,
+        isCorrect: item.isCorrect,
+        attempts: item.attempts.toString(),
+        timeSpent: item.timeSpent,
+        level: "1"
+      }));
+
+      // Preparar objeto de resultado como el modo normal
+      const exerciseResult = {
+        module: "addition",
+        score: exerciseStats.correctAnswers,
+        totalProblems: exerciseStats.totalProblems,
+        timeSpent: exerciseStats.totalTime,
+        accuracy: accuracy,
+        avgAttempts: avgAttempts,
+        revealedAnswers: exerciseStats.revealedAnswers,
+        settings: {
+          difficulty: settings.enableCompensation ? "adaptive" : "beginner",
+          maxAttempts: settings.maxAttempts,
+          enableCompensation: settings.enableCompensation,
+          problemCount: exerciseStats.totalProblems
+        },
+        timestamp: Date.now(),
+        extra_data: {
+          screenshot: screenshotData,
+          problems: exactProblems,
+          exactProblems: exactProblems,
+          capturedProblems: exactProblems,
+          mathProblems: exactProblems,
+          problemDetails: exactProblems,
+          version: "3.0",
+          source: "professor_mode"
+        },
+        problemDetails: exactProblems,
+        userAnswers: problemHistory.map((item, index) => ({
+          problemId: item.problem.id || index,
+          problem: `${item.problem.operands.join(' + ')} = ${calculateCorrectAnswer(item.problem)}`,
+          userAnswer: item.userAnswer,
+          isCorrect: item.isCorrect,
+          attempts: item.attempts,
+          timeSpent: item.timeSpent
+        }))
+      };
+
+      // Guardar usando el mismo sistema que el modo normal
+      await saveExerciseResult(exerciseResult);
+      console.log("✅ Progreso del Modo Profesor guardado exitosamente");
+
+    } catch (error) {
+      console.error("❌ Error guardando progreso del Modo Profesor:", error);
+    }
+  }, [exerciseStats, problemHistory, settings, saveExerciseResult, calculateCorrectAnswer]);
 
   // Función para reiniciar ejercicio
   const restartExercise = () => {
