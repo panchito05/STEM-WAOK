@@ -27,6 +27,22 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [position, setPosition] = useState('bottom-right');
+  const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
+  const [problemHistory, setProblemHistory] = useState<Array<{
+    problem: AdditionProblem;
+    userAnswer: number;
+    isCorrect: boolean;
+    attempts: number;
+    timeSpent: number;
+  }>>([]);
+  const [exerciseCompleted, setExerciseCompleted] = useState(false);
+  const [exerciseStats, setExerciseStats] = useState({
+    totalTime: 0,
+    totalProblems: 0,
+    correctAnswers: 0,
+    totalAttempts: 0,
+    revealedAnswers: 0
+  });
 
   // Calcular respuesta correcta
   const calculateCorrectAnswer = useCallback((prob: AdditionProblem): number => {
@@ -36,12 +52,13 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     }, 0);
   }, []);
 
-  // Función de verificación mejorada
+  // Función de verificación mejorada con tracking de estadísticas
   const checkAnswer = useCallback(() => {
     if (!userAnswer.trim() || isProcessing) return;
 
     setIsProcessing(true);
-    setAttempts(prev => prev + 1);
+    const currentAttempts = attempts + 1;
+    setAttempts(currentAttempts);
 
     // Validar entrada
     const userNum = parseFloat(userAnswer);
@@ -53,19 +70,53 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
     const correctAnswer = calculateCorrectAnswer(problem);
     const correct = Math.abs(userNum - correctAnswer) < 0.01;
+    const problemStartTime = exerciseStartTime || Date.now();
+    const problemTimeSpent = Math.round((Date.now() - problemStartTime) / 1000);
     
     setIsCorrect(correct);
+
+    // Guardar datos del problema resuelto
+    const problemData = {
+      problem: problem,
+      userAnswer: userNum,
+      isCorrect: correct,
+      attempts: currentAttempts,
+      timeSpent: problemTimeSpent
+    };
+
+    setProblemHistory(prev => [...prev, problemData]);
+
+    // Actualizar estadísticas del ejercicio
+    setExerciseStats(prev => ({
+      ...prev,
+      totalProblems: prev.totalProblems + 1,
+      correctAnswers: prev.correctAnswers + (correct ? 1 : 0),
+      totalAttempts: prev.totalAttempts + currentAttempts,
+      totalTime: prev.totalTime + problemTimeSpent
+    }));
 
     if (correct) {
       setTimeout(() => {
         setIsProcessing(false);
-        onCorrectAnswer(true);
+        
+        // Verificar si es el último problema (por ejemplo, problema 3 de 3)
+        if (problemHistory.length + 1 >= 3) { // +1 porque acabamos de resolver uno más
+          setExerciseCompleted(true);
+        } else {
+          onCorrectAnswer(true);
+        }
       }, 1000);
     } else {
-      if (attempts + 1 >= settings.maxAttempts) {
+      if (currentAttempts >= settings.maxAttempts) {
         setTimeout(() => {
           setIsProcessing(false);
-          onCorrectAnswer(false);
+          
+          // También verificar si era el último problema, aunque fuera incorrecto
+          if (problemHistory.length + 1 >= 3) {
+            setExerciseCompleted(true);
+          } else {
+            onCorrectAnswer(false);
+          }
         }, 1000);
       } else {
         setTimeout(() => {
@@ -73,7 +124,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         }, 1500);
       }
     }
-  }, [userAnswer, isProcessing, attempts, settings.maxAttempts, problem, calculateCorrectAnswer, onCorrectAnswer]);
+  }, [userAnswer, isProcessing, attempts, settings.maxAttempts, problem, calculateCorrectAnswer, onCorrectAnswer, exerciseStartTime, problemHistory.length]);
 
   // Reiniciar cuando cambia el problema
   useEffect(() => {
@@ -99,6 +150,161 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, [checkAnswer, userAnswer, isProcessing, onClose]);
+
+  // Función para formatear tiempo
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  // Función para reiniciar ejercicio
+  const restartExercise = () => {
+    setExerciseCompleted(false);
+    setProblemHistory([]);
+    setExerciseStats({
+      totalTime: 0,
+      totalProblems: 0,
+      correctAnswers: 0,
+      totalAttempts: 0,
+      revealedAnswers: 0
+    });
+    setUserAnswer('');
+    setAttempts(0);
+    setIsCorrect(null);
+    setIsProcessing(false);
+    setExerciseStartTime(Date.now());
+  };
+
+  // PANTALLA DE RESUMEN - Exactamente como en el modo normal
+  if (exerciseCompleted) {
+    const accuracy = exerciseStats.totalProblems > 0 ? Math.round((exerciseStats.correctAnswers / exerciseStats.totalProblems) * 100) : 0;
+    const avgTime = exerciseStats.totalProblems > 0 ? Math.round(exerciseStats.totalTime / exerciseStats.totalProblems) : 0;
+    const avgAttempts = exerciseStats.totalProblems > 0 ? (exerciseStats.totalAttempts / exerciseStats.totalProblems).toFixed(1) : '1.0';
+
+    return (
+      <div className="fixed inset-0 bg-gray-50 z-50 overflow-auto">
+        <div className="min-h-full flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl w-full">
+            {/* Título */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Addition Exercise Complete!</h1>
+              
+              {/* Tiempo total */}
+              <div className="mb-6">
+                <p className="text-sm text-gray-600 mb-1">Total Time</p>
+                <p className="text-2xl font-bold text-gray-900">{formatTime(exerciseStats.totalTime)}</p>
+              </div>
+            </div>
+
+            {/* Estadísticas en tarjetas - Primera fila */}
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="bg-blue-50 p-4 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Score</div>
+                <div className="text-2xl text-indigo-600 font-semibold">
+                  {exerciseStats.correctAnswers} / {exerciseStats.totalProblems}
+                </div>
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Accuracy</div>
+                <div className="text-2xl text-green-600 font-semibold">
+                  {accuracy}%
+                </div>
+              </div>
+
+              <div className="bg-purple-50 p-4 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Avg. Time</div>
+                <div className="text-2xl text-purple-600 font-semibold">
+                  {avgTime}s
+                </div>
+              </div>
+            </div>
+
+            {/* Segunda fila */}
+            <div className="grid grid-cols-3 gap-4 mb-8">
+              <div className="bg-amber-50 p-4 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Avg. Attempts</div>
+                <div className="text-2xl text-amber-600 font-semibold">
+                  {avgAttempts}
+                </div>
+              </div>
+
+              <div className="bg-red-50 p-4 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Revealed</div>
+                <div className="text-2xl text-red-600 font-semibold">
+                  {exerciseStats.revealedAnswers}
+                </div>
+              </div>
+
+              <div className="bg-teal-50 p-4 rounded-lg text-center">
+                <div className="text-sm text-gray-600 mb-1">Final Level</div>
+                <div className="text-2xl text-teal-600 font-semibold">
+                  1
+                </div>
+              </div>
+            </div>
+
+            {/* Problem Review */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Problem Review</h3>
+              <div className="space-y-2">
+                {problemHistory.map((item, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded-lg flex items-center justify-between ${
+                      item.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <span className="font-medium text-gray-700 mr-2">
+                        (#{index + 1})
+                      </span>
+                      <span className="text-gray-900">
+                        {item.problem.operands.join(' + ')} = {calculateCorrectAnswer(item.problem)}
+                      </span>
+                    </div>
+                    <div className="flex items-center">
+                      <span className="text-xs text-gray-500 mr-2">
+                        Int: {item.attempts}; T: {item.timeSpent}s
+                      </span>
+                      {item.isCorrect ? (
+                        <span className="text-green-600 text-xl">✓</span>
+                      ) : (
+                        <span className="text-red-600 text-xl">✗</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Botones */}
+            <div className="flex justify-center gap-4 mb-4">
+              <button
+                onClick={restartExercise}
+                className="bg-gray-900 text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors font-medium"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={onClose}
+                className="bg-gray-200 text-gray-700 px-6 py-3 rounded-md hover:bg-gray-300 transition-colors font-medium flex items-center"
+              >
+                ⚙️ Settings
+              </button>
+            </div>
+
+            {/* Progress Saved */}
+            <div className="text-center text-sm text-gray-600">
+              <p>Progress Saved</p>
+              <p className="font-medium">Score: {exerciseStats.correctAnswers}/{exerciseStats.totalProblems}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-white z-50">
