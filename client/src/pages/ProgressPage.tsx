@@ -498,7 +498,22 @@ export default function ProgressPage() {
                                     const totalTime = moduleExercises.reduce((acc, ex) => acc + (ex.timeSpent || 0), 0);
                                     const totalProblems = moduleExercises.reduce((acc, ex) => acc + (ex.totalProblems || 0), 0);
                                     
-                                    return totalProblems > 0 ? `${Math.round(totalTime / totalProblems)}s` : '0s';
+                                    if (totalProblems === 0) return '0s';
+                                    
+                                    const avgTime = totalTime / totalProblems;
+                                    
+                                    // Formatear el tiempo de manera más legible
+                                    if (avgTime < 60) {
+                                      return `${Math.round(avgTime)}s`;
+                                    } else if (avgTime < 3600) {
+                                      const minutes = Math.floor(avgTime / 60);
+                                      const seconds = Math.round(avgTime % 60);
+                                      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                                    } else {
+                                      const hours = Math.floor(avgTime / 3600);
+                                      const minutes = Math.floor((avgTime % 3600) / 60);
+                                      return `${hours}h ${minutes}m`;
+                                    }
                                   })()}
                                 </p>
                               </div>
