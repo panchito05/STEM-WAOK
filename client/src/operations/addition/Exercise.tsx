@@ -2259,20 +2259,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
             onClick={moveToPreviousProblem}
-            className="flex-1 max-w-[80px] sm:max-w-[100px] text-xs sm:text-sm px-2 py-2 h-9 sm:h-10"
+            className="flex-1 max-w-[90px] sm:max-w-[110px] text-xs sm:text-sm px-2 py-2 h-9 sm:h-10"
           >
             <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline ml-1">Prev</span>
+            <span className="ml-1">{currentTranslations.previous}</span>
           </Button>
 
           {/* Botón Central */}
           {viewingPrevious ? (
             <Button 
               onClick={returnToActiveProblem} 
-              className="flex-1 max-w-[120px] sm:max-w-[150px] text-xs sm:text-base bg-orange-500 hover:bg-orange-600 text-white h-9 sm:h-10 px-2"
+              className="flex-1 max-w-[140px] sm:max-w-[170px] text-xs sm:text-base bg-orange-500 hover:bg-orange-600 text-white h-9 sm:h-10 px-2"
             >
               <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="ml-1">Return</span>
+              <span className="ml-1">{t('common.returnToActive')}</span>
             </Button>
           ) : waitingRef.current ? (
             <Button
@@ -2307,14 +2307,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <Button 
               onClick={checkCurrentAnswer} 
               disabled={exerciseCompleted || waitingRef.current} 
-              className="flex-1 max-w-[120px] sm:max-w-[150px] text-xs sm:text-base bg-blue-500 hover:bg-blue-600 text-white h-9 sm:h-10 px-2"
+              className="flex-1 max-w-[130px] sm:max-w-[160px] text-xs sm:text-base bg-blue-500 hover:bg-blue-600 text-white h-9 sm:h-10 px-2"
             >
               {!exerciseStarted ? (
-                <span className="text-xs sm:text-sm">Start</span>
+                currentTranslations.startExercise
               ) : (
                 <>
                   <Check className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="ml-1">Check</span>
+                  <span className="ml-1">{t('exercises.check')}</span>
                 </>
               )}
             </Button>
@@ -2374,10 +2374,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                       }
                     }
                   }}
-                  className="flex-1 max-w-[80px] sm:max-w-[100px] text-xs sm:text-sm px-2 py-2 h-9 sm:h-10"
+                  className="flex-1 max-w-[110px] sm:max-w-[130px] text-xs sm:text-sm px-2 py-2 h-9 sm:h-10"
                 >
                   <Info className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline ml-1">Show</span>
+                  <span className="ml-1">{currentTranslations.showAnswer}</span>
                 </Button>
               </TooltipTrigger>
               {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
