@@ -47,13 +47,13 @@ export default function Navbar() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
-                <span className="text-white font-bold text-2xl cursor-pointer flex items-center">
-                  <span className="text-yellow-300 mr-1">M</span>
-                  <span className="text-green-300 mr-1">a</span>
-                  <span className="text-purple-300 mr-1">t</span>
-                  <span className="text-red-300 mr-1">h</span>
-                  <span className="mr-1">W+A+O+K</span>
-                  <span className="ml-1 text-amber-200 text-xl">🔢</span>
+                <span className="text-white font-bold text-lg sm:text-xl lg:text-2xl cursor-pointer flex items-center">
+                  <span className="text-yellow-300 mr-0.5 sm:mr-1">M</span>
+                  <span className="text-green-300 mr-0.5 sm:mr-1">a</span>
+                  <span className="text-purple-300 mr-0.5 sm:mr-1">t</span>
+                  <span className="text-red-300 mr-0.5 sm:mr-1">h</span>
+                  <span className="mr-0.5 sm:mr-1">W+A+O+K</span>
+                  <span className="ml-0.5 sm:ml-1 text-amber-200 text-base sm:text-lg lg:text-xl">🔢</span>
                 </span>
               </Link>
             </div>
