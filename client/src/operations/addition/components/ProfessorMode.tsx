@@ -453,7 +453,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         <DrawingArea position={position} problem={problem} />
         
         {/* Panel de control mejorado */}
-        <div className="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm w-full z-40">
+        <div className="fixed top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm w-full z-40">
           {/* Mostrar problema */}
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             <div className="flex justify-between items-center mb-3">
