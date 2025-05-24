@@ -458,7 +458,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center text-sm font-medium text-gray-700">
-                <span>Problema {problemHistory.length + 1} de 3</span>
+                <span>Problema {problemHistory.length} de 3</span>
               </div>
               <div className={`text-sm font-medium ${
                 attempts === 0 ? 'text-gray-600' :
@@ -472,7 +472,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             
             {/* Problema matemático */}
             <div className="bg-gray-50 p-3 rounded border-2 border-dashed border-gray-200">
-              <div className="font-mono text-xl whitespace-pre select-none text-center">
+              <div className="font-mono text-4xl font-bold whitespace-pre select-none text-center">
                 {problem.operands.map((op, index) => (
                   <span key={index}>
                     <span className="mx-1">{typeof op === 'number' ? op : parseFloat(op.toString())}</span>
