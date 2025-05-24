@@ -138,47 +138,46 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     
     switch (difficulty) {
       case "beginner":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.beginner')}</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">{t('difficulty.beginner')}</Badge>;
       case "elementary":
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.elementary')}</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">{t('difficulty.elementary')}</Badge>;
       case "intermediate":
-        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.intermediate')}</Badge>;
+        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">{t('difficulty.intermediate')}</Badge>;
       case "advanced":
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.advanced')}</Badge>;
+        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">{t('difficulty.advanced')}</Badge>;
       case "expert":
-        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.expert')}</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">{t('difficulty.expert')}</Badge>;
       default:
-        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('common.comingSoon')}</Badge>;
+        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">{t('common.comingSoon')}</Badge>;
     }
   };
 
   // Función para obtener el icono correspondiente
   const getModuleIcon = () => {
-    const iconClass = "h-full w-full";
-    if (!module.icon) return <Plus className={iconClass} />;
+    if (!module.icon) return <Plus className="h-6 w-6" />;
     
     switch (module.icon) {
-      case "Plus": return <Plus className={iconClass} />;
-      case "Minus": return <Minus className={iconClass} />;
-      case "X": return <X className={iconClass} />;
-      case "DivideIcon": return <DivideIcon className={iconClass} />;
-      case "PieChart": return <PieChart className={iconClass} />;
-      case "BookOpen": return <BookOpen className={iconClass} />;
-      case "Hash": return <Hash className={iconClass} />;
-      case "Calculator": return <Calculator className={iconClass} />;
-      case "ArrowLeftRight": return <ArrowLeftRight className={iconClass} />;
-      case "Square": return <Square className={iconClass} />;
-      case "Percent": return <Percent className={iconClass} />;
-      case "Triangle": return <Triangle className={iconClass} />;
-      case "MapIcon": return <MapIcon className={iconClass} />;
-      default: return <Plus className={iconClass} />;
+      case "Plus": return <Plus className="h-6 w-6" />;
+      case "Minus": return <Minus className="h-6 w-6" />;
+      case "X": return <X className="h-6 w-6" />;
+      case "DivideIcon": return <DivideIcon className="h-6 w-6" />;
+      case "PieChart": return <PieChart className="h-6 w-6" />;
+      case "BookOpen": return <BookOpen className="h-6 w-6" />;
+      case "Hash": return <Hash className="h-6 w-6" />;
+      case "Calculator": return <Calculator className="h-6 w-6" />;
+      case "ArrowLeftRight": return <ArrowLeftRight className="h-6 w-6" />;
+      case "Square": return <Square className="h-6 w-6" />;
+      case "Percent": return <Percent className="h-6 w-6" />;
+      case "Triangle": return <Triangle className="h-6 w-6" />;
+      case "MapIcon": return <MapIcon className="h-6 w-6" />;
+      default: return <Plus className="h-6 w-6" />;
     }
   };
 
   const cardContent = (
     <>
       <div 
-        className="flex justify-between items-center p-2 sm:p-3 border-b border-gray-200 relative overflow-hidden min-h-[72px] min-[320px]:min-h-[80px] sm:min-h-[88px] lg:min-h-[72px]"
+        className="flex justify-between items-center p-2 sm:p-3 border-b border-gray-200 relative overflow-hidden"
         style={{ 
           backgroundColor: module.color || '#ffffff',
           color: 'white',
@@ -202,19 +201,17 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <GripVertical className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div className="flex items-center min-w-0 flex-1">
-            <div className="mr-1.5 min-[320px]:mr-2 sm:mr-3 bg-white/25 p-0.5 min-[320px]:p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
-              <div className="h-4 w-4 min-[320px]:h-5 min-[320px]:w-5 sm:h-6 sm:w-6">
-                {getModuleIcon()}
-              </div>
+            <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
+              {getModuleIcon()}
             </div>
-            <h3 className="text-[10px] min-[320px]:text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white text-shadow leading-tight flex-1 break-words hyphens-auto flex items-center py-1">
+            <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white text-shadow truncate">
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
         </div>
-        <div className="flex space-x-1 min-[320px]:space-x-1.5 sm:space-x-2 relative z-10">
+        <div className="flex space-x-2 relative z-10">
           <button 
-            className={`focus:outline-none p-1 min-[320px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
+            className={`focus:outline-none p-1.5 rounded-full transition-all ${
               module.comingSoon 
                 ? "text-gray-300 cursor-not-allowed" 
                 : isModuleFavorite 
@@ -225,7 +222,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             disabled={module.comingSoon}
             aria-label={isModuleFavorite ? t('favorites.remove') : t('favorites.add')}
           >
-            <Star className={`h-3 w-3 min-[320px]:h-4 min-[320px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+            <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
           {/* History button and dropdown menu removed - only visibility toggle left */}
@@ -234,20 +231,20 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-white hover:bg-white/20 rounded-full h-6 w-6 min-[320px]:h-7 min-[320px]:w-7 sm:h-8 sm:w-8 p-0"
+              className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0"
               onClick={() => toggleHidden(module.id)}
             >
               {isHidden ? (
-                <Eye className="h-3 w-3 min-[320px]:h-4 min-[320px]:w-4 sm:h-5 sm:w-5 text-purple-300" />
+                <Eye className="h-5 w-5 text-purple-300" />
               ) : (
-                <EyeOff className="h-3 w-3 min-[320px]:h-4 min-[320px]:w-4 sm:h-5 sm:w-5" />
+                <EyeOff className="h-5 w-5" />
               )}
             </Button>
           )}
         </div>
       </div>
-      <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50 min-h-[100px] min-[320px]:min-h-[110px] sm:min-h-[120px] flex flex-col justify-between">
-        <p className={`text-[10px] min-[320px]:text-xs sm:text-sm mb-2 sm:mb-3 leading-tight flex-1 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
+      <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50">
+        <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
           {t(`modules.${module.id}.description`)}
         </p>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -255,14 +252,14 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
-            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-2 min-[320px]:px-3 sm:px-4 py-1 sm:py-2 text-[9px] min-[320px]:text-[10px] sm:text-xs md:text-sm w-full sm:w-auto">
+            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto">
               {t('common.comingSoon')}
             </Button>
           ) : (
             <Link href={`/operation/${module.id}`} className="w-full sm:w-auto">
               <Button 
                 variant="default" 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-2 min-[320px]:px-3 sm:px-4 py-1 sm:py-2 text-[9px] min-[320px]:text-[10px] sm:text-xs md:text-sm w-full sm:w-auto"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto"
               >
                 {t('common.start')}
               </Button>
@@ -290,12 +287,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       data-handler-id={drop_props?.handlerId || ""}
     >
       {isModuleFavorite && (
-        <div className="absolute -top-3 -right-3 bg-yellow-400 rounded-full p-1.5 shadow-md z-30">
+        <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1.5 shadow-md z-20">
           <Star className="h-4 w-4 text-white fill-current" />
         </div>
       )}
       {isHidden && (
-        <div className="absolute -top-3 -left-3 bg-purple-500 rounded-full p-1.5 shadow-md z-30">
+        <div className="absolute -top-2 -left-2 bg-purple-500 rounded-full p-1.5 shadow-md z-20">
           <EyeOff className="h-4 w-4 text-white" />
         </div>
       )}
