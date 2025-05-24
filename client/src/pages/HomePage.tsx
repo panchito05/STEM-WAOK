@@ -10,7 +10,7 @@ export default function HomePage() {
         <meta name="description" content="Improve your math skills with interactive exercises in addition, subtraction, multiplication, division, and fractions." />
       </Helmet>
       
-      <div className="max-w-7xl mx-auto py-6 px-2 sm:px-4 lg:px-6">
+      <div className="max-w-7xl mx-auto py-6 px-2 sm:px-3 lg:px-4">
         <div className="py-6">
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold gradient-text-blue mb-2">
