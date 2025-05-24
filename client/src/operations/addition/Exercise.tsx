@@ -2050,47 +2050,51 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
-                <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
-                {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
-                  <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
-                    P: {problemTimerValue}s
-                  </span>
-                )}
-                {settings.maxAttempts > 0 && !viewingPrevious && (
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className={`font-medium p-1 rounded ${currentAttempts > 0 && currentAttempts < settings.maxAttempts ? "bg-amber-100 text-amber-800" : currentAttempts >= settings.maxAttempts ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}>
-                          {currentTranslations.attempts}: {currentAttempts}/{settings.maxAttempts}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{t('tooltips.maxAttemptsPerProblem')}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" :
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
-                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
-                  "bg-indigo-100 text-indigo-800"
-                }`}>
-                    {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
-                </span>
-                {/* Botón para ir a la página de progreso/historial con tab=recent */}
+        {/* Header optimizado para móviles */}
+        <div className="mb-3 sm:mb-4">
+            {/* Primera fila: Título y información básica */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+                <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs">
+                    <span className="font-medium text-gray-700 flex items-center bg-gray-100 px-2 py-1 rounded">
+                        <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-1 opacity-70"/>{formatTime(timer)}
+                    </span>
+                    {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
+                      <span className={`font-medium px-2 py-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
+                        P: {problemTimerValue}s
+                      </span>
+                    )}
+                    {settings.maxAttempts > 0 && !viewingPrevious && (
+                      <span className={`font-medium px-2 py-1 rounded ${currentAttempts > 0 && currentAttempts < settings.maxAttempts ? "bg-amber-100 text-amber-800" : currentAttempts >= settings.maxAttempts ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}>
+                        {currentTranslations.attempts}: {currentAttempts}/{settings.maxAttempts}
+                      </span>
+                    )}
+                    <span className={`px-2 py-1 rounded-full font-medium capitalize text-xs ${
+                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" :
+                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
+                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
+                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
+                      "bg-indigo-100 text-indigo-800"
+                    }`}>
+                        {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
+                    </span>
+                </div>
+            </div>
+            
+            {/* Segunda fila: Botones de acción en móviles */}
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-1 sm:gap-2">
                 <Link href="/progress?tab=recent">
-                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                    <History className="h-4 w-4" /> {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
+                  <Button variant="ghost" size="sm" className="flex items-center gap-1 px-2 py-1 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 flex-1 sm:flex-none min-w-0">
+                    <History className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> 
+                    <span className="hidden sm:inline">{isEnglish ? "Exercise History" : "Historial de Ejercicios"}</span>
+                    <span className="sm:hidden truncate">{isEnglish ? "History" : "Historial"}</span>
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                  <Cog className="h-4 w-4" /> {currentTranslations.settings}
+                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 px-2 py-1 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 flex-1 sm:flex-none min-w-0">
+                  <Cog className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> 
+                  <span className="hidden sm:inline">{currentTranslations.settings}</span>
+                  <span className="sm:hidden truncate">{isEnglish ? "Settings" : "Config"}</span>
                 </Button>
             </div>
         </div>
