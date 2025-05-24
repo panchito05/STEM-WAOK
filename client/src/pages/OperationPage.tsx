@@ -58,7 +58,7 @@ export default function OperationPage() {
         <meta name="description" content={`Practice ${moduleInfo.displayName.toLowerCase()} with interactive exercises.`} />
       </Helmet>
       
-      <div className="max-w-4xl mx-auto py-2 px-3 sm:py-6 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
         <Card className="shadow-lg">
           <CardContent className="p-0">
             {showSettings ? (
