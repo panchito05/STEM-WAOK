@@ -207,7 +207,10 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
               {getModuleIcon()}
             </div>
-            <h3 className="text-xs min-[350px]:text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white text-shadow truncate">
+            <h3 
+              className="text-xs min-[350px]:text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white text-shadow line-clamp-2 leading-tight"
+              title={t(`modules.${module.id}.name`)}
+            >
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
