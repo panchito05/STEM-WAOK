@@ -58,38 +58,39 @@ export default function Navbar() {
             </Link>
           </div>
           
-          {/* Navegación principal siempre visible */}
-          <div className="flex items-center space-x-1 sm:space-x-4">
-            {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}
-                className={`inline-flex items-center px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm font-medium transition-all rounded ${
-                  location === link.href
-                    ? "bg-white bg-opacity-20 text-white font-semibold"
-                    : "text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white"
-                }`}
-              >
-                <span className="hidden sm:inline">{link.label}</span>
-                <span className="sm:hidden">
+          {/* Navegación principal solo en móviles */}
+          {isMobile && (
+            <div className="flex items-center space-x-1">
+              {navLinks.map((link) => (
+                <Link key={link.href} href={link.href}
+                  className={`inline-flex items-center px-2 py-1 text-xs font-medium transition-all rounded ${
+                    location === link.href
+                      ? "bg-white bg-opacity-20 text-white font-semibold"
+                      : "text-blue-100 hover:bg-white hover:bg-opacity-10 hover:text-white"
+                  }`}
+                >
                   {link.label === "Home" ? "Home" : 
                    link.label === "Progress and History" ? "Progress" : 
                    "Settings"}
-                </span>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
           
-          {/* Menú hamburguesa para funciones adicionales */}
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleMobileMenu}
-              className="text-blue-100 hover:text-white p-1 sm:p-2"
-              aria-label="Open menu"
-            >
-              {mobileMenuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
-            </Button>
-          </div>
+          {/* Menú hamburguesa solo en móviles */}
+          {isMobile && (
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleMobileMenu}
+                className="text-blue-100 hover:text-white p-1"
+                aria-label="Open menu"
+              >
+                {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+              </Button>
+            </div>
+          )}
         </div>
         
         {!isMobile && (
