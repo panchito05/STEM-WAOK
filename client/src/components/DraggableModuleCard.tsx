@@ -287,12 +287,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       data-handler-id={drop_props?.handlerId || ""}
     >
       {isModuleFavorite && (
-        <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1.5 shadow-md z-20">
+        <div className="absolute -top-3 -right-3 bg-yellow-400 rounded-full p-1.5 shadow-md z-30">
           <Star className="h-4 w-4 text-white fill-current" />
         </div>
       )}
       {isHidden && (
-        <div className="absolute -top-2 -left-2 bg-purple-500 rounded-full p-1.5 shadow-md z-20">
+        <div className="absolute -top-3 -left-3 bg-purple-500 rounded-full p-1.5 shadow-md z-30">
           <EyeOff className="h-4 w-4 text-white" />
         </div>
       )}
