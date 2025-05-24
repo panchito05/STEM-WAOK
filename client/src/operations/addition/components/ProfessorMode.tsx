@@ -315,6 +315,30 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     setExerciseStartTime(Date.now());
   };
 
+  // Función para mover el panel entre las cuatro esquinas
+  const movePanel = () => {
+    const positions = ['top-right', 'top-left', 'bottom-left', 'bottom-right'];
+    const currentIndex = positions.indexOf(position);
+    const nextIndex = (currentIndex + 1) % positions.length;
+    setPosition(positions[nextIndex]);
+  };
+
+  // Función para obtener las clases CSS según la posición
+  const getPanelClasses = () => {
+    switch (position) {
+      case 'top-left':
+        return 'fixed top-4 left-4';
+      case 'top-right':
+        return 'fixed top-4 right-4';
+      case 'bottom-left':
+        return 'fixed bottom-4 left-4';
+      case 'bottom-right':
+        return 'fixed bottom-4 right-4';
+      default:
+        return 'fixed top-4 right-4';
+    }
+  };
+
   // PANTALLA DE RESUMEN - Exactamente como en el modo normal
   if (exerciseCompleted) {
     const accuracy = exerciseStats.totalProblems > 0 ? Math.round((exerciseStats.correctAnswers / exerciseStats.totalProblems) * 100) : 0;
@@ -453,7 +477,26 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         <DrawingArea position={position} problem={problem} />
         
         {/* Panel de control mejorado */}
-        <div className="fixed top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm w-full z-40">
+        <div className={`${getPanelClasses()} bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm w-full z-40`}>
+          {/* Botón para mover panel */}
+          <div className="flex justify-between items-center mb-2">
+            <button
+              onClick={movePanel}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
+              title="Mover panel a otra esquina"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              Mover
+            </button>
+            <span className="text-xs text-gray-500">
+              {position === 'top-right' ? '↗️' : 
+               position === 'top-left' ? '↖️' : 
+               position === 'bottom-left' ? '↙️' : '↘️'} {position}
+            </span>
+          </div>
+          
           {/* Mostrar problema */}
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             <div className="flex justify-between items-center mb-3">

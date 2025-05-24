@@ -13,13 +13,23 @@ export const DrawingArea: React.FC<DrawingAreaProps> = ({
   position,
   problem
 }) => {
+  // Determinar la posición de la paleta de colores según donde esté el panel
+  const getColorPalettePosition = () => {
+    // Si el panel está a la izquierda, colores a la derecha
+    if (position.includes('Left')) {
+      return 'right';
+    }
+    // Si el panel está a la derecha, colores a la izquierda
+    return 'left';
+  };
+
   return (
     <div className="absolute inset-0 w-full h-full">
       <DrawingCanvas 
         width={window.innerWidth} 
         height={window.innerHeight} 
         className="w-full h-full" 
-        position="left" 
+        position={getColorPalettePosition()} 
         currentProblem={problem}
       />
     </div>
