@@ -2033,12 +2033,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         )}
       <div className="px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg bg-blue-50 border-blue-200 border-2 ml-[7px] mr-[7px]">
-        {/* Header optimizado para móviles */}
+        {/* Header centralizado y compacto */}
         <div className="mb-3 sm:mb-4">
-            {/* Primera fila: Título y información básica */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-                <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs">
+            {/* Título centrado */}
+            <div className="text-center mb-3">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-2">{currentTranslations.addition}</h2>
+                
+                {/* Información de estado centrada */}
+                <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
                     <span className="font-medium text-gray-700 flex items-center bg-gray-100 px-2 py-1 rounded">
                         <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-1 opacity-70"/>{formatTime(timer)}
                     </span>
@@ -2065,17 +2067,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </div>
             </div>
             
-            {/* Segunda fila: Botones de acción prominentes */}
-            <div className="flex items-center justify-center gap-3 sm:justify-end sm:gap-2 mt-3">
+            {/* Botones de acción centrados */}
+            <div className="flex items-center justify-center gap-3 mt-3">
                 <Link href="/progress?tab=recent">
-                  <Button variant="outline" size="sm" className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 rounded-lg shadow-sm transition-all duration-200 min-w-[120px] justify-center">
+                  <Button variant="outline" size="sm" className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 rounded-lg shadow-sm transition-all duration-200">
                     <History className="h-4 w-4 flex-shrink-0" /> 
-                    <span>{isEnglish ? "Historial" : "Historial"}</span>
+                    <span>Historial</span>
                   </Button>
                 </Link>
-                <Button variant="outline" size="sm" onClick={onOpenSettings} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200 min-w-[120px] justify-center">
+                <Button variant="outline" size="sm" onClick={onOpenSettings} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-medium bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200">
                   <Cog className="h-4 w-4 flex-shrink-0" /> 
-                  <span>{isEnglish ? "Config" : "Config"}</span>
+                  <span>Config</span>
                 </Button>
             </div>
         </div>
@@ -2377,7 +2379,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   className="flex-1 max-w-[110px] sm:max-w-[130px] text-xs sm:text-sm px-2 py-2 h-9 sm:h-10"
                 >
                   <Info className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="ml-1">{currentTranslations.showAnswer}</span>
+                  <span className="ml-1 hidden sm:inline">{currentTranslations.showAnswer}</span>
+                  <span className="ml-1 sm:hidden">Respuesta</span>
                 </Button>
               </TooltipTrigger>
               {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
