@@ -27,7 +27,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [attempts, setAttempts] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [position, setPosition] = useState('bottom-right');
+  const [position, setPosition] = useState('top-right');
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
     problem: AdditionProblem;

@@ -19,7 +19,7 @@ export const DrawingArea: React.FC<DrawingAreaProps> = ({
         width={window.innerWidth} 
         height={window.innerHeight} 
         className="w-full h-full" 
-        position={position.includes('Right') ? 'left' : 'right'} 
+        position="left" 
         currentProblem={problem}
       />
     </div>
