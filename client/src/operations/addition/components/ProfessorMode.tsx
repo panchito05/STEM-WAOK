@@ -194,7 +194,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           setIsProcessing(false);
           
           // Verificar si es el último problema (por ejemplo, problema 3 de 3)
-          if (problemHistory.length + 1 >= 3) { // +1 porque acabamos de resolver uno más
+          const updatedHistoryLength = problemHistory.length + 1; // +1 porque acabamos de agregar uno
+          if (updatedHistoryLength >= 3) {
             // GUARDAR DATOS ANTES DE COMPLETAR
             const finalStats = {
               totalTime: Math.floor((Date.now() - exerciseStartTime) / 1000),
@@ -218,7 +219,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           setIsProcessing(false);
           
           // También verificar si era el último problema, aunque fuera incorrecto
-          if (problemHistory.length + 1 >= 3) {
+          const updatedHistoryLength = problemHistory.length + 1; // +1 porque acabamos de agregar uno
+          if (updatedHistoryLength >= 3) {
             // GUARDAR DATOS ANTES DE COMPLETAR (RESPUESTA INCORRECTA)
             const finalStats = {
               totalTime: Math.floor((Date.now() - exerciseStartTime) / 1000),
