@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { checkAndAwardRewards } from "@/lib/rewards-system";
 
 export interface ExerciseResult {
   id?: number;            // ID del registro en la base de datos
@@ -366,6 +367,11 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
           title: "Progress Saved",
           description: `Score: ${puntajeFinal}/${result.totalProblems}`,
         });
+        
+        // NUEVO: Verificar recompensas de milestones después de guardar progreso
+        setTimeout(() => {
+          checkMilestoneRewards();
+        }, 500); // Pequeño delay para asegurar que el estado se actualice primero
       } else {
         // Capturar y mostrar error específico
         const errorData = await res.json();
@@ -389,6 +395,34 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
 
   const getModuleProgress = (operationId: string): ModuleProgress | undefined => {
     return moduleProgress[operationId];
+  };
+
+  // Nueva función para verificar recompensas de milestones
+  const checkMilestoneRewards = async () => {
+    try {
+      // Calcular el total de problemas completados basado en el historial actual
+      const totalProblemsCompleted = exerciseHistory.reduce((acc, exercise) => {
+        return acc + (exercise.totalProblems || 0);
+      }, 0);
+
+      console.log(`🏆 Verificando milestones - Total problemas completados: ${totalProblemsCompleted}`);
+
+      // Verificar y otorgar recompensas de milestones
+      const rewardConditions = {
+        problemsCompleted: totalProblemsCompleted
+      };
+
+      const awardedRewards = checkAndAwardRewards(rewardConditions, {
+        theme: 'addition',
+        module: 'addition'
+      });
+
+      if (awardedRewards && awardedRewards.length > 0) {
+        console.log(`🎉 Recompensas de milestone otorgadas:`, awardedRewards);
+      }
+    } catch (error) {
+      console.error("Error verificando recompensas de milestones:", error);
+    }
   };
 
   const clearProgress = async () => {
