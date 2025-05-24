@@ -2386,9 +2386,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             }
                         }
                     }}
-                    className="text-xs sm:text-sm"
                 >
-                    <Info className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.showAnswer}
+                    <Info className="mr-1 h-3 w-3 md:h-4 md:w-4" /> 
+                    <span className="hidden sm:inline">{currentTranslations.showAnswer}</span>
+                    <span className="sm:hidden">Ayuda</span>
                 </Button>
               </TooltipTrigger>
               {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
