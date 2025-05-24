@@ -177,9 +177,10 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   const cardContent = (
     <>
       <div 
-        className="relative overflow-hidden"
+        className="flex justify-between items-center p-2 sm:p-3 border-b border-gray-200 relative overflow-hidden"
         style={{ 
           backgroundColor: module.color || '#ffffff',
+          color: 'white',
           opacity: module.comingSoon ? 0.7 : 1 
         }}
       >
@@ -195,21 +196,20 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           </svg>
         </div>
         
-        {/* Header con icono y título centrados */}
-        <div className="flex flex-col items-center justify-center p-3 sm:p-4 text-center relative z-10">
-          <div className="bg-white/25 p-2 sm:p-3 rounded-xl shadow-inner mb-2 sm:mb-3">
-            {getModuleIcon()}
+        <div className="flex items-center relative z-10 min-w-0 flex-1">
+          <div className="mr-1 sm:mr-2 cursor-move text-white opacity-80 hover:opacity-100 transition-opacity hidden sm:block" aria-hidden="true">
+            <GripVertical className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <h3 className="text-sm sm:text-base font-bold text-white text-shadow leading-tight">
-            {t(`modules.${module.id}.name`)}
-          </h3>
+          <div className="flex items-center min-w-0 flex-1">
+            <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
+              {getModuleIcon()}
+            </div>
+            <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white text-shadow truncate">
+              {t(`modules.${module.id}.name`)}
+            </h3>
+          </div>
         </div>
-        
-        {/* Botones de acción en la esquina superior derecha */}
-        <div className="absolute top-2 right-2 flex space-x-1 z-10">
-          <div className="mr-1 cursor-move text-white opacity-60 hover:opacity-100 transition-opacity hidden sm:block" aria-hidden="true">
-            <GripVertical className="h-4 w-4" />
-          </div>
+        <div className="flex space-x-2 relative z-10">
           <button 
             className={`focus:outline-none p-1.5 rounded-full transition-all ${
               module.comingSoon 
@@ -224,6 +224,8 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           >
             <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
+          
+          {/* History button and dropdown menu removed - only visibility toggle left */}
           
           {!module.comingSoon && (
             <Button 
