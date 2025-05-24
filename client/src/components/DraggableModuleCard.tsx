@@ -212,9 +212,9 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             </h3>
           </div>
         </div>
-        <div className="flex space-x-2 relative z-10">
+        <div className="flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10">
           <button 
-            className={`focus:outline-none p-1.5 rounded-full transition-all ${
+            className={`focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
               module.comingSoon 
                 ? "text-gray-300 cursor-not-allowed" 
                 : isModuleFavorite 
@@ -225,7 +225,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             disabled={module.comingSoon}
             aria-label={isModuleFavorite ? t('favorites.remove') : t('favorites.add')}
           >
-            <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+            <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
           {/* History button and dropdown menu removed - only visibility toggle left */}
@@ -234,13 +234,13 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0"
+              className="text-white hover:bg-white/20 rounded-full h-6 w-6 min-[400px]:h-7 min-[400px]:w-7 sm:h-8 sm:w-8 p-0"
               onClick={() => toggleHidden(module.id)}
             >
               {isHidden ? (
-                <Eye className="h-5 w-5 text-purple-300" />
+                <Eye className="h-3 w-3 min-[400px]:h-3.5 min-[400px]:w-3.5 sm:h-5 sm:w-5 text-purple-300" />
               ) : (
-                <EyeOff className="h-5 w-5" />
+                <EyeOff className="h-3 w-3 min-[400px]:h-3.5 min-[400px]:w-3.5 sm:h-5 sm:w-5" />
               )}
             </Button>
           )}
@@ -255,14 +255,14 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
-            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto">
+            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto">
               {t('common.comingSoon')}
             </Button>
           ) : (
             <Link href={`/operation/${module.id}`} className="w-full sm:w-auto">
               <Button 
                 variant="default" 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto"
               >
                 {t('common.start')}
               </Button>
