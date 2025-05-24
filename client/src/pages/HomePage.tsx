@@ -12,13 +12,13 @@ export default function HomePage() {
       
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold gradient-text-blue mb-2">
+          <div className="mb-6 sm:mb-8 text-center px-2">
+            <h1 className="text-xl min-[320px]:text-2xl min-[400px]:text-3xl sm:text-4xl md:text-5xl font-bold gradient-text-blue mb-2 leading-tight">
               Math Modules
             </h1>
-            <p className="text-gray-600 max-w-xl mx-auto mt-2">
+            <p className="text-gray-600 max-w-xl mx-auto mt-2 text-sm min-[320px]:text-base sm:text-lg leading-relaxed px-2">
               Improve your math skills with these interactive exercises
-              <span className="ml-2 animate-float inline-block">✏️ 🔢 🧩</span>
+              <span className="ml-1 sm:ml-2 animate-float inline-block text-sm min-[320px]:text-base">✏️ 🔢 🧩</span>
             </p>
           </div>
           

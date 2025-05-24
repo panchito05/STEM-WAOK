@@ -138,17 +138,17 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     
     switch (difficulty) {
       case "beginner":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">{t('difficulty.beginner')}</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.beginner')}</Badge>;
       case "elementary":
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">{t('difficulty.elementary')}</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.elementary')}</Badge>;
       case "intermediate":
-        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">{t('difficulty.intermediate')}</Badge>;
+        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.intermediate')}</Badge>;
       case "advanced":
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">{t('difficulty.advanced')}</Badge>;
+        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.advanced')}</Badge>;
       case "expert":
-        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">{t('difficulty.expert')}</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('difficulty.expert')}</Badge>;
       default:
-        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">{t('common.comingSoon')}</Badge>;
+        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-1.5 min-[320px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[9px] min-[320px]:text-[10px] sm:text-xs">{t('common.comingSoon')}</Badge>;
     }
   };
 
@@ -204,7 +204,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
               {getModuleIcon()}
             </div>
-            <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white text-shadow truncate">
+            <h3 className="text-xs min-[320px]:text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white text-shadow leading-tight line-clamp-2 flex-1">
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
@@ -244,7 +244,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
         </div>
       </div>
       <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50">
-        <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
+        <p className={`text-[10px] min-[320px]:text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-3 leading-tight ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
           {t(`modules.${module.id}.description`)}
         </p>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -252,14 +252,14 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
-            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto">
+            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-2 min-[320px]:px-3 sm:px-4 py-1 sm:py-2 text-[9px] min-[320px]:text-[10px] sm:text-xs md:text-sm w-full sm:w-auto">
               {t('common.comingSoon')}
             </Button>
           ) : (
             <Link href={`/operation/${module.id}`} className="w-full sm:w-auto">
               <Button 
                 variant="default" 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-2 min-[320px]:px-3 sm:px-4 py-1 sm:py-2 text-[9px] min-[320px]:text-[10px] sm:text-xs md:text-sm w-full sm:w-auto"
               >
                 {t('common.start')}
               </Button>
