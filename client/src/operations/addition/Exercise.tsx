@@ -2082,19 +2082,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </div>
             </div>
             
-            {/* Segunda fila: Botones de acción en móviles */}
-            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-1 sm:gap-2">
+            {/* Segunda fila: Botones de acción prominentes */}
+            <div className="flex items-center justify-center gap-3 sm:justify-end sm:gap-2 mt-3">
                 <Link href="/progress?tab=recent">
-                  <Button variant="ghost" size="sm" className="flex items-center gap-1 px-2 py-1 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 flex-1 sm:flex-none min-w-0">
-                    <History className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> 
-                    <span className="hidden sm:inline">{isEnglish ? "Exercise History" : "Historial de Ejercicios"}</span>
-                    <span className="sm:hidden truncate">{isEnglish ? "History" : "Historial"}</span>
+                  <Button variant="outline" size="sm" className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 rounded-lg shadow-sm transition-all duration-200 min-w-[120px] justify-center">
+                    <History className="h-4 w-4 flex-shrink-0" /> 
+                    <span>{isEnglish ? "Historial" : "Historial"}</span>
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 px-2 py-1 text-xs bg-white border border-gray-200 rounded-md hover:bg-gray-50 flex-1 sm:flex-none min-w-0">
-                  <Cog className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" /> 
-                  <span className="hidden sm:inline">{currentTranslations.settings}</span>
-                  <span className="sm:hidden truncate">{isEnglish ? "Settings" : "Config"}</span>
+                <Button variant="outline" size="sm" onClick={onOpenSettings} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200 min-w-[120px] justify-center">
+                  <Cog className="h-4 w-4 flex-shrink-0" /> 
+                  <span>{isEnglish ? "Config" : "Config"}</span>
                 </Button>
             </div>
         </div>
@@ -2161,7 +2159,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-center justify-center`}>
+        <div className={`p-4 sm:p-6 rounded-lg mb-4 sm:mb-6 shadow-md bg-white min-h-[120px] sm:min-h-[150px] flex flex-col items-center justify-center mt-4`}>
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
               <span>{currentProblem.operands[0]}</span>
