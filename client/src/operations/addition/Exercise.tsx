@@ -29,9 +29,9 @@ interface ExerciseProps {
   onOpenSettings: () => void;
 }
 
-const digitBoxBaseStyle = "w-12 h-14 sm:w-14 sm:h-16 md:w-16 md:h-18 text-2xl sm:text-3xl md:text-4xl font-bold border-2 rounded-lg flex items-center justify-center transition-all select-none touch-manipulation";
-const digitBoxFocusStyle = "border-blue-500 ring-2 ring-blue-300 shadow-lg bg-blue-50";
-const digitBoxBlurStyle = "border-gray-300 bg-white shadow-sm";
+const digitBoxBaseStyle = "w-10 h-12 sm:w-11 sm:h-14 text-xl sm:text-2xl font-bold border-2 rounded-md flex items-center justify-center transition-all select-none";
+const digitBoxFocusStyle = "border-blue-500 ring-2 ring-blue-300 shadow-lg";
+const digitBoxBlurStyle = "border-gray-300";
 const digitBoxDisabledStyle = "bg-gray-100 text-gray-500 border-gray-200 cursor-default";
 const verticalOperandStyle = "font-mono text-2xl sm:text-3xl text-right tracking-wider";
 const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
@@ -2050,9 +2050,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-            <div className="flex items-center gap-3 sm:gap-4 text-sm sm:text-base">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
@@ -2085,12 +2085,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </span>
                 {/* Botón para ir a la página de progreso/historial con tab=recent */}
                 <Link href="/progress?tab=recent">
-                  <Button variant="ghost" size="default" className="flex items-center gap-2 py-2 px-3 text-sm sm:text-base text-gray-600 hover:bg-gray-100 min-h-[44px] touch-manipulation">
-                    <History className="h-5 w-5" /> <span className="hidden sm:inline">{isEnglish ? "Exercise History" : "Historial de Ejercicios"}</span>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                    <History className="h-4 w-4" /> {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
                   </Button>
                 </Link>
-                <Button variant="ghost" size="default" onClick={onOpenSettings} className="flex items-center gap-2 py-2 px-3 text-sm sm:text-base text-gray-600 hover:bg-gray-100 min-h-[44px] touch-manipulation">
-                  <Cog className="h-5 w-5" /> <span className="hidden sm:inline">{currentTranslations.settings}</span>
+                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                  <Cog className="h-4 w-4" /> {currentTranslations.settings}
                 </Button>
             </div>
         </div>
@@ -2149,19 +2149,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        <div className={`p-4 sm:p-6 rounded-lg mb-4 sm:mb-6 shadow-md bg-white min-h-[180px] sm:min-h-[220px] flex flex-col items-center justify-center`}>
+        <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-center justify-center`}>
           {currentProblem.layout === 'horizontal' ? (
-            <div className="text-3xl sm:text-4xl md:text-5xl font-bold flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+            <div className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
               <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600 mx-1 sm:mx-2">+</span>
+              <span className="text-gray-600 mx-1">+</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
               {currentProblem.operands.length > 2 && ( // Support for more than 2 operands if needed
                 <>
-                  <span className="text-gray-600 mx-1 sm:mx-2">+</span>
+                  <span className="text-gray-600 mx-1">+</span>
                   <span>{currentProblem.operands[2]}</span>
                 </>
               )}
-              <span className="text-gray-600 mx-1 sm:mx-2">=</span>
+              <span className="text-gray-600 mx-1">=</span>
             </div>
           ) : (
             <div className="inline-block text-right my-1 sm:my-2">
@@ -2225,17 +2225,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 max-w-sm mx-auto">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-xs mx-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
-              className={`text-xl sm:text-2xl font-semibold h-14 sm:h-16 min-h-[56px] touch-manipulation ${
+              className={`text-lg sm:text-xl h-11 sm:h-12 ${
                 key === "sequential_backspace" 
-                  ? "bg-white hover:bg-red-50 text-red-600 active:bg-red-100 shadow-md" 
+                  ? "bg-white hover:bg-red-50 text-red-600 active:bg-red-100 shadow-sm" 
                   : key === "" 
                     ? "invisible pointer-events-none" 
-                    : "bg-white hover:bg-gray-50 shadow-md active:bg-gray-100"
+                    : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100"
               }`}
               onClick={() => {
                 if (viewingPrevious || exerciseCompleted || waitingRef.current || !key || key === "") return;
@@ -2259,26 +2259,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ))}
         </div>
-        <div className="mt-6 sm:mt-8 flex justify-between items-center">
+        <div className="mt-4 sm:mt-6 flex justify-between items-center">
           <Button
-            variant="outline" 
-            size="default"
+            variant="outline" size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
             onClick={moveToPreviousProblem}
-            className="text-sm sm:text-base px-4 py-3 h-auto min-h-[44px] touch-manipulation"
+            className="text-xs sm:text-sm"
           >
-            <ChevronLeft className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> {currentTranslations.previous}
+            <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
           </Button>
 
           {viewingPrevious ? (
-            <Button onClick={returnToActiveProblem} className="px-6 py-3 text-base sm:text-lg bg-orange-500 hover:bg-orange-600 text-white min-h-[44px] touch-manipulation">
-                <RotateCcw className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> {t('common.returnToActive')}
+            <Button onClick={returnToActiveProblem} className="px-4 sm:px-5 text-sm sm:text-base bg-orange-500 hover:bg-orange-600 text-white">
+                <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')}
             </Button>
           ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
             <Button
                 ref={continueButtonRef}
                 onClick={handleContinue}
-                className="px-6 py-4 text-lg sm:text-xl animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-sm mx-auto min-h-[56px] touch-manipulation"
+                className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs mx-auto"
             >
                 <span className="flex-grow text-center font-medium">{t('Continue')}</span>
                 <TooltipProvider delayDuration={300}>
