@@ -154,23 +154,25 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
 
   // Función para obtener el icono correspondiente
   const getModuleIcon = () => {
-    if (!module.icon) return <Plus className="h-6 w-6" />;
+    const iconClass = "w-full h-full";
+    
+    if (!module.icon) return <Plus className={iconClass} />;
     
     switch (module.icon) {
-      case "Plus": return <Plus className="h-6 w-6" />;
-      case "Minus": return <Minus className="h-6 w-6" />;
-      case "X": return <X className="h-6 w-6" />;
-      case "DivideIcon": return <DivideIcon className="h-6 w-6" />;
-      case "PieChart": return <PieChart className="h-6 w-6" />;
-      case "BookOpen": return <BookOpen className="h-6 w-6" />;
-      case "Hash": return <Hash className="h-6 w-6" />;
-      case "Calculator": return <Calculator className="h-6 w-6" />;
-      case "ArrowLeftRight": return <ArrowLeftRight className="h-6 w-6" />;
-      case "Square": return <Square className="h-6 w-6" />;
-      case "Percent": return <Percent className="h-6 w-6" />;
-      case "Triangle": return <Triangle className="h-6 w-6" />;
-      case "MapIcon": return <MapIcon className="h-6 w-6" />;
-      default: return <Plus className="h-6 w-6" />;
+      case "Plus": return <Plus className={iconClass} />;
+      case "Minus": return <Minus className={iconClass} />;
+      case "X": return <X className={iconClass} />;
+      case "DivideIcon": return <DivideIcon className={iconClass} />;
+      case "PieChart": return <PieChart className={iconClass} />;
+      case "BookOpen": return <BookOpen className={iconClass} />;
+      case "Hash": return <Hash className={iconClass} />;
+      case "Calculator": return <Calculator className={iconClass} />;
+      case "ArrowLeftRight": return <ArrowLeftRight className={iconClass} />;
+      case "Square": return <Square className={iconClass} />;
+      case "Percent": return <Percent className={iconClass} />;
+      case "Triangle": return <Triangle className={iconClass} />;
+      case "MapIcon": return <MapIcon className={iconClass} />;
+      default: return <Plus className={iconClass} />;
     }
   };
 
@@ -201,10 +203,12 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <GripVertical className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div className="flex items-center min-w-0 flex-1 justify-center sm:justify-start">
-            <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
-              {getModuleIcon()}
+            <div className="mr-1 sm:mr-2 lg:mr-3 bg-white/25 p-1 sm:p-1.5 lg:p-2 rounded-lg shadow-inner flex-shrink-0">
+              <div className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6">
+                {getModuleIcon()}
+              </div>
             </div>
-            <h3 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-white text-shadow text-center sm:text-left">
+            <h3 className="text-xs sm:text-sm lg:text-base xl:text-lg font-bold text-white text-shadow text-center sm:text-left leading-tight">
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
