@@ -196,15 +196,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           </svg>
         </div>
         
-        <div className="flex items-center relative z-10 min-w-0 flex-1">
-          <div className="mr-1 sm:mr-2 cursor-move text-white opacity-80 hover:opacity-100 transition-opacity hidden sm:block" aria-hidden="true">
+        <div className="flex items-center relative z-10 min-w-0 flex-1 justify-center sm:justify-start">
+          <div className="mr-1 sm:mr-2 cursor-move text-white opacity-80 hover:opacity-100 transition-opacity hidden lg:block" aria-hidden="true">
             <GripVertical className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <div className="flex items-center min-w-0 flex-1">
+          <div className="flex items-center min-w-0 flex-1 justify-center sm:justify-start">
             <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
               {getModuleIcon()}
             </div>
-            <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white text-shadow truncate">
+            <h3 className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-white text-shadow text-center sm:text-left">
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
@@ -243,23 +243,23 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           )}
         </div>
       </div>
-      <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50">
-        <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
+      <div className="p-2 sm:p-3 lg:p-5 bg-gradient-to-b from-white to-blue-50">
+        <p className={`text-xs sm:text-sm lg:text-sm mb-3 sm:mb-4 lg:mb-5 line-clamp-2 text-center sm:text-left ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
           {t(`modules.${module.id}.description`)}
         </p>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div className="flex items-center w-full sm:w-auto">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-2 lg:items-center">
+          <div className="flex items-center justify-center w-full lg:w-auto">
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
-            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto">
+            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-3 sm:px-4 lg:px-5 text-xs sm:text-sm w-full lg:w-auto">
               {t('common.comingSoon')}
             </Button>
           ) : (
-            <Link href={`/operation/${module.id}`} className="w-full sm:w-auto">
+            <Link href={`/operation/${module.id}`} className="w-full lg:w-auto">
               <Button 
                 variant="default" 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-3 sm:px-4 lg:px-5 text-xs sm:text-sm w-full lg:w-auto"
               >
                 {t('common.start')}
               </Button>
