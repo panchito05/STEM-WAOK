@@ -35,8 +35,8 @@ export default function FilterBar({ searchQuery, setSearchQuery }: FilterBarProp
           </div>
         </div>
         
-        {/* Botones de filtro - Stack vertical en móvil, horizontal en desktop */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-3 w-full sm:w-auto sm:justify-end">
+        {/* Botones de filtro - Horizontal en móvil/tablet, horizontal en desktop */}
+        <div className="flex flex-row gap-2 sm:gap-3 w-full sm:w-auto sm:justify-end">
           <Button
             variant={showOnlyFavorites ? "default" : "outline"}
             className={`text-xs sm:text-sm rounded-full px-3 sm:px-4 py-2 transition-all w-full sm:w-auto ${showOnlyFavorites 
