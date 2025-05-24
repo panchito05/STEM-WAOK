@@ -2095,7 +2095,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
-        <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+        <div className="flex justify-end text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
               <span className="font-medium text-gray-700">
                 Problema {currentProblemIndex} de {settings.problemCount}
