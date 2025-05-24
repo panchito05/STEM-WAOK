@@ -154,23 +154,24 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
 
   // Función para obtener el icono correspondiente
   const getModuleIcon = () => {
-    if (!module.icon) return <Plus className="h-6 w-6" />;
+    const iconClass = "h-full w-full";
+    if (!module.icon) return <Plus className={iconClass} />;
     
     switch (module.icon) {
-      case "Plus": return <Plus className="h-6 w-6" />;
-      case "Minus": return <Minus className="h-6 w-6" />;
-      case "X": return <X className="h-6 w-6" />;
-      case "DivideIcon": return <DivideIcon className="h-6 w-6" />;
-      case "PieChart": return <PieChart className="h-6 w-6" />;
-      case "BookOpen": return <BookOpen className="h-6 w-6" />;
-      case "Hash": return <Hash className="h-6 w-6" />;
-      case "Calculator": return <Calculator className="h-6 w-6" />;
-      case "ArrowLeftRight": return <ArrowLeftRight className="h-6 w-6" />;
-      case "Square": return <Square className="h-6 w-6" />;
-      case "Percent": return <Percent className="h-6 w-6" />;
-      case "Triangle": return <Triangle className="h-6 w-6" />;
-      case "MapIcon": return <MapIcon className="h-6 w-6" />;
-      default: return <Plus className="h-6 w-6" />;
+      case "Plus": return <Plus className={iconClass} />;
+      case "Minus": return <Minus className={iconClass} />;
+      case "X": return <X className={iconClass} />;
+      case "DivideIcon": return <DivideIcon className={iconClass} />;
+      case "PieChart": return <PieChart className={iconClass} />;
+      case "BookOpen": return <BookOpen className={iconClass} />;
+      case "Hash": return <Hash className={iconClass} />;
+      case "Calculator": return <Calculator className={iconClass} />;
+      case "ArrowLeftRight": return <ArrowLeftRight className={iconClass} />;
+      case "Square": return <Square className={iconClass} />;
+      case "Percent": return <Percent className={iconClass} />;
+      case "Triangle": return <Triangle className={iconClass} />;
+      case "MapIcon": return <MapIcon className={iconClass} />;
+      default: return <Plus className={iconClass} />;
     }
   };
 
@@ -201,17 +202,19 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <GripVertical className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
           <div className="flex items-center min-w-0 flex-1">
-            <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
-              {getModuleIcon()}
+            <div className="mr-1.5 min-[320px]:mr-2 sm:mr-3 bg-white/25 p-0.5 min-[320px]:p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
+              <div className="h-4 w-4 min-[320px]:h-5 min-[320px]:w-5 sm:h-6 sm:w-6">
+                {getModuleIcon()}
+              </div>
             </div>
-            <h3 className="text-xs min-[320px]:text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white text-shadow leading-tight flex-1 break-words hyphens-auto min-h-[2.5rem] flex items-center">
+            <h3 className="text-[10px] min-[320px]:text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white text-shadow leading-tight flex-1 break-words hyphens-auto flex items-center py-1">
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
         </div>
-        <div className="flex space-x-2 relative z-10">
+        <div className="flex space-x-1 min-[320px]:space-x-1.5 sm:space-x-2 relative z-10">
           <button 
-            className={`focus:outline-none p-1.5 rounded-full transition-all ${
+            className={`focus:outline-none p-1 min-[320px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
               module.comingSoon 
                 ? "text-gray-300 cursor-not-allowed" 
                 : isModuleFavorite 
@@ -222,7 +225,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             disabled={module.comingSoon}
             aria-label={isModuleFavorite ? t('favorites.remove') : t('favorites.add')}
           >
-            <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+            <Star className={`h-3 w-3 min-[320px]:h-4 min-[320px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
           {/* History button and dropdown menu removed - only visibility toggle left */}
@@ -231,13 +234,13 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0"
+              className="text-white hover:bg-white/20 rounded-full h-6 w-6 min-[320px]:h-7 min-[320px]:w-7 sm:h-8 sm:w-8 p-0"
               onClick={() => toggleHidden(module.id)}
             >
               {isHidden ? (
-                <Eye className="h-5 w-5 text-purple-300" />
+                <Eye className="h-3 w-3 min-[320px]:h-4 min-[320px]:w-4 sm:h-5 sm:w-5 text-purple-300" />
               ) : (
-                <EyeOff className="h-5 w-5" />
+                <EyeOff className="h-3 w-3 min-[320px]:h-4 min-[320px]:w-4 sm:h-5 sm:w-5" />
               )}
             </Button>
           )}
