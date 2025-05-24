@@ -2269,7 +2269,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ))}
         </div>
-        <div className="mt-4 sm:mt-6 flex justify-between items-center">
+        <div className="mt-4 sm:mt-6 mb-6 sm:mb-8 flex justify-between items-center px-2 sm:px-4">
           <Button
             variant="outline" size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
