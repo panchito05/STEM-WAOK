@@ -47,13 +47,13 @@ export default function Navbar() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
-                <span className="text-white font-bold text-lg sm:text-xl lg:text-2xl cursor-pointer flex items-center">
-                  <span className="text-yellow-300 mr-0.5 sm:mr-1">M</span>
-                  <span className="text-green-300 mr-0.5 sm:mr-1">a</span>
-                  <span className="text-purple-300 mr-0.5 sm:mr-1">t</span>
-                  <span className="text-red-300 mr-0.5 sm:mr-1">h</span>
-                  <span className="mr-0.5 sm:mr-1">W+A+O+K</span>
-                  <span className="ml-0.5 sm:ml-1 text-amber-200 text-base sm:text-lg lg:text-xl">🔢</span>
+                <span className="text-white font-bold text-2xl cursor-pointer flex items-center">
+                  <span className="text-yellow-300 mr-1">M</span>
+                  <span className="text-green-300 mr-1">a</span>
+                  <span className="text-purple-300 mr-1">t</span>
+                  <span className="text-red-300 mr-1">h</span>
+                  <span className="mr-1">W+A+O+K</span>
+                  <span className="ml-1 text-amber-200 text-xl">🔢</span>
                 </span>
               </Link>
             </div>
@@ -75,47 +75,47 @@ export default function Navbar() {
             
             {/* Mobile Navigation Buttons - Only visible on mobile and tablet */}
             {isMobile && (
-              <div className="ml-2 flex items-center space-x-0.5">
+              <div className="ml-3 flex items-center space-x-1">
                 <Link href="/">
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className={`text-xs px-1.5 py-1 h-7 transition-all ${
+                    className={`text-xs px-2 py-1 h-8 transition-all ${
                       location === "/" 
                         ? "text-yellow-300 bg-white/20 font-semibold" 
                         : "text-blue-100 hover:text-white hover:bg-white/10"
                     }`}
                   >
-                    <Home className="h-3 w-3 mr-0.5" />
-                    <span className="hidden xs:inline">Home</span>
+                    <Home className="h-3 w-3 mr-1" />
+                    Home
                   </Button>
                 </Link>
                 <Link href="/progress">
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className={`text-xs px-1.5 py-1 h-7 transition-all ${
+                    className={`text-xs px-2 py-1 h-8 transition-all ${
                       location === "/progress" 
                         ? "text-yellow-300 bg-white/20 font-semibold" 
                         : "text-blue-100 hover:text-white hover:bg-white/10"
                     }`}
                   >
-                    <BarChart3 className="h-3 w-3 mr-0.5" />
-                    <span className="hidden xs:inline">Prog</span>
+                    <BarChart3 className="h-3 w-3 mr-1" />
+                    Progress
                   </Button>
                 </Link>
                 <Link href="/settings">
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className={`text-xs px-1.5 py-1 h-7 transition-all ${
+                    className={`text-xs px-2 py-1 h-8 transition-all ${
                       location === "/settings" 
                         ? "text-yellow-300 bg-white/20 font-semibold" 
                         : "text-blue-100 hover:text-white hover:bg-white/10"
                     }`}
                   >
-                    <Settings className="h-3 w-3 mr-0.5" />
-                    <span className="hidden xs:inline">Set</span>
+                    <Settings className="h-3 w-3 mr-1" />
+                    Settings
                   </Button>
                 </Link>
               </div>
