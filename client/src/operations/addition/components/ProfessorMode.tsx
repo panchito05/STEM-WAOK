@@ -340,16 +340,12 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   // Clases responsivas del panel
-  const getPanelResponsiveClasses = () => {
-    return `
-      fixed lg:absolute
-      bottom-0 lg:${getPanelClasses()}
-      left-0 lg:left-auto right-0 lg:right-auto
-      bg-white border-t lg:border-t-0 lg:border lg:rounded-lg
-      border-gray-200 p-3 lg:p-4 w-full lg:max-w-sm
-      max-h-80 lg:max-h-none
-      z-40 shadow-lg
-    `.replace(/\s+/g, ' ').trim();
+  const getResponsiveClasses = () => {
+    const baseClasses = "bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg";
+    const mobileClasses = "fixed bottom-0 left-0 right-0 w-full max-h-80 border-t overflow-y-auto";
+    const desktopClasses = `lg:absolute lg:${getPanelClasses()} lg:max-w-sm lg:max-h-none lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0`;
+    
+    return `${baseClasses} ${mobileClasses} ${desktopClasses}`;
   };
 
   // PANTALLA DE RESUMEN - Exactamente como en el modo normal
@@ -494,14 +490,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         </div>
         
         {/* Panel de control - Responsivo */}
-        <div className={`
-          fixed lg:absolute bottom-0 lg:${getPanelClasses().replace('fixed', '')}
-          left-0 lg:left-auto right-0 lg:right-auto
-          bg-white border-t lg:border-t-0 lg:border lg:rounded-lg
-          border-gray-200 p-3 lg:p-4 w-full lg:max-w-sm
-          max-h-80 lg:max-h-none overflow-y-auto lg:overflow-visible
-          z-40 shadow-lg
-        `}>
+        <div className="fixed bottom-0 left-0 right-0 w-full max-h-80 border-t overflow-y-auto lg:absolute lg:top-4 lg:right-4 lg:max-w-sm lg:max-h-none lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0 bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg">
           {/* Botón para mover panel */}
           <div className="flex justify-between items-center mb-2">
             <button

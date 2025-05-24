@@ -2,6 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ocultar barras de scroll en dispositivos táctiles (móviles y tablets) */
+@media (max-width: 1023px) {
+  /* Ocultar scrollbars en todos los elementos en móviles/tablets */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+  
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  /* Asegurar que el contenido sea accesible por touch */
+  body {
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Mantener scrollbars en desktop (1024px+) */
+@media (min-width: 1024px) {
+  /* Personalizar scrollbars para desktop */
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  *::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  *::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  
+  *::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+  }
+}
+
 @keyframes flash {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
