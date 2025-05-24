@@ -22,7 +22,7 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 sm:p-4 md:p-6 rounded-xl shadow-md border border-blue-100">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-2 sm:p-3 md:p-4 rounded-xl shadow-md border border-blue-100 mx-auto">
             <div className="relative">
               {/* Decorative elements */}
               <div className="absolute -top-12 -right-12 h-24 w-24 bg-yellow-400 opacity-10 rounded-full blur-2xl"></div>
