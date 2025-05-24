@@ -458,7 +458,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center text-sm font-medium text-gray-700">
-                <span>Problema {(problem.index ?? 0) + 1} de {problem.total ?? 1}</span>
+                <span>Problema {problemHistory.length + 1} de 3</span>
               </div>
               <div className={`text-sm font-medium ${
                 attempts === 0 ? 'text-gray-600' :
