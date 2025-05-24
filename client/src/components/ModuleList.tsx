@@ -99,7 +99,14 @@ export default function ModuleList() {
         </div>
       )}
       
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3">
+      <div className="grid gap-2 xs:gap-3 sm:gap-4 
+                     grid-cols-2 
+                     min-[480px]:grid-cols-2 
+                     sm:grid-cols-3 
+                     md:grid-cols-3 
+                     lg:grid-cols-4 
+                     xl:grid-cols-3 
+                     2xl:grid-cols-4">
         {filteredModules.map((module, index) => (
           <DraggableModuleCard
             key={module.id}
