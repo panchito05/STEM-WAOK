@@ -2050,10 +2050,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
-                <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
+        {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
+            
+            {/* Top row info - Timer and basic stats */}
+            <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap">
+                <span className="font-medium text-gray-700 flex items-center">
+                  <Info className="h-4 w-4 mr-1 opacity-70"/>
+                  {formatTime(timer)}
+                </span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
                     P: {problemTimerValue}s
@@ -2083,32 +2089,44 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 }`}>
                     {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
                 </span>
-                {/* Botón para ir a la página de progreso/historial con tab=recent */}
+            </div>
+            
+            {/* Control buttons row - Stack on mobile, inline on desktop */}
+            <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 flex-wrap">
+                {/* History button - Hide text on mobile, show icon only */}
                 <Link href="/progress?tab=recent">
                   <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                     <History className="h-4 w-4" /> 
-                    <span className="hidden xs:inline sm:inline">
+                    <span className="hidden sm:inline">
                       {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
                     </span>
                   </Button>
                 </Link>
+                {/* Settings button - Hide text on mobile, show icon only */}
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> 
-                  <span className="hidden xs:inline sm:inline">
+                  <span className="hidden sm:inline">
                     {currentTranslations.settings}
                   </span>
                 </Button>
             </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
-        <div className="flex justify-end text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-700">
+        {/* Progress Info Row - Responsive: Center on mobile, right-align on desktop */}
+        <div className="flex flex-col sm:flex-row sm:justify-end items-center text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 gap-2">
+            <div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">
+              <span className="font-medium text-gray-700 text-center">
                 Problema {currentProblemIndex} de {settings.problemCount}
               </span>
-              <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50">{t('exercises.score')}: {score}</span>
+              <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50">
+                {t('exercises.score')}: {score}
+              </span>
+            </div>
+            
+            {/* Action buttons row - Stack on mobile, inline on tablet+ */}
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
               <button
-                className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 w-auto hover:bg-indigo-50"
+                className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50"
                 onClick={() => setShowProfessorMode(true)}
                 title="Modo Profesor"
               >
@@ -2132,7 +2150,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </svg>
               </button>
               <button
-                className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7 w-auto`}
+                className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7`}
                 onClick={() => setShowVideoDialog(true)}
                 title="Videos explicativos"
               >
