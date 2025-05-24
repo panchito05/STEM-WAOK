@@ -2271,12 +2271,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         <div className="mt-4 sm:mt-6 flex justify-between items-center">
           <Button
-            variant="outline" size="sm"
+            variant="outline" 
+            size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
             onClick={moveToPreviousProblem}
-            className="text-xs sm:text-sm"
+            className="px-2 py-1 text-xs md:px-3 md:py-2 md:text-sm"
           >
-            <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
+            <ChevronLeft className="mr-1 h-3 w-3 md:h-4 md:w-4" /> 
+            <span className="hidden sm:inline">{currentTranslations.previous}</span>
+            <span className="sm:hidden">Ant.</span>
           </Button>
 
           {viewingPrevious ? (
@@ -2313,8 +2316,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </TooltipProvider>
             </Button>
           ) : (
-            <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current} className="px-5 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white">
-              {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
+            <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current} className="px-3 py-1.5 text-xs md:px-5 md:py-2 md:text-sm lg:px-6 lg:text-base bg-blue-500 hover:bg-blue-600 text-white">
+              {!exerciseStarted ? (
+                <>
+                  <span className="hidden sm:inline">{currentTranslations.startExercise}</span>
+                  <span className="sm:hidden">Iniciar</span>
+                </>
+              ) : (
+                <>
+                  <Check className="mr-1 h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden sm:inline">{t('exercises.check')}</span>
+                  <span className="sm:hidden">Check</span>
+                </>
+              )}
             </Button>
           )}
 
@@ -2322,8 +2336,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                    variant="outline" size="sm"
+                    variant="outline" 
+                    size="sm"
                     disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
+                    className="px-2 py-1 text-xs md:px-3 md:py-2 md:text-sm"
                     onClick={() => {
                         if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
