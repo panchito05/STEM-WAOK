@@ -2042,18 +2042,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         )}
 
-      <div className={`px-2 py-3 sm:px-4 sm:py-5 lg:px-6 lg:py-6 rounded-xl shadow-lg ${
+      <div className={`px-6 py-6 rounded-xl shadow-lg border-2 max-[639px]:px-4 max-[639px]:py-4 ${
         adaptiveDifficulty === "beginner" ? "bg-blue-50 border-blue-200" :
         adaptiveDifficulty === "elementary" ? "bg-emerald-50 border-emerald-200" :
         adaptiveDifficulty === "intermediate" ? "bg-orange-50 border-orange-200" :
         adaptiveDifficulty === "advanced" ? "bg-purple-50 border-purple-200" :
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
-      } border-2`}>
-        {/* Header - mantiene diseño desktop, optimiza solo móvil */}
-        <div className="flex flex-row items-center justify-between mb-4 max-[639px]:flex-col max-[639px]:gap-2">
-            <h2 className="text-xl font-bold text-gray-800 max-[639px]:text-lg max-[639px]:text-center">{currentTranslations.addition}</h2>
-            <div className="flex flex-wrap items-center justify-end gap-2 text-sm max-[639px]:justify-center max-[639px]:gap-1 max-[639px]:text-xs">
+      }`}>
+        {/* Header Mobile-First: Desktop mantiene diseño original */}
+        <div className="flex flex-row items-center justify-between mb-4 max-[639px]:flex-col max-[639px]:mb-6 max-[639px]:gap-4">
+            <h2 className="text-xl font-bold text-gray-800 max-[639px]:text-2xl max-[639px]:text-center max-[639px]:order-2">{currentTranslations.addition}</h2>
+            <div className="flex flex-wrap items-center justify-end gap-2 text-sm max-[639px]:justify-center max-[639px]:gap-3 max-[639px]:text-sm max-[639px]:order-1 max-[639px]:bg-white max-[639px]:p-3 max-[639px]:rounded-lg max-[639px]:shadow-sm max-[639px]:w-full">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
@@ -2150,20 +2150,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        {/* Área del problema matemático - mantiene diseño desktop */}
-        <div className={`p-4 rounded-lg mb-4 shadow-md bg-white min-h-[180px] flex flex-col items-center justify-center max-[639px]:p-3 max-[639px]:min-h-[160px]`}>
+        {/* Área del problema matemático - Mobile-First Design */}
+        <div className={`p-4 rounded-lg mb-4 shadow-md bg-white min-h-[180px] flex flex-col items-center justify-center max-[639px]:p-6 max-[639px]:min-h-[200px] max-[639px]:mb-6 max-[639px]:shadow-lg`}>
           {currentProblem.layout === 'horizontal' ? (
-            <div className="text-3xl font-bold flex items-center justify-center gap-2 flex-wrap max-[639px]:text-2xl max-[639px]:gap-1">
-              <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600 mx-1">+</span>
-              <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
-              {currentProblem.operands.length > 2 && ( // Support for more than 2 operands if needed
-                <>
-                  <span className="text-gray-600 mx-1">+</span>
-                  <span>{currentProblem.operands[2]}</span>
-                </>
-              )}
-              <span className="text-gray-600 mx-1">=</span>
+            <div className="text-3xl font-bold flex items-center justify-center gap-2 flex-wrap max-[639px]:text-4xl max-[639px]:gap-4 max-[639px]:flex-col max-[639px]:space-y-2">
+              <div className="max-[639px]:flex max-[639px]:items-center max-[639px]:gap-4">
+                <span className="max-[639px]:text-5xl">{currentProblem.operands[0]}</span>
+                <span className="text-gray-600 mx-1 max-[639px]:text-4xl max-[639px]:mx-2">+</span>
+                <span className="max-[639px]:text-5xl">{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
+                {currentProblem.operands.length > 2 && ( // Support for more than 2 operands if needed
+                  <>
+                    <span className="text-gray-600 mx-1 max-[639px]:text-4xl max-[639px]:mx-2">+</span>
+                    <span className="max-[639px]:text-5xl">{currentProblem.operands[2]}</span>
+                  </>
+                )}
+              </div>
+              <div className="max-[639px]:flex max-[639px]:items-center max-[639px]:gap-4">
+                <span className="text-gray-600 mx-1 max-[639px]:text-4xl max-[639px]:mx-2">=</span>
+                <span className="max-[639px]:text-3xl max-[639px]:text-gray-400">?</span>
+              </div>
             </div>
           ) : (
             <div className="inline-block text-right my-1 sm:my-2">
@@ -2186,8 +2191,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
 
-          {/* Campos de entrada - mantiene diseño desktop */}
-          <div className="mt-3 flex items-center justify-center gap-1 flex-wrap max-[639px]:mt-4 max-[639px]:gap-2">
+          {/* Campos de entrada - Mobile-First: Campo único en móvil, múltiples en desktop */}
+          
+          {/* Desktop: Campos múltiples (design original) */}
+          <div className="mt-3 flex items-center justify-center gap-1 flex-wrap min-[640px]:block max-[639px]:hidden">
             {Array(currentProblem.answerMaxDigits).fill(0).map((_, index) => {
               const integerDigitsCount = currentProblem.answerMaxDigits - (currentProblem.answerDecimalPosition || 0);
               const isVisualDecimalPointAfterThisBox = currentProblem.answerDecimalPosition !== undefined &&
@@ -2200,14 +2207,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   <div
                     ref={el => {
                       if (el) {
-                        // Guardar la referencia en el array auxiliar
                         boxRefsArrayRef.current[index] = el;
-                        // Actualizar la referencia principal para acceder globalmente
                         digitBoxRefs.current = boxRefsArrayRef.current;
                       }
                     }}
                     tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
-                    className={`w-11 h-14 text-2xl font-bold border-2 rounded-md flex items-center justify-center transition-all select-none max-[639px]:w-14 max-[639px]:h-16 max-[639px]:text-xl
+                    className={`w-11 h-14 text-2xl font-bold border-2 rounded-md flex items-center justify-center transition-all select-none inline-flex
                                 ${viewingPrevious || exerciseCompleted || waitingRef.current ? digitBoxDisabledStyle : (focusedDigitIndex === index ? digitBoxFocusStyle : digitBoxBlurStyle)}
                                 ${!viewingPrevious && !exerciseCompleted && !waitingRef.current ? 'cursor-text hover:border-gray-400' : ''}`}
                     onClick={() => !viewingPrevious && !exerciseCompleted && !waitingRef.current && handleDigitBoxClick(index)}
@@ -2216,11 +2221,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     {digitAnswers[index] || <span className="opacity-0">0</span>}
                   </div>
                   {isVisualDecimalPointAfterThisBox && (
-                    <div className="text-3xl font-bold mx-1 opacity-80 self-center pt-1 select-none max-[639px]:text-2xl max-[639px]:mx-2">.</div>
+                    <div className="text-3xl font-bold mx-1 opacity-80 self-center pt-1 select-none">.</div>
                   )}
                 </React.Fragment>
               );
             })}
+          </div>
+
+          {/* Mobile: Campo único grande y accesible */}
+          <div className="mt-6 min-[640px]:hidden max-[639px]:block">
+            <div className="flex flex-col items-center gap-4">
+              <div className="text-2xl font-semibold text-gray-700 text-center">Tu respuesta:</div>
+              <input
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className="w-full max-w-xs h-16 text-3xl font-bold text-center border-3 border-blue-300 rounded-xl shadow-lg focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-200 bg-white"
+                placeholder="?"
+                value={digitAnswers.join('') || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const digits = value.split('').slice(0, currentProblem.answerMaxDigits);
+                  const newDigitAnswers = Array(currentProblem.answerMaxDigits).fill('');
+                  digits.forEach((digit, i) => {
+                    newDigitAnswers[i] = digit;
+                  });
+                  setDigitAnswers(newDigitAnswers);
+                }}
+                disabled={viewingPrevious || exerciseCompleted || waitingRef.current}
+              />
+            </div>
           </div>
           {feedbackMessage && (viewingPrevious || (!viewingPrevious && currentProblemIndex === actualActiveProblemIndexBeforeViewingPrevious) || exerciseCompleted) && (
             <div className={`mt-2 sm:mt-3 text-center font-medium text-sm sm:text-base ${feedbackColor === "green" ? "text-green-600" : feedbackColor === "blue" ? "text-blue-700" : "text-red-600"}`}>
