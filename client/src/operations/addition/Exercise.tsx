@@ -2042,7 +2042,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         )}
 
-      <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg ${
+      <div className={`px-2 py-3 sm:px-4 sm:py-5 lg:px-6 lg:py-6 rounded-xl shadow-lg ${
         adaptiveDifficulty === "beginner" ? "bg-blue-50 border-blue-200" :
         adaptiveDifficulty === "elementary" ? "bg-emerald-50 border-emerald-200" :
         adaptiveDifficulty === "intermediate" ? "bg-orange-50 border-orange-200" :
@@ -2050,9 +2050,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+        {/* Header optimizado para responsive - mantiene desktop intacto */}
+        <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between lg:flex-row lg:items-center lg:justify-between mb-3 sm:mb-4 gap-2 xs:gap-0">
+            <h2 className="text-lg sm:text-xl lg:text-xl font-bold text-gray-800 text-center xs:text-left lg:text-left">{currentTranslations.addition}</h2>
+            <div className="flex flex-wrap items-center justify-center xs:justify-end lg:justify-end gap-1 xs:gap-2 sm:gap-3 text-xs sm:text-sm lg:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
@@ -2149,9 +2150,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-center justify-center`}>
+        {/* Área del problema matemático optimizada para responsive */}
+        <div className={`p-3 sm:p-4 lg:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] lg:min-h-[180px] flex flex-col items-center justify-center`}>
           {currentProblem.layout === 'horizontal' ? (
-            <div className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
+            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-3xl font-bold flex items-center justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-2 flex-wrap">
               <span>{currentProblem.operands[0]}</span>
               <span className="text-gray-600 mx-1">+</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
@@ -2184,7 +2186,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
 
-          <div className="mt-2 sm:mt-3 flex items-center justify-center gap-0.5 sm:gap-1 flex-wrap">
+          {/* Campos de entrada optimizados para dispositivos táctiles */}
+          <div className="mt-3 sm:mt-4 lg:mt-3 flex items-center justify-center gap-1 sm:gap-2 md:gap-3 lg:gap-1 flex-wrap">
             {Array(currentProblem.answerMaxDigits).fill(0).map((_, index) => {
               const integerDigitsCount = currentProblem.answerMaxDigits - (currentProblem.answerDecimalPosition || 0);
               const isVisualDecimalPointAfterThisBox = currentProblem.answerDecimalPosition !== undefined &&
@@ -2204,7 +2207,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                       }
                     }}
                     tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
-                    className={`${digitBoxBaseStyle}
+                    className={`w-12 h-14 sm:w-16 sm:h-18 md:w-20 md:h-22 lg:w-11 lg:h-14 text-2xl sm:text-3xl md:text-4xl lg:text-2xl font-bold border-2 rounded-md flex items-center justify-center transition-all select-none
                                 ${viewingPrevious || exerciseCompleted || waitingRef.current ? digitBoxDisabledStyle : (focusedDigitIndex === index ? digitBoxFocusStyle : digitBoxBlurStyle)}
                                 ${!viewingPrevious && !exerciseCompleted && !waitingRef.current ? 'cursor-text hover:border-gray-400' : ''}`}
                     onClick={() => !viewingPrevious && !exerciseCompleted && !waitingRef.current && handleDigitBoxClick(index)}
@@ -2213,7 +2216,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     {digitAnswers[index] || <span className="opacity-0">0</span>}
                   </div>
                   {isVisualDecimalPointAfterThisBox && (
-                    <div className="text-2xl sm:text-3xl font-bold mx-0.5 sm:mx-1 opacity-80 self-center pt-1 select-none">.</div>
+                    <div className="text-3xl sm:text-4xl md:text-5xl lg:text-3xl font-bold mx-1 sm:mx-2 md:mx-3 lg:mx-1 opacity-80 self-center pt-1 select-none">.</div>
                   )}
                 </React.Fragment>
               );
@@ -2225,12 +2228,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-xs mx-auto">
+        {/* Teclado numérico optimizado para dispositivos táctiles */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 lg:gap-2 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xs mx-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
-              className={`text-lg sm:text-xl h-11 sm:h-12 ${
+              className={`text-xl sm:text-2xl md:text-3xl lg:text-xl h-14 sm:h-16 md:h-18 lg:h-12 font-semibold ${
                 key === "sequential_backspace" 
                   ? "bg-white hover:bg-red-50 text-red-600 active:bg-red-100 shadow-sm" 
                   : key === "" 
@@ -2259,25 +2263,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ))}
         </div>
-        <div className="mt-4 sm:mt-6 flex justify-between items-center">
+        {/* Controles inferiores optimizados para dispositivos táctiles */}
+        <div className="mt-4 sm:mt-6 lg:mt-4 flex flex-col xs:flex-row lg:flex-row justify-between items-center gap-3 xs:gap-0 lg:gap-0">
           <Button
-            variant="outline" size="sm"
+            variant="outline" 
+            size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
             onClick={moveToPreviousProblem}
-            className="text-xs sm:text-sm"
+            className="text-sm sm:text-base md:text-lg lg:text-sm h-10 sm:h-12 md:h-14 lg:h-10 px-4 sm:px-6 md:px-8 lg:px-4 w-full xs:w-auto lg:w-auto"
           >
-            <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
+            <ChevronLeft className="mr-1 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-4 lg:w-4" /> {currentTranslations.previous}
           </Button>
 
           {viewingPrevious ? (
-            <Button onClick={returnToActiveProblem} className="px-4 sm:px-5 text-sm sm:text-base bg-orange-500 hover:bg-orange-600 text-white">
-                <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')}
+            <Button onClick={returnToActiveProblem} className="px-4 sm:px-6 md:px-8 lg:px-5 py-2 sm:py-3 md:py-4 lg:py-2 text-sm sm:text-base md:text-lg lg:text-base bg-orange-500 hover:bg-orange-600 text-white h-10 sm:h-12 md:h-14 lg:h-10 w-full xs:w-auto lg:w-auto">
+                <RotateCcw className="mr-1 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-4 lg:w-4" /> {t('common.returnToActive')}
             </Button>
           ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
             <Button
                 ref={continueButtonRef}
                 onClick={handleContinue}
-                className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs mx-auto"
+                className="px-5 sm:px-6 md:px-8 lg:px-6 py-3 sm:py-4 md:py-5 lg:py-3 text-base sm:text-lg md:text-xl lg:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xs mx-auto h-12 sm:h-14 md:h-16 lg:h-12"
             >
                 <span className="flex-grow text-center font-medium">{t('Continue')}</span>
                 <TooltipProvider delayDuration={300}>
