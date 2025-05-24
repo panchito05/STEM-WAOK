@@ -2050,9 +2050,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+            <div className="flex items-center gap-3 sm:gap-4 text-sm sm:text-base">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
@@ -2085,12 +2085,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </span>
                 {/* Botón para ir a la página de progreso/historial con tab=recent */}
                 <Link href="/progress?tab=recent">
-                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                    <History className="h-4 w-4" /> {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
+                  <Button variant="ghost" size="default" className="flex items-center gap-2 py-2 px-3 text-sm sm:text-base text-gray-600 hover:bg-gray-100 min-h-[44px] touch-manipulation">
+                    <History className="h-5 w-5" /> <span className="hidden sm:inline">{isEnglish ? "Exercise History" : "Historial de Ejercicios"}</span>
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                  <Cog className="h-4 w-4" /> {currentTranslations.settings}
+                <Button variant="ghost" size="default" onClick={onOpenSettings} className="flex items-center gap-2 py-2 px-3 text-sm sm:text-base text-gray-600 hover:bg-gray-100 min-h-[44px] touch-manipulation">
+                  <Cog className="h-5 w-5" /> <span className="hidden sm:inline">{currentTranslations.settings}</span>
                 </Button>
             </div>
         </div>

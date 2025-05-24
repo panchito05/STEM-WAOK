@@ -211,7 +211,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
         </div>
         <div className="flex space-x-2 relative z-10">
           <button 
-            className={`focus:outline-none p-1.5 rounded-full transition-all ${
+            className={`focus:outline-none p-3 rounded-full transition-all min-h-[44px] min-w-[44px] touch-manipulation ${
               module.comingSoon 
                 ? "text-gray-300 cursor-not-allowed" 
                 : isModuleFavorite 
@@ -222,7 +222,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             disabled={module.comingSoon}
             aria-label={isModuleFavorite ? t('favorites.remove') : t('favorites.add')}
           >
-            <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+            <Star className={`h-6 w-6 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
           {/* History button and dropdown menu removed - only visibility toggle left */}
@@ -252,14 +252,14 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
-            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-5">
+            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-6 py-3 text-base sm:text-lg min-h-[44px] touch-manipulation">
               {t('common.comingSoon')}
             </Button>
           ) : (
             <Link href={`/operation/${module.id}`}>
               <Button 
                 variant="default" 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-5"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-6 py-3 text-base sm:text-lg font-semibold min-h-[44px] touch-manipulation"
               >
                 {t('common.start')}
               </Button>
