@@ -2042,7 +2042,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         )}
 
-      <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg ${
+      <div className={`px-1 py-2 sm:px-4 sm:py-5 rounded-xl shadow-lg ${
         adaptiveDifficulty === "beginner" ? "bg-blue-50 border-blue-200" :
         adaptiveDifficulty === "elementary" ? "bg-emerald-50 border-emerald-200" :
         adaptiveDifficulty === "intermediate" ? "bg-orange-50 border-orange-200" :
@@ -2159,7 +2159,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        <div className={`p-4 sm:p-6 rounded-lg mb-4 sm:mb-6 shadow-md bg-white min-h-[120px] sm:min-h-[150px] flex flex-col items-center justify-center mt-4`}>
+        <div className={`p-2 sm:p-6 rounded-lg mb-2 sm:mb-6 shadow-md bg-white min-h-[100px] sm:min-h-[150px] flex flex-col items-center justify-center mt-2`}>
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
               <span>{currentProblem.operands[0]}</span>
@@ -2235,12 +2235,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-xs mx-auto">
+        <div className="grid grid-cols-3 gap-1 sm:gap-2 max-w-xs mx-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
-              className={`text-lg sm:text-xl h-11 sm:h-12 ${
+              className={`text-base sm:text-xl h-9 sm:h-12 ${
                 key === "sequential_backspace" 
                   ? "bg-white hover:bg-red-50 text-red-600 active:bg-red-100 shadow-sm" 
                   : key === "" 
