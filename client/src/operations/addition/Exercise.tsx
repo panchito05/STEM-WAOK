@@ -2309,8 +2309,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </TooltipProvider>
             </Button>
           ) : (
-            <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current} className="px-5 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white">
-              {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
+            <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current} className="px-5 sm:px-6 md:px-8 lg:px-6 py-2 sm:py-3 md:py-4 lg:py-2 text-sm sm:text-base md:text-lg lg:text-base bg-blue-500 hover:bg-blue-600 text-white h-10 sm:h-12 md:h-14 lg:h-10 w-full xs:w-auto lg:w-auto">
+              {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-4 lg:w-4" />{t('exercises.check')}</>}
             </Button>
           )}
 
@@ -2318,8 +2318,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                    variant="outline" size="sm"
+                    variant="outline" 
+                    size="sm"
                     disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
+                    className="text-sm sm:text-base md:text-lg lg:text-sm h-10 sm:h-12 md:h-14 lg:h-10 px-4 sm:px-6 md:px-8 lg:px-4 w-full xs:w-auto lg:w-auto"
                     onClick={() => {
                         if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
