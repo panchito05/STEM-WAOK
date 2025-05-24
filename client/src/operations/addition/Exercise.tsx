@@ -2095,19 +2095,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
-        <div className="flex justify-end text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-gray-700">
+        <div className="flex flex-col sm:flex-row sm:justify-end text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 gap-2">
+            <div className="flex flex-wrap items-center gap-1 sm:gap-2 justify-center sm:justify-end">
+              <span className="font-medium text-gray-700 text-xs sm:text-sm">
                 Problema {currentProblemIndex} de {settings.problemCount}
               </span>
-              <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50">{t('exercises.score')}: {score}</span>
+              <span className="font-semibold px-1.5 sm:px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs sm:text-sm">{t('exercises.score')}: {score}</span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2 justify-center sm:justify-end">
               <button
-                className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 w-auto hover:bg-indigo-50"
+                className="px-1.5 sm:px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50 flex-1 sm:flex-none"
                 onClick={() => setShowProfessorMode(true)}
                 title="Modo Profesor"
               >
-                <span className="text-xs font-medium mr-1">
+                <span className="text-xs font-medium mr-1 hidden sm:inline">
                   {settings.language === 'english' ? 'Professor Mode' : 'Modo Profesor'}
+                </span>
+                <span className="text-xs font-medium mr-1 sm:hidden">
+                  {settings.language === 'english' ? 'Professor' : 'Profesor'}
                 </span>
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
@@ -2126,18 +2131,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </svg>
               </button>
               <button
-                className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7 w-auto`}
+                className={`px-1.5 sm:px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7 flex-1 sm:flex-none`}
                 onClick={() => setShowVideoDialog(true)}
                 title="Videos explicativos"
               >
-                <span className="text-xs font-medium mr-1">
+                <span className="text-xs font-medium mr-1 hidden sm:inline">
                   {settings.language === 'english' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
+                </span>
+                <span className="text-xs font-medium mr-1 sm:hidden">
+                  {settings.language === 'english' ? 'Video' : 'Video'}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 16"
                   fill="currentColor"
-                  className="h-5 w-6"
+                  className="h-4 w-5 sm:h-5 sm:w-6"
                 >
                   <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
                   <polygon points="9,5 16,8 9,11" fill="currentColor" />
