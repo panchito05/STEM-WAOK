@@ -2051,9 +2051,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
         {/* Header optimizado para responsive - mantiene desktop intacto */}
-        <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between lg:flex-row lg:items-center lg:justify-between mb-3 sm:mb-4 gap-2 xs:gap-0">
-            <h2 className="text-lg sm:text-xl lg:text-xl font-bold text-gray-800 text-center xs:text-left lg:text-left">{currentTranslations.addition}</h2>
-            <div className="flex flex-wrap items-center justify-center xs:justify-end lg:justify-end gap-1 xs:gap-2 sm:gap-3 text-xs sm:text-sm lg:text-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-2 sm:gap-0">
+            <h2 className="text-xl sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-1 sm:gap-2 text-xs sm:text-sm">
                 <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
                 {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
                   <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
@@ -2150,10 +2150,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        {/* Área del problema matemático optimizada para responsive */}
-        <div className={`p-3 sm:p-4 lg:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] lg:min-h-[180px] flex flex-col items-center justify-center`}>
+        {/* Área del problema matemático optimizada para móviles */}
+        <div className={`p-6 sm:p-4 rounded-lg mb-4 sm:mb-4 shadow-md bg-white min-h-[200px] sm:min-h-[180px] flex flex-col items-center justify-center`}>
           {currentProblem.layout === 'horizontal' ? (
-            <div className="text-3xl sm:text-4xl md:text-5xl lg:text-3xl font-bold flex items-center justify-center gap-2 sm:gap-3 md:gap-4 lg:gap-2 flex-wrap">
+            <div className="text-4xl sm:text-3xl font-bold flex items-center justify-center gap-3 sm:gap-2 flex-wrap">
               <span>{currentProblem.operands[0]}</span>
               <span className="text-gray-600 mx-1">+</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
@@ -2186,8 +2186,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
 
-          {/* Campos de entrada optimizados para dispositivos táctiles */}
-          <div className="mt-3 sm:mt-4 lg:mt-3 flex items-center justify-center gap-1 sm:gap-2 md:gap-3 lg:gap-1 flex-wrap">
+          {/* Campos de entrada optimizados para móviles */}
+          <div className="mt-4 sm:mt-3 flex items-center justify-center gap-2 sm:gap-1 flex-wrap">
             {Array(currentProblem.answerMaxDigits).fill(0).map((_, index) => {
               const integerDigitsCount = currentProblem.answerMaxDigits - (currentProblem.answerDecimalPosition || 0);
               const isVisualDecimalPointAfterThisBox = currentProblem.answerDecimalPosition !== undefined &&
@@ -2207,7 +2207,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                       }
                     }}
                     tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
-                    className={`w-12 h-14 sm:w-16 sm:h-18 md:w-20 md:h-22 lg:w-11 lg:h-14 text-2xl sm:text-3xl md:text-4xl lg:text-2xl font-bold border-2 rounded-md flex items-center justify-center transition-all select-none
+                    className={`w-16 h-16 sm:w-11 sm:h-14 text-3xl sm:text-2xl font-bold border-2 rounded-md flex items-center justify-center transition-all select-none
                                 ${viewingPrevious || exerciseCompleted || waitingRef.current ? digitBoxDisabledStyle : (focusedDigitIndex === index ? digitBoxFocusStyle : digitBoxBlurStyle)}
                                 ${!viewingPrevious && !exerciseCompleted && !waitingRef.current ? 'cursor-text hover:border-gray-400' : ''}`}
                     onClick={() => !viewingPrevious && !exerciseCompleted && !waitingRef.current && handleDigitBoxClick(index)}
@@ -2216,7 +2216,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     {digitAnswers[index] || <span className="opacity-0">0</span>}
                   </div>
                   {isVisualDecimalPointAfterThisBox && (
-                    <div className="text-3xl sm:text-4xl md:text-5xl lg:text-3xl font-bold mx-1 sm:mx-2 md:mx-3 lg:mx-1 opacity-80 self-center pt-1 select-none">.</div>
+                    <div className="text-4xl sm:text-3xl font-bold mx-2 sm:mx-1 opacity-80 self-center pt-1 select-none">.</div>
                   )}
                 </React.Fragment>
               );
@@ -2228,13 +2228,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         </div>
-        {/* Teclado numérico optimizado para dispositivos táctiles */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 lg:gap-2 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xs mx-auto">
+        {/* Teclado numérico optimizado para móviles */}
+        <div className="grid grid-cols-3 gap-3 sm:gap-2 max-w-sm sm:max-w-xs mx-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
-              className={`text-xl sm:text-2xl md:text-3xl lg:text-xl h-14 sm:h-16 md:h-18 lg:h-12 font-semibold ${
+              className={`text-2xl sm:text-xl h-16 sm:h-12 font-semibold ${
                 key === "sequential_backspace" 
                   ? "bg-white hover:bg-red-50 text-red-600 active:bg-red-100 shadow-sm" 
                   : key === "" 
@@ -2263,27 +2263,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ))}
         </div>
-        {/* Controles inferiores optimizados para dispositivos táctiles */}
-        <div className="mt-4 sm:mt-6 lg:mt-4 flex flex-col xs:flex-row lg:flex-row justify-between items-center gap-3 xs:gap-0 lg:gap-0">
+        {/* Controles inferiores optimizados para móviles */}
+        <div className="mt-6 sm:mt-4 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0">
           <Button
             variant="outline" 
             size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
             onClick={moveToPreviousProblem}
-            className="text-sm sm:text-base md:text-lg lg:text-sm h-10 sm:h-12 md:h-14 lg:h-10 px-4 sm:px-6 md:px-8 lg:px-4 w-full xs:w-auto lg:w-auto"
+            className="text-base sm:text-sm h-12 sm:h-10 px-6 sm:px-4 w-full sm:w-auto"
           >
-            <ChevronLeft className="mr-1 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-4 lg:w-4" /> {currentTranslations.previous}
+            <ChevronLeft className="mr-1 h-5 w-5 sm:h-4 sm:w-4" /> {currentTranslations.previous}
           </Button>
 
           {viewingPrevious ? (
-            <Button onClick={returnToActiveProblem} className="px-4 sm:px-6 md:px-8 lg:px-5 py-2 sm:py-3 md:py-4 lg:py-2 text-sm sm:text-base md:text-lg lg:text-base bg-orange-500 hover:bg-orange-600 text-white h-10 sm:h-12 md:h-14 lg:h-10 w-full xs:w-auto lg:w-auto">
-                <RotateCcw className="mr-1 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-4 lg:w-4" /> {t('common.returnToActive')}
+            <Button onClick={returnToActiveProblem} className="px-6 sm:px-5 py-3 sm:py-2 text-base sm:text-base bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 w-full sm:w-auto">
+                <RotateCcw className="mr-1 h-5 w-5 sm:h-4 sm:w-4" /> {t('common.returnToActive')}
             </Button>
           ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
             <Button
                 ref={continueButtonRef}
                 onClick={handleContinue}
-                className="px-5 sm:px-6 md:px-8 lg:px-6 py-3 sm:py-4 md:py-5 lg:py-3 text-base sm:text-lg md:text-xl lg:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-xs mx-auto h-12 sm:h-14 md:h-16 lg:h-12"
+                className="px-6 sm:px-6 py-4 sm:py-3 text-lg sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-sm sm:max-w-xs mx-auto h-14 sm:h-12"
             >
                 <span className="flex-grow text-center font-medium">{t('Continue')}</span>
                 <TooltipProvider delayDuration={300}>
@@ -2309,8 +2309,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </TooltipProvider>
             </Button>
           ) : (
-            <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current} className="px-5 sm:px-6 md:px-8 lg:px-6 py-2 sm:py-3 md:py-4 lg:py-2 text-sm sm:text-base md:text-lg lg:text-base bg-blue-500 hover:bg-blue-600 text-white h-10 sm:h-12 md:h-14 lg:h-10 w-full xs:w-auto lg:w-auto">
-              {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 lg:h-4 lg:w-4" />{t('exercises.check')}</>}
+            <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current} className="px-6 sm:px-6 py-3 sm:py-2 text-base sm:text-base bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 w-full sm:w-auto">
+              {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-5 w-5 sm:h-4 sm:w-4" />{t('exercises.check')}</>}
             </Button>
           )}
 
@@ -2321,7 +2321,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     variant="outline" 
                     size="sm"
                     disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
-                    className="text-sm sm:text-base md:text-lg lg:text-sm h-10 sm:h-12 md:h-14 lg:h-10 px-4 sm:px-6 md:px-8 lg:px-4 w-full xs:w-auto lg:w-auto"
+                    className="text-base sm:text-sm h-12 sm:h-10 px-6 sm:px-4 w-full sm:w-auto"
                     onClick={() => {
                         if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
