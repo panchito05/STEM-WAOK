@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
 import { useMobile } from "@/hooks/use-mobile";
-import { Bell, Menu, X, Trophy } from "lucide-react";
+import { Bell, Menu, X, Trophy, Home, BarChart3, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -70,6 +70,54 @@ export default function Navbar() {
                     {link.label}
                   </Link>
                 ))}
+              </div>
+            )}
+            
+            {/* Mobile Navigation Buttons - Only visible on mobile and tablet */}
+            {isMobile && (
+              <div className="ml-3 flex items-center space-x-1">
+                <Link href="/">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className={`text-xs px-2 py-1 h-8 transition-all ${
+                      location === "/" 
+                        ? "text-yellow-300 bg-white/20 font-semibold" 
+                        : "text-blue-100 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <Home className="h-3 w-3 mr-1" />
+                    Home
+                  </Button>
+                </Link>
+                <Link href="/progress">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className={`text-xs px-2 py-1 h-8 transition-all ${
+                      location === "/progress" 
+                        ? "text-yellow-300 bg-white/20 font-semibold" 
+                        : "text-blue-100 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <BarChart3 className="h-3 w-3 mr-1" />
+                    Progress
+                  </Button>
+                </Link>
+                <Link href="/settings">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className={`text-xs px-2 py-1 h-8 transition-all ${
+                      location === "/settings" 
+                        ? "text-yellow-300 bg-white/20 font-semibold" 
+                        : "text-blue-100 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <Settings className="h-3 w-3 mr-1" />
+                    Settings
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
