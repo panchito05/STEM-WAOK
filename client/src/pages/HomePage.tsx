@@ -10,19 +10,19 @@ export default function HomePage() {
         <meta name="description" content="Improve your math skills with interactive exercises in addition, subtraction, multiplication, division, and fractions." />
       </Helmet>
       
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold gradient-text-blue mb-2">
+      <div className="max-w-7xl mx-auto py-3 sm:px-6 lg:px-8">
+        <div className="px-4 py-3 sm:px-0">
+          <div className="mb-4 text-center">
+            <h1 className="text-3xl sm:text-4xl font-bold gradient-text-blue mb-1">
               Math Modules
             </h1>
-            <p className="text-gray-600 max-w-xl mx-auto mt-2">
+            <p className="text-gray-600 text-sm sm:text-base max-w-xl mx-auto">
               Improve your math skills with these interactive exercises
               <span className="ml-2 animate-float inline-block">✏️ 🔢 🧩</span>
             </p>
           </div>
           
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 md:p-8 rounded-xl shadow-md border border-blue-100">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-6 rounded-xl shadow-md border border-blue-100">
             <div className="relative">
               {/* Decorative elements */}
               <div className="absolute -top-12 -right-12 h-24 w-24 bg-yellow-400 opacity-10 rounded-full blur-2xl"></div>
