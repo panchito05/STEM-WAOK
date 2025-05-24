@@ -2100,7 +2100,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <span className="font-medium text-gray-700">
                 Problema {currentProblemIndex} de {settings.problemCount}
               </span>
-              <span className="font-semibold">{t('exercises.score')}: {score}</span>
+              <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50">{t('exercises.score')}: {score}</span>
               <button
                 className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 w-auto hover:bg-indigo-50"
                 onClick={() => setShowProfessorMode(true)}
