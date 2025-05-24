@@ -323,20 +323,33 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     setPosition(positions[nextIndex]);
   };
 
-  // Función para obtener las clases CSS según la posición
+  // Función para obtener las clases CSS según la posición - Solo para desktop
   const getPanelClasses = () => {
     switch (position) {
       case 'top-left':
-        return 'fixed top-4 left-4';
+        return 'top-4 left-4';
       case 'top-right':
-        return 'fixed top-4 right-4';
+        return 'top-4 right-4';
       case 'bottom-left':
-        return 'fixed bottom-4 left-4';
+        return 'bottom-4 left-4';
       case 'bottom-right':
-        return 'fixed bottom-4 right-4';
+        return 'bottom-4 right-4';
       default:
-        return 'fixed top-4 right-4';
+        return 'top-4 right-4';
     }
+  };
+
+  // Clases responsivas del panel
+  const getPanelResponsiveClasses = () => {
+    return `
+      fixed lg:absolute
+      bottom-0 lg:${getPanelClasses()}
+      left-0 lg:left-auto right-0 lg:right-auto
+      bg-white border-t lg:border-t-0 lg:border lg:rounded-lg
+      border-gray-200 p-3 lg:p-4 w-full lg:max-w-sm
+      max-h-80 lg:max-h-none
+      z-40 shadow-lg
+    `.replace(/\s+/g, ' ').trim();
   };
 
   // PANTALLA DE RESUMEN - Exactamente como en el modo normal
@@ -470,14 +483,25 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 bg-white z-50">
+    <div className="fixed inset-0 bg-white z-50 overflow-hidden">
       <CloseButton onClose={onClose} />
       
-      <div className="h-full w-full">
-        <DrawingArea position={position} problem={problem} />
+      {/* Layout responsivo principal */}
+      <div className="h-full w-full flex flex-col lg:flex-row overflow-hidden">
+        {/* Área de dibujo - Ocupa todo el espacio en móvil/tablet */}
+        <div className="flex-1 relative overflow-hidden">
+          <DrawingArea position={position} problem={problem} />
+        </div>
         
-        {/* Panel de control mejorado */}
-        <div className={`${getPanelClasses()} bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm w-full z-40`}>
+        {/* Panel de control - Responsivo */}
+        <div className={`
+          fixed lg:absolute bottom-0 lg:${getPanelClasses().replace('fixed', '')}
+          left-0 lg:left-auto right-0 lg:right-auto
+          bg-white border-t lg:border-t-0 lg:border lg:rounded-lg
+          border-gray-200 p-3 lg:p-4 w-full lg:max-w-sm
+          max-h-80 lg:max-h-none overflow-y-auto lg:overflow-visible
+          z-40 shadow-lg
+        `}>
           {/* Botón para mover panel */}
           <div className="flex justify-between items-center mb-2">
             <button
