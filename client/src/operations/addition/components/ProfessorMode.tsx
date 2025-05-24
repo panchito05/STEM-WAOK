@@ -3,6 +3,7 @@ import { AdditionProblem } from '../types';
 import { CloseButton } from './professor/CloseButton';
 import { DrawingArea } from './professor/DrawingArea';
 import { useProgress } from '../../../context/ProgressContext';
+import { Move } from 'lucide-react';
 
 interface ProfessorModeProps {
   problem: AdditionProblem;
@@ -27,7 +28,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [attempts, setAttempts] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [position, setPosition] = useState('top-right');
+  const [position, setPosition] = useState<'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'>('topLeft');
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
     problem: AdditionProblem;
@@ -47,6 +48,35 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
   // Obtener función de guardado del contexto
   const { saveExerciseResult } = useProgress();
+
+  // Función para rotar entre las posiciones del panel
+  const movePanel = () => {
+    const positions: ('topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft')[] = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
+    const currentIndex = positions.indexOf(position);
+    const nextIndex = (currentIndex + 1) % positions.length;
+    setPosition(positions[nextIndex]);
+  };
+
+  // Función para obtener las coordenadas de posición del panel
+  const getPanelPositionClasses = () => {
+    switch (position) {
+      case 'topLeft':
+        return 'top-4 left-4';
+      case 'topRight':
+        return 'top-4 right-4';
+      case 'bottomRight':
+        return 'bottom-4 right-4';
+      case 'bottomLeft':
+        return 'bottom-4 left-4';
+      default:
+        return 'top-4 left-4';
+    }
+  };
+
+  // Función para determinar el lado del lienzo (opuesto al panel)
+  const getCanvasPosition = () => {
+    return position.includes('Left') ? 'right' : 'left';
+  };
 
   // FUNCIÓN PARA GUARDAR DATOS EXACTAMENTE COMO EL MODO NORMAL
   const saveExerciseDataLikeNormalMode = async (stats: any, history: any[]) => {
@@ -450,10 +480,19 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       <CloseButton onClose={onClose} />
       
       <div className="h-full w-full">
-        <DrawingArea position={position} problem={problem} />
+        <DrawingArea position={getCanvasPosition()} problem={problem} />
         
         {/* Panel de control mejorado */}
-        <div className="fixed top-4 right-4 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm w-full z-40">
+        <div className={`fixed ${getPanelPositionClasses()} bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-[280px] z-40 transition-all duration-300 ease-in-out relative`}>
+          {/* Botón de mover */}
+          <button
+            onClick={movePanel}
+            className="absolute -top-2 -left-2 bg-blue-100 hover:bg-blue-200 p-1.5 rounded-full shadow-md transition-colors duration-200 group"
+            title="Cambiar posición"
+          >
+            <Move className="h-4 w-4 text-blue-600" />
+          </button>
+          
           {/* Mostrar problema */}
           <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             <div className="flex justify-between items-center mb-3">

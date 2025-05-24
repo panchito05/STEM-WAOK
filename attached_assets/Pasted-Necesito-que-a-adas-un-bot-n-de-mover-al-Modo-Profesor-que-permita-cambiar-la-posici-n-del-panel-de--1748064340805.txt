@@ -1,0 +1,46 @@
+Necesito que añadas un botón de mover al Modo Profesor que permita cambiar la posición del panel de ejercicios entre las cuatro esquinas de la pantalla. Cuando el panel se mueva, el lienzo de dibujo debe adaptarse automáticamente para optimizar el espacio disponible.
+
+Requisitos Funcionales
+1. Estado y Control de Posición
+Crear un estado que maneje 4 posiciones: esquina superior izquierda, superior derecha, inferior derecha, inferior izquierda
+Implementar función que rote secuencialmente entre estas posiciones
+El estado inicial debe ser esquina superior izquierda
+2. Botón de Mover
+Añadir un botón pequeño y circular en la esquina del panel del ejercicio
+El botón debe tener:
+Ícono de mover (Move de lucide-react)
+Color azul con hover más oscuro
+Tooltip que diga "Cambiar posición"
+Posicionamiento absoluto en la esquina superior izquierda del panel
+3. Posicionamiento Dinámico del Panel
+El panel completo (problema + respuesta + teclado) debe moverse a la esquina seleccionada
+Implementar función que calcule las coordenadas exactas para cada posición
+El panel debe tener un ancho fijo de 280px
+4. Adaptación del Lienzo de Dibujo
+Cuando el panel esté en esquinas derechas → el lienzo se optimiza para el lado izquierdo
+Cuando el panel esté en esquinas izquierdas → el lienzo se optimiza para el lado derecho
+Los colores y herramientas del lienzo deben adaptarse según la posición
+5. Transiciones Suaves
+Todos los cambios de posición deben tener transiciones CSS suaves
+No debe haber saltos bruscos o parpadeos
+Especificaciones Técnicas
+Estructura del Estado
+const [position, setPosition] = useState<'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft'>('topLeft');
+Coordenadas de Posicionamiento
+topLeft: 4px desde arriba, 4px desde la izquierda
+topRight: 4px desde arriba, 4px desde la derecha
+bottomRight: 4px desde abajo, 4px desde la derecha
+bottomLeft: 4px desde abajo, 4px desde la izquierda
+Estilos del Botón
+Fondo: bg-blue-100 con hover:bg-blue-200
+Padding: p-1.5
+Forma: rounded-full
+Ícono: h-4 w-4 text-blue-600
+Integración con DrawingCanvas
+El componente DrawingCanvas debe recibir la posición como prop
+Debe ajustar automáticamente su configuración según dónde esté el panel
+Resultado Esperado
+Un botón funcional que permita mover el panel entre las 4 esquinas
+Adaptación automática del lienzo de dibujo para maximizar el espacio
+Experiencia fluida para el profesor sin interferencias visuales
+Mantener la funcionalidad completa del ejercicio en cualquier posición
