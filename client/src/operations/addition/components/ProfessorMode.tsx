@@ -315,9 +315,9 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     setExerciseStartTime(Date.now());
   };
 
-  // Función para mover el panel entre las cuatro esquinas
+  // Función para mover el panel entre las cuatro esquinas (sentido horario)
   const movePanel = () => {
-    const positions = ['top-right', 'top-left', 'bottom-left', 'bottom-right'];
+    const positions = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
     const currentIndex = positions.indexOf(position);
     const nextIndex = (currentIndex + 1) % positions.length;
     setPosition(positions[nextIndex]);

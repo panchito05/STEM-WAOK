@@ -16,10 +16,14 @@ export const DrawingArea: React.FC<DrawingAreaProps> = ({
   // Determinar la posición de la paleta de colores según donde esté el panel
   const getColorPalettePosition = () => {
     // Si el panel está a la izquierda, colores a la derecha
-    if (position.includes('Left')) {
+    if (position === 'top-left' || position === 'bottom-left') {
       return 'right';
     }
     // Si el panel está a la derecha, colores a la izquierda
+    if (position === 'top-right' || position === 'bottom-right') {
+      return 'left';
+    }
+    // Por defecto, colores a la izquierda
     return 'left';
   };
 
