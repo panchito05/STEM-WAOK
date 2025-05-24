@@ -167,27 +167,30 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     
     setIsCorrect(correct);
 
-    // Guardar datos del problema resuelto
-    const problemData = {
-      problem: problem,
-      userAnswer: userNum,
-      isCorrect: correct,
-      attempts: currentAttempts,
-      timeSpent: problemTimeSpent
-    };
-
-    setProblemHistory(prev => [...prev, problemData]);
-
-    // Actualizar estadísticas del ejercicio
-    setExerciseStats(prev => ({
-      ...prev,
-      totalProblems: prev.totalProblems + 1,
-      correctAnswers: prev.correctAnswers + (correct ? 1 : 0),
-      totalAttempts: prev.totalAttempts + currentAttempts,
-      totalTime: prev.totalTime + problemTimeSpent
-    }));
-
+    // SOLO guardar el problema cuando se complete (correcto o se agoten intentos)
+    // NO guardarlo en cada intento
+    
     if (correct) {
+      // Guardar datos del problema SOLO cuando es correcto
+      const problemData = {
+        problem: problem,
+        userAnswer: userNum,
+        isCorrect: true,
+        attempts: currentAttempts,
+        timeSpent: problemTimeSpent
+      };
+
+      setProblemHistory(prev => [...prev, problemData]);
+
+      // Actualizar estadísticas del ejercicio
+      setExerciseStats(prev => ({
+        ...prev,
+        totalProblems: prev.totalProblems + 1,
+        correctAnswers: prev.correctAnswers + 1,
+        totalAttempts: prev.totalAttempts + currentAttempts,
+        totalTime: prev.totalTime + problemTimeSpent
+      }));
+
       setTimeout(() => {
         setIsProcessing(false);
         
@@ -212,6 +215,26 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       }, 1000);
     } else {
       if (currentAttempts >= settings.maxAttempts) {
+        // Guardar datos del problema SOLO cuando se agotan los intentos (incorrecto)
+        const problemData = {
+          problem: problem,
+          userAnswer: userNum,
+          isCorrect: false,
+          attempts: currentAttempts,
+          timeSpent: problemTimeSpent
+        };
+
+        setProblemHistory(prev => [...prev, problemData]);
+
+        // Actualizar estadísticas del ejercicio
+        setExerciseStats(prev => ({
+          ...prev,
+          totalProblems: prev.totalProblems + 1,
+          correctAnswers: prev.correctAnswers, // No sumar porque es incorrecto
+          totalAttempts: prev.totalAttempts + currentAttempts,
+          totalTime: prev.totalTime + problemTimeSpent
+        }));
+
         setTimeout(() => {
           setIsProcessing(false);
           
