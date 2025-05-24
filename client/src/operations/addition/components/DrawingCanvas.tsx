@@ -601,7 +601,7 @@ export function DrawingCanvas({
     
     // Guardar el nuevo estado del canvas
     saveCanvasState();
-  }, [currentProblem, darkMode]);
+  };
   
   // Automatically draw problem numbers when a new problem is provided
   useEffect(() => {
@@ -613,7 +613,7 @@ export function DrawingCanvas({
       
       return () => clearTimeout(timer);
     }
-  }, [currentProblem, drawProblemNumbers]);
+  }, [currentProblem]);
   
   // Función para alternar entre modo claro y oscuro
   const toggleDarkMode = () => {
