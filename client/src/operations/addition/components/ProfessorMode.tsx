@@ -167,15 +167,13 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     
     setIsCorrect(correct);
 
-    // SOLO guardar el problema cuando se complete (correcto o se agoten intentos)
-    // NO guardarlo en cada intento
-    
-    if (correct) {
-      // Guardar datos del problema SOLO cuando es correcto
+    // LÓGICA CORREGIDA: Solo agregar al historial cuando el problema se complete
+    if (correct || currentAttempts >= settings.maxAttempts) {
+      // Solo cuando el problema se resuelve correctamente O se agotan los intentos
       const problemData = {
         problem: problem,
         userAnswer: userNum,
-        isCorrect: true,
+        isCorrect: correct,
         attempts: currentAttempts,
         timeSpent: problemTimeSpent
       };
@@ -186,60 +184,43 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       setExerciseStats(prev => ({
         ...prev,
         totalProblems: prev.totalProblems + 1,
-        correctAnswers: prev.correctAnswers + 1,
+        correctAnswers: prev.correctAnswers + (correct ? 1 : 0),
         totalAttempts: prev.totalAttempts + currentAttempts,
         totalTime: prev.totalTime + problemTimeSpent
       }));
 
-      setTimeout(() => {
-        setIsProcessing(false);
-        
-        // Verificar si es el último problema (por ejemplo, problema 3 de 3)
-        if (problemHistory.length + 1 >= 3) { // +1 porque acabamos de resolver uno más
-          // GUARDAR DATOS ANTES DE COMPLETAR
-          const finalStats = {
-            totalTime: Math.floor((Date.now() - exerciseStartTime) / 1000),
-            totalProblems: problemHistory.length + 1,
-            correctAnswers: exerciseStats.correctAnswers + 1,
-            totalAttempts: exerciseStats.totalAttempts + currentAttempts,
-            revealedAnswers: 0
-          };
+      if (correct) {
+        setTimeout(() => {
+          setIsProcessing(false);
           
-          // Guardar ejercicio en Progress and History
-          saveExerciseDataLikeNormalMode(finalStats, [...problemHistory, problemData]);
-          
-          setExerciseCompleted(true);
-        } else {
-          onCorrectAnswer(true);
-        }
-      }, 1000);
-    } else {
-      if (currentAttempts >= settings.maxAttempts) {
-        // Guardar datos del problema SOLO cuando se agotan los intentos (incorrecto)
-        const problemData = {
-          problem: problem,
-          userAnswer: userNum,
-          isCorrect: false,
-          attempts: currentAttempts,
-          timeSpent: problemTimeSpent
-        };
-
-        setProblemHistory(prev => [...prev, problemData]);
-
-        // Actualizar estadísticas del ejercicio
-        setExerciseStats(prev => ({
-          ...prev,
-          totalProblems: prev.totalProblems + 1,
-          correctAnswers: prev.correctAnswers, // No sumar porque es incorrecto
-          totalAttempts: prev.totalAttempts + currentAttempts,
-          totalTime: prev.totalTime + problemTimeSpent
-        }));
-
+          // Verificar si es el último problema (por ejemplo, problema 3 de 3)
+          const updatedHistoryLength = problemHistory.length + 1; // +1 porque acabamos de agregar uno
+          if (updatedHistoryLength >= 3) {
+            // GUARDAR DATOS ANTES DE COMPLETAR
+            const finalStats = {
+              totalTime: Math.floor((Date.now() - exerciseStartTime) / 1000),
+              totalProblems: problemHistory.length + 1,
+              correctAnswers: exerciseStats.correctAnswers + 1,
+              totalAttempts: exerciseStats.totalAttempts + currentAttempts,
+              revealedAnswers: 0
+            };
+            
+            // Guardar ejercicio en Progress and History
+            saveExerciseDataLikeNormalMode(finalStats, [...problemHistory, problemData]);
+            
+            setExerciseCompleted(true);
+          } else {
+            onCorrectAnswer(true);
+          }
+        }, 1000);
+      } else {
+        // Respuesta incorrecta después de agotar intentos
         setTimeout(() => {
           setIsProcessing(false);
           
           // También verificar si era el último problema, aunque fuera incorrecto
-          if (problemHistory.length + 1 >= 3) {
+          const updatedHistoryLength = problemHistory.length + 1; // +1 porque acabamos de agregar uno
+          if (updatedHistoryLength >= 3) {
             // GUARDAR DATOS ANTES DE COMPLETAR (RESPUESTA INCORRECTA)
             const finalStats = {
               totalTime: Math.floor((Date.now() - exerciseStartTime) / 1000),
@@ -257,11 +238,12 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             onCorrectAnswer(false);
           }
         }, 1000);
-      } else {
-        setTimeout(() => {
-          setIsProcessing(false);
-        }, 1500);
       }
+    } else {
+      // Solo un intento fallido, no agregar al historial todavía
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 1500);
     }
   }, [userAnswer, isProcessing, attempts, settings.maxAttempts, problem, calculateCorrectAnswer, onCorrectAnswer, exerciseStartTime, problemHistory.length]);
 
