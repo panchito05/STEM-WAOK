@@ -135,42 +135,45 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   const getDifficultyBadge = (defaultDifficulty: string) => {
     // Si el módulo tiene configuración personalizada, mostrar esa dificultad en lugar de la predeterminada
     const difficulty = moduleConfig?.difficulty || defaultDifficulty;
+    const badgeClass = "font-medium px-1.5 min-[400px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] min-[400px]:text-xs sm:text-sm";
     
     switch (difficulty) {
       case "beginner":
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">{t('difficulty.beginner')}</Badge>;
+        return <Badge variant="outline" className={`bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 ${badgeClass}`}>{t('difficulty.beginner')}</Badge>;
       case "elementary":
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">{t('difficulty.elementary')}</Badge>;
+        return <Badge variant="outline" className={`bg-green-100 text-green-800 border-green-200 hover:bg-green-100 ${badgeClass}`}>{t('difficulty.elementary')}</Badge>;
       case "intermediate":
-        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">{t('difficulty.intermediate')}</Badge>;
+        return <Badge variant="outline" className={`bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 ${badgeClass}`}>{t('difficulty.intermediate')}</Badge>;
       case "advanced":
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">{t('difficulty.advanced')}</Badge>;
+        return <Badge variant="outline" className={`bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 ${badgeClass}`}>{t('difficulty.advanced')}</Badge>;
       case "expert":
-        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">{t('difficulty.expert')}</Badge>;
+        return <Badge variant="outline" className={`bg-red-100 text-red-800 border-red-200 hover:bg-red-100 ${badgeClass}`}>{t('difficulty.expert')}</Badge>;
       default:
-        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">{t('common.comingSoon')}</Badge>;
+        return <Badge variant="outline" className={`bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 ${badgeClass}`}>{t('common.comingSoon')}</Badge>;
     }
   };
 
-  // Función para obtener el icono correspondiente
+  // Función para obtener el icono correspondiente con tamaño responsive
   const getModuleIcon = () => {
-    if (!module.icon) return <Plus className="h-6 w-6" />;
+    const iconClass = "h-4 w-4 min-[400px]:h-5 min-[400px]:w-5 sm:h-6 sm:w-6";
+    
+    if (!module.icon) return <Plus className={iconClass} />;
     
     switch (module.icon) {
-      case "Plus": return <Plus className="h-6 w-6" />;
-      case "Minus": return <Minus className="h-6 w-6" />;
-      case "X": return <X className="h-6 w-6" />;
-      case "DivideIcon": return <DivideIcon className="h-6 w-6" />;
-      case "PieChart": return <PieChart className="h-6 w-6" />;
-      case "BookOpen": return <BookOpen className="h-6 w-6" />;
-      case "Hash": return <Hash className="h-6 w-6" />;
-      case "Calculator": return <Calculator className="h-6 w-6" />;
-      case "ArrowLeftRight": return <ArrowLeftRight className="h-6 w-6" />;
-      case "Square": return <Square className="h-6 w-6" />;
-      case "Percent": return <Percent className="h-6 w-6" />;
-      case "Triangle": return <Triangle className="h-6 w-6" />;
-      case "MapIcon": return <MapIcon className="h-6 w-6" />;
-      default: return <Plus className="h-6 w-6" />;
+      case "Plus": return <Plus className={iconClass} />;
+      case "Minus": return <Minus className={iconClass} />;
+      case "X": return <X className={iconClass} />;
+      case "DivideIcon": return <DivideIcon className={iconClass} />;
+      case "PieChart": return <PieChart className={iconClass} />;
+      case "BookOpen": return <BookOpen className={iconClass} />;
+      case "Hash": return <Hash className={iconClass} />;
+      case "Calculator": return <Calculator className={iconClass} />;
+      case "ArrowLeftRight": return <ArrowLeftRight className={iconClass} />;
+      case "Square": return <Square className={iconClass} />;
+      case "Percent": return <Percent className={iconClass} />;
+      case "Triangle": return <Triangle className={iconClass} />;
+      case "MapIcon": return <MapIcon className={iconClass} />;
+      default: return <Plus className={iconClass} />;
     }
   };
 
@@ -204,7 +207,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
               {getModuleIcon()}
             </div>
-            <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white text-shadow truncate">
+            <h3 className="text-xs min-[350px]:text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white text-shadow truncate">
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
