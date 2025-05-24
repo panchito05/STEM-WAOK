@@ -211,7 +211,7 @@ const YoutubeVideoDialog = ({
 
         {currentPlayingVideo ? (
           // Modo de reproducción de video
-          <div className={`relative ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}>
+          (<div className={`relative ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}>
             <iframe
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${currentPlayingVideo}?autoplay=1&rel=0`}
@@ -219,7 +219,6 @@ const YoutubeVideoDialog = ({
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             ></iframe>
-
             <div className="absolute top-2 right-2 flex gap-2">
               <Button
                 variant="outline"
@@ -241,7 +240,6 @@ const YoutubeVideoDialog = ({
                 </Button>
               )}
             </div>
-
             {!isFullscreen && (
               <div className="p-3 flex justify-between items-center">
                 <Button
@@ -263,14 +261,13 @@ const YoutubeVideoDialog = ({
                 </Button>
               </div>
             )}
-          </div>
+          </div>)
         ) : isEditMode ? (
           // Modo de edición
-          <div className="space-y-4 py-4">
+          (<div className="space-y-4 py-4">
             <div className="text-sm text-gray-600 mb-2">
               Añade hasta 2 enlaces de YouTube para videos explicativos de este ejercicio.
             </div>
-
             {videoLinks.map((link, index) => (
               <div key={index} className="flex items-center gap-2">
                 <Input
@@ -289,7 +286,6 @@ const YoutubeVideoDialog = ({
                 </Button>
               </div>
             ))}
-
             {videoLinks.length < 2 && (
               <Button
                 variant="outline"
@@ -301,7 +297,6 @@ const YoutubeVideoDialog = ({
                 <Plus className="h-4 w-4 mr-2" /> Añadir Video
               </Button>
             )}
-
             <DialogFooter className="mt-4">
               <Button type="button" onClick={() => {
                 setIsEditMode(false);
@@ -311,10 +306,10 @@ const YoutubeVideoDialog = ({
               </Button>
               <Button type="button" onClick={handleSave}>Guardar</Button>
             </DialogFooter>
-          </div>
+          </div>)
         ) : (
           // Modo de visualización de miniaturas
-          <div className="space-y-6 py-4">
+          (<div className="space-y-6 py-4">
             {videosMetadata.map((video, index) => (
               <div key={index} className="border rounded-lg overflow-hidden">
                 <div
@@ -363,7 +358,6 @@ const YoutubeVideoDialog = ({
                 </div>
               </div>
             ))}
-
             <DialogFooter>
               <Button type="button" onClick={handleEnterEditMode} variant="outline">
                 <Cog className="h-4 w-4 mr-2" />
@@ -371,7 +365,7 @@ const YoutubeVideoDialog = ({
               </Button>
               <Button type="button" onClick={onClose}>Cerrar</Button>
             </DialogFooter>
-          </div>
+          </div>)
         )}
       </DialogContent>
     </Dialog>
@@ -2014,7 +2008,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     <div className="relative">
       <LevelUpHandler />
       <RewardAnimation />
-
       {/* Diálogo para gestionar videos explicativos */}
       <YoutubeVideoDialog
         isOpen={showVideoDialog}
@@ -2022,9 +2015,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         videos={youtubeVideos}
         onSave={handleSaveYoutubeVideos}
       />
-
       {/* El botón de YouTube ahora se muestra en la barra superior junto a los otros controles */}
-
       {showLevelUpReward && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-white p-6 sm:p-8 rounded-lg shadow-xl text-center max-w-md w-full">
@@ -2041,15 +2032,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           </div>
         )}
-
-      <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg ${
-        adaptiveDifficulty === "beginner" ? "bg-blue-50 border-blue-200" :
-        adaptiveDifficulty === "elementary" ? "bg-emerald-50 border-emerald-200" :
-        adaptiveDifficulty === "intermediate" ? "bg-orange-50 border-orange-200" :
-        adaptiveDifficulty === "advanced" ? "bg-purple-50 border-purple-200" :
-        adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
-        "bg-indigo-50 border-indigo-200"
-      } border-2`}>
+      <div className="px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg bg-blue-50 border-blue-200 border-2 ml-[7px] mr-[7px]">
         {/* Header optimizado para móviles */}
         <div className="mb-3 sm:mb-4">
             {/* Primera fila: Título y información básica */}
@@ -2166,10 +2149,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <span className="text-gray-600 mx-1">+</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
               {currentProblem.operands.length > 2 && ( // Support for more than 2 operands if needed
-                <>
+                (<>
                   <span className="text-gray-600 mx-1">+</span>
                   <span>{currentProblem.operands[2]}</span>
-                </>
+                </>)
               )}
               <span className="text-gray-600 mx-1">=</span>
             </div>
@@ -2269,118 +2252,145 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ))}
         </div>
-        <div className="mt-4 sm:mt-6 flex justify-between items-center">
+        <div className="mt-3 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 px-2 sm:px-0">
+          {/* Botón Anterior - más pequeño en móvil */}
           <Button
-            variant="outline" size="sm"
+            variant="outline" 
+            size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
             onClick={moveToPreviousProblem}
-            className="text-xs sm:text-sm"
+            className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 h-8 sm:h-9 min-w-0 flex-shrink-0"
           >
-            <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
+            <ChevronLeft className="mr-1 h-3 w-3" /> 
+            <span className="hidden xs:inline">{currentTranslations.previous}</span>
+            <span className="xs:hidden">Prev</span>
           </Button>
 
+          {/* Botón Central - adaptativo */}
           {viewingPrevious ? (
-            <Button onClick={returnToActiveProblem} className="px-4 sm:px-5 text-sm sm:text-base bg-orange-500 hover:bg-orange-600 text-white">
-                <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')}
-            </Button>
-          ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
-            <Button
-                ref={continueButtonRef}
-                onClick={handleContinue}
-                className="px-5 sm:px-6 py-2.5 sm:py-3 text-base sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs mx-auto"
+            <Button 
+              onClick={returnToActiveProblem} 
+              className="px-3 sm:px-5 py-2 sm:py-2.5 text-sm sm:text-base bg-orange-500 hover:bg-orange-600 text-white h-8 sm:h-10 flex-shrink min-w-0"
             >
-                <span className="flex-grow text-center font-medium">{t('Continue')}</span>
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div
-                        className="ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setAutoContinue(prev => !prev);
-                        }}
-                      >
-                        <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
-                          {autoContinue && <Check className="h-3 w-3 text-green-700" />}
-                        </div>
-                        <span className="text-xs font-medium">{t('Auto')}</span>
+              <RotateCcw className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">{t('common.returnToActive')}</span>
+              <span className="xs:hidden">Return</span>
+            </Button>
+          ) : waitingRef.current ? (
+            <Button
+              ref={continueButtonRef}
+              onClick={handleContinue}
+              className="px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs mx-auto h-9 sm:h-12"
+            >
+              <span className="flex-grow text-center font-medium">{t('Continue')}</span>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className="ml-2 sm:ml-3 flex items-center bg-black/20 py-1 px-1.5 sm:px-2 rounded-md cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAutoContinue(prev => !prev);
+                      }}
+                    >
+                      <div className={`h-3 w-3 sm:h-4 sm:w-4 border border-white rounded-sm flex items-center justify-center mr-1 sm:mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
+                        {autoContinue && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-green-700" />}
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                      <span className="text-xs font-medium">{t('Auto')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </Button>
           ) : (
-            <Button onClick={checkCurrentAnswer} disabled={exerciseCompleted || waitingRef.current} className="px-5 sm:px-6 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white">
-              {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
+            <Button 
+              onClick={checkCurrentAnswer} 
+              disabled={exerciseCompleted || waitingRef.current} 
+              className="px-3 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white h-8 sm:h-10 flex-shrink min-w-0"
+            >
+              {!exerciseStarted ? (
+                <span className="hidden xs:inline">{currentTranslations.startExercise}</span>
+              ) : (
+                <>
+                  <Check className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">{t('exercises.check')}</span>
+                  <span className="xs:hidden">Check</span>
+                </>
+              )}
+              {!exerciseStarted && <span className="xs:hidden">Start</span>}
             </Button>
           )}
 
+          {/* Botón Mostrar Respuesta - más pequeño en móvil */}
           <TooltipProvider delayDuration={300}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                    variant="outline" size="sm"
-                    disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
-                    onClick={() => {
-                        if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
-                            if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-                            
-                            // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
-                            setConsecutiveCorrectAnswers(0);
-                            console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
-                            
-                            // Usamos la respuesta correcta del problema directamente
-                            setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
-                            setFeedbackColor("blue");
-                            setWaitingForContinue(true); // Pone waitingRef.current = true
-                            const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
-                            const answerEntry = userAnswersHistory[problemIdxForHistory];
-                            if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
-                                setUserAnswersHistory(prev => {
-                                    const newHistory = [...prev];
-                                    newHistory[problemIdxForHistory] = {
-                                        problemId: currentProblem.id,
-                                        problem: currentProblem,
-                                        userAnswer: NaN,
-                                        isCorrect: false,
-                                        status: 'revealed'
-                                    };
-                                    return newHistory;
-                                });
+                  variant="outline" 
+                  size="sm"
+                  disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
+                  onClick={() => {
+                    if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
+                      if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+                      
+                      // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
+                      setConsecutiveCorrectAnswers(0);
+                      console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
+                      
+                      // Usamos la respuesta correcta del problema directamente
+                      setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                      setFeedbackColor("blue");
+                      setWaitingForContinue(true); // Pone waitingRef.current = true
+                      const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+                      const answerEntry = userAnswersHistory[problemIdxForHistory];
+                      if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
+                        setUserAnswersHistory(prev => {
+                          const newHistory = [...prev];
+                          newHistory[problemIdxForHistory] = {
+                            problemId: currentProblem.id,
+                            problem: currentProblem,
+                            userAnswer: NaN,
+                            isCorrect: false,
+                            status: 'revealed'
+                          };
+                          return newHistory;
+                        });
 
-                                // Añadir problema de compensación cuando se revela la respuesta
-                                if (settings.enableCompensation) {
-                                    console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
-                                    const difficultyForCompensation = settings.enableAdaptiveDifficulty
-                                        ? adaptiveDifficulty
-                                        : (settings.difficulty as DifficultyLevel);
+                        // Añadir problema de compensación cuando se revela la respuesta
+                        if (settings.enableCompensation) {
+                          console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
+                          const difficultyForCompensation = settings.enableAdaptiveDifficulty
+                            ? adaptiveDifficulty
+                            : (settings.difficulty as DifficultyLevel);
 
-                                    const compensationProblem = generateAdditionProblem(difficultyForCompensation);
-                                    setProblemsList(prev => [...prev, compensationProblem]);
-                                    // Agregamos null al historial para que coincida con el nuevo problema añadido
-                                    setUserAnswersHistory(prev => [...prev, null]);
-                                    console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
-                                }
-                            }
-                            if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
-                                setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
-                            }
+                          const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                          setProblemsList(prev => [...prev, compensationProblem]);
+                          // Agregamos null al historial para que coincida con el nuevo problema añadido
+                          setUserAnswersHistory(prev => [...prev, null]);
+                          console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
                         }
-                    }}
-                    className="text-xs sm:text-sm"
+                      }
+                      if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
+                        setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
+                      }
+                    }
+                  }}
+                  className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 h-8 sm:h-9 min-w-0 flex-shrink-0"
                 >
-                    <Info className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.showAnswer}
+                  <Info className="mr-1 h-3 w-3" />
+                  <span className="hidden xs:inline">{currentTranslations.showAnswer}</span>
+                  <span className="xs:hidden">Show</span>
                 </Button>
               </TooltipTrigger>
               {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
-                  <TooltipContent><p>{t('tooltips.activateShowAnswerInSettings')}</p></TooltipContent>
+                <TooltipContent><p>{t('tooltips.activateShowAnswerInSettings')}</p></TooltipContent>
               ) : viewingPrevious ? (
-                  <TooltipContent><p>{t('tooltips.showAnswerDisabledInHistory')}</p></TooltipContent>
-              ) : waitingRef.current ? ( // Usar waitingRef.current
-                  <TooltipContent><p>{t('tooltips.showAnswerDisabledWhileWaiting')}</p></TooltipContent>
+                <TooltipContent><p>{t('tooltips.showAnswerDisabledInHistory')}</p></TooltipContent>
+              ) : waitingRef.current ? (
+                <TooltipContent><p>{t('tooltips.showAnswerDisabledWhileWaiting')}</p></TooltipContent>
               ) : null }
             </Tooltip>
           </TooltipProvider>
