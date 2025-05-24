@@ -2252,49 +2252,51 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ))}
         </div>
-        <div className="mt-3 sm:mt-6 flex justify-center items-center gap-2 px-2 max-w-full">
-          {/* Botón Anterior */}
+        <div className="mt-3 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-0 px-2 sm:px-0">
+          {/* Botón Anterior - más pequeño en móvil */}
           <Button
             variant="outline" 
             size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
             onClick={moveToPreviousProblem}
-            className="flex-1 max-w-[80px] sm:max-w-[100px] text-xs sm:text-sm px-2 py-2 h-9 sm:h-10"
+            className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 h-8 sm:h-9 min-w-0 flex-shrink-0"
           >
-            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline ml-1">Prev</span>
+            <ChevronLeft className="mr-1 h-3 w-3" /> 
+            <span className="hidden xs:inline">{currentTranslations.previous}</span>
+            <span className="xs:hidden">Prev</span>
           </Button>
 
-          {/* Botón Central */}
+          {/* Botón Central - adaptativo */}
           {viewingPrevious ? (
             <Button 
               onClick={returnToActiveProblem} 
-              className="flex-1 max-w-[120px] sm:max-w-[150px] text-xs sm:text-base bg-orange-500 hover:bg-orange-600 text-white h-9 sm:h-10 px-2"
+              className="px-3 sm:px-5 py-2 sm:py-2.5 text-sm sm:text-base bg-orange-500 hover:bg-orange-600 text-white h-8 sm:h-10 flex-shrink min-w-0"
             >
-              <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="ml-1">Return</span>
+              <RotateCcw className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">{t('common.returnToActive')}</span>
+              <span className="xs:hidden">Return</span>
             </Button>
           ) : waitingRef.current ? (
             <Button
               ref={continueButtonRef}
               onClick={handleContinue}
-              className="flex-1 max-w-[200px] sm:max-w-[250px] animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center h-9 sm:h-12 px-2"
+              className="px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-lg animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center w-full max-w-xs mx-auto h-9 sm:h-12"
             >
-              <span className="text-sm sm:text-lg font-medium">{t('Continue')}</span>
+              <span className="flex-grow text-center font-medium">{t('Continue')}</span>
               <TooltipProvider delayDuration={300}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div
-                      className="ml-2 flex items-center bg-black/20 py-1 px-1.5 rounded-md cursor-pointer"
+                      className="ml-2 sm:ml-3 flex items-center bg-black/20 py-1 px-1.5 sm:px-2 rounded-md cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setAutoContinue(prev => !prev);
                       }}
                     >
-                      <div className={`h-3 w-3 border border-white rounded-sm flex items-center justify-center mr-1 ${autoContinue ? 'bg-white' : ''}`}>
-                        {autoContinue && <Check className="h-2 w-2 text-green-700" />}
+                      <div className={`h-3 w-3 sm:h-4 sm:w-4 border border-white rounded-sm flex items-center justify-center mr-1 sm:mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
+                        {autoContinue && <Check className="h-2 w-2 sm:h-3 sm:w-3 text-green-700" />}
                       </div>
-                      <span className="text-xs font-medium">Auto</span>
+                      <span className="text-xs font-medium">{t('Auto')}</span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -2307,20 +2309,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <Button 
               onClick={checkCurrentAnswer} 
               disabled={exerciseCompleted || waitingRef.current} 
-              className="flex-1 max-w-[120px] sm:max-w-[150px] text-xs sm:text-base bg-blue-500 hover:bg-blue-600 text-white h-9 sm:h-10 px-2"
+              className="px-3 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white h-8 sm:h-10 flex-shrink min-w-0"
             >
               {!exerciseStarted ? (
-                <span className="text-xs sm:text-sm">Start</span>
+                <span className="hidden xs:inline">{currentTranslations.startExercise}</span>
               ) : (
                 <>
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="ml-1">Check</span>
+                  <Check className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden xs:inline">{t('exercises.check')}</span>
+                  <span className="xs:hidden">Check</span>
                 </>
               )}
+              {!exerciseStarted && <span className="xs:hidden">Start</span>}
             </Button>
           )}
 
-          {/* Botón Mostrar Respuesta */}
+          {/* Botón Mostrar Respuesta - más pequeño en móvil */}
           <TooltipProvider delayDuration={300}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -2374,10 +2378,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                       }
                     }
                   }}
-                  className="flex-1 max-w-[80px] sm:max-w-[100px] text-xs sm:text-sm px-2 py-2 h-9 sm:h-10"
+                  className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 h-8 sm:h-9 min-w-0 flex-shrink-0"
                 >
-                  <Info className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline ml-1">Show</span>
+                  <Info className="mr-1 h-3 w-3" />
+                  <span className="hidden xs:inline">{currentTranslations.showAnswer}</span>
+                  <span className="xs:hidden">Show</span>
                 </Button>
               </TooltipTrigger>
               {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
