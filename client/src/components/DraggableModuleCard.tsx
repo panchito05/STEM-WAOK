@@ -154,25 +154,23 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
 
   // Función para obtener el icono correspondiente
   const getModuleIcon = () => {
-    const iconClass = "w-full h-full";
-    
-    if (!module.icon) return <Plus className={iconClass} />;
+    if (!module.icon) return <Plus className="h-6 w-6" />;
     
     switch (module.icon) {
-      case "Plus": return <Plus className={iconClass} />;
-      case "Minus": return <Minus className={iconClass} />;
-      case "X": return <X className={iconClass} />;
-      case "DivideIcon": return <DivideIcon className={iconClass} />;
-      case "PieChart": return <PieChart className={iconClass} />;
-      case "BookOpen": return <BookOpen className={iconClass} />;
-      case "Hash": return <Hash className={iconClass} />;
-      case "Calculator": return <Calculator className={iconClass} />;
-      case "ArrowLeftRight": return <ArrowLeftRight className={iconClass} />;
-      case "Square": return <Square className={iconClass} />;
-      case "Percent": return <Percent className={iconClass} />;
-      case "Triangle": return <Triangle className={iconClass} />;
-      case "MapIcon": return <MapIcon className={iconClass} />;
-      default: return <Plus className={iconClass} />;
+      case "Plus": return <Plus className="h-6 w-6" />;
+      case "Minus": return <Minus className="h-6 w-6" />;
+      case "X": return <X className="h-6 w-6" />;
+      case "DivideIcon": return <DivideIcon className="h-6 w-6" />;
+      case "PieChart": return <PieChart className="h-6 w-6" />;
+      case "BookOpen": return <BookOpen className="h-6 w-6" />;
+      case "Hash": return <Hash className="h-6 w-6" />;
+      case "Calculator": return <Calculator className="h-6 w-6" />;
+      case "ArrowLeftRight": return <ArrowLeftRight className="h-6 w-6" />;
+      case "Square": return <Square className="h-6 w-6" />;
+      case "Percent": return <Percent className="h-6 w-6" />;
+      case "Triangle": return <Triangle className="h-6 w-6" />;
+      case "MapIcon": return <MapIcon className="h-6 w-6" />;
+      default: return <Plus className="h-6 w-6" />;
     }
   };
 
@@ -198,17 +196,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           </svg>
         </div>
         
-        <div className="flex items-center relative z-10 min-w-0 flex-1 justify-center sm:justify-start">
-          <div className="mr-1 sm:mr-2 cursor-move text-white opacity-80 hover:opacity-100 transition-opacity hidden lg:block" aria-hidden="true">
+        <div className="flex items-center relative z-10 min-w-0 flex-1">
+          <div className="mr-1 sm:mr-2 cursor-move text-white opacity-80 hover:opacity-100 transition-opacity hidden sm:block" aria-hidden="true">
             <GripVertical className="h-4 w-4 sm:h-5 sm:w-5" />
           </div>
-          <div className="flex items-center min-w-0 flex-1 justify-center sm:justify-start">
-            <div className="mr-1 sm:mr-2 lg:mr-3 bg-white/25 p-1 sm:p-1.5 lg:p-2 rounded-lg shadow-inner flex-shrink-0">
-              <div className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6">
-                {getModuleIcon()}
-              </div>
+          <div className="flex items-center min-w-0 flex-1">
+            <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
+              {getModuleIcon()}
             </div>
-            <h3 className="text-xs sm:text-sm lg:text-base xl:text-lg font-bold text-white text-shadow text-center sm:text-left leading-tight">
+            <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white text-shadow truncate">
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
@@ -247,23 +243,23 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           )}
         </div>
       </div>
-      <div className="p-2 sm:p-3 lg:p-5 bg-gradient-to-b from-white to-blue-50">
-        <p className={`text-xs sm:text-sm lg:text-sm mb-3 sm:mb-4 lg:mb-5 line-clamp-2 text-center sm:text-left ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
+      <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50">
+        <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
           {t(`modules.${module.id}.description`)}
         </p>
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-2 lg:items-center">
-          <div className="flex items-center justify-center w-full lg:w-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div className="flex items-center w-full sm:w-auto">
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
-            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-3 sm:px-4 lg:px-5 text-xs sm:text-sm w-full lg:w-auto">
+            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto">
               {t('common.comingSoon')}
             </Button>
           ) : (
-            <Link href={`/operation/${module.id}`} className="w-full lg:w-auto">
+            <Link href={`/operation/${module.id}`} className="w-full sm:w-auto">
               <Button 
                 variant="default" 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-3 sm:px-4 lg:px-5 text-xs sm:text-sm w-full lg:w-auto"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto"
               >
                 {t('common.start')}
               </Button>

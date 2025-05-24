@@ -2050,71 +2050,64 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        {/* Header optimizado para móviles */}
-        <div className="mb-3 sm:mb-4">
-            {/* Primera fila: Título y información básica */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-                <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs">
-                    <span className="font-medium text-gray-700 flex items-center bg-gray-100 px-2 py-1 rounded">
-                        <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-1 opacity-70"/>{formatTime(timer)}
-                    </span>
-                    {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
-                      <span className={`font-medium px-2 py-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
-                        P: {problemTimerValue}s
-                      </span>
-                    )}
-                    {settings.maxAttempts > 0 && !viewingPrevious && (
-                      <span className={`font-medium px-2 py-1 rounded ${currentAttempts > 0 && currentAttempts < settings.maxAttempts ? "bg-amber-100 text-amber-800" : currentAttempts >= settings.maxAttempts ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}>
-                        {currentTranslations.attempts}: {currentAttempts}/{settings.maxAttempts}
-                      </span>
-                    )}
-                    <span className={`px-2 py-1 rounded-full font-medium capitalize text-xs ${
-                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" :
-                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" :
-                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
-                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
-                      (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
-                      "bg-indigo-100 text-indigo-800"
-                    }`}>
-                        {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
-                    </span>
-                </div>
-            </div>
-            
-            {/* Segunda fila: Botones de acción prominentes */}
-            <div className="flex items-center justify-center gap-3 sm:justify-end sm:gap-2 mt-3">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+            <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                <span className="font-medium text-gray-700 flex items-center"><Info className="h-4 w-4 mr-1 opacity-70"/>{formatTime(timer)}</span>
+                {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
+                  <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
+                    P: {problemTimerValue}s
+                  </span>
+                )}
+                {settings.maxAttempts > 0 && !viewingPrevious && (
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className={`font-medium p-1 rounded ${currentAttempts > 0 && currentAttempts < settings.maxAttempts ? "bg-amber-100 text-amber-800" : currentAttempts >= settings.maxAttempts ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"}`}>
+                          {currentTranslations.attempts}: {currentAttempts}/{settings.maxAttempts}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('tooltips.maxAttemptsPerProblem')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" :
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" :
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "advanced" ? "bg-purple-100 text-purple-800" :
+                  (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "expert" ? "bg-rose-100 text-rose-800" :
+                  "bg-indigo-100 text-indigo-800"
+                }`}>
+                    {currentTranslations.level}: {t(settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty)}
+                </span>
+                {/* Botón para ir a la página de progreso/historial con tab=recent */}
                 <Link href="/progress?tab=recent">
-                  <Button variant="outline" size="sm" className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 rounded-lg shadow-sm transition-all duration-200 min-w-[120px] justify-center">
-                    <History className="h-4 w-4 flex-shrink-0" /> 
-                    <span>{isEnglish ? "Historial" : "Historial"}</span>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                    <History className="h-4 w-4" /> {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
                   </Button>
                 </Link>
-                <Button variant="outline" size="sm" onClick={onOpenSettings} className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-gray-50 hover:bg-gray-100 border-gray-200 text-gray-700 rounded-lg shadow-sm transition-all duration-200 min-w-[120px] justify-center">
-                  <Cog className="h-4 w-4 flex-shrink-0" /> 
-                  <span>{isEnglish ? "Config" : "Config"}</span>
+                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                  <Cog className="h-4 w-4" /> {currentTranslations.settings}
                 </Button>
             </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
-        <div className="flex flex-col sm:flex-row sm:justify-end text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 gap-2">
-            <div className="flex flex-wrap items-center gap-1 sm:gap-2 justify-center sm:justify-end">
-              <span className="font-medium text-gray-700 text-xs sm:text-sm">
+        <div className="flex justify-end text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-gray-700">
                 Problema {currentProblemIndex} de {settings.problemCount}
               </span>
-              <span className="font-semibold px-1.5 sm:px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs sm:text-sm">{t('exercises.score')}: {score}</span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-2 justify-center sm:justify-end">
+              <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50">{t('exercises.score')}: {score}</span>
               <button
-                className="px-1.5 sm:px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50 flex-1 sm:flex-none"
+                className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 w-auto hover:bg-indigo-50"
                 onClick={() => setShowProfessorMode(true)}
                 title="Modo Profesor"
               >
-                <span className="text-xs font-medium mr-1 hidden sm:inline">
+                <span className="text-xs font-medium mr-1">
                   {settings.language === 'english' ? 'Professor Mode' : 'Modo Profesor'}
-                </span>
-                <span className="text-xs font-medium mr-1 sm:hidden">
-                  {settings.language === 'english' ? 'Professor' : 'Profesor'}
                 </span>
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
@@ -2133,21 +2126,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </svg>
               </button>
               <button
-                className={`px-1.5 sm:px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7 flex-1 sm:flex-none`}
+                className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7 w-auto`}
                 onClick={() => setShowVideoDialog(true)}
                 title="Videos explicativos"
               >
-                <span className="text-xs font-medium mr-1 hidden sm:inline">
+                <span className="text-xs font-medium mr-1">
                   {settings.language === 'english' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
-                </span>
-                <span className="text-xs font-medium mr-1 sm:hidden">
-                  {settings.language === 'english' ? 'Video' : 'Video'}
                 </span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 16"
                   fill="currentColor"
-                  className="h-4 w-5 sm:h-5 sm:w-6"
+                  className="h-5 w-6"
                 >
                   <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
                   <polygon points="9,5 16,8 9,11" fill="currentColor" />
@@ -2159,7 +2149,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        <div className={`p-4 sm:p-6 rounded-lg mb-4 sm:mb-6 shadow-md bg-white min-h-[120px] sm:min-h-[150px] flex flex-col items-center justify-center mt-4`}>
+        <div className={`p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[150px] sm:min-h-[180px] flex flex-col items-center justify-center`}>
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
               <span>{currentProblem.operands[0]}</span>
@@ -2269,7 +2259,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ))}
         </div>
-        <div className="mt-4 sm:mt-6 mb-6 sm:mb-8 flex justify-between items-center px-2 sm:px-4">
+        <div className="mt-4 sm:mt-6 flex justify-between items-center">
           <Button
             variant="outline" size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
