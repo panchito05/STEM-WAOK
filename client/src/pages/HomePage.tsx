@@ -10,7 +10,7 @@ export default function HomePage() {
         <meta name="description" content="Improve your math skills with interactive exercises in addition, subtraction, multiplication, division, and fractions." />
       </Helmet>
       
-      <div className="max-w-7xl mx-auto py-6 px-2 sm:px-3 lg:px-4">
+      <div className="max-w-7xl mx-auto py-6 px-2 sm:px-4 lg:px-6">
         <div className="py-6">
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold gradient-text-blue mb-2">
@@ -22,7 +22,7 @@ export default function HomePage() {
             </p>
           </div>
           
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-2 sm:p-3 md:p-4 rounded-xl shadow-md border border-blue-100 mx-auto">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 sm:p-4 md:p-6 rounded-xl shadow-md border border-blue-100">
             <div className="relative">
               {/* Decorative elements */}
               <div className="absolute -top-12 -right-12 h-24 w-24 bg-yellow-400 opacity-10 rounded-full blur-2xl"></div>
