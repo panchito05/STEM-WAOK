@@ -41,19 +41,19 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-blue-500 to-indigo-600 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
+    <nav className="bg-gradient-to-r from-blue-500 to-indigo-600 shadow-md sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+        <div className="flex justify-between items-center min-h-[56px] sm:min-h-[64px] py-2 sm:py-0">
+          <div className="flex items-center flex-shrink-0 min-w-0">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/">
-                <span className="text-white font-bold text-sm min-[350px]:text-base min-[400px]:text-lg sm:text-xl lg:text-2xl cursor-pointer flex items-center">
+                <span className="text-white font-bold text-xs min-[340px]:text-sm min-[400px]:text-base sm:text-lg md:text-xl lg:text-2xl cursor-pointer flex items-center truncate">
                   <span className="text-yellow-300 mr-0.5 sm:mr-1">M</span>
                   <span className="text-green-300 mr-0.5 sm:mr-1">a</span>
                   <span className="text-purple-300 mr-0.5 sm:mr-1">t</span>
                   <span className="text-red-300 mr-0.5 sm:mr-1">h</span>
                   <span className="mr-0.5 sm:mr-1">W+A+O+K</span>
-                  <span className="ml-0.5 sm:ml-1 text-amber-200 text-xs min-[350px]:text-sm min-[400px]:text-base sm:text-lg lg:text-xl">🔢</span>
+                  <span className="ml-0.5 sm:ml-1 text-amber-200 text-[10px] min-[340px]:text-xs min-[400px]:text-sm sm:text-base md:text-lg lg:text-xl">🔢</span>
                 </span>
               </Link>
             </div>
@@ -75,49 +75,51 @@ export default function Navbar() {
             
             {/* Mobile Navigation Buttons - Only visible on mobile and tablet */}
             {isMobile && (
-              <div className="ml-1 sm:ml-2 flex items-center space-x-0.5 min-[400px]:space-x-1">
-                <Link href="/">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className={`text-[10px] min-[400px]:text-xs px-1 min-[400px]:px-2 py-1 h-7 min-[400px]:h-8 transition-all whitespace-nowrap ${
-                      location === "/" 
-                        ? "text-yellow-300 bg-white/20 font-semibold" 
-                        : "text-blue-100 hover:text-white hover:bg-white/10"
-                    }`}
-                  >
-                    <Home className="h-3 w-3 min-[400px]:mr-1" />
-                    <span className="hidden min-[320px]:inline">Home</span>
-                  </Button>
-                </Link>
-                <Link href="/progress">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className={`text-[10px] min-[400px]:text-xs px-1 min-[400px]:px-2 py-1 h-7 min-[400px]:h-8 transition-all whitespace-nowrap ${
-                      location === "/progress" 
-                        ? "text-yellow-300 bg-white/20 font-semibold" 
-                        : "text-blue-100 hover:text-white hover:bg-white/10"
-                    }`}
-                  >
-                    <BarChart3 className="h-3 w-3 min-[400px]:mr-1" />
-                    <span className="hidden min-[360px]:inline">Progress</span>
-                  </Button>
-                </Link>
-                <Link href="/settings">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className={`text-[10px] min-[400px]:text-xs px-1 min-[400px]:px-2 py-1 h-7 min-[400px]:h-8 transition-all whitespace-nowrap ${
-                      location === "/settings" 
-                        ? "text-yellow-300 bg-white/20 font-semibold" 
-                        : "text-blue-100 hover:text-white hover:bg-white/10"
-                    }`}
-                  >
-                    <Settings className="h-3 w-3 min-[400px]:mr-1" />
-                    <span className="hidden min-[400px]:inline">Settings</span>
-                  </Button>
-                </Link>
+              <div className="flex items-center justify-end flex-1 min-w-0 ml-1">
+                <div className="flex items-center space-x-0.5 xs:space-x-1">
+                  <Link href="/">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className={`text-[9px] xs:text-[10px] min-[400px]:text-xs px-0.5 xs:px-1 min-[400px]:px-2 py-1 h-6 xs:h-7 min-[400px]:h-8 transition-all whitespace-nowrap flex items-center justify-center min-w-[32px] xs:min-w-[36px] ${
+                        location === "/" 
+                          ? "text-yellow-300 bg-white/20 font-semibold" 
+                          : "text-blue-100 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      <Home className="h-2.5 w-2.5 xs:h-3 xs:w-3 shrink-0" />
+                      <span className="hidden min-[340px]:inline ml-1 text-[9px] xs:text-[10px]">Home</span>
+                    </Button>
+                  </Link>
+                  <Link href="/progress">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className={`text-[9px] xs:text-[10px] min-[400px]:text-xs px-0.5 xs:px-1 min-[400px]:px-2 py-1 h-6 xs:h-7 min-[400px]:h-8 transition-all whitespace-nowrap flex items-center justify-center min-w-[32px] xs:min-w-[36px] ${
+                        location === "/progress" 
+                          ? "text-yellow-300 bg-white/20 font-semibold" 
+                          : "text-blue-100 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      <BarChart3 className="h-2.5 w-2.5 xs:h-3 xs:w-3 shrink-0" />
+                      <span className="hidden min-[380px]:inline ml-1 text-[9px] xs:text-[10px]">Progress</span>
+                    </Button>
+                  </Link>
+                  <Link href="/settings">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className={`text-[9px] xs:text-[10px] min-[400px]:text-xs px-0.5 xs:px-1 min-[400px]:px-2 py-1 h-6 xs:h-7 min-[400px]:h-8 transition-all whitespace-nowrap flex items-center justify-center min-w-[32px] xs:min-w-[36px] ${
+                        location === "/settings" 
+                          ? "text-yellow-300 bg-white/20 font-semibold" 
+                          : "text-blue-100 hover:text-white hover:bg-white/10"
+                      }`}
+                    >
+                      <Settings className="h-2.5 w-2.5 xs:h-3 xs:w-3 shrink-0" />
+                      <span className="hidden min-[420px]:inline ml-1 text-[9px] xs:text-[10px]">Settings</span>
+                    </Button>
+                  </Link>
+                </div>
               </div>
             )}
           </div>
