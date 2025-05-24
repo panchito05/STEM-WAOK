@@ -63,6 +63,7 @@ interface RewardsState {
   setShowRewardAnimation: (show: boolean) => void;
   setRewardsAlbumOpened: (opened: boolean) => void;
   resetNewRewardsCount: () => void;
+  resetAllRewards: () => void;
 }
 
 // Catálogo de recompensas disponibles en el sistema

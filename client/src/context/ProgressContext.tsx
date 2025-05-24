@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { checkAndAwardRewards } from "@/lib/rewards-system";
+import { checkAndAwardRewards, useRewardsStore } from "@/lib/rewards-system";
 
 export interface ExerciseResult {
   id?: number;            // ID del registro en la base de datos
@@ -67,6 +67,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
+  const { resetAllRewards } = useRewardsStore();
 
   // Check authentication status
   useEffect(() => {
@@ -588,23 +589,13 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         
         console.log("🔄 [Fase 5] Emitidos eventos de limpieza para todos los componentes");
         
-        // IMPORTANTE: Usar directamente la función de Zustand para reiniciar las recompensas
+        // IMPORTANTE: Reiniciar el sistema de recompensas
         try {
-          // Importación dinámica para evitar problemas de circular imports
-          import('@/lib/rewards-system').then(({ useRewardsStore }) => {
-            // Llamar directamente a la función de reseteo del store de recompensas
-            const resetAllRewards = useRewardsStore.getState().resetAllRewards;
-            if (typeof resetAllRewards === 'function') {
-              resetAllRewards();
-              console.log("✅ [Fase 5 - Zustand] Sistema de recompensas reseteado directamente");
-            } else {
-              console.error("❌ La función resetAllRewards no está disponible");
-            }
-          }).catch(err => {
-            console.error("Error al importar el sistema de recompensas:", err);
-          });
+          console.log("🏆 Reseteando sistema de recompensas...");
+          resetAllRewards();
+          console.log("✅ [Fase 5] Sistema de recompensas reseteado correctamente");
         } catch (error) {
-          console.error("Error crítico al intentar resetear recompensas:", error);
+          console.error("Error al resetear recompensas:", error);
         }
       }
       
