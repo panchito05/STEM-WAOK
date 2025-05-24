@@ -608,6 +608,9 @@ export function DrawingCanvas({
     if (currentProblem && contextRef.current && canvasRef.current) {
       // Small delay to ensure canvas is ready
       const timer = setTimeout(() => {
+        // Clear the canvas first before drawing new numbers
+        clearCanvas();
+        // Then draw the new problem numbers
         drawProblemNumbers();
       }, 100);
       
