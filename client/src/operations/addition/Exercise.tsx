@@ -672,15 +672,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 const currentFailedAttempts = existingEntry.mistakes || [];
                 newHistory[problemIndexForHistory] = {
                     ...existingEntry,
-                    userAnswer: userNumericAnswer,
+                    // NO actualizar userAnswer para respuestas incorrectas
                     isCorrect,
-                    status: isCorrect ? 'correct' : 'incorrect',
+                    status: 'incorrect',
                     attempts: newAttempts,
                     mistakes: [...currentFailedAttempts, userNumericAnswer],
                     timestamp: Date.now()
                 };
             } else {
-                // Si es correcto, actualizar con la respuesta final
+                // Si es correcto, actualizar con la respuesta final correcta
                 newHistory[problemIndexForHistory] = {
                     ...existingEntry,
                     userAnswer: userNumericAnswer,
@@ -692,17 +692,33 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             }
         } else {
             // Crear nueva entrada
-            const newHistoryEntry: UserAnswerType = {
-                problemId: currentProblem.id,
-                problem: currentProblem,
-                userAnswer: userNumericAnswer,
-                isCorrect,
-                status: isCorrect ? 'correct' : 'incorrect',
-                attempts: newAttempts,
-                mistakes: isCorrect ? [] : [userNumericAnswer],
-                timestamp: Date.now()
-            };
-            newHistory[problemIndexForHistory] = newHistoryEntry;
+            if (!isCorrect) {
+                // Primera respuesta incorrecta - no establecer userAnswer aún
+                const newHistoryEntry: UserAnswerType = {
+                    problemId: currentProblem.id,
+                    problem: currentProblem,
+                    userAnswer: NaN, // No hay respuesta correcta aún
+                    isCorrect: false,
+                    status: 'incorrect',
+                    attempts: newAttempts,
+                    mistakes: [userNumericAnswer],
+                    timestamp: Date.now()
+                };
+                newHistory[problemIndexForHistory] = newHistoryEntry;
+            } else {
+                // Primera respuesta y es correcta
+                const newHistoryEntry: UserAnswerType = {
+                    problemId: currentProblem.id,
+                    problem: currentProblem,
+                    userAnswer: userNumericAnswer,
+                    isCorrect: true,
+                    status: 'correct',
+                    attempts: newAttempts,
+                    mistakes: [],
+                    timestamp: Date.now()
+                };
+                newHistory[problemIndexForHistory] = newHistoryEntry;
+            }
         }
         
         return newHistory;
