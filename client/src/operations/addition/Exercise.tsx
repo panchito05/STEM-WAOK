@@ -2156,16 +2156,34 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               )}
             </button>
             
-            {/* History button - Fourth item - duplicated here for mobile unified row */}
+            {/* History button - Mobile version (icon only) */}
             <Link href="/progress?tab=recent" className="sm:hidden">
               <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
                 <History className="h-4 w-4" />
               </Button>
             </Link>
             
-            {/* Settings button - Fifth item - duplicated here for mobile unified row */}
+            {/* History button - Desktop version (with text) */}
+            <Link href="/progress?tab=recent" className="hidden sm:flex">
+              <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                <History className="h-4 w-4" /> 
+                <span>
+                  {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
+                </span>
+              </Button>
+            </Link>
+            
+            {/* Settings button - Mobile version (icon only) */}
             <Button variant="ghost" size="sm" onClick={onOpenSettings} className="sm:hidden flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
               <Cog className="h-4 w-4" />
+            </Button>
+            
+            {/* Settings button - Desktop version (with text) */}
+            <Button variant="ghost" size="sm" onClick={onOpenSettings} className="hidden sm:flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+              <Cog className="h-4 w-4" /> 
+              <span>
+                {currentTranslations.settings}
+              </span>
             </Button>
         </div>
 
