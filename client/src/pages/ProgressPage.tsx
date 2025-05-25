@@ -1088,11 +1088,16 @@ export default function ProgressPage() {
                                         />
                                       </div>
                                       <p className="text-center text-lg font-bold text-blue-600">
-                                        {/* 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL */}
-                                        {exercise.userAnswers ? 
-                                          `${exercise.userAnswers.filter((a: any) => a && a.isCorrect).length}/${exercise.totalProblems}` :
-                                          `${Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/${exercise.totalProblems}`
-                                        }
+                                        {/* 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL CON PORCENTAJE */}
+                                        {exercise.userAnswers ? (() => {
+                                          const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
+                                          const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
+                                          return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
+                                        })() : (() => {
+                                          const realScore = Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0));
+                                          const percentage = Math.round((realScore / exercise.totalProblems) * 100);
+                                          return `${realScore}/${exercise.totalProblems} (${percentage}%)`;
+                                        })()}
                                       </p>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-md">
