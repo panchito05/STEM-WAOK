@@ -2050,21 +2050,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 mb-1 sm:mb-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
+        {/* Header - Reorganized to match image layout */}
+        <div className="flex items-center justify-between gap-4 mb-4">
+            {/* Left: Addition title */}
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
             
-            {/* Top row info - Timer and basic stats */}
-            <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap">
+            {/* Center: Timer, Attempts, and Level info */}
+            <div className="flex items-center gap-3 text-sm">
+                {/* Timer */}
                 <span className="font-medium text-gray-700 flex items-center">
                   <Info className="h-4 w-4 mr-1 opacity-70"/>
                   {formatTime(timer)}
                 </span>
-                {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
-                  <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
-                    P: {problemTimerValue}s
-                  </span>
-                )}
+                
+                {/* Attempts */}
                 {settings.maxAttempts > 0 && !viewingPrevious && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
@@ -2079,7 +2078,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </Tooltip>
                   </TooltipProvider>
                 )}
-                <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
+                
+                {/* Level */}
+                <span className={`px-2 py-0.5 rounded-full font-semibold capitalize text-sm ${
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" :
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" :
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
@@ -2091,21 +2092,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </span>
             </div>
             
-            {/* Control buttons row - Stack on mobile, inline on desktop */}
-            <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 flex-wrap">
-                {/* History button - Hide text on mobile, show icon only */}
+            {/* Right: Exercise History and Settings buttons */}
+            <div className="flex items-center gap-2">
+                {/* Exercise History button */}
                 <Link href="/progress?tab=recent">
-                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-sm text-gray-600 hover:bg-gray-100">
                     <History className="h-4 w-4" /> 
-                    <span className="hidden sm:inline">
+                    <span>
                       {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
                     </span>
                   </Button>
                 </Link>
-                {/* Settings button - Hide text on mobile, show icon only */}
-                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
+                
+                {/* Settings button */}
+                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> 
-                  <span className="hidden sm:inline">
+                  <span>
                     {currentTranslations.settings}
                   </span>
                 </Button>
