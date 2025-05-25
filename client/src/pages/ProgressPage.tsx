@@ -1033,17 +1033,11 @@ export default function ProgressPage() {
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              {exercise.score !== undefined && exercise.totalProblems ? (() => {
-                                // Calcular el score real excluyendo respuestas reveladas
-                                // Verificar múltiples fuentes para revealedAnswers
-                                const revealedAnswers = exercise.revealedAnswers || 
-                                                       exercise.extraData?.revealedAnswers || 
-                                                       exercise.extra_data?.revealedAnswers || 
-                                                       exercise.extra_data?.screenshot?.scoreData?.revealed?.value || 
-                                                       0;
-                                const realScore = Math.max(0, exercise.score - revealedAnswers);
-                                const percentage = Math.round((realScore / exercise.totalProblems) * 100);
-                                return `${realScore}/${exercise.totalProblems} (${percentage}%)`;
+                              {exercise.userAnswers && exercise.totalProblems ? (() => {
+                                // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
+                                const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
+                                const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
+                                return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
                               })() :
                                 exercise.extraData?.accuracy ? 
                                   `${Math.round(exercise.extraData.accuracy)}%` : 
