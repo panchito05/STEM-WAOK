@@ -2049,10 +2049,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return <div className="p-8 text-center">{t('common.reloadingProblem')}...</div>;
   }
   if (exerciseCompleted) {
-    // 🔧 SOLUCIÓN: Usar la misma lógica exitosa del tooltip para consistencia total
-    const respuestasCorrectas = userAnswersHistory.filter(a => a && a.isCorrect).length;
-    const totalIntentados = problemsList.length - revealedAnswers;
-    const finalScore = respuestasCorrectas; // Mismo cálculo que el tooltip
+    // 🔧 SOLUCIÓN: Usar exactamente la misma lógica exitosa del tooltip
+    const finalScore = userAnswersHistory.filter(a => a && a.isCorrect).length;
     const accuracy = problemsList.length > 0 ? Math.round((finalScore / problemsList.length) * 100) : 0;
 
     // Cálculo de tiempo promedio por problema
