@@ -21,6 +21,7 @@ import AboutPage from "@/pages/AboutPage";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import ContactPage from "@/pages/ContactPage";
+import { RewardSystemDemo } from "@/components/RewardSystemDemo";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext"; 
 import { SettingsProvider } from "@/context/SettingsContext";
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/coming-soon" component={SoonPage} />
       <Route path="/test-unified-addition" component={UnifiedAdditionTestPage} />
       <Route path="/design-demo" component={DesignDemoPage} />
+      <Route path="/rewards-demo" component={RewardSystemDemo} />
       <Route path="/about" component={AboutPage} />
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/terms" component={TermsPage} />

@@ -22,6 +22,7 @@ import LevelUpHandler from "@/components/LevelUpHandler";
 import { Link } from "wouter";
 
 import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
+import { useRewards, RewardModal, useRewardQueue, RewardUtils } from '@/rewards';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -455,6 +456,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { updateModuleSettings } = useSettings();
   const { t } = useTranslations();
 
+  // 🎯 Sistema de Recompensas Integrado
+  const rewards = useRewards({
+    moduleId: 'addition',
+    userId: 'current-user', // Se podría obtener del contexto de auth
+    autoCheck: false // Verificación manual en puntos específicos
+  });
+  
+  const rewardQueue = useRewardQueue();
+
   // Traducciones para elementos específicos de la interfaz
   const translations = {
     english: {
@@ -647,6 +657,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const newConsecutive = consecutiveCorrectAnswers + 1;
       setConsecutiveCorrectAnswers(newConsecutive);
       setConsecutiveIncorrectAnswers(0);
+
+      // 🎯 Verificar Recompensas por Problema Completado
+      const checkRewardsForProgress = async () => {
+        try {
+          // Calcular total de problemas completados hasta ahora
+          const currentTotalProblems = userAnswersHistory.filter(answer => answer && answer.isCorrect).length + 1;
+          
+          // Crear datos de progreso actualizados
+          const progressData = RewardUtils.transformExerciseProgress({
+            totalProblems: currentTotalProblems,
+            currentStreak: newConsecutive,
+            longestStreak: Math.max(newConsecutive, consecutiveCorrectAnswers),
+            difficulty: adaptiveDifficulty,
+            operationId: 'addition',
+            accuracy: (currentTotalProblems / (currentProblemIndex + 1)) * 100,
+            avgTimePerProblem: timer / (currentProblemIndex + 1)
+          });
+
+          // Verificar por nuevas recompensas
+          const newRewards = await rewards.checkForRewards(progressData);
+          
+          if (newRewards.length > 0) {
+            // Agregar a la cola para mostrar después del feedback
+            setTimeout(() => {
+              rewardQueue.addToQueue(newRewards);
+            }, 1500); // Mostrar después del feedback de respuesta correcta
+          }
+        } catch (error) {
+          console.warn('Error verificando recompensas:', error);
+        }
+      };
+
+      // Ejecutar verificación de recompensas de forma asíncrona
+      checkRewardsForProgress();
 
       // Sistema mejorado y más robusto para verificar subida de nivel
       // Doble verificación con logs para diagnóstico
@@ -2637,6 +2681,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           }}
         />
       )}
+
+      {/* 🎯 Modal de Recompensas Integrado */}
+      <RewardModal
+        reward={rewardQueue.currentReward}
+        isOpen={rewardQueue.isModalOpen}
+        onClose={rewardQueue.closeModal}
+        onViewReward={rewards.markRewardAsViewed}
+      />
     </div>
   );
 }
