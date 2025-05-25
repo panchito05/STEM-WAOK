@@ -2221,23 +2221,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <span className="text-gray-600">=</span>
             </div>
           ) : (
-            <div className="inline-block text-right my-1 sm:my-2">
-              {operandsFormatted.map((op, index) => (
-                <div key={`op-${index}-${currentProblem.id}`} className={verticalOperandStyle}>
-                  {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>+</span>}
-                  <span>{op.intStr}</span>
-                  {maxDecLength > 0 && (
-                    <>
-                      <span className="opacity-60">.</span>
-                      <span>{op.decStr}</span>
-                    </>
-                  )}
-                </div>
-              ))}
-              <div
-                className={sumLineStyle}
-                style={{width: `${Math.max(5, sumLineTotalCharWidth + 2)}ch`, marginLeft: 'auto', marginRight: '0'}}
-              />
+            <div className="flex justify-center">
+              <div className="inline-block text-right my-1 sm:my-2">
+                {operandsFormatted.map((op, index) => (
+                  <div key={`op-${index}-${currentProblem.id}`} className={verticalOperandStyle}>
+                    {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>+</span>}
+                    <span>{op.intStr}</span>
+                    {maxDecLength > 0 && (
+                      <>
+                        <span className="opacity-60">.</span>
+                        <span>{op.decStr}</span>
+                      </>
+                    )}
+                  </div>
+                ))}
+                <div
+                  className={sumLineStyle}
+                  style={{width: `${Math.max(5, sumLineTotalCharWidth + 2)}ch`, marginLeft: 'auto', marginRight: '0'}}
+                />
+              </div>
             </div>
           )}
 
