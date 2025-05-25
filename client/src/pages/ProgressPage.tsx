@@ -206,7 +206,6 @@ export default function ProgressPage() {
         <title>Your Progress - Math W+A+O+K</title>
         <meta name="description" content="Track your math learning progress and view your performance statistics." />
       </Helmet>
-
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div>
@@ -621,7 +620,7 @@ export default function ProgressPage() {
                                 className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
                                 onClick={() => toggleExplanation(`${module.id}-longestStreak`)}
                               >
-                                <p className="text-sm text-gray-500">Longest Streak</p>
+                                <p className="text-sm text-gray-500 text-center">Racha Mas Larga</p>
                                 <p className="text-2xl font-bold text-amber-600">
                                   {(() => {
                                     // Calcular la racha más larga de respuestas correctas consecutivas
