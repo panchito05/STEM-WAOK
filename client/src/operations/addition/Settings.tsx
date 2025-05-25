@@ -411,17 +411,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 className={theme.bgLight}
               />
             </div>
-            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="enable-sound-effects" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">🔊</span>{isEnglish ? "Enable sound effects" : "Habilitar efectos de sonido"}
-              </Label>
-              <Switch
-                id="enable-sound-effects"
-                checked={localSettings.enableSoundEffects}
-                onCheckedChange={(checked) => handleUpdateSetting("enableSoundEffects", checked)}
-                className={theme.bgLight}
-              />
-            </div>
+
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
               <Label htmlFor="show-answer-explanation" className={`cursor-pointer ${theme.accent} flex items-center`}>
                 <span className="mr-2">❓</span>{isEnglish ? "Show answer explanations" : "Mostrar explicación de respuestas"}
