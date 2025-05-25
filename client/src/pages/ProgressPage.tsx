@@ -682,10 +682,12 @@ export default function ProgressPage() {
                                     let totalProblems = 0;
                                     
                                     moduleExercises.forEach((exercise: any) => {
-                                      if (exercise.userAnswers && exercise.totalProblems) {
-                                        // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
-                                        const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                        totalCorrect += finalScore;
+                                      if (exercise.score !== undefined && exercise.totalProblems) {
+                                        const revealedAnswers = exercise.revealedAnswers || 
+                                                               exercise.extraData?.revealedAnswers || 
+                                                               exercise.extra_data?.revealedAnswers || 0;
+                                        const realScore = Math.max(0, exercise.score - revealedAnswers);
+                                        totalCorrect += realScore;
                                         totalProblems += exercise.totalProblems;
                                       }
                                     });
@@ -709,10 +711,12 @@ export default function ProgressPage() {
                                       let totalProblems = 0;
                                       
                                       moduleExercises.forEach((exercise: any) => {
-                                        if (exercise.userAnswers && exercise.totalProblems) {
-                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
-                                          const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                          totalCorrect += finalScore;
+                                        if (exercise.score !== undefined && exercise.totalProblems) {
+                                          const revealedAnswers = exercise.revealedAnswers || 
+                                                                 exercise.extraData?.revealedAnswers || 
+                                                                 exercise.extra_data?.revealedAnswers || 0;
+                                          const realScore = Math.max(0, exercise.score - revealedAnswers);
+                                          totalCorrect += realScore;
                                           totalProblems += exercise.totalProblems;
                                         }
                                       });
@@ -747,11 +751,9 @@ export default function ProgressPage() {
                                     // Calcular total de problemas correctos excluyendo respuestas reveladas
                                     let totalCorrect = 0;
                                     moduleExercises.forEach(ex => {
-                                      if (ex.userAnswers) {
-                                        // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
-                                        const finalScore = ex.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                        totalCorrect += finalScore;
-                                      }
+                                      const revealedAnswers = ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0;
+                                      const realScore = Math.max(0, (ex.score || 0) - revealedAnswers);
+                                      totalCorrect += realScore;
                                     });
                                     
                                     // Mostrar progreso cada 10 problemas correctos
@@ -771,11 +773,9 @@ export default function ProgressPage() {
                                       // Calcular total de problemas correctos excluyendo respuestas reveladas
                                       let totalCorrect = 0;
                                       moduleExercises.forEach(ex => {
-                                        if (ex.userAnswers) {
-                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
-                                          const finalScore = ex.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                          totalCorrect += finalScore;
-                                        }
+                                        const revealedAnswers = ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0;
+                                        const realScore = Math.max(0, (ex.score || 0) - revealedAnswers);
+                                        totalCorrect += realScore;
                                       });
                                       
                                       // Calcular progreso como porcentaje hacia el siguiente nivel
@@ -1079,37 +1079,33 @@ export default function ProgressPage() {
                                         <ContextualTooltip 
                                           type="accuracy"
                                           additionalData={{
-                                            correct: exercise.userAnswers ? 
-                                              exercise.userAnswers.filter((a: any) => a && a.isCorrect).length :
-                                              Math.max(0, exercise.score - (exercise.revealedAnswers || 0)),
+                                            correct: Math.max(0, exercise.score - (exercise.revealedAnswers || 0)),
                                             total: exercise.totalProblems,
                                             revealed: exercise.revealedAnswers || 0
                                           }}
                                         />
                                       </div>
                                       <p className="text-center text-lg font-bold text-blue-600">
-                                        {/* 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL */}
-                                        {exercise.userAnswers ? 
-                                          `${exercise.userAnswers.filter((a: any) => a && a.isCorrect).length}/${exercise.totalProblems}` :
-                                          `${Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/${exercise.totalProblems}`
-                                        }
+                                        {exercise.userAnswers ? (() => {
+                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL + PORCENTAJE
+                                          const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
+                                          const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
+                                          return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
+                                        })() : `${Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/${exercise.totalProblems}`}
                                       </p>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Accuracy</p>
                                       <p className="text-center text-lg font-bold text-green-600">
                                         {(() => {
-                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
-                                          if (exercise.userAnswers && exercise.totalProblems) {
-                                            const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                            return `${Math.round((finalScore / exercise.totalProblems) * 100)}%`;
-                                          }
-                                          
-                                          // Fallback para datos antiguos
+                                          // Obtener el número de respuestas reveladas
                                           const revealed = exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0;
+                                          // Calcular problemas intentados (excluyendo los revelados)
                                           const attemptedProblems = exercise.totalProblems - revealed;
                                           
+                                          // Calcular accuracy excluyendo respuestas reveladas
                                           if (attemptedProblems > 0) {
+                                            // Restar las respuestas reveladas del score para accuracy
                                             const correctAnswers = Math.max(0, exercise.score - revealed);
                                             return `${Math.round((correctAnswers / attemptedProblems) * 100)}%`;
                                           } else if (exercise.extraData?.accuracy) {
