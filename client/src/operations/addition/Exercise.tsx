@@ -2447,11 +2447,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </TooltipProvider>
         </div>
       </div>
-    </div>
-
-    {/* Modo Profesor - Nueva implementación con canvas para dibujo */}
-      {showProfessorMode && (
-        <ProfessorMode
+    </>
+    
+    {showProfessorMode && (
+      <ProfessorMode
           problem={currentProblem}
           onClose={() => setShowProfessorMode(false)}
           onCorrectAnswer={(wasCorrect: boolean) => {
@@ -2510,6 +2509,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           }}
         />
       )}
-    </div>
+    </>
   );
 }
