@@ -2052,8 +2052,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       } border-2`}>
         {/* Header - Reorganized to match image layout */}
         <div className="flex items-center justify-between gap-4 mb-4">
-            {/* Left: Addition title */}
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+            {/* Left: Addition title and problem counter */}
+            <div className="flex flex-col">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+              <span className="font-medium text-gray-700 text-sm">
+                Problema {currentProblemIndex} de {settings.problemCount}
+              </span>
+            </div>
             
             {/* Center: Timer, Attempts, and Level info */}
             <div className="flex items-center gap-3 text-sm">
@@ -2117,9 +2122,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {/* Progress Info Row - Responsive: Center on mobile, right-align on desktop */}
         <div className="flex flex-col sm:flex-row sm:justify-end items-center text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 gap-2">
             <div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">
-              <span className="font-medium text-gray-700 text-center">
-                Problema {currentProblemIndex} de {settings.problemCount}
-              </span>
               <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50">
                 {t('exercises.score')}: {score}
               </span>
