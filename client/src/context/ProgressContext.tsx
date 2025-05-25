@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { checkAndAwardRewards, useRewardsStore } from "@/lib/rewards-system";
+
 
 export interface ExerciseResult {
   id?: number;            // ID del registro en la base de datos
@@ -67,7 +67,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
-  const { resetAllRewards } = useRewardsStore();
+
 
   // Check authentication status
   useEffect(() => {
@@ -376,7 +376,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
             ejerciciosEnHistorial: exerciseHistory.length,
             ejercicioRecienGuardado: result
           });
-          checkMilestoneRewards();
+
         }, 500); // Pequeño delay para asegurar que el estado se actualice primero
       } else {
         // Capturar y mostrar error específico
@@ -403,108 +403,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     return moduleProgress[operationId];
   };
 
-  // Nueva función para verificar recompensas de milestones
-  const checkMilestoneRewards = async () => {
-    try {
-      console.log("🔍 [RECOMPENSAS-DEBUG] ==================== INICIO VERIFICACIÓN ====================");
-      console.log("🔍 [RECOMPENSAS-DEBUG] Timestamp:", new Date().toISOString());
-      console.log("🔍 [RECOMPENSAS-DEBUG] Historial de ejercicios actual:", exerciseHistory);
-      console.log("🔍 [RECOMPENSAS-DEBUG] Longitud del historial:", exerciseHistory.length);
-      
-      // DIAGNÓSTICO CRÍTICO: Verificar si el historial está vacío pero aún se otorgan recompensas
-      if (exerciseHistory.length === 0) {
-        console.error("🚨 [RECOMPENSAS-DEBUG] PROBLEMA CRÍTICO: Historial vacío pero se está verificando recompensas");
-        console.error("🚨 [RECOMPENSAS-DEBUG] Esto NO debería suceder después de borrar progreso");
-        
-        // Verificar el estado actual de las recompensas
-        const { earnedRewards } = useRewardsStore.getState();
-        console.error("🚨 [RECOMPENSAS-DEBUG] Recompensas actuales en store:", earnedRewards);
-        
-        // Si hay ejercicios zero pero hay recompensas, hay un problema
-        if (earnedRewards.length > 0) {
-          console.error("🚨 [RECOMPENSAS-DEBUG] INCONSISTENCIA: 0 ejercicios pero hay recompensas obtenidas");
-          console.error("🚨 [RECOMPENSAS-DEBUG] Esto indica que el borrado de recompensas no funcionó correctamente");
-        }
-        
-        return; // Salir temprano si no hay ejercicios
-      }
-      
-      // SISTEMA DE DOBLE VERIFICACIÓN V2: Contar problemas desde CERO siempre
-      const totalProblemsCompleted = exerciseHistory.reduce((acc, exercise) => {
-        const problemasCorrectos = exercise.score || 0;
-        console.log(`🔍 [RECOMPENSAS-DEBUG] Ejercicio ID:${exercise.id}, Score:${exercise.score}, TotalProblems:${exercise.totalProblems}, Sumando:${problemasCorrectos}`);
-        return acc + problemasCorrectos;
-      }, 0);
-      
-      // VERIFICACIÓN INDEPENDIENTE: Contar ejercicios completados desde historial real
-      const ejerciciosCompletados = exerciseHistory.length;
-      const totalProblemasEnHistorial = exerciseHistory.reduce((acc, ex) => acc + (ex.totalProblems || 0), 0);
-      
-      console.log(`🔒 [CONTADOR-INDEPENDIENTE] ==================== VERIFICACIÓN DOBLE ====================`);
-      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Ejercicios en historial: ${ejerciciosCompletados}`);
-      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Total problemas en historial: ${totalProblemasEnHistorial}`);
-      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Problemas correctos calculados: ${totalProblemsCompleted}`);
-      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Fecha de esta verificación: ${new Date().toISOString()}`);
-      
-      // VALIDACIÓN CRÍTICA: Si no hay ejercicios, NO debe haber problemas completados
-      let finalProblemsCount = totalProblemsCompleted;
-      if (ejerciciosCompletados === 0) {
-        console.error(`❌ [CONTADOR-INDEPENDIENTE] ERROR CRÍTICO: 0 ejercicios pero ${totalProblemsCompleted} problemas calculados`);
-        console.error(`❌ [CONTADOR-INDEPENDIENTE] FORZANDO contador a 0 para evitar recompensas fantasma`);
-        finalProblemsCount = 0;
-        
-        console.log(`🔧 [CONTADOR-INDEPENDIENTE] Contador corregido de ${totalProblemsCompleted} a ${finalProblemsCount}`);
-      }
-      
-      // SISTEMA DE VERIFICACIÓN DOBLE: Usar siempre el contador independiente
-      console.log(`🔒 [CONTADOR-INDEPENDIENTE] USANDO CONTADOR FINAL: ${finalProblemsCount} problemas`);
-      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Basado en: ${ejerciciosCompletados} ejercicios reales en historial`);
 
-      // Logs adicionales para diagnóstico completo
-      const totalEjercicios = exerciseHistory.length;
-      const totalProblemasEnviados = exerciseHistory.reduce((acc, ex) => acc + (ex.totalProblems || 0), 0);
-      
-      console.log(`🏆 [RECOMPENSAS-DEBUG] ESTADÍSTICAS COMPLETAS:`);
-      console.log(`   - Total ejercicios realizados: ${totalEjercicios}`);
-      console.log(`   - Total problemas enviados: ${totalProblemasEnviados}`);
-      console.log(`   - Total problemas CORRECTOS (para recompensas): ${totalProblemsCompleted}`);
-      console.log(`   - Diferencia (errores): ${totalProblemasEnviados - totalProblemsCompleted}`);
-
-      // Verificación de umbral crítico
-      if (totalProblemsCompleted >= 10) {
-        console.log("🚨 [RECOMPENSAS-DEBUG] ALERTA: Se alcanzó umbral de 10 problemas");
-        console.log("🚨 [RECOMPENSAS-DEBUG] Detalles de cada ejercicio:");
-        exerciseHistory.forEach((ex, index) => {
-          console.log(`   Ejercicio ${index + 1}: Score=${ex.score}, Total=${ex.totalProblems}, ID=${ex.id}, Fecha=${ex.date}`);
-        });
-      }
-
-      // Verificar y otorgar recompensas de milestones - USANDO CONTADOR VERIFICADO
-      const rewardConditions = {
-        problemsCompleted: finalProblemsCount // ✅ USAR EL CONTADOR VERIFICADO
-      };
-      
-      console.log(`🎯 [CONTADOR-VERIFICADO] Enviando a recompensas: ${finalProblemsCount} problemas (verificados)`);
-      console.log(`🎯 [CONTADOR-VERIFICADO] Original era: ${totalProblemsCompleted}, corregido a: ${finalProblemsCount}`);
-
-      console.log(`🏆 [RECOMPENSAS-DEBUG] Condiciones para recompensas:`, rewardConditions);
-
-      const awardedRewards = checkAndAwardRewards(rewardConditions, {
-        theme: 'addition',
-        module: 'addition'
-      });
-
-      if (awardedRewards && awardedRewards.length > 0) {
-        console.log(`🎉 [RECOMPENSAS-DEBUG] Recompensas de milestone otorgadas:`, awardedRewards);
-        console.log(`🎉 [RECOMPENSAS-DEBUG] ==================== FIN VERIFICACIÓN (CON RECOMPENSAS) ====================`);
-      } else {
-        console.log(`⏳ [RECOMPENSAS-DEBUG] No se otorgaron recompensas. Próximo milestone en: ${Math.max(10, 25, 50, 100) - totalProblemsCompleted} problemas`);
-        console.log(`⏳ [RECOMPENSAS-DEBUG] ==================== FIN VERIFICACIÓN (SIN RECOMPENSAS) ====================`);
-      }
-    } catch (error) {
-      console.error("❌ [RECOMPENSAS-DEBUG] Error verificando recompensas de milestones:", error);
-    }
-  };
 
   const clearProgress = async () => {
     if (!isAuthenticated) return;
