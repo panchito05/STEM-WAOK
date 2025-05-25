@@ -648,7 +648,7 @@ export default function ProgressPage() {
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     const totalRevealed = moduleExercises.reduce((acc, ex) => 
-                                      acc + (ex.revealedAnswers || ex.extraData?.revealedAnswers || 0), 0);
+                                      acc + (ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0), 0);
                                     
                                     return totalRevealed;
                                   })()}
@@ -851,7 +851,7 @@ export default function ProgressPage() {
                                       }
                                       
                                       // Contar respuestas reveladas como problemas desafiantes
-                                      const revealedAnswers = ex.revealedAnswers || extraData?.revealedAnswers || 0;
+                                      const revealedAnswers = ex.revealedAnswers || 0;
                                       problemasDesafiantes += revealedAnswers;
                                       
                                       // Buscar problemas con múltiples intentos en problemDetails
