@@ -23,6 +23,7 @@ import TermsPage from "@/pages/TermsPage";
 import ContactPage from "@/pages/ContactPage";
 import { RewardSystemDemo } from "@/components/RewardSystemDemo";
 import SimpleRewardDemo from "@/components/SimpleRewardDemo";
+import RewardsPage from "@/pages/RewardsPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/context/AuthContext"; 
 import { SettingsProvider } from "@/context/SettingsContext";
@@ -50,6 +51,7 @@ function Router() {
       <Route path="/design-demo" component={DesignDemoPage} />
       {/* <Route path="/rewards-demo" component={RewardSystemDemo} /> */}
       <Route path="/simple-rewards" component={SimpleRewardDemo} />
+      <Route path="/rewards" component={RewardsPage} />
       <Route path="/about" component={AboutPage} />
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/terms" component={TermsPage} />
