@@ -650,55 +650,8 @@ export default function ProgressPage() {
                                 <p className="text-2xl font-bold text-red-600">
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    let totalRevealed = 0;
-                                    
-                                    moduleExercises.forEach(ex => {
-                                      // Buscar en múltiples fuentes de datos de forma más exhaustiva
-                                      const extraData = ex.extra_data;
-                                      let revealedInThisExercise = 0;
-                                      
-                                      // Fuente 1: problemDetails con status 'revealed'
-                                      if (extraData && extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
-                                        extraData.problemDetails.forEach((problem: any) => {
-                                          if (problem && problem.status === 'revealed') {
-                                            revealedInThisExercise++;
-                                          }
-                                        });
-                                      }
-                                      
-                                      // Fuente 2: campo directo revealedAnswers
-                                      if (ex.revealedAnswers !== undefined && ex.revealedAnswers > 0) {
-                                        revealedInThisExercise += ex.revealedAnswers;
-                                      }
-                                      
-                                      // Fuente 3: revealedAnswers en extra_data
-                                      if (extraData && extraData.revealedAnswers !== undefined && extraData.revealedAnswers > 0) {
-                                        revealedInThisExercise += extraData.revealedAnswers;
-                                      }
-                                      
-                                      // Si no encontramos nada en las fuentes anteriores, buscar en datos más detallados
-                                      if (revealedInThisExercise === 0 && extraData) {
-                                        // Buscar en userAnswers si existe
-                                        if (extraData.userAnswers && Array.isArray(extraData.userAnswers)) {
-                                          extraData.userAnswers.forEach((answer: any) => {
-                                            if (answer && answer.status === 'revealed') {
-                                              revealedInThisExercise++;
-                                            }
-                                          });
-                                        }
-                                        
-                                        // Buscar en rawUserAnswers si existe
-                                        if (extraData.rawUserAnswers && Array.isArray(extraData.rawUserAnswers)) {
-                                          extraData.rawUserAnswers.forEach((answer: any) => {
-                                            if (answer && answer.status === 'revealed') {
-                                              revealedInThisExercise++;
-                                            }
-                                          });
-                                        }
-                                      }
-                                      
-                                      totalRevealed += revealedInThisExercise;
-                                    });
+                                    const totalRevealed = moduleExercises.reduce((acc, ex) => 
+                                      acc + (ex.revealedAnswers || 0), 0);
                                     
                                     return totalRevealed;
                                   })()}
