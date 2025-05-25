@@ -2102,6 +2102,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         {/* Unified Controls Row - Single horizontal row on mobile, maintain desktop layout */}
         <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 flex-wrap">
+            {/* Problem Progress - Desktop only */}
+            <span className="hidden sm:inline font-semibold px-2 py-1 border border-gray-300 rounded-md bg-blue-50 text-xs text-blue-700">
+              {currentProblemIndex + 1} de {settings.problemCount}
+            </span>
+            
             {/* Score - First item */}
             <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs">
               {t('exercises.score')}: {score}
