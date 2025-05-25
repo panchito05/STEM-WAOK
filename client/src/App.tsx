@@ -48,7 +48,7 @@ function Router() {
       <Route path="/coming-soon" component={SoonPage} />
       <Route path="/test-unified-addition" component={UnifiedAdditionTestPage} />
       <Route path="/design-demo" component={DesignDemoPage} />
-      <Route path="/rewards-demo" component={RewardSystemDemo} />
+      {/* <Route path="/rewards-demo" component={RewardSystemDemo} /> */}
       <Route path="/simple-rewards" component={SimpleRewardDemo} />
       <Route path="/about" component={AboutPage} />
       <Route path="/privacy" component={PrivacyPage} />
