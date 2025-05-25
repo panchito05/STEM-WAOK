@@ -317,7 +317,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
   // Función para mover el panel entre las cuatro esquinas (sentido horario)
   const movePanel = () => {
-    const positions = ['topRight', 'bottomRight', 'bottomLeft', 'topLeft'];
+    const positions = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
     const currentIndex = positions.indexOf(position);
     const nextIndex = (currentIndex + 1) % positions.length;
     setPosition(positions[nextIndex]);
