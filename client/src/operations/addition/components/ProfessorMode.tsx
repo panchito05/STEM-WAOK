@@ -28,6 +28,11 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [position, setPosition] = useState<'top-left' | 'top-right' | 'bottom-right' | 'bottom-left'>('top-left');
+  
+  // Debug: Log position changes
+  useEffect(() => {
+    console.log('🎯 [DEBUG] Position state changed to:', position);
+  }, [position]);
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
     problem: AdditionProblem;
@@ -318,6 +323,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   // Función para mover el panel entre las cuatro esquinas (sentido horario)
   // Panel y colores se mueven sincronizadamente
   const movePanel = () => {
+    console.log('🎯 [DEBUG] movePanel called - Current position:', position);
+    
     // Secuencia sincronizada en sentido horario:
     // Posición 1: Panel=top-left + Colores=right
     // Posición 2: Panel=top-right + Colores=right  
@@ -325,8 +332,14 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     // Posición 4: Panel=bottom-left + Colores=left
     const positions: ('top-left' | 'top-right' | 'bottom-right' | 'bottom-left')[] = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
     const currentIndex = positions.indexOf(position);
+    console.log('🎯 [DEBUG] Current index:', currentIndex, 'Position array:', positions);
+    
     const nextIndex = (currentIndex + 1) % positions.length;
-    setPosition(positions[nextIndex]);
+    const newPosition = positions[nextIndex];
+    console.log('🎯 [DEBUG] Next index:', nextIndex, 'New position:', newPosition);
+    
+    setPosition(newPosition);
+    console.log('🎯 [DEBUG] setPosition called with:', newPosition);
   };
 
   // Función para obtener las clases CSS según la posición - Solo para desktop
@@ -505,7 +518,10 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           {/* Botón para mover panel */}
           <div className="flex justify-between items-center mb-2">
             <button
-              onClick={movePanel}
+              onClick={() => {
+                console.log('🎯 [DEBUG] Button clicked!');
+                movePanel();
+              }}
               className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
               title="Mover panel a otra esquina"
             >
