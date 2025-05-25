@@ -623,15 +623,23 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500 text-center">Racha Mas Larga</p>
                                 <p className="text-2xl font-bold text-amber-600">
                                   {(() => {
-                                    // Calcular la racha más larga de respuestas correctas consecutivas
+                                    // 🏆 OBTENER LA RACHA MÁS LARGA HISTÓRICA DESDE LA BASE DE DATOS
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     let longestStreak = 0;
                                     
+                                    // Buscar la racha más larga guardada en cualquier ejercicio del módulo
                                     moduleExercises.forEach(ex => {
-                                      const streak = ex.extra_data?.longestStreak || ex.extra_data?.consecutiveCorrect || 0;
-                                      if (streak > longestStreak) longestStreak = streak;
+                                      const historicalStreak = ex.extra_data?.longestStreak || 0;
+                                      const currentStreak = ex.extra_data?.consecutiveCorrect || 0;
+                                      
+                                      // Tomar el mayor entre la racha histórica y la racha actual
+                                      const maxStreak = Math.max(historicalStreak, currentStreak);
+                                      if (maxStreak > longestStreak) {
+                                        longestStreak = maxStreak;
+                                      }
                                     });
                                     
+                                    console.log(`[RACHA-DISPLAY] Módulo ${module.id}: Racha más larga encontrada = ${longestStreak}`);
                                     return longestStreak;
                                   })()}
                                 </p>
