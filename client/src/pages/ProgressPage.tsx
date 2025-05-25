@@ -1086,22 +1086,28 @@ export default function ProgressPage() {
                                         />
                                       </div>
                                       <p className="text-center text-lg font-bold text-blue-600">
-                                        {/* Mostrar correctamente el score teniendo en cuenta las respuestas reveladas */}
-                                        {Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/{exercise.totalProblems}
+                                        {/* 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL */}
+                                        {exercise.userAnswers ? 
+                                          `${exercise.userAnswers.filter((a: any) => a && a.isCorrect).length}/${exercise.totalProblems}` :
+                                          `${Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/${exercise.totalProblems}`
+                                        }
                                       </p>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Accuracy</p>
                                       <p className="text-center text-lg font-bold text-green-600">
                                         {(() => {
-                                          // Obtener el número de respuestas reveladas
+                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
+                                          if (exercise.userAnswers && exercise.totalProblems) {
+                                            const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
+                                            return `${Math.round((finalScore / exercise.totalProblems) * 100)}%`;
+                                          }
+                                          
+                                          // Fallback para datos antiguos
                                           const revealed = exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0;
-                                          // Calcular problemas intentados (excluyendo los revelados)
                                           const attemptedProblems = exercise.totalProblems - revealed;
                                           
-                                          // Calcular accuracy excluyendo respuestas reveladas
                                           if (attemptedProblems > 0) {
-                                            // Restar las respuestas reveladas del score para accuracy
                                             const correctAnswers = Math.max(0, exercise.score - revealed);
                                             return `${Math.round((correctAnswers / attemptedProblems) * 100)}%`;
                                           } else if (exercise.extraData?.accuracy) {
