@@ -653,23 +653,51 @@ export default function ProgressPage() {
                                     let totalRevealed = 0;
                                     
                                     moduleExercises.forEach(ex => {
-                                      // Buscar en múltiples fuentes de datos
+                                      // Buscar en múltiples fuentes de datos de forma más exhaustiva
                                       const extraData = ex.extra_data;
+                                      let revealedInThisExercise = 0;
                                       
-                                      if (extraData && extraData.problemDetails) {
-                                        // Fuente 1: contar problemas con status 'revealed' en problemDetails
+                                      // Fuente 1: problemDetails con status 'revealed'
+                                      if (extraData && extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
                                         extraData.problemDetails.forEach((problem: any) => {
                                           if (problem && problem.status === 'revealed') {
-                                            totalRevealed++;
+                                            revealedInThisExercise++;
                                           }
                                         });
-                                      } else if (ex.revealedAnswers !== undefined) {
-                                        // Fuente 2: campo directo revealedAnswers
-                                        totalRevealed += ex.revealedAnswers;
-                                      } else if (extraData && extraData.revealedAnswers !== undefined) {
-                                        // Fuente 3: revealedAnswers en extra_data
-                                        totalRevealed += extraData.revealedAnswers;
                                       }
+                                      
+                                      // Fuente 2: campo directo revealedAnswers
+                                      if (ex.revealedAnswers !== undefined && ex.revealedAnswers > 0) {
+                                        revealedInThisExercise += ex.revealedAnswers;
+                                      }
+                                      
+                                      // Fuente 3: revealedAnswers en extra_data
+                                      if (extraData && extraData.revealedAnswers !== undefined && extraData.revealedAnswers > 0) {
+                                        revealedInThisExercise += extraData.revealedAnswers;
+                                      }
+                                      
+                                      // Si no encontramos nada en las fuentes anteriores, buscar en datos más detallados
+                                      if (revealedInThisExercise === 0 && extraData) {
+                                        // Buscar en userAnswers si existe
+                                        if (extraData.userAnswers && Array.isArray(extraData.userAnswers)) {
+                                          extraData.userAnswers.forEach((answer: any) => {
+                                            if (answer && answer.status === 'revealed') {
+                                              revealedInThisExercise++;
+                                            }
+                                          });
+                                        }
+                                        
+                                        // Buscar en rawUserAnswers si existe
+                                        if (extraData.rawUserAnswers && Array.isArray(extraData.rawUserAnswers)) {
+                                          extraData.rawUserAnswers.forEach((answer: any) => {
+                                            if (answer && answer.status === 'revealed') {
+                                              revealedInThisExercise++;
+                                            }
+                                          });
+                                        }
+                                      }
+                                      
+                                      totalRevealed += revealedInThisExercise;
                                     });
                                     
                                     return totalRevealed;
