@@ -1794,20 +1794,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     console.log("🔬 [ROBUST-CALC] Accuracy robusta:", resultado.accuracy);
     console.log("🔬 [ROBUST-CALC] ¿Hay discrepancia?", puntajeCorregido !== resultado.scoreRobusto ? "❌ SÍ" : "✅ NO");
 
-    // VERSIÓN 5.0 ANTIFRAGIL: Usando valores robustos calculados
+    // 🛡️ INTERCEPTOR ANTIFRAGIL DIRECTO - Sin imports
+    const interceptorScore = (userAnswers: any[], scoreOriginal: number, context: string) => {
+      console.log(`🛡️ [INTERCEPTOR] ===== VALIDANDO SCORE EN ${context} =====`);
+      
+      const answersValidas = userAnswers.filter(a => a && a.status !== undefined);
+      const scoreCorregido = answersValidas.filter(a => a.status === 'correct').length;
+      
+      if (scoreCorregido !== scoreOriginal) {
+        console.warn(`🚨 [INTERCEPTOR] CORRECCIÓN CRÍTICA: ${scoreOriginal} → ${scoreCorregido}`);
+        return scoreCorregido;
+      }
+      
+      console.log(`✅ [INTERCEPTOR] Score validado: ${scoreOriginal}`);
+      return scoreOriginal;
+    };
+    
+    // Aplicar interceptor antes del guardado
+    const scoreFinal = interceptorScore(userAnswersHistory, resultado.scoreRobusto, "Exercise.tsx");
+    const accuracyFinal = Math.round((scoreFinal / problemsList.length) * 100);
+    
+    // VERSIÓN 6.0 INTERCEPTOR ANTIFRAGIL: Usando valores interceptados y validados
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
-      score: resultado.scoreRobusto, // ✅ Usando score robusto
+      score: scoreFinal, // ✅ Score interceptado y validado
       totalProblems: problemsList.length,
       timeSpent: timer,
       difficulty: finalLevel as string,
       
-      // Estadísticas precisas del sistema robusto
-      accuracy: resultado.accuracy, // ✅ Usando accuracy robusta
+      // Estadísticas corregidas con interceptor
+      accuracy: accuracyFinal, // ✅ Accuracy recalculada del score interceptado
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
-      revealedAnswers: resultado.revealedAnswers, // ✅ Usando revealed robusto
+      revealedAnswers: resultado.revealedAnswers,
       
       // Datos extra con estructura clara
       extra_data: {
@@ -1831,7 +1851,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           operation: "addition",
           level: finalLevel,
           score: {
-            correct: puntajeCorregido,
+            correct: scoreFinal,
             total: problemsList.length
           },
           time: timer
