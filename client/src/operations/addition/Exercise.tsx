@@ -2117,62 +2117,74 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
-        {/* Progress Info Row - Responsive: Center on mobile, right-align on desktop */}
-        <div className="flex flex-col sm:flex-row sm:justify-end items-center text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 gap-2">
-            <div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">
-              <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50">
-                {t('exercises.score')}: {score}
-              </span>
-            </div>
+        
+        {/* Unified Controls Row - Single horizontal row on mobile, maintain desktop layout */}
+        <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 flex-wrap">
+            {/* Score - First item */}
+            <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs">
+              {t('exercises.score')}: {score}
+            </span>
             
-            {/* Action buttons row - Stack on mobile, inline on tablet+ */}
-            <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
-              <button
-                className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50"
-                onClick={() => setShowProfessorMode(true)}
-                title="Modo Profesor"
+            {/* Modo Profesor button - Second item */}
+            <button
+              className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50"
+              onClick={() => setShowProfessorMode(true)}
+              title="Modo Profesor"
+            >
+              <span className="text-xs font-medium mr-1 hidden sm:inline">
+                {settings.language === 'english' ? 'Professor Mode' : 'Modo Profesor'}
+              </span>
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                className="h-4 w-4"
               >
-                <span className="text-xs font-medium mr-1 hidden sm:inline">
-                  {settings.language === 'english' ? 'Professor Mode' : 'Modo Profesor'}
-                </span>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-              </button>
-              <button
-                className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7`}
-                onClick={() => setShowVideoDialog(true)}
-                title="Videos explicativos"
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+            </button>
+            
+            {/* Ver Video button - Third item */}
+            <button
+              className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7`}
+              onClick={() => setShowVideoDialog(true)}
+              title="Videos explicativos"
+            >
+              <span className="text-xs font-medium mr-1 hidden sm:inline">
+                {settings.language === 'english' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 16"
+                fill="currentColor"
+                className="h-5 w-6"
               >
-                <span className="text-xs font-medium mr-1 hidden sm:inline">
-                  {settings.language === 'english' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
-                </span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 16"
-                  fill="currentColor"
-                  className="h-5 w-6"
-                >
-                  <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
-                  <polygon points="9,5 16,8 9,11" fill="currentColor" />
-                </svg>
-                {youtubeVideos.length > 0 && (
-                  <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
-                )}
-              </button>
-            </div>
+                <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
+                <polygon points="9,5 16,8 9,11" fill="currentColor" />
+              </svg>
+              {youtubeVideos.length > 0 && (
+                <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
+              )}
+            </button>
+            
+            {/* History button - Fourth item - duplicated here for mobile unified row */}
+            <Link href="/progress?tab=recent" className="sm:hidden">
+              <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
+                <History className="h-4 w-4" />
+              </Button>
+            </Link>
+            
+            {/* Settings button - Fifth item - duplicated here for mobile unified row */}
+            <Button variant="ghost" size="sm" onClick={onOpenSettings} className="sm:hidden flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
+              <Cog className="h-4 w-4" />
+            </Button>
         </div>
 
         {/* Problem Display Area - Compact Design */}
