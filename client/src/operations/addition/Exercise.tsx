@@ -2049,7 +2049,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return <div className="p-8 text-center">{t('common.reloadingProblem')}...</div>;
   }
   if (exerciseCompleted) {
-    const finalScore = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    // 🔧 SOLUCIÓN: Usar la misma lógica exitosa del tooltip para consistencia total
+    const respuestasCorrectas = userAnswersHistory.filter(a => a && a.isCorrect).length;
+    const totalIntentados = problemsList.length - revealedAnswers;
+    const finalScore = respuestasCorrectas; // Mismo cálculo que el tooltip
     const accuracy = problemsList.length > 0 ? Math.round((finalScore / problemsList.length) * 100) : 0;
 
     // Cálculo de tiempo promedio por problema
@@ -2100,7 +2103,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           <div className="bg-blue-50 p-3 rounded-lg shadow-sm text-center border border-blue-100">
             <div className="text-sm text-gray-600 mb-1">Score</div>
-            <div className="text-xl text-indigo-600 font-semibold">{scoreFinal} / {problemsList.length}</div>
+            <div className="text-xl text-indigo-600 font-semibold">{finalScore} / {problemsList.length}</div>
           </div>
 
           <div className="bg-green-50 p-3 rounded-lg shadow-sm text-center border border-green-100">
