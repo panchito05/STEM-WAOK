@@ -673,13 +673,53 @@ export default function ProgressPage() {
                               <div className="flex justify-between items-baseline mb-2">
                                 <p className="text-sm text-gray-500">Average Accuracy</p>
                                 <p className="text-sm font-medium text-blue-600">
-                                  {progress?.averageScore ? `${Math.round(progress.averageScore * 100)}%` : 'N/A'}
+                                  {(() => {
+                                    // Calcular accuracy real usando los datos de ejercicios
+                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                    if (moduleExercises.length === 0) return 'N/A';
+                                    
+                                    let totalCorrect = 0;
+                                    let totalProblems = 0;
+                                    
+                                    moduleExercises.forEach(ex => {
+                                      if (ex.score !== undefined && ex.totalProblems) {
+                                        const revealedAnswers = ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0;
+                                        const realScore = Math.max(0, ex.score - revealedAnswers);
+                                        totalCorrect += realScore;
+                                        totalProblems += ex.totalProblems;
+                                      }
+                                    });
+                                    
+                                    if (totalProblems === 0) return 'N/A';
+                                    const accuracy = Math.round((totalCorrect / totalProblems) * 100);
+                                    return `${accuracy}%`;
+                                  })()}
                                 </p>
                               </div>
                               <div className="w-full bg-gray-200 rounded-full h-2.5">
                                 <div
                                   className="bg-blue-600 h-2.5 rounded-full"
-                                  style={{ width: `${progress?.averageScore ? Math.round(progress.averageScore * 100) : 0}%` }}
+                                  style={{ 
+                                    width: `${(() => {
+                                      const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                      if (moduleExercises.length === 0) return 0;
+                                      
+                                      let totalCorrect = 0;
+                                      let totalProblems = 0;
+                                      
+                                      moduleExercises.forEach(ex => {
+                                        if (ex.score !== undefined && ex.totalProblems) {
+                                          const revealedAnswers = ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0;
+                                          const realScore = Math.max(0, ex.score - revealedAnswers);
+                                          totalCorrect += realScore;
+                                          totalProblems += ex.totalProblems;
+                                        }
+                                      });
+                                      
+                                      if (totalProblems === 0) return 0;
+                                      return Math.round((totalCorrect / totalProblems) * 100);
+                                    })()}%` 
+                                  }}
                                 ></div>
                               </div>
                               <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
