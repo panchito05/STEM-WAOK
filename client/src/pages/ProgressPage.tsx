@@ -839,30 +839,34 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return 'N/A';
                                     
-                                    // Contar problemas desafiantes usando múltiples fuentes de datos
                                     let problemasDesafiantes = 0;
                                     let totalProblemas = 0;
                                     
                                     moduleExercises.forEach(ex => {
-                                      // Intentar múltiples fuentes de datos
                                       const extraData = ex.extra_data;
                                       
-                                      if (extraData && extraData.problemDetails) {
-                                        // Fuente 1: problemDetails en extra_data
+                                      // Agregar el total de problemas del ejercicio
+                                      if (ex.totalProblems) {
+                                        totalProblemas += ex.totalProblems;
+                                      }
+                                      
+                                      // Contar respuestas reveladas como problemas desafiantes
+                                      const revealedAnswers = ex.revealedAnswers || extraData?.revealedAnswers || 0;
+                                      problemasDesafiantes += revealedAnswers;
+                                      
+                                      // Buscar problemas con múltiples intentos en problemDetails
+                                      if (extraData && extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
                                         extraData.problemDetails.forEach((problem: any) => {
-                                          if (problem) {
-                                            totalProblemas++;
-                                            if ((problem.attempts && problem.attempts > 1) || problem.status === 'revealed') {
-                                              problemasDesafiantes++;
-                                            }
+                                          if (problem && problem.attempts > 1 && problem.status !== 'revealed') {
+                                            problemasDesafiantes++;
                                           }
                                         });
-                                      } else if (ex.score !== undefined && ex.totalProblems !== undefined) {
-                                        // Fuente 2: datos básicos de score y totalProblems
-                                        totalProblemas += ex.totalProblems;
-                                        // Estimar problemas desafiantes como diferencia entre total y score
-                                        const problemasIncorrectos = ex.totalProblems - ex.score;
-                                        problemasDesafiantes += problemasIncorrectos;
+                                      } else {
+                                        // Fallback: usar la diferencia entre totalProblems y score como estimación
+                                        if (ex.score !== undefined && ex.totalProblems !== undefined) {
+                                          const problemasIncorrectos = ex.totalProblems - ex.score - revealedAnswers;
+                                          problemasDesafiantes += Math.max(0, problemasIncorrectos);
+                                        }
                                       }
                                     });
                                     
