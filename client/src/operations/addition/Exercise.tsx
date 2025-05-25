@@ -977,10 +977,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Mostrar mensaje en el formato "Answered (Incorrect!). The correct answer is = X"
         setFeedbackMessage(`Answered (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
         // Actualizar historial para reflejar que la respuesta fue revelada
-        const updatedHistoryEntry: UserAnswerType = { ...newHistoryEntry, status: 'revealed' };
         setUserAnswersHistory(prev => {
             const newHistory = [...prev];
-            newHistory[problemIndexForHistory] = updatedHistoryEntry;
+            const existingEntry = newHistory[problemIndexForHistory];
+            if (existingEntry) {
+                newHistory[problemIndexForHistory] = { 
+                    ...existingEntry, 
+                    status: 'revealed',
+                    timestamp: Date.now() 
+                };
+            }
             return newHistory;
         });
 
@@ -1100,10 +1106,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
         // Cambiar el mensaje a "Answered (Incorrect!). The correct answer is = X"
         setFeedbackMessage(`Answered (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
-        const updatedHistoryEntry: UserAnswerType = { ...newHistoryEntry, status: 'revealed' };
-         setUserAnswersHistory(prev => {
+        setUserAnswersHistory(prev => {
             const newHistory = [...prev];
-            newHistory[problemIndexForHistory] = updatedHistoryEntry;
+            const existingEntry = newHistory[problemIndexForHistory];
+            if (existingEntry) {
+                newHistory[problemIndexForHistory] = { 
+                    ...existingEntry, 
+                    status: 'revealed',
+                    timestamp: Date.now() 
+                };
+            }
             return newHistory;
         });
 
