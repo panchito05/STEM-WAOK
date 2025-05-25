@@ -27,7 +27,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [attempts, setAttempts] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [position, setPosition] = useState('topLeft');
+  const [position, setPosition] = useState('top-right');
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
     problem: AdditionProblem;
@@ -317,7 +317,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
   // Función para mover el panel entre las cuatro esquinas (sentido horario)
   const movePanel = () => {
-    const positions = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
+    const positions = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
     const currentIndex = positions.indexOf(position);
     const nextIndex = (currentIndex + 1) % positions.length;
     setPosition(positions[nextIndex]);
@@ -326,13 +326,13 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   // Función para obtener las clases CSS según la posición - Solo para desktop
   const getPanelClasses = () => {
     switch (position) {
-      case 'topLeft':
+      case 'top-left':
         return 'top-4 left-4';
-      case 'topRight':
+      case 'top-right':
         return 'top-4 right-4';
-      case 'bottomLeft':
+      case 'bottom-left':
         return 'bottom-4 left-4';
-      case 'bottomRight':
+      case 'bottom-right':
         return 'bottom-4 right-4';
       default:
         return 'top-4 right-4';
@@ -490,7 +490,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         </div>
         
         {/* Panel de control - Responsivo */}
-        <div className={`fixed bottom-0 left-0 right-0 w-full max-h-80 border-t overflow-y-auto lg:absolute lg:${getPanelClasses()} lg:max-w-sm lg:max-h-none lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0 bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg`}>
+        <div className="fixed bottom-0 left-0 right-0 w-full max-h-80 border-t overflow-y-auto lg:absolute lg:top-4 lg:right-4 lg:max-w-sm lg:max-h-none lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0 bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg">
           {/* Botón para mover panel */}
           <div className="flex justify-between items-center mb-2">
             <button
@@ -504,9 +504,9 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
               Mover
             </button>
             <span className="text-xs text-gray-500">
-              {position === 'topRight' ? '↗️' : 
-               position === 'topLeft' ? '↖️' : 
-               position === 'bottomLeft' ? '↙️' : '↘️'} {position}
+              {position === 'top-right' ? '↗️' : 
+               position === 'top-left' ? '↖️' : 
+               position === 'bottom-left' ? '↙️' : '↘️'} {position}
             </span>
           </div>
           
