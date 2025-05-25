@@ -837,7 +837,10 @@ export default function ProgressPage() {
                             </div>
                             
                             {/* Tipo de problemas más difíciles */}
-                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                            <div 
+                              className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                              onClick={() => toggleExplanation(`${module.id}-problemasDesafiantes`)}
+                            >
                               <div className="flex justify-between items-baseline mb-2">
                                 <p className="text-sm text-gray-500">Problemas Desafiantes</p>
                                 <p className="font-semibold text-orange-600">
@@ -878,6 +881,12 @@ export default function ProgressPage() {
                                   })()}
                                 </p>
                               </div>
+                              <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                              {explanationVisible === `${module.id}-problemasDesafiantes` && (
+                                <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                  {explanations.problemasDesafiantes}
+                                </div>
+                              )}
                             </div>
                             
                             {/* Calendario de práctica */}
@@ -932,7 +941,10 @@ export default function ProgressPage() {
                             </div>
                             
                             {/* Tasa de Errores Comunes */}
-                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                            <div 
+                              className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                              onClick={() => toggleExplanation(`${module.id}-tasaError`)}
+                            >
                               <div className="flex justify-between items-baseline mb-2">
                                 <p className="text-sm text-gray-500">Tasa de Error</p>
                                 <p className="font-semibold text-red-600">
@@ -970,6 +982,12 @@ export default function ProgressPage() {
                                   })()}
                                 </p>
                               </div>
+                              <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                              {explanationVisible === `${module.id}-tasaError` && (
+                                <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                  {explanations.tasaError}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </CardContent>
