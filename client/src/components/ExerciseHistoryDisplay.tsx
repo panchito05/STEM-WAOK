@@ -144,9 +144,31 @@ const ExerciseHistoryDisplay: React.FC<ExerciseHistoryDisplayProps> = ({ exercis
               </span>
             </div>
             <p className="text-lg font-bold mb-2">{problemText}</p>
+            
+            {/* NUEVO: Mostrar todos los intentos fallidos si existen */}
+            {problem.allAttempts && problem.allAttempts.length > 1 && (
+              <div className="mb-3 p-2 bg-gray-50 rounded border">
+                <p className="text-xs text-gray-600 mb-1 font-medium">Historial de intentos:</p>
+                <div className="space-y-1">
+                  {problem.allAttempts.map((attempt, attemptIdx) => (
+                    <div key={attemptIdx} className="flex justify-between items-center text-sm">
+                      <span>Intento {attempt.attemptNumber}: {attempt.userAnswer}</span>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        attempt.isCorrect 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-red-100 text-red-700'
+                      }`}>
+                        {attempt.isCorrect ? '✓ Correcto' : '✗ Incorrecto'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-2 gap-2 mt-1">
               <div>
-                <p className="text-xs text-gray-500">Tu respuesta</p>
+                <p className="text-xs text-gray-500">Tu respuesta final</p>
                 <p className={`font-medium ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
                   {userAnswer !== null && userAnswer !== undefined ? String(userAnswer) : 'Sin respuesta'}
                 </p>
