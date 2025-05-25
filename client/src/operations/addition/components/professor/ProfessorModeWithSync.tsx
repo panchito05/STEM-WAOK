@@ -165,7 +165,23 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
         />
         
         {/* Panel de control - Usa las clases CSS del contexto sincronizado */}
-        <div className={`fixed bottom-0 left-0 right-0 w-full border-t overflow-y-auto lg:absolute lg:max-w-sm lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0 bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg lg:h-fit lg:max-h-[calc(100vh-2rem)] ${getPanelCSSClasses()}`}>
+        <div 
+          className={`fixed bottom-0 left-0 right-0 w-full border-t overflow-y-auto lg:absolute lg:max-w-sm lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0 bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg lg:h-fit lg:max-h-[calc(100vh-2rem)] ${getPanelCSSClasses()}`}
+          style={{
+            // DIAGNÓSTICO: Forzar posición directamente desde el contexto
+            ...(window.innerWidth >= 1024 ? (() => {
+              const layout = getCurrentLayoutId();
+              console.log(`🔧 [PANEL-POSITION] Aplicando posición para layout ${layout}`);
+              switch(layout) {
+                case 1: return { top: '16px', left: '16px', right: 'auto', bottom: 'auto' };
+                case 2: return { top: '16px', right: '16px', left: 'auto', bottom: 'auto' };
+                case 3: return { bottom: '16px', right: '16px', top: 'auto', left: 'auto' };
+                case 4: return { bottom: '16px', left: '16px', top: 'auto', right: 'auto' };
+                default: return { top: '16px', left: '16px', right: 'auto', bottom: 'auto' };
+              }
+            })() : {})
+          }}
+        >
           {/* Botón para mover panel - NUEVA ARQUITECTURA */}
           <div className="flex justify-between items-center mb-2">
             <button
