@@ -2099,7 +2099,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             
             {/* Score - First item */}
             <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs">
-              {t('exercises.score')}: {score}
+              Score: {score}
             </span>
             
             {/* Modo Profesor button - Second item */}
