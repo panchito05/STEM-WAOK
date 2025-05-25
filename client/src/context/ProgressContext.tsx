@@ -371,6 +371,11 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         
         // NUEVO: Verificar recompensas de milestones después de guardar progreso
         setTimeout(() => {
+          console.log("⏰ [MILESTONE-TIMING] Ejecutando verificación de recompensas con delay de 500ms");
+          console.log("⏰ [MILESTONE-TIMING] Estado actual antes de verificar:", {
+            ejerciciosEnHistorial: exerciseHistory.length,
+            ejercicioRecienGuardado: result
+          });
           checkMilestoneRewards();
         }, 500); // Pequeño delay para asegurar que el estado se actualice primero
       } else {
@@ -401,8 +406,28 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
   // Nueva función para verificar recompensas de milestones
   const checkMilestoneRewards = async () => {
     try {
-      console.log("🔍 [RECOMPENSAS-DEBUG] Iniciando verificación de milestones...");
+      console.log("🔍 [RECOMPENSAS-DEBUG] ==================== INICIO VERIFICACIÓN ====================");
+      console.log("🔍 [RECOMPENSAS-DEBUG] Timestamp:", new Date().toISOString());
       console.log("🔍 [RECOMPENSAS-DEBUG] Historial de ejercicios actual:", exerciseHistory);
+      console.log("🔍 [RECOMPENSAS-DEBUG] Longitud del historial:", exerciseHistory.length);
+      
+      // DIAGNÓSTICO CRÍTICO: Verificar si el historial está vacío pero aún se otorgan recompensas
+      if (exerciseHistory.length === 0) {
+        console.error("🚨 [RECOMPENSAS-DEBUG] PROBLEMA CRÍTICO: Historial vacío pero se está verificando recompensas");
+        console.error("🚨 [RECOMPENSAS-DEBUG] Esto NO debería suceder después de borrar progreso");
+        
+        // Verificar el estado actual de las recompensas
+        const { earnedRewards } = useRewardsStore.getState();
+        console.error("🚨 [RECOMPENSAS-DEBUG] Recompensas actuales en store:", earnedRewards);
+        
+        // Si hay ejercicios zero pero hay recompensas, hay un problema
+        if (earnedRewards.length > 0) {
+          console.error("🚨 [RECOMPENSAS-DEBUG] INCONSISTENCIA: 0 ejercicios pero hay recompensas obtenidas");
+          console.error("🚨 [RECOMPENSAS-DEBUG] Esto indica que el borrado de recompensas no funcionó correctamente");
+        }
+        
+        return; // Salir temprano si no hay ejercicios
+      }
       
       // CORRECCIÓN CRÍTICA: Calcular problemas CORRECTAMENTE RESUELTOS, no el total de problemas
       const totalProblemsCompleted = exerciseHistory.reduce((acc, exercise) => {
@@ -421,6 +446,15 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       console.log(`   - Total problemas CORRECTOS (para recompensas): ${totalProblemsCompleted}`);
       console.log(`   - Diferencia (errores): ${totalProblemasEnviados - totalProblemsCompleted}`);
 
+      // Verificación de umbral crítico
+      if (totalProblemsCompleted >= 10) {
+        console.log("🚨 [RECOMPENSAS-DEBUG] ALERTA: Se alcanzó umbral de 10 problemas");
+        console.log("🚨 [RECOMPENSAS-DEBUG] Detalles de cada ejercicio:");
+        exerciseHistory.forEach((ex, index) => {
+          console.log(`   Ejercicio ${index + 1}: Score=${ex.score}, Total=${ex.totalProblems}, ID=${ex.id}, Fecha=${ex.date}`);
+        });
+      }
+
       // Verificar y otorgar recompensas de milestones
       const rewardConditions = {
         problemsCompleted: totalProblemsCompleted
@@ -435,8 +469,10 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
 
       if (awardedRewards && awardedRewards.length > 0) {
         console.log(`🎉 [RECOMPENSAS-DEBUG] Recompensas de milestone otorgadas:`, awardedRewards);
+        console.log(`🎉 [RECOMPENSAS-DEBUG] ==================== FIN VERIFICACIÓN (CON RECOMPENSAS) ====================`);
       } else {
         console.log(`⏳ [RECOMPENSAS-DEBUG] No se otorgaron recompensas. Próximo milestone en: ${Math.max(10, 25, 50, 100) - totalProblemsCompleted} problemas`);
+        console.log(`⏳ [RECOMPENSAS-DEBUG] ==================== FIN VERIFICACIÓN (SIN RECOMPENSAS) ====================`);
       }
     } catch (error) {
       console.error("❌ [RECOMPENSAS-DEBUG] Error verificando recompensas de milestones:", error);
