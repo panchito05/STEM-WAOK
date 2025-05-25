@@ -2042,7 +2042,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         )}
 
-      <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg ${
+      <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg min-h-[calc(100vh-8rem)] md:min-h-0 flex flex-col ${
         adaptiveDifficulty === "beginner" ? "bg-blue-50 border-blue-200" :
         adaptiveDifficulty === "elementary" ? "bg-emerald-50 border-emerald-200" :
         adaptiveDifficulty === "intermediate" ? "bg-orange-50 border-orange-200" :
@@ -2174,7 +2174,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
 
         {/* Problem Display Area - Responsive: Optimized for all screen sizes */}
-        <div className={`p-3 sm:p-4 md:p-6 rounded-lg mb-3 sm:mb-4 shadow-md bg-white min-h-[180px] sm:min-h-[200px] md:min-h-[220px] flex flex-col items-center justify-center`}>
+        <div className={`p-3 sm:p-4 md:p-6 rounded-lg mb-3 sm:mb-4 shadow-md bg-white flex-grow flex flex-col items-center justify-center max-h-[40vh] sm:max-h-none`}>
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 flex-wrap">
               <span>{currentProblem.operands[0]}</span>
@@ -2262,8 +2262,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         </div>
-        {/* Number Keypad - Responsive: Larger touch targets on mobile */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-xs sm:max-w-sm md:max-w-md mx-auto">
+        {/* Number Keypad - Responsive: Larger touch targets on mobile, always visible */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
