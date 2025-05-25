@@ -56,11 +56,15 @@ export function useRewards(options: UseRewardsOptions): UseRewardsReturn {
     enabledCategories = ['achievement', 'milestone', 'streak', 'level_up']
   } = options;
 
-  // Estado del store
-  const isEnabled = useRewardSelectors.useIsEnabled();
-  const totalPoints = useRewardSelectors.useTotalPoints();
-  const newRewardsCount = useRewardSelectors.useNewRewardsCount();
-  const recentRewards = useRewardSelectors.useRecentRewards(5);
+  // Estado del store con selectores optimizados
+  const isEnabled = useRewardStore(state => state.isEnabled);
+  const totalPoints = useRewardStore(state => state.totalPoints);
+  const newRewardsCount = useRewardStore(state => state.newRewards.length);
+  const recentRewards = useRewardStore(state => 
+    state.unlockedRewards
+      .sort((a, b) => (b.unlockedAt?.getTime() || 0) - (a.unlockedAt?.getTime() || 0))
+      .slice(0, 5)
+  );
 
   // Acciones del store
   const {
