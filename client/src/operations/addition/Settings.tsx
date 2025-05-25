@@ -400,8 +400,13 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           </h3>
           <div className="mt-3 space-y-3">
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="show-immediate-feedback" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">📝</span>{isEnglish ? "Show immediate feedback" : "Mostrar retroalimentación inmediata"}
+              <Label htmlFor="show-immediate-feedback" className={`cursor-pointer ${theme.accent} flex items-center flex-col items-start`}>
+                <span className="flex items-center"><span className="mr-2">📝</span>{isEnglish ? "Show Instant Results" : "Mostrar Resultado Inmediato"}</span>
+                <span className="text-xs ml-5 opacity-80">
+                  {isEnglish 
+                    ? "When enabled, you'll instantly see if your answer is correct or incorrect with colors and sounds." 
+                    : "Al activar esta opción verás inmediatamente si tu respuesta es correcta o incorrecta con colores y sonidos."}
+                </span>
               </Label>
               <Switch
                 id="show-immediate-feedback"
