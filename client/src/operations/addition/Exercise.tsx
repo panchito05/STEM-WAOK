@@ -2052,12 +2052,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       } border-2`}>
         {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-            <div className="flex flex-col items-center sm:items-start">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
-              <span className="font-medium text-gray-700 text-center text-sm mt-1">
-                Problema {currentProblemIndex} de {settings.problemCount}
-              </span>
-            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
             
             {/* Top row info - Timer and basic stats */}
             <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap">
@@ -2120,6 +2115,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {/* Progress Info Row - Responsive: Center on mobile, right-align on desktop */}
         <div className="flex flex-col sm:flex-row sm:justify-end items-center text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 gap-2">
             <div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">
+              <span className="font-medium text-gray-700 text-center">
+                Problema {currentProblemIndex} de {settings.problemCount}
+              </span>
               <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50">
                 {t('exercises.score')}: {score}
               </span>
