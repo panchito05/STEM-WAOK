@@ -2173,20 +2173,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        {/* Problem Display Area - Responsive: Optimized for all screen sizes */}
-        <div className={`p-3 sm:p-4 md:p-6 rounded-lg mb-3 sm:mb-4 shadow-md bg-white flex-grow flex flex-col items-center justify-center max-h-[40vh] sm:max-h-none`}>
+        {/* Problem Display Area - Compact Design */}
+        <div className="p-4 rounded-lg mb-4 shadow-sm bg-gray-50 border">
           {currentProblem.layout === 'horizontal' ? (
-            <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 flex-wrap">
+            <div className="text-2xl font-bold flex items-center justify-center gap-2">
               <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600 mx-0.5 sm:mx-1">+</span>
+              <span className="text-gray-600">+</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
-              {currentProblem.operands.length > 2 && ( // Support for more than 2 operands if needed
+              {currentProblem.operands.length > 2 && (
                 <>
-                  <span className="text-gray-600 mx-0.5 sm:mx-1">+</span>
+                  <span className="text-gray-600">+</span>
                   <span>{currentProblem.operands[2]}</span>
                 </>
               )}
-              <span className="text-gray-600 mx-0.5 sm:mx-1">=</span>
+              <span className="text-gray-600">=</span>
             </div>
           ) : (
             <div className="inline-block text-right my-1 sm:my-2">
@@ -2209,8 +2209,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
 
-          {/* Answer Input Boxes - Responsive: Larger touch targets on mobile */}
-          <div className="mt-3 sm:mt-4 md:mt-5 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 flex-wrap">
+          {/* Answer Input Boxes - Compact Design */}
+          <div className="mt-4 flex items-center justify-center gap-1">
             {Array(currentProblem.answerMaxDigits).fill(0).map((_, index) => {
               const integerDigitsCount = currentProblem.answerMaxDigits - (currentProblem.answerDecimalPosition || 0);
               const isVisualDecimalPointAfterThisBox = currentProblem.answerDecimalPosition !== undefined &&
@@ -2223,18 +2223,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   <div
                     ref={el => {
                       if (el) {
-                        // Guardar la referencia en el array auxiliar
                         boxRefsArrayRef.current[index] = el;
-                        // Actualizar la referencia principal para acceder globalmente
                         digitBoxRefs.current = boxRefsArrayRef.current;
                       }
                     }}
                     tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
                     className={`
-                      w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-18 lg:h-18
-                      border-2 rounded-lg
+                      w-12 h-12 border-2 rounded-md
                       flex items-center justify-center
-                      text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold
+                      text-xl font-bold
                       transition-all duration-200
                       ${viewingPrevious || exerciseCompleted || waitingRef.current 
                         ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed' 
@@ -2262,29 +2259,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         </div>
-        {/* Number Keypad - Responsive: Larger touch targets on mobile, always visible */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-auto">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
+        {/* Number Keypad - Compact Design */}
+        <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", ">", "0", "<"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
               className={`
-                h-12 sm:h-14 md:h-16 
-                text-lg sm:text-xl md:text-2xl font-semibold
+                h-12 text-lg font-semibold
                 transition-all duration-200
                 ${
-                key === "sequential_backspace" 
+                key === ">" 
                   ? "bg-white hover:bg-red-50 text-red-600 active:bg-red-100 shadow-sm border-red-200 hover:border-red-300" 
-                  : key === "" 
-                    ? "invisible pointer-events-none" 
+                  : key === "<" 
+                    ? "bg-white hover:bg-blue-50 text-blue-600 active:bg-blue-100 shadow-sm border-blue-200 hover:border-blue-300"
                     : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100 border-gray-300 hover:border-gray-400 hover:shadow-md"
               }`}
               onClick={() => {
                 if (viewingPrevious || exerciseCompleted || waitingRef.current || !key || key === "") return;
                 
-                if (key === "sequential_backspace") {
+                if (key === ">" || key === "sequential_backspace") {
                   handleSequentialBackspace();
-                } else if (key === "backspace") {
+                } else if (key === "<" || key === "backspace") {
                   handleBackspace();
                 } else {
                   handleDigitInput(key);
