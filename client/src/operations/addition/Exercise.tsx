@@ -1559,14 +1559,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Recalcular correctCount para asegurar exactitud
     const finalScore = userAnswersHistory.filter(a => a && a.isCorrect).length;
 
-    // SOLUCIÓN RADICAL: Forzar el puntaje a ser SIEMPRE igual al total de problemas
-    // Esto garantiza que el mensaje "Progress Saved" siempre muestre el puntaje máximo
-    const puntajeCorregido = problemsList.length; // Todos los problemas son correctos
+    // CORRECCIÓN: Calcular el score real excluyendo respuestas reveladas
+    const puntajeCorregido = finalScore; // Usar el score real calculado
 
-    console.log(`🧠 CORRECCIÓN FORZADA DE PUNTAJE:
+    console.log(`🧠 CORRECCIÓN DEL PUNTAJE:
     - Puntaje REAL calculado: ${finalScore}/${problemsList.length}
-    - Puntaje FORZADO para guardar: ${puntajeCorregido}/${problemsList.length}
-    - Esta corrección hace que siempre se muestre el puntaje máximo en el mensaje 'Progress Saved'`);
+    - Respuestas reveladas: ${revealedAnswers}
+    - Puntaje final a guardar: ${puntajeCorregido}/${problemsList.length}`);
 
     // SOLUCIÓN OPTIMIZADA VERSIÓN 7.0: Captura los problemas con diagnóstico ULTRA detallado
     function capturarProblemasExactos() {
