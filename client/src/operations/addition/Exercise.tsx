@@ -679,18 +679,46 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         };
     });
 
-    const newHistoryEntry: UserAnswerType = {
-        problemId: currentProblem.id,
-        problem: currentProblem,
-        userAnswer: userNumericAnswer,
-        isCorrect,
-        status: isCorrect ? 'correct' : 'incorrect' // Añadir status
-    };
-    setUserAnswersHistory(prev => {
-        const newHistory = [...prev];
-        newHistory[problemIndexForHistory] = newHistoryEntry;
-        return newHistory;
-    });
+    // Solo actualizar userAnswersHistory si es la respuesta final (correcta o si es el último intento)
+    // Para mantener todos los intentos, solo actualizamos cuando sea correcto o cuando se agote el tiempo/intentos
+    if (isCorrect) {
+        const newHistoryEntry: UserAnswerType = {
+            problemId: currentProblem.id,
+            problem: currentProblem,
+            userAnswer: userNumericAnswer,
+            isCorrect,
+            status: 'correct'
+        };
+        setUserAnswersHistory(prev => {
+            const newHistory = [...prev];
+            newHistory[problemIndexForHistory] = newHistoryEntry;
+            return newHistory;
+        });
+    } else {
+        // Para respuestas incorrectas, mantener la entrada existente o crear una temporal
+        // que se actualizará solo cuando se finalice el problema
+        setUserAnswersHistory(prev => {
+            const newHistory = [...prev];
+            if (!newHistory[problemIndexForHistory]) {
+                newHistory[problemIndexForHistory] = {
+                    problemId: currentProblem.id,
+                    problem: currentProblem,
+                    userAnswer: userNumericAnswer,
+                    isCorrect: false,
+                    status: 'incorrect'
+                };
+            } else {
+                // Actualizar solo la última respuesta incorrecta
+                newHistory[problemIndexForHistory] = {
+                    ...newHistory[problemIndexForHistory],
+                    userAnswer: userNumericAnswer,
+                    isCorrect: false,
+                    status: 'incorrect'
+                };
+            }
+            return newHistory;
+        });
+    }
     setActualActiveProblemIndexBeforeViewingPrevious(problemIndexForHistory);
 
     if (isCorrect) {
