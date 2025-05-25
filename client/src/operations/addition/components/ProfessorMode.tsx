@@ -316,8 +316,14 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   // Función para mover el panel entre las cuatro esquinas (sentido horario)
+  // Panel y colores se mueven sincronizadamente
   const movePanel = () => {
-    const positions = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
+    // Secuencia sincronizada en sentido horario:
+    // Posición 1: Panel=top-left + Colores=right
+    // Posición 2: Panel=top-right + Colores=right  
+    // Posición 3: Panel=bottom-right + Colores=left
+    // Posición 4: Panel=bottom-left + Colores=left
+    const positions: ('top-left' | 'top-right' | 'bottom-right' | 'bottom-left')[] = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
     const currentIndex = positions.indexOf(position);
     const nextIndex = (currentIndex + 1) % positions.length;
     setPosition(positions[nextIndex]);

@@ -13,17 +13,22 @@ export const DrawingArea: React.FC<DrawingAreaProps> = ({
   position,
   problem
 }) => {
-  // Determinar la posición de la paleta de colores según donde esté el panel
+  // Determinar la posición de la paleta de colores según la secuencia sincronizada
   const getColorPalettePosition = () => {
-    // Si el panel está a la izquierda, colores a la derecha
-    if (position === 'topLeft' || position === 'bottomLeft') {
-      return 'right';
+    // Secuencia sincronizada en sentido horario:
+    // Posición 1: Panel=top-left + Colores=right
+    // Posición 2: Panel=top-right + Colores=right  
+    // Posición 3: Panel=bottom-right + Colores=left
+    // Posición 4: Panel=bottom-left + Colores=left
+    
+    if (position === 'topLeft' || position === 'topRight') {
+      return 'right'; // Colores en lado derecho
     }
-    // Si el panel está a la derecha, colores a la izquierda
-    if (position === 'topRight' || position === 'bottomRight') {
-      return 'left';
+    if (position === 'bottomRight' || position === 'bottomLeft') {
+      return 'left'; // Colores en lado izquierdo
     }
-    // Por defecto, colores a la derecha (para escritorio)
+    
+    // Por defecto, colores a la derecha
     return 'right';
   };
 
