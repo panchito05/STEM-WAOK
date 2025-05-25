@@ -1130,12 +1130,31 @@ export default function ProgressPage() {
                                         />
                                       </div>
                                       <p className="text-center text-lg font-bold text-blue-600">
-                                        {exercise.userAnswers ? (() => {
-                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL + PORCENTAJE
-                                          const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                          const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
-                                          return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
-                                        })() : `${Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/${exercise.totalProblems}`}
+                                        {(() => {
+                                          if (exercise.userAnswers && exercise.totalProblems) {
+                                            // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL + PORCENTAJE
+                                            const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
+                                            const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
+                                            return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
+                                          } else if (exercise.totalProblems) {
+                                            // 🔧 CALCULAR SCORE DESDE PORCENTAJE EXISTENTE - MISMO CÓDIGO QUE LA TABLA
+                                            let percentage = 0;
+                                            if (exercise.extraData?.accuracy) {
+                                              percentage = Math.round(exercise.extraData.accuracy);
+                                            } else {
+                                              // Calcular desde score y revealedAnswers
+                                              const revealed = exercise.revealedAnswers || 0;
+                                              const realScore = Math.max(0, exercise.score - revealed);
+                                              percentage = Math.round((realScore / exercise.totalProblems) * 100);
+                                            }
+                                            
+                                            // Calcular score desde porcentaje
+                                            const calculatedScore = Math.round((percentage * exercise.totalProblems) / 100);
+                                            return `${calculatedScore}/${exercise.totalProblems} (${percentage}%)`;
+                                          } else {
+                                            return "N/A";
+                                          }
+                                        })()}
                                       </p>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-md">
