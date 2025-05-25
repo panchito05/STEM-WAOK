@@ -2269,7 +2269,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         </div>
         {/* Number Keypad - Compact Design */}
-        <div className="grid grid-cols-3 gap-2 max-w-sm sm:max-w-md mx-auto">
+        <div className="grid grid-cols-3 gap-3 max-w-md sm:max-w-lg mx-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", ">", "0", "<"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
