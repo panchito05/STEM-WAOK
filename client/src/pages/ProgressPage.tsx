@@ -845,90 +845,42 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500">Problemas Desafiantes</p>
                                 <p className="font-semibold text-orange-600">
                                   {(() => {
-                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    if (moduleExercises.length === 0) return 'N/A';
-                                    
-                                    let problemasDesafiantes = 0;
-                                    let totalProblemas = 0;
-                                    
-                                    // Debug: log de los datos para ver la estructura
-                                    console.log('📊 Analizando problemas desafiantes para módulo:', module.id);
-                                    console.log('📊 Ejercicios encontrados:', moduleExercises.length);
-                                    
-                                    moduleExercises.forEach((ex, index) => {
-                                      console.log(`📊 Ejercicio ${index + 1}:`, {
-                                        score: ex.score,
-                                        totalProblems: ex.totalProblems,
-                                        revealedAnswers: ex.revealedAnswers,
-                                        extraData: ex.extra_data
+                                    // Nueva función simplificada para calcular problemas desafiantes
+                                    const calculateChallengingProblems = () => {
+                                      const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
+                                      if (moduleExercises.length === 0) return 'N/A';
+                                      
+                                      let totalProblemas = 0;
+                                      let problemasDesafiantes = 0;
+                                      
+                                      moduleExercises.forEach(exercise => {
+                                        // Sumar todos los problemas del ejercicio
+                                        const problemsInExercise = exercise.totalProblems || 0;
+                                        totalProblemas += problemsInExercise;
+                                        
+                                        // Calcular problemas desafiantes usando diferentes métricas
+                                        const correctAnswers = exercise.score || 0;
+                                        const revealedAnswers = exercise.revealedAnswers || 0;
+                                        
+                                        // Problemas incorrectos (diferencia entre total y correctos)
+                                        const incorrectProblems = Math.max(0, problemsInExercise - correctAnswers);
+                                        
+                                        // Los problemas desafiantes son:
+                                        // 1. Problemas incorrectos + problemas revelados
+                                        // 2. Asegurándonos de no contar doble si las respuestas reveladas ya están incluidas en score
+                                        const challengingFromIncorrect = incorrectProblems;
+                                        const challengingFromRevealed = revealedAnswers;
+                                        
+                                        // Usar el mayor entre incorrectos y revelados para evitar doble conteo
+                                        const exerciseChallengingProblems = Math.max(challengingFromIncorrect, challengingFromRevealed);
+                                        
+                                        problemasDesafiantes += exerciseChallengingProblems;
                                       });
                                       
-                                      const extraData = ex.extra_data;
-                                      
-                                      // Priorizar problemDetails de extra_data (estructura más reciente y completa)
-                                      if (extraData && extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
-                                        console.log('📊 Usando problemDetails de extra_data');
-                                        extraData.problemDetails.forEach((problem: any) => {
-                                          if (problem && problem.problem) {
-                                            totalProblemas++;
-                                            
-                                            // Un problema es desafiante si:
-                                            // 1. Requirió múltiples intentos (attempts > 1)
-                                            // 2. La respuesta fue revelada (status === 'revealed')
-                                            // 3. La respuesta fue incorrecta (!isCorrect)
-                                            const isDesafiante = 
-                                              (problem.attempts && problem.attempts > 1) || 
-                                              problem.status === 'revealed' ||
-                                              !problem.isCorrect;
-                                            
-                                            if (isDesafiante) {
-                                              problemasDesafiantes++;
-                                            }
-                                          }
-                                        });
-                                      } 
-                                      // Fallback para datos más antiguos o diferentes estructuras
-                                      else if (extraData && (extraData.problems || extraData.capturedProblems)) {
-                                        console.log('📊 Usando problems/capturedProblems de extra_data');
-                                        const problems = extraData.problems || extraData.capturedProblems;
-                                        if (Array.isArray(problems)) {
-                                          problems.forEach((problem: any) => {
-                                            if (problem) {
-                                              totalProblemas++;
-                                              const isDesafiante = 
-                                                (problem.attempts && problem.attempts > 1) || 
-                                                problem.status === 'revealed' ||
-                                                !problem.isCorrect;
-                                              
-                                              if (isDesafiante) {
-                                                problemasDesafiantes++;
-                                              }
-                                            }
-                                          });
-                                        }
-                                      }
-                                      // Último recurso: usar datos básicos
-                                      else {
-                                        console.log('📊 Usando datos básicos de score y totalProblems');
-                                        if (ex.score !== undefined && ex.totalProblems !== undefined) {
-                                          totalProblemas += ex.totalProblems;
-                                          // Contar problemas incorrectos como desafiantes
-                                          const problemasIncorrectos = ex.totalProblems - ex.score;
-                                          problemasDesafiantes += problemasIncorrectos;
-                                          
-                                          // También incluir respuestas reveladas si están disponibles
-                                          if (ex.revealedAnswers && ex.revealedAnswers > 0) {
-                                            problemasDesafiantes += ex.revealedAnswers;
-                                          }
-                                        }
-                                      }
-                                    });
+                                      return totalProblemas > 0 ? `${problemasDesafiantes}/${totalProblemas}` : 'N/A';
+                                    };
                                     
-                                    console.log('📊 Resultado final:', { problemasDesafiantes, totalProblemas });
-                                    
-                                    if (totalProblemas === 0) return 'N/A';
-                                    
-                                    return `${problemasDesafiantes}/${totalProblemas}`;
+                                    return calculateChallengingProblems();
                                   })()}
                                 </p>
                               </div>
