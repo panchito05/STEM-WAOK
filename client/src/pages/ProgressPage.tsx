@@ -990,11 +990,29 @@ export default function ProgressPage() {
                             let totalProblems = 0;
                             
                             recentExercises.forEach((exercise: any) => {
-                              if (exercise.userAnswers && exercise.totalProblems) {
-                                // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
-                                const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                totalCorrect += finalScore;
+                              if (exercise.totalProblems) {
                                 totalProblems += exercise.totalProblems;
+                                
+                                if (exercise.userAnswers) {
+                                  // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
+                                  const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
+                                  totalCorrect += finalScore;
+                                } else {
+                                  // 🔧 USAR LA MISMA LÓGICA DE FALLBACK QUE LA TABLA
+                                  let percentage = 0;
+                                  if (exercise.extraData?.accuracy) {
+                                    percentage = Math.round(exercise.extraData.accuracy);
+                                  } else {
+                                    // Calcular desde score y revealedAnswers
+                                    const revealed = exercise.revealedAnswers || 0;
+                                    const realScore = Math.max(0, exercise.score - revealed);
+                                    percentage = Math.round((realScore / exercise.totalProblems) * 100);
+                                  }
+                                  
+                                  // Calcular score desde porcentaje
+                                  const calculatedScore = Math.round((percentage * exercise.totalProblems) / 100);
+                                  totalCorrect += calculatedScore;
+                                }
                               }
                             });
                             
