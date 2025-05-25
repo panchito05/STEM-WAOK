@@ -1,5 +1,6 @@
 import React from 'react';
 import { Move } from 'lucide-react';
+import { useSynchronizedLayout } from './context/SynchronizedLayoutContext';
 
 type Position = 'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft';
 
@@ -12,12 +13,20 @@ export const PositionControl: React.FC<PositionControlProps> = ({
   position, 
   onPositionChange 
 }) => {
-  // Función para cambiar a la siguiente posición
+  // Usar el contexto de layout sincronizado
+  const { moveToNextLayout } = useSynchronizedLayout();
+
+  // Función mejorada que usa el sistema sincronizado
   const rotatePosition = () => {
-    const positions: Position[] = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'];
-    const currentIndex = positions.indexOf(position);
-    const nextIndex = (currentIndex + 1) % positions.length;
-    onPositionChange(positions[nextIndex]);
+    console.log(`🔍 [POSITION-CONTROL] ===== INICIO CLIC BOTÓN MOVER =====`);
+    console.log(`🔍 [POSITION-CONTROL] Position actual: "${position}"`);
+    console.log(`🔍 [POSITION-CONTROL] Timestamp: ${Date.now()}`);
+    
+    // Usar el sistema de layout sincronizado que ya funciona
+    moveToNextLayout();
+    
+    console.log(`🔍 [POSITION-CONTROL] moveToNextLayout() ejecutado`);
+    console.log(`🔍 [POSITION-CONTROL] ===== FIN CLIC BOTÓN MOVER =====`);
   };
 
   return (
