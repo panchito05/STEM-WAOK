@@ -27,7 +27,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [attempts, setAttempts] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [position, setPosition] = useState('top-right');
+  const [position, setPosition] = useState('topRight');
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
     problem: AdditionProblem;
@@ -317,7 +317,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
   // Función para mover el panel entre las cuatro esquinas (sentido horario)
   const movePanel = () => {
-    const positions = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
+    const positions = ['topRight', 'bottomRight', 'bottomLeft', 'topLeft'];
     const currentIndex = positions.indexOf(position);
     const nextIndex = (currentIndex + 1) % positions.length;
     setPosition(positions[nextIndex]);
@@ -326,13 +326,13 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   // Función para obtener las clases CSS según la posición - Solo para desktop
   const getPanelClasses = () => {
     switch (position) {
-      case 'top-left':
+      case 'topLeft':
         return 'top-4 left-4';
-      case 'top-right':
+      case 'topRight':
         return 'top-4 right-4';
-      case 'bottom-left':
+      case 'bottomLeft':
         return 'bottom-4 left-4';
-      case 'bottom-right':
+      case 'bottomRight':
         return 'bottom-4 right-4';
       default:
         return 'top-4 right-4';
@@ -504,9 +504,9 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
               Mover
             </button>
             <span className="text-xs text-gray-500">
-              {position === 'top-right' ? '↗️' : 
-               position === 'top-left' ? '↖️' : 
-               position === 'bottom-left' ? '↙️' : '↘️'} {position}
+              {position === 'topRight' ? '↗️' : 
+               position === 'topLeft' ? '↖️' : 
+               position === 'bottomLeft' ? '↙️' : '↘️'} {position}
             </span>
           </div>
           
