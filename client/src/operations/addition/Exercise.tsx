@@ -2099,7 +2099,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         {/* Grid de estadísticas */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-
+          <div className="bg-blue-50 p-3 rounded-lg shadow-sm text-center border border-blue-100">
+            <div className="text-sm text-gray-600 mb-1">Score</div>
+            <div className="text-xl text-blue-600 font-semibold">
+              {(() => {
+                // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA CONSISTENTE
+                const finalScore = userAnswersHistory.filter(a => a && a.isCorrect).length;
+                const percentage = Math.round((finalScore / problemsList.length) * 100);
+                return `${finalScore}/${problemsList.length} (${percentage}%)`;
+              })()}
+            </div>
+          </div>
 
           <div className="bg-green-50 p-3 rounded-lg shadow-sm text-center border border-green-100">
             <div className="text-sm text-gray-600 mb-1">Accuracy</div>
