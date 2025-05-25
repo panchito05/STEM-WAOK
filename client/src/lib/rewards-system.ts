@@ -510,23 +510,66 @@ export function checkAndAwardRewards(
     module?: string
   }
 ) {
-  console.log("🏆 [RECOMPENSAS-SISTEMA] Iniciando verificación de recompensas");
-  console.log("🏆 [RECOMPENSAS-SISTEMA] Condiciones recibidas:", conditions);
-  console.log("🏆 [RECOMPENSAS-SISTEMA] Datos del módulo:", moduleData);
+  console.log("🏆 [REWARD-CHECK-V2] ==================== INICIANDO VERIFICACIÓN DE RECOMPENSAS ====================");
+  console.log("🏆 [REWARD-CHECK-V2] Timestamp:", new Date().toISOString());
+  console.log("🏆 [REWARD-CHECK-V2] Condiciones recibidas:", JSON.stringify(conditions, null, 2));
+  console.log("🏆 [REWARD-CHECK-V2] Datos del módulo:", JSON.stringify(moduleData, null, 2));
   
   const awardedRewards: Reward[] = [];
-  const { earnedRewards } = useRewardsStore.getState();
+  const currentState = useRewardsStore.getState();
   
-  console.log("🏆 [RECOMPENSAS-SISTEMA] Recompensas ya obtenidas:", earnedRewards.map(r => r.id));
+  console.log("🏆 [REWARD-CHECK-V2] Estado actual completo del store:", {
+    earnedRewards: currentState.earnedRewards?.length || 0,
+    totalRewardsCount: currentState.totalRewardsCount || 0,
+    newRewardsCount: currentState.newRewardsCount || 0,
+    showRewardAnimation: currentState.showRewardAnimation || false
+  });
+  
+  if (currentState.earnedRewards && currentState.earnedRewards.length > 0) {
+    console.log("🏆 [REWARD-CHECK-V2] Recompensas ya obtenidas ANTES de verificar:", 
+      currentState.earnedRewards.map(r => ({
+        id: r.id,
+        name: r.name,
+        dateEarned: r.dateEarned
+      }))
+    );
+  } else {
+    console.log("🏆 [REWARD-CHECK-V2] NO hay recompensas previas en el store");
+  }
+  
+  // DIAGNÓSTICO CRÍTICO: Verificar localStorage
+  const rewardStorageKey = 'rewards-storage';
+  const rewardStorage = localStorage.getItem(rewardStorageKey);
+  if (rewardStorage) {
+    try {
+      const parsedStorage = JSON.parse(rewardStorage);
+      console.log("🏆 [REWARD-CHECK-V2] CRÍTICO: localStorage contiene datos de recompensas:", {
+        key: rewardStorageKey,
+        hasState: !!parsedStorage.state,
+        hasEarnedRewards: !!parsedStorage.state?.earnedRewards,
+        earnedRewardsCount: parsedStorage.state?.earnedRewards?.length || 0
+      });
+      
+      if (parsedStorage.state?.earnedRewards) {
+        console.log("🏆 [REWARD-CHECK-V2] Recompensas en localStorage:", 
+          parsedStorage.state.earnedRewards.map(r => r.id || r.name || "unknown")
+        );
+      }
+    } catch (e) {
+      console.log("🏆 [REWARD-CHECK-V2] Error parseando localStorage de recompensas:", e);
+    }
+  } else {
+    console.log("🏆 [REWARD-CHECK-V2] localStorage de recompensas está limpio");
+  }
   
   // Verificar condiciones para las recompensas de problemas completados
   if (conditions.problemsCompleted) {
     console.log(`🏆 [RECOMPENSAS-SISTEMA] Verificando problemas completados: ${conditions.problemsCompleted}`);
     
     if (conditions.problemsCompleted >= 10) {
-      console.log("🏆 [RECOMPENSAS-SISTEMA] Cumple condición para addition-novice (10+ problemas)");
-      const alreadyHas = earnedRewards.some(r => r.id === 'addition-novice');
-      console.log(`🏆 [RECOMPENSAS-SISTEMA] ¿Ya tiene addition-novice? ${alreadyHas}`);
+      console.log("🏆 [REWARD-CHECK-V2] Cumple condición para addition-novice (10+ problemas)");
+      const alreadyHas = currentState.earnedRewards.some(r => r.id === 'addition-novice');
+      console.log(`🏆 [REWARD-CHECK-V2] ¿Ya tiene addition-novice? ${alreadyHas}`);
       
       if (!alreadyHas) {
         const success = awardReward('addition-novice', moduleData);
@@ -806,55 +849,113 @@ export function getRewardProbability(
 
 // El sistema de recompensas ha sido actualizado con probabilidades progresivas
 
-// Función para reiniciar completamente todas las recompensas
+// Función EXTREMA para reiniciar completamente todas las recompensas
 export function resetAllRewards(): void {
-  console.log("🔄 [RESET-REWARDS] Iniciando reinicio completo del sistema de recompensas...");
+  console.log("🔄 [RESET-REWARDS-V2] ==================== INICIANDO REINICIO EXTREMO ====================");
   
   try {
-    // 1. Limpiar el store de Zustand usando la función correcta
-    const { resetAllRewards: resetFunction } = useRewardsStore.getState();
-    resetFunction();
-    console.log("✅ [RESET-REWARDS] Store de Zustand limpiado con resetAllRewards()");
-    
-    // 2. Limpiar localStorage específicamente
-    const rewardsKeys = [
-      'rewards-storage',
-      'user_rewards', 
-      'user_default_rewards',
-      'rewards_collection',
-      'album-rewards',
-      'rewards-unlocked',
-      'achievements-unlocked',
-      'trophies-earned',
-      'badges-collection'
-    ];
-    
-    rewardsKeys.forEach(key => {
-      localStorage.removeItem(key);
-      console.log(`🗑️ [RESET-REWARDS] Eliminada clave: ${key}`);
+    // FASE 1: Diagnóstico inicial
+    const initialState = useRewardsStore.getState();
+    console.log("📊 [RESET-REWARDS-V2] Estado inicial del store:", {
+      earnedRewards: initialState.earnedRewards?.length || 0,
+      collections: initialState.collections?.length || 0,
+      totalRewardsCount: initialState.totalRewardsCount || 0
     });
     
-    // 3. Verificar que efectivamente esté limpio
-    const { earnedRewards } = useRewardsStore.getState();
-    if (earnedRewards.length === 0) {
-      console.log("✅ [RESET-REWARDS] Verificación exitosa: 0 recompensas en el sistema");
-    } else {
-      console.error("❌ [RESET-REWARDS] ERROR: Aún hay recompensas después del reinicio:", earnedRewards);
+    if (initialState.earnedRewards) {
+      console.log("📋 [RESET-REWARDS-V2] Recompensas actuales:", initialState.earnedRewards.map(r => r.id));
+    }
+    
+    // FASE 2: Limpiar el store de Zustand usando MULTIPLE métodos
+    console.log("🧹 [RESET-REWARDS-V2] Limpiando store con método 1 (resetAllRewards)...");
+    const { resetAllRewards: resetFunction } = useRewardsStore.getState();
+    resetFunction();
+    
+    console.log("🧹 [RESET-REWARDS-V2] Limpiando store con método 2 (setState directo)...");
+    useRewardsStore.setState({ 
+      earnedRewards: [],
+      collections: [],
+      totalRewardsCount: 0,
+      newRewardsCount: 0,
+      recentReward: null,
+      showRewardAnimation: false,
+      rewardsAlbumOpened: false
+    });
+    
+    // FASE 3: Limpiar localStorage AGRESIVAMENTE
+    console.log("🗑️ [RESET-REWARDS-V2] Iniciando limpieza AGRESIVA de localStorage...");
+    
+    // Buscar TODAS las claves que contienen "reward"
+    const allKeys = Object.keys(localStorage);
+    const rewardKeys = allKeys.filter(key => 
+      key.toLowerCase().includes('reward') ||
+      key.toLowerCase().includes('album') ||
+      key.toLowerCase().includes('achievement') ||
+      key.toLowerCase().includes('trophy') ||
+      key.toLowerCase().includes('badge')
+    );
+    
+    console.log("🔍 [RESET-REWARDS-V2] Claves encontradas relacionadas con recompensas:", rewardKeys);
+    
+    rewardKeys.forEach(key => {
+      const value = localStorage.getItem(key);
+      console.log(`🗑️ [RESET-REWARDS-V2] Eliminando ${key}:`, value ? value.substring(0, 100) + "..." : "null");
+      localStorage.removeItem(key);
+    });
+    
+    // FASE 4: Verificación EXHAUSTIVA
+    console.log("🔍 [RESET-REWARDS-V2] Iniciando verificación exhaustiva...");
+    
+    const finalState = useRewardsStore.getState();
+    console.log("📊 [RESET-REWARDS-V2] Estado final del store:", {
+      earnedRewards: finalState.earnedRewards?.length || 0,
+      collections: finalState.collections?.length || 0,
+      totalRewardsCount: finalState.totalRewardsCount || 0
+    });
+    
+    // Verificar localStorage final
+    const remainingRewardKeys = Object.keys(localStorage).filter(key => 
+      key.toLowerCase().includes('reward') ||
+      key.toLowerCase().includes('album') ||
+      key.toLowerCase().includes('achievement')
+    );
+    
+    if (remainingRewardKeys.length > 0) {
+      console.error("❌ [RESET-REWARDS-V2] CRÍTICO: Aún quedan claves de recompensas:", remainingRewardKeys);
       
-      // Forzar limpieza adicional si es necesario
-      useRewardsStore.setState({ 
+      // Intentar eliminarlas una vez más
+      remainingRewardKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`🔧 [RESET-REWARDS-V2] Forzada eliminación final de: ${key}`);
+      });
+    }
+    
+    if (finalState.earnedRewards && finalState.earnedRewards.length > 0) {
+      console.error("❌ [RESET-REWARDS-V2] ERROR CRÍTICO: Store aún contiene recompensas:", finalState.earnedRewards.map(r => r.id));
+      
+      // Último intento desesperado
+      console.log("🚨 [RESET-REWARDS-V2] Ejecutando limpieza de emergencia...");
+      useRewardsStore.setState(() => ({
         earnedRewards: [],
         collections: [],
         totalRewardsCount: 0,
         newRewardsCount: 0,
-        recentReward: null 
-      });
-      console.log("🔧 [RESET-REWARDS] Forzada limpieza adicional aplicada");
+        recentReward: null,
+        showRewardAnimation: false,
+        rewardsAlbumOpened: false
+      }));
+      
+      // Verificación final final
+      const emergencyState = useRewardsStore.getState();
+      console.log("🆘 [RESET-REWARDS-V2] Estado post-emergencia:", emergencyState.earnedRewards?.length || 0);
+    } else {
+      console.log("✅ [RESET-REWARDS-V2] ÉXITO: Sistema completamente limpio");
     }
     
-    console.log("✅ [RESET-REWARDS] Sistema de recompensas reiniciado completamente");
+    console.log("🔄 [RESET-REWARDS-V2] ==================== REINICIO COMPLETADO ====================");
     
   } catch (error) {
-    console.error("❌ [RESET-REWARDS] Error durante el reinicio:", error);
+    console.error("❌ [RESET-REWARDS-V2] ERROR CATASTRÓFICO durante el reinicio:", error);
+    console.error("❌ [RESET-REWARDS-V2] Stack trace:", error.stack);
   }
 }

@@ -544,11 +544,13 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         console.log("✅ [Nueva Fase] Borrado directo de rewards-storage");
         
         // CRÍTICO: Llamar directamente a la función de reinicio de recompensas
+        console.log("🔄 [CLEAR-PROGRESS-V2] ==================== INICIANDO BORRADO DE RECOMPENSAS ====================");
         import('../lib/rewards-system').then(({ resetAllRewards }) => {
+          console.log("🔄 [CLEAR-PROGRESS-V2] Función resetAllRewards importada exitosamente");
           resetAllRewards();
-          console.log("✅ [Nueva Fase] Sistema de recompensas reiniciado completamente");
+          console.log("✅ [CLEAR-PROGRESS-V2] resetAllRewards() ejecutado");
         }).catch(error => {
-          console.error("Error al importar sistema de recompensas:", error);
+          console.error("❌ [CLEAR-PROGRESS-V2] ERROR CRÍTICO al importar sistema de recompensas:", error);
         });
         
         // Intentar limpiar la memoria del sistema de recompensas si está disponible
