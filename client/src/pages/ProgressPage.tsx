@@ -616,7 +616,7 @@ export default function ProgressPage() {
                                     
                                     // Obtener el último ejercicio para ver el progreso actual
                                     const lastExercise = moduleExercises[moduleExercises.length - 1];
-                                    const currentStreak = lastExercise?.extraData?.currentStreak || 0;
+                                    const currentStreak = lastExercise?.extra_data?.consecutiveCorrectAnswers || 0;
                                     
                                     return `${currentStreak}/10`;
                                   })()}
@@ -631,7 +631,7 @@ export default function ProgressPage() {
                                       if (moduleExercises.length === 0) return 0;
                                       
                                       const lastExercise = moduleExercises[moduleExercises.length - 1];
-                                      const currentStreak = lastExercise?.extraData?.currentStreak || 0;
+                                      const currentStreak = lastExercise?.extra_data?.consecutiveCorrectAnswers || 0;
                                       
                                       return Math.min(100, (currentStreak / 10) * 100);
                                     })()}%` 
@@ -737,58 +737,29 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return 'N/A';
                                     
-                                    // Extraer todos los problemas y sus respuestas
-                                    let problemasDificiles: Record<string, {intentos: number, total: number}> = {};
+                                    // Contar problemas que requirieron múltiples intentos o fueron revelados
+                                    let problemasDesafiantes = 0;
+                                    let totalProblemas = 0;
                                     
                                     moduleExercises.forEach(ex => {
-                                      // Obtener y procesar userAnswers si existe
-                                      const userAnswers = ex.userAnswers || [];
-                                      
-                                      userAnswers.forEach((answer: any) => {
-                                        if (!answer || !answer.problem) return;
-                                        
-                                        // Crear una clave única para el problema
-                                        const problemKey = JSON.stringify(answer.problem);
-                                        
-                                        if (!problemasDificiles[problemKey]) {
-                                          problemasDificiles[problemKey] = {intentos: 0, total: 0};
-                                        }
-                                        
-                                        problemasDificiles[problemKey].intentos += (answer.attempts || 1);
-                                        problemasDificiles[problemKey].total += 1;
-                                      });
-                                    });
-                                    
-                                    // Calcular el problema con más intentos promedio
-                                    let maxIntentos = 0;
-                                    let problemaMasDificil = null;
-                                    
-                                    Object.entries(problemasDificiles).forEach(([key, data]) => {
-                                      const promedio = data.intentos / data.total;
-                                      if (promedio > maxIntentos && data.total >= 2) {
-                                        maxIntentos = promedio;
-                                        problemaMasDificil = key;
+                                      // Usar los datos correctos guardados en extra_data
+                                      const extraData = ex.extra_data;
+                                      if (extraData && extraData.problemDetails) {
+                                        extraData.problemDetails.forEach((problem: any) => {
+                                          if (problem) {
+                                            totalProblemas++;
+                                            // Problema desafiante: más de 1 intento O respuesta revelada
+                                            if ((problem.attempts && problem.attempts > 1) || problem.status === 'revealed') {
+                                              problemasDesafiantes++;
+                                            }
+                                          }
+                                        });
                                       }
                                     });
                                     
-                                    if (problemaMasDificil) {
-                                      try {
-                                        const problema = JSON.parse(problemaMasDificil);
-                                        
-                                        // Intentar determinar el tipo de problema
-                                        if (problema.operand1 !== undefined && problema.operand2 !== undefined) {
-                                          return `${problema.operand1} + ${problema.operand2}`;
-                                        } else if (problema.numerator !== undefined && problema.denominator !== undefined) {
-                                          return `${problema.numerator}/${problema.denominator}`;
-                                        } else {
-                                          return `${maxIntentos.toFixed(1)} intentos promedio`;
-                                        }
-                                      } catch (e) {
-                                        return `${maxIntentos.toFixed(1)} intentos promedio`;
-                                      }
-                                    }
+                                    if (totalProblemas === 0) return 'N/A';
                                     
-                                    return 'N/A';
+                                    return `${problemasDesafiantes}/${totalProblemas}`;
                                   })()}
                                 </p>
                               </div>
@@ -854,19 +825,23 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return '0%';
                                     
-                                    // Contar problemas incorrectos vs total
+                                    // Contar problemas incorrectos vs total usando extra_data
                                     let totalProblemas = 0;
                                     let problemasIncorrectos = 0;
                                     
                                     moduleExercises.forEach(ex => {
-                                      const userAnswers = ex.userAnswers || [];
-                                      userAnswers.forEach((answer: any) => {
-                                        if (!answer) return;
-                                        totalProblemas++;
-                                        if (!answer.isCorrect) {
-                                          problemasIncorrectos++;
-                                        }
-                                      });
+                                      const extraData = ex.extra_data;
+                                      if (extraData && extraData.problemDetails) {
+                                        extraData.problemDetails.forEach((problem: any) => {
+                                          if (problem) {
+                                            totalProblemas++;
+                                            // Contar como incorrecto si no es correcto O si fue revelado
+                                            if (!problem.isCorrect || problem.status === 'revealed') {
+                                              problemasIncorrectos++;
+                                            }
+                                          }
+                                        });
+                                      }
                                     });
                                     
                                     if (totalProblemas === 0) return '0%';
