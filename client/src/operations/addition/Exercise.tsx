@@ -1560,7 +1560,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const finalScore = userAnswersHistory.filter(a => a && a.isCorrect).length;
 
     // CORRECCIÓN: Calcular el score real excluyendo respuestas reveladas
-    const puntajeCorregido = Math.max(0, finalScore - revealedAnswers); // Restar respuestas reveladas del score
+    const puntajeCorregido = finalScore; // Usar el score real calculado
 
     console.log(`🧠 CORRECCIÓN DEL PUNTAJE:
     - Puntaje REAL calculado: ${finalScore}/${problemsList.length}
