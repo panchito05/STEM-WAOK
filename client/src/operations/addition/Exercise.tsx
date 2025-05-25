@@ -674,6 +674,41 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               console.log(`[NIVEL] ✅ INICIANDO SUBIDA DE NIVEL: ${adaptiveDifficulty} → ${newLevel}`);
               
               try {
+                  console.log(`[NIVEL] 💾 GUARDANDO PROGRESO ANTES DE SUBIR NIVEL - Iniciando...`);
+                  
+                  // CRÍTICO: Guardar progreso de los 10 problemas correctos antes de avanzar de nivel
+                  const progressDataForLevelUp = {
+                    operationId: "addition",
+                    date: new Date().toISOString(),
+                    score: CORRECT_ANSWERS_FOR_LEVEL_UP, // Los 10 problemas fueron correctos
+                    totalProblems: CORRECT_ANSWERS_FOR_LEVEL_UP,
+                    timeSpent: Math.round(newConsecutive * 30), // Estimación basada en problemas completados
+                    difficulty: adaptiveDifficulty, // Nivel anterior donde se completaron
+                    
+                    // Estadísticas para el avance de nivel
+                    accuracy: 100, // 100% correcto para avanzar de nivel
+                    avgTimePerProblem: 30, // Estimación promedio
+                    avgAttempts: 1, // Asumimos primer intento para nivel up
+                    revealedAnswers: 0,
+                    
+                    // Datos específicos del avance de nivel
+                    extra_data: {
+                      version: "4.0",
+                      timestamp: new Date().toISOString(),
+                      isLevelUpProgress: true, // Marcador especial
+                      previousLevel: adaptiveDifficulty,
+                      newLevel: newLevel,
+                      consecutiveCorrect: newConsecutive,
+                      automaticSave: true,
+                      reason: "Adaptive difficulty level up - 10 consecutive correct answers"
+                    }
+                  };
+                  
+                  // Guardar progreso utilizando la función existente
+                  console.log(`[NIVEL] 💾 Guardando datos de progreso:`, progressDataForLevelUp);
+                  saveExerciseResult(progressDataForLevelUp);
+                  console.log(`[NIVEL] ✅ Progreso guardado exitosamente antes del avance de nivel`);
+                  
                   // Actualizar localStorage con el nuevo nivel
                   localStorage.setItem('addition_adaptiveDifficulty', newLevel);
                   localStorage.setItem('addition_currentLevel', newLevel);

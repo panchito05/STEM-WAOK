@@ -543,6 +543,14 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         localStorage.removeItem('rewards-storage');
         console.log("✅ [Nueva Fase] Borrado directo de rewards-storage");
         
+        // CRÍTICO: Llamar directamente a la función de reinicio de recompensas
+        import('../lib/rewards-system').then(({ resetAllRewards }) => {
+          resetAllRewards();
+          console.log("✅ [Nueva Fase] Sistema de recompensas reiniciado completamente");
+        }).catch(error => {
+          console.error("Error al importar sistema de recompensas:", error);
+        });
+        
         // Intentar limpiar la memoria del sistema de recompensas si está disponible
         // Esta parte se ejecutará en el cliente, no en el servidor
         if (typeof window !== 'undefined') {
