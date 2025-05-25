@@ -848,28 +848,56 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return 'N/A';
                                     
-                                    // Contar problemas desafiantes usando múltiples fuentes de datos
                                     let problemasDesafiantes = 0;
                                     let totalProblemas = 0;
                                     
                                     moduleExercises.forEach(ex => {
-                                      // Intentar múltiples fuentes de datos
                                       const extraData = ex.extra_data;
                                       
-                                      if (extraData && extraData.problemDetails) {
-                                        // Fuente 1: problemDetails en extra_data
+                                      // Priorizar problemDetails de extra_data (estructura más reciente y completa)
+                                      if (extraData && extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
                                         extraData.problemDetails.forEach((problem: any) => {
-                                          if (problem) {
+                                          if (problem && problem.problem) {
                                             totalProblemas++;
-                                            if ((problem.attempts && problem.attempts > 1) || problem.status === 'revealed') {
+                                            
+                                            // Un problema es desafiante si:
+                                            // 1. Requirió múltiples intentos (attempts > 1)
+                                            // 2. La respuesta fue revelada (status === 'revealed')
+                                            // 3. La respuesta fue incorrecta (!isCorrect)
+                                            const isDesafiante = 
+                                              (problem.attempts && problem.attempts > 1) || 
+                                              problem.status === 'revealed' ||
+                                              !problem.isCorrect;
+                                            
+                                            if (isDesafiante) {
                                               problemasDesafiantes++;
                                             }
                                           }
                                         });
-                                      } else if (ex.score !== undefined && ex.totalProblems !== undefined) {
-                                        // Fuente 2: datos básicos de score y totalProblems
+                                      } 
+                                      // Fallback para datos más antiguos o diferentes estructuras
+                                      else if (extraData && (extraData.problems || extraData.capturedProblems)) {
+                                        const problems = extraData.problems || extraData.capturedProblems;
+                                        if (Array.isArray(problems)) {
+                                          problems.forEach((problem: any) => {
+                                            if (problem) {
+                                              totalProblemas++;
+                                              const isDesafiante = 
+                                                (problem.attempts && problem.attempts > 1) || 
+                                                problem.status === 'revealed' ||
+                                                !problem.isCorrect;
+                                              
+                                              if (isDesafiante) {
+                                                problemasDesafiantes++;
+                                              }
+                                            }
+                                          });
+                                        }
+                                      }
+                                      // Último recurso: usar datos básicos de score y totalProblems
+                                      else if (ex.score !== undefined && ex.totalProblems !== undefined) {
                                         totalProblemas += ex.totalProblems;
-                                        // Estimar problemas desafiantes como diferencia entre total y score
+                                        // Estimar problemas desafiantes como problemas incorrectos
                                         const problemasIncorrectos = ex.totalProblems - ex.score;
                                         problemasDesafiantes += problemasIncorrectos;
                                       }
