@@ -507,7 +507,7 @@ export function DrawingCanvas({
     
     // Formatear los números
     const { operands } = currentProblem;
-    const formattedOperands = operands.map((num: number) => num.toFixed(1));
+    const formattedOperands = operands.map((num: number) => num.toFixed(2));
     
     // Encontrar la longitud máxima para alineación
     const parts = formattedOperands.map((num: string) => {
