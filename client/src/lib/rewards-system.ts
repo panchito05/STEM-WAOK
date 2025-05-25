@@ -811,10 +811,10 @@ export function resetAllRewards(): void {
   console.log("🔄 [RESET-REWARDS] Iniciando reinicio completo del sistema de recompensas...");
   
   try {
-    // 1. Limpiar el store de Zustand
-    const { clearAllRewards } = useRewardsStore.getState();
-    clearAllRewards();
-    console.log("✅ [RESET-REWARDS] Store de Zustand limpiado");
+    // 1. Limpiar el store de Zustand usando la función correcta
+    const { resetAllRewards: resetFunction } = useRewardsStore.getState();
+    resetFunction();
+    console.log("✅ [RESET-REWARDS] Store de Zustand limpiado con resetAllRewards()");
     
     // 2. Limpiar localStorage específicamente
     const rewardsKeys = [
@@ -834,23 +834,25 @@ export function resetAllRewards(): void {
       console.log(`🗑️ [RESET-REWARDS] Eliminada clave: ${key}`);
     });
     
-    // 3. Forzar actualización del estado
-    useRewardsStore.setState({ 
-      earnedRewards: [], 
-      unlockedCollections: [],
-      totalRewardsEarned: 0,
-      lastRewardDate: null 
-    });
-    
-    console.log("✅ [RESET-REWARDS] Sistema de recompensas reiniciado completamente");
-    
-    // 4. Verificar que efectivamente esté limpio
+    // 3. Verificar que efectivamente esté limpio
     const { earnedRewards } = useRewardsStore.getState();
     if (earnedRewards.length === 0) {
       console.log("✅ [RESET-REWARDS] Verificación exitosa: 0 recompensas en el sistema");
     } else {
       console.error("❌ [RESET-REWARDS] ERROR: Aún hay recompensas después del reinicio:", earnedRewards);
+      
+      // Forzar limpieza adicional si es necesario
+      useRewardsStore.setState({ 
+        earnedRewards: [],
+        collections: [],
+        totalRewardsCount: 0,
+        newRewardsCount: 0,
+        recentReward: null 
+      });
+      console.log("🔧 [RESET-REWARDS] Forzada limpieza adicional aplicada");
     }
+    
+    console.log("✅ [RESET-REWARDS] Sistema de recompensas reiniciado completamente");
     
   } catch (error) {
     console.error("❌ [RESET-REWARDS] Error durante el reinicio:", error);
