@@ -2050,27 +2050,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        {/* Header - Responsive Design: Three column layout */}
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-            {/* Left: Problem counter */}
-            <div className="flex-1">
-              <span className="font-medium text-gray-700 text-sm">
+        {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div className="flex flex-col items-center sm:items-start">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
+              <span className="font-medium text-gray-700 text-center text-sm mt-1">
                 Problema {currentProblemIndex} de {settings.problemCount}
               </span>
             </div>
-            
-            {/* Center: Module title */}
-            <div className="flex-1 text-center">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-            </div>
-            
-            {/* Right: Score */}
-            <div className="flex-1 text-right">
-              <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs">
-                {t('exercises.score')}: {score}
-              </span>
-            </div>
-        </div>
             
             {/* Top row info - Timer and basic stats */}
             <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap">
@@ -2133,7 +2120,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         {/* Unified Controls Row - Single horizontal row on mobile, maintain desktop layout */}
         <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 flex-wrap">
-            {/* Modo Profesor button - First item */}
+            {/* Score - First item */}
+            <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs">
+              {t('exercises.score')}: {score}
+            </span>
+            
+            {/* Modo Profesor button - Second item */}
             <button
               className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50"
               onClick={() => setShowProfessorMode(true)}
@@ -2445,7 +2437,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </TooltipProvider>
         </div>
       </div>
-
       {/* Modo Profesor - Nueva implementación con canvas para dibujo */}
       {showProfessorMode && (
         <ProfessorMode
