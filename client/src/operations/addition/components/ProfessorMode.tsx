@@ -27,12 +27,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [attempts, setAttempts] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [position, setPosition] = useState<'top-left' | 'top-right' | 'bottom-right' | 'bottom-left'>('top-left');
-  
-  // Debug: Log position changes
-  useEffect(() => {
-    console.log('🎯 [DEBUG] Position state changed to:', position);
-  }, [position]);
+  const [position, setPosition] = useState('top-right');
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
     problem: AdditionProblem;
@@ -321,48 +316,27 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   // Función para mover el panel entre las cuatro esquinas (sentido horario)
-  // Panel y colores se mueven sincronizadamente
   const movePanel = () => {
-    console.log('🎯 [DEBUG] movePanel called - Current position:', position);
-    
-    // Secuencia sincronizada en sentido horario:
-    // Posición 1: Panel=top-left + Colores=right
-    // Posición 2: Panel=top-right + Colores=right  
-    // Posición 3: Panel=bottom-right + Colores=left
-    // Posición 4: Panel=bottom-left + Colores=left
-    const positions: ('top-left' | 'top-right' | 'bottom-right' | 'bottom-left')[] = ['top-left', 'top-right', 'bottom-right', 'bottom-left'];
+    const positions = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
     const currentIndex = positions.indexOf(position);
-    console.log('🎯 [DEBUG] Current index:', currentIndex, 'Position array:', positions);
-    
     const nextIndex = (currentIndex + 1) % positions.length;
-    const newPosition = positions[nextIndex];
-    console.log('🎯 [DEBUG] Next index:', nextIndex, 'New position:', newPosition);
-    
-    setPosition(newPosition);
-    console.log('🎯 [DEBUG] setPosition called with:', newPosition);
+    setPosition(positions[nextIndex]);
   };
 
   // Función para obtener las clases CSS según la posición - Solo para desktop
   const getPanelClasses = () => {
-    let classes = '';
     switch (position) {
       case 'top-left':
-        classes = 'lg:top-4 lg:left-4';
-        break;
+        return 'top-4 left-4';
       case 'top-right':
-        classes = 'lg:top-4 lg:right-4';
-        break;
+        return 'top-4 right-4';
       case 'bottom-left':
-        classes = 'lg:bottom-4 lg:left-4';
-        break;
+        return 'bottom-4 left-4';
       case 'bottom-right':
-        classes = 'lg:bottom-4 lg:right-4';
-        break;
+        return 'bottom-4 right-4';
       default:
-        classes = 'lg:top-4 lg:right-4';
+        return 'top-4 right-4';
     }
-    console.log('🎯 [DEBUG] getPanelClasses for position:', position, 'returning:', classes);
-    return classes;
   };
 
   // Clases responsivas del panel
@@ -512,23 +486,15 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       <div className="h-full w-full flex flex-col lg:flex-row overflow-hidden">
         {/* Área de dibujo - Ocupa todo el espacio en móvil/tablet */}
         <div className="flex-1 relative overflow-hidden">
-          <DrawingArea 
-            position={position === 'top-left' ? 'topLeft' as const : 
-                     position === 'top-right' ? 'topRight' as const : 
-                     position === 'bottom-left' ? 'bottomLeft' as const : 'bottomRight' as const} 
-            problem={problem} 
-          />
+          <DrawingArea position={position} problem={problem} />
         </div>
         
         {/* Panel de control - Responsivo */}
-        <div className={`fixed bottom-0 left-0 right-0 w-full border-t overflow-y-auto lg:absolute ${getPanelClasses()} lg:max-w-sm lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0 bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg lg:h-fit lg:max-h-[calc(100vh-2rem)] lg:left-auto lg:right-auto lg:bottom-auto lg:top-auto`}>
+        <div className="fixed bottom-0 left-0 right-0 w-full border-t overflow-y-auto lg:absolute lg:top-4 lg:right-4 lg:max-w-sm lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0 bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg lg:h-fit lg:max-h-[calc(100vh-2rem)]">
           {/* Botón para mover panel */}
           <div className="flex justify-between items-center mb-2">
             <button
-              onClick={() => {
-                console.log('🎯 [DEBUG] Button clicked!');
-                movePanel();
-              }}
+              onClick={movePanel}
               className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
               title="Mover panel a otra esquina"
             >
