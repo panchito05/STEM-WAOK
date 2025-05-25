@@ -3,7 +3,6 @@ import { AdditionProblem } from '../types';
 import { CloseButton } from './professor/CloseButton';
 import { DrawingArea } from './professor/DrawingArea';
 import { useProgress } from '../../../context/ProgressContext';
-import { SynchronizedLayoutProvider, useSynchronizedLayout } from './professor/context/SynchronizedLayoutContext';
 
 interface ProfessorModeProps {
   problem: AdditionProblem;
