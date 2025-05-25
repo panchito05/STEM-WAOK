@@ -1079,7 +1079,7 @@ export default function ProgressPage() {
                                         <ContextualTooltip 
                                           type="accuracy"
                                           additionalData={{
-                                            correct: Math.max(0, exercise.score - (exercise.revealedAnswers || 0)),
+                                            correct: exercise.userAnswers ? exercise.userAnswers.filter((a: any) => a && a.isCorrect).length : Math.max(0, exercise.score - (exercise.revealedAnswers || 0)),
                                             total: exercise.totalProblems,
                                             revealed: exercise.revealedAnswers || 0
                                           }}
