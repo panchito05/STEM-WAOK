@@ -890,55 +890,7 @@ export default function ProgressPage() {
                               </div>
                             </div>
                             
-                            {/* Tasa de Errores Comunes */}
-                            <div 
-                              className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
-                              onClick={() => toggleExplanation(`${module.id}-tasaError`)}
-                            >
-                              <div className="flex justify-between items-baseline mb-2">
-                                <p className="text-sm text-gray-500">Tasa de Error</p>
-                                <p className="font-semibold text-red-600">
-                                  {(() => {
-                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    if (moduleExercises.length === 0) return '0%';
-                                    
-                                    // Contar problemas incorrectos vs total usando múltiples fuentes
-                                    let totalProblemas = 0;
-                                    let problemasIncorrectos = 0;
-                                    
-                                    moduleExercises.forEach(ex => {
-                                      const extraData = ex.extra_data;
-                                      
-                                      if (extraData && extraData.problemDetails) {
-                                        // Fuente 1: problemDetails en extra_data
-                                        extraData.problemDetails.forEach((problem: any) => {
-                                          if (problem) {
-                                            totalProblemas++;
-                                            if (!problem.isCorrect || problem.status === 'revealed') {
-                                              problemasIncorrectos++;
-                                            }
-                                          }
-                                        });
-                                      } else if (ex.score !== undefined && ex.totalProblems !== undefined) {
-                                        // Fuente 2: datos básicos de score y totalProblems
-                                        totalProblemas += ex.totalProblems;
-                                        problemasIncorrectos += (ex.totalProblems - ex.score);
-                                      }
-                                    });
-                                    
-                                    if (totalProblemas === 0) return '0%';
-                                    const errorRate = (problemasIncorrectos / totalProblemas) * 100;
-                                    return `${Math.round(errorRate)}%`;
-                                  })()}
-                                </p>
-                              </div>
-                              <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
-                              {explanationVisible === `${module.id}-tasaError` && (
-                                <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
-                                  {explanations.tasaError}
-                                </div>
-                              )}
-                            </div>
+
                           </div>
                         </CardContent>
                       </Card>
