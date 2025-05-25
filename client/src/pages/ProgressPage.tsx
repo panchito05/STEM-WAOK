@@ -962,12 +962,10 @@ export default function ProgressPage() {
                             let totalProblems = 0;
                             
                             recentExercises.forEach((exercise: any) => {
-                              if (exercise.score !== undefined && exercise.totalProblems) {
-                                const revealedAnswers = exercise.revealedAnswers || 
-                                                       exercise.extraData?.revealedAnswers || 
-                                                       exercise.extra_data?.revealedAnswers || 0;
-                                const realScore = Math.max(0, exercise.score - revealedAnswers);
-                                totalCorrect += realScore;
+                              if (exercise.userAnswers && exercise.totalProblems) {
+                                // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
+                                const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
+                                totalCorrect += finalScore;
                                 totalProblems += exercise.totalProblems;
                               }
                             });
