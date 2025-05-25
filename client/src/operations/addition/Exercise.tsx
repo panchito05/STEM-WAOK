@@ -2275,7 +2275,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               key={key || `empty-key-${idx}`}
               variant="outline"
               className={`
-                h-12 text-lg font-semibold
+                h-16 text-xl font-semibold
                 transition-all duration-200
                 ${
                 key === ">" 
