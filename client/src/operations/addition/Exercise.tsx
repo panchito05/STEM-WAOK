@@ -2260,7 +2260,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             
             {/* Rewards button - Mobile version (icon only) */}
             <div className="flex flex-col items-center sm:hidden">
-              <Link href="/rewards-demo">
+              <Link href="/simple-rewards">
                 <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs text-yellow-600 hover:bg-yellow-50 h-7 border border-yellow-300 bg-yellow-50">
                   <Award className="h-4 w-4" />
                 </Button>
@@ -2271,7 +2271,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
             
             {/* Rewards button - Desktop version (with text) */}
-            <Link href="/rewards-demo" className="hidden sm:flex">
+            <Link href="/simple-rewards" className="hidden sm:flex">
               <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-yellow-600 hover:bg-yellow-50 border border-yellow-300 bg-yellow-50">
                 <Award className="h-4 w-4" /> 
                 <span>
