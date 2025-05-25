@@ -459,19 +459,32 @@ export function awardReward(
     module?: string
   }
 ) {
+  console.log(`🎁 [RECOMPENSAS-AWARD] Intentando otorgar recompensa: ${rewardId}`);
+  console.log(`🎁 [RECOMPENSAS-AWARD] Datos del módulo:`, moduleData);
+  
   const { addReward, earnedRewards } = useRewardsStore.getState();
   
+  console.log(`🎁 [RECOMPENSAS-AWARD] Total de recompensas ya obtenidas: ${earnedRewards.length}`);
+  console.log(`🎁 [RECOMPENSAS-AWARD] IDs de recompensas ya obtenidas:`, earnedRewards.map(r => r.id));
+  
   // Verificar si ya tiene esta recompensa
-  if (earnedRewards.some(r => r.id === rewardId)) {
+  const alreadyHas = earnedRewards.some(r => r.id === rewardId);
+  console.log(`🎁 [RECOMPENSAS-AWARD] ¿Ya tiene la recompensa ${rewardId}? ${alreadyHas}`);
+  
+  if (alreadyHas) {
+    console.log(`🎁 [RECOMPENSAS-AWARD] ABORTANDO: Recompensa ${rewardId} ya obtenida`);
     return false;
   }
   
   // Obtener la recompensa del catálogo
   const rewardTemplate = rewardsCatalog[rewardId];
   if (!rewardTemplate) {
-    console.error(`Recompensa con ID ${rewardId} no encontrada en el catálogo`);
+    console.error(`🎁 [RECOMPENSAS-AWARD] ERROR: Recompensa con ID ${rewardId} no encontrada en el catálogo`);
+    console.log(`🎁 [RECOMPENSAS-AWARD] IDs disponibles en catálogo:`, Object.keys(rewardsCatalog));
     return false;
   }
+  
+  console.log(`🎁 [RECOMPENSAS-AWARD] ✅ Recompensa encontrada en catálogo:`, rewardTemplate.name);
   
   // Crear la recompensa con fecha actual
   const reward: Reward = {
@@ -480,8 +493,12 @@ export function awardReward(
     isNew: true
   };
   
+  console.log(`🎁 [RECOMPENSAS-AWARD] ✅ OTORGANDO RECOMPENSA:`, reward);
+  
   // Añadir la recompensa
   addReward(reward);
+  
+  console.log(`🎁 [RECOMPENSAS-AWARD] ✅ Recompensa ${rewardId} añadida al store exitosamente`);
   return true;
 }
 
@@ -493,51 +510,88 @@ export function checkAndAwardRewards(
     module?: string
   }
 ) {
+  console.log("🏆 [RECOMPENSAS-SISTEMA] Iniciando verificación de recompensas");
+  console.log("🏆 [RECOMPENSAS-SISTEMA] Condiciones recibidas:", conditions);
+  console.log("🏆 [RECOMPENSAS-SISTEMA] Datos del módulo:", moduleData);
+  
   const awardedRewards: Reward[] = [];
+  const { earnedRewards } = useRewardsStore.getState();
+  
+  console.log("🏆 [RECOMPENSAS-SISTEMA] Recompensas ya obtenidas:", earnedRewards.map(r => r.id));
   
   // Verificar condiciones para las recompensas de problemas completados
   if (conditions.problemsCompleted) {
+    console.log(`🏆 [RECOMPENSAS-SISTEMA] Verificando problemas completados: ${conditions.problemsCompleted}`);
+    
     if (conditions.problemsCompleted >= 10) {
-      const success = awardReward('addition-novice', moduleData);
-      if (success && rewardsCatalog['addition-novice']) {
-        awardedRewards.push({
-          ...rewardsCatalog['addition-novice'],
-          dateEarned: new Date(),
-          isNew: true
-        });
+      console.log("🏆 [RECOMPENSAS-SISTEMA] Cumple condición para addition-novice (10+ problemas)");
+      const alreadyHas = earnedRewards.some(r => r.id === 'addition-novice');
+      console.log(`🏆 [RECOMPENSAS-SISTEMA] ¿Ya tiene addition-novice? ${alreadyHas}`);
+      
+      if (!alreadyHas) {
+        const success = awardReward('addition-novice', moduleData);
+        console.log(`🏆 [RECOMPENSAS-SISTEMA] Resultado otorgar addition-novice: ${success}`);
+        if (success && rewardsCatalog['addition-novice']) {
+          awardedRewards.push({
+            ...rewardsCatalog['addition-novice'],
+            dateEarned: new Date(),
+            isNew: true
+          });
+        }
       }
     }
     
     if (conditions.problemsCompleted >= 25) {
-      const success = awardReward('addition-enthusiast', moduleData);
-      if (success && rewardsCatalog['addition-enthusiast']) {
-        awardedRewards.push({
-          ...rewardsCatalog['addition-enthusiast'],
-          dateEarned: new Date(),
-          isNew: true
-        });
+      console.log("🏆 [RECOMPENSAS-SISTEMA] Cumple condición para addition-enthusiast (25+ problemas)");
+      const alreadyHas = earnedRewards.some(r => r.id === 'addition-enthusiast');
+      console.log(`🏆 [RECOMPENSAS-SISTEMA] ¿Ya tiene addition-enthusiast? ${alreadyHas}`);
+      
+      if (!alreadyHas) {
+        const success = awardReward('addition-enthusiast', moduleData);
+        console.log(`🏆 [RECOMPENSAS-SISTEMA] Resultado otorgar addition-enthusiast: ${success}`);
+        if (success && rewardsCatalog['addition-enthusiast']) {
+          awardedRewards.push({
+            ...rewardsCatalog['addition-enthusiast'],
+            dateEarned: new Date(),
+            isNew: true
+          });
+        }
       }
     }
     
     if (conditions.problemsCompleted >= 50) {
-      const success = awardReward('addition-expert', moduleData);
-      if (success && rewardsCatalog['addition-expert']) {
-        awardedRewards.push({
-          ...rewardsCatalog['addition-expert'],
-          dateEarned: new Date(),
-          isNew: true
-        });
+      console.log("🏆 [RECOMPENSAS-SISTEMA] Cumple condición para addition-expert (50+ problemas)");
+      const alreadyHas = earnedRewards.some(r => r.id === 'addition-expert');
+      console.log(`🏆 [RECOMPENSAS-SISTEMA] ¿Ya tiene addition-expert? ${alreadyHas}`);
+      
+      if (!alreadyHas) {
+        const success = awardReward('addition-expert', moduleData);
+        console.log(`🏆 [RECOMPENSAS-SISTEMA] Resultado otorgar addition-expert: ${success}`);
+        if (success && rewardsCatalog['addition-expert']) {
+          awardedRewards.push({
+            ...rewardsCatalog['addition-expert'],
+            dateEarned: new Date(),
+            isNew: true
+          });
+        }
       }
     }
     
     if (conditions.problemsCompleted >= 100) {
-      const success = awardReward('addition-master', moduleData);
-      if (success && rewardsCatalog['addition-master']) {
-        awardedRewards.push({
-          ...rewardsCatalog['addition-master'],
-          dateEarned: new Date(),
-          isNew: true
-        });
+      console.log("🏆 [RECOMPENSAS-SISTEMA] Cumple condición para addition-master (100+ problemas)");
+      const alreadyHas = earnedRewards.some(r => r.id === 'addition-master');
+      console.log(`🏆 [RECOMPENSAS-SISTEMA] ¿Ya tiene addition-master? ${alreadyHas}`);
+      
+      if (!alreadyHas) {
+        const success = awardReward('addition-master', moduleData);
+        console.log(`🏆 [RECOMPENSAS-SISTEMA] Resultado otorgar addition-master: ${success}`);
+        if (success && rewardsCatalog['addition-master']) {
+          awardedRewards.push({
+            ...rewardsCatalog['addition-master'],
+            dateEarned: new Date(),
+            isNew: true
+          });
+        }
       }
     }
   }

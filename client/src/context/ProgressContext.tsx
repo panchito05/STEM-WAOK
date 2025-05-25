@@ -401,17 +401,32 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
   // Nueva función para verificar recompensas de milestones
   const checkMilestoneRewards = async () => {
     try {
-      // Calcular el total de problemas completados basado en el historial actual
+      console.log("🔍 [RECOMPENSAS-DEBUG] Iniciando verificación de milestones...");
+      console.log("🔍 [RECOMPENSAS-DEBUG] Historial de ejercicios actual:", exerciseHistory);
+      
+      // CORRECCIÓN CRÍTICA: Calcular problemas CORRECTAMENTE RESUELTOS, no el total de problemas
       const totalProblemsCompleted = exerciseHistory.reduce((acc, exercise) => {
-        return acc + (exercise.totalProblems || 0);
+        const problemasCorrectos = exercise.score || 0;
+        console.log(`🔍 [RECOMPENSAS-DEBUG] Ejercicio ID:${exercise.id}, Score:${exercise.score}, TotalProblems:${exercise.totalProblems}, Sumando:${problemasCorrectos}`);
+        return acc + problemasCorrectos;
       }, 0);
 
-      console.log(`🏆 Verificando milestones - Total problemas completados: ${totalProblemsCompleted}`);
+      // Logs adicionales para diagnóstico completo
+      const totalEjercicios = exerciseHistory.length;
+      const totalProblemasEnviados = exerciseHistory.reduce((acc, ex) => acc + (ex.totalProblems || 0), 0);
+      
+      console.log(`🏆 [RECOMPENSAS-DEBUG] ESTADÍSTICAS COMPLETAS:`);
+      console.log(`   - Total ejercicios realizados: ${totalEjercicios}`);
+      console.log(`   - Total problemas enviados: ${totalProblemasEnviados}`);
+      console.log(`   - Total problemas CORRECTOS (para recompensas): ${totalProblemsCompleted}`);
+      console.log(`   - Diferencia (errores): ${totalProblemasEnviados - totalProblemsCompleted}`);
 
       // Verificar y otorgar recompensas de milestones
       const rewardConditions = {
         problemsCompleted: totalProblemsCompleted
       };
+
+      console.log(`🏆 [RECOMPENSAS-DEBUG] Condiciones para recompensas:`, rewardConditions);
 
       const awardedRewards = checkAndAwardRewards(rewardConditions, {
         theme: 'addition',
@@ -419,10 +434,12 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
       });
 
       if (awardedRewards && awardedRewards.length > 0) {
-        console.log(`🎉 Recompensas de milestone otorgadas:`, awardedRewards);
+        console.log(`🎉 [RECOMPENSAS-DEBUG] Recompensas de milestone otorgadas:`, awardedRewards);
+      } else {
+        console.log(`⏳ [RECOMPENSAS-DEBUG] No se otorgaron recompensas. Próximo milestone en: ${Math.max(10, 25, 50, 100) - totalProblemsCompleted} problemas`);
       }
     } catch (error) {
-      console.error("Error verificando recompensas de milestones:", error);
+      console.error("❌ [RECOMPENSAS-DEBUG] Error verificando recompensas de milestones:", error);
     }
   };
 
