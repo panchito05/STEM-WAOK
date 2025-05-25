@@ -1079,19 +1079,15 @@ export default function ProgressPage() {
                                         <ContextualTooltip 
                                           type="accuracy"
                                           additionalData={{
-                                            correct: exercise.userAnswers ? exercise.userAnswers.filter((a: any) => a && a.isCorrect).length : Math.max(0, exercise.score - (exercise.revealedAnswers || 0)),
+                                            correct: Math.max(0, exercise.score - (exercise.revealedAnswers || 0)),
                                             total: exercise.totalProblems,
                                             revealed: exercise.revealedAnswers || 0
                                           }}
                                         />
                                       </div>
                                       <p className="text-center text-lg font-bold text-blue-600">
-                                        {exercise.userAnswers ? (() => {
-                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL + PORCENTAJE
-                                          const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                          const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
-                                          return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
-                                        })() : `${Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/${exercise.totalProblems}`}
+                                        {/* Mostrar correctamente el score teniendo en cuenta las respuestas reveladas */}
+                                        {Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/{exercise.totalProblems}
                                       </p>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-md">
