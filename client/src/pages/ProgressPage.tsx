@@ -623,7 +623,13 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500 text-center">Racha Mas Larga</p>
                                 <p className="text-2xl font-bold text-amber-600">
                                   {(() => {
-                                    // Calcular la racha más larga de respuestas correctas consecutivas
+                                    // Usar el valor persistente de la racha máxima desde localStorage
+                                    if (module.id === 'addition') {
+                                      const maxStreak = parseInt(localStorage.getItem('addition_maxConsecutiveStreak') || '0', 10);
+                                      return maxStreak;
+                                    }
+                                    
+                                    // Para otros módulos, mantener el cálculo existente
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     let longestStreak = 0;
                                     
