@@ -2269,13 +2269,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         </div>
         {/* Number Keypad - Compact Design */}
-        <div className="grid grid-cols-3 gap-4 max-w-lg sm:max-w-xl mx-auto px-4">
+        <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", ">", "0", "<"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
               className={`
-                h-16 text-xl font-semibold w-full min-w-0
+                h-12 text-lg font-semibold
                 transition-all duration-200
                 ${
                 key === ">" 
