@@ -2044,6 +2044,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div className="flex flex-row justify-between items-center sm:flex-col sm:items-start">
               <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+              <span className="sm:hidden font-medium text-gray-700 text-sm">
+                Problema {currentProblemIndex + 1} de {settings.problemCount}
+              </span>
             </div>
             
             {/* Top row info - Timer and basic stats */}
