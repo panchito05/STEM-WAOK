@@ -635,25 +635,43 @@ export default function ProgressPage() {
                                       console.log("No localStorage disponible");
                                     }
                                     
-                                    // Buscar en todos los ejercicios guardados
-                                    moduleExercises.forEach(ex => {
-                                      // Verificar en extra_data
+                                    // Buscar en todos los ejercicios guardados - MEJORADO
+                                    console.log(`[RACHA-DEBUG] Ejercicios encontrados para módulo ${module.id}:`, moduleExercises.length);
+                                    
+                                    moduleExercises.forEach((ex, idx) => {
+                                      console.log(`[RACHA-DEBUG] Ejercicio ${idx + 1}:`, {
+                                        id: ex.id,
+                                        extra_data: ex.extra_data,
+                                        score: ex.score,
+                                        totalProblems: ex.totalProblems
+                                      });
+                                      
+                                      // Verificar en extra_data (donde se está guardando según Exercise.tsx)
                                       const dbStreak = ex.extra_data?.longestStreak || 0;
                                       const dbConsecutive = ex.extra_data?.consecutiveCorrect || 0;
                                       
-                                      // Verificar en campos directos también
-                                      const directStreak = ex.longestStreak || 0;
-                                      const directConsecutive = ex.consecutiveCorrect || 0;
+                                      // Verificar en campos directos también por si acaso
+                                      const directStreak = (ex as any).longestStreak || 0;
+                                      const directConsecutive = (ex as any).consecutiveCorrect || 0;
                                       
                                       // Tomar el valor más alto encontrado
                                       const maxFromThisExercise = Math.max(dbStreak, dbConsecutive, directStreak, directConsecutive);
-                                      longestStreak = Math.max(longestStreak, maxFromThisExercise);
+                                      
+                                      console.log(`[RACHA-DEBUG] Ejercicio ${idx + 1} valores:`, {
+                                        dbStreak,
+                                        dbConsecutive, 
+                                        directStreak,
+                                        directConsecutive,
+                                        maxFromThisExercise
+                                      });
+                                      
+                                      if (maxFromThisExercise > longestStreak) {
+                                        longestStreak = maxFromThisExercise;
+                                        console.log(`[RACHA-DEBUG] Nueva racha más larga: ${longestStreak}`);
+                                      }
                                     });
                                     
-                                    // Si aún es 0, usar un valor mínimo de 8 ya que el usuario reporta tener 8
-                                    if (longestStreak === 0 && moduleExercises.length > 0) {
-                                      longestStreak = 8; // Valor que el usuario reporta tener actualmente
-                                    }
+
                                     
                                     console.log(`[RACHA-DISPLAY] Módulo ${module.id}: Racha más larga = ${longestStreak}`);
                                     return longestStreak;
