@@ -450,46 +450,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 className={theme.bgLight}
               />
             </div>
-            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="enable-rewards" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">🏆</span>{isEnglish ? "Enable random rewards system" : "Activar sistema de recompensas aleatorias"}
-                <div className="flex items-center ml-2 mt-1">
-                  <span className="mx-0.5 text-xl">🏅</span>
-                  <span className="mx-0.5 text-xl">🏆</span>
-                  <span className="mx-0.5 text-xl">⭐</span>
-                </div>
-              </Label>
-              <Switch
-                id="enable-rewards"
-                checked={localSettings.enableRewards}
-                onCheckedChange={(checked) => handleUpdateSetting("enableRewards", checked)}
-                className={theme.bgLight}
-              />
-            </div>
-            {localSettings.enableRewards && (
-              <div className="mt-3 p-3 rounded-md bg-white/70 border border-rose-200 ml-[0px] mr-[0px]">
-                <p className={`text-sm ${theme.accent}`}>
-                  <span className="mr-2">🎲</span>{isEnglish ? "Rewards will appear randomly during exercises:" : "Las recompensas aparecerán de forma aleatoria durante los ejercicios:"}
-                </p>
-                <div className="flex flex-wrap gap-3 mt-2 justify-center">
-                  <div className={`p-2 rounded-md bg-white/90 border ${theme.border} flex flex-col items-center`}>
-                    <span className="text-2xl">🏅</span>
-                    <span className={`text-xs font-medium ${theme.text}`}>{isEnglish ? "Medals" : "Medallas"}</span>
-                  </div>
-                  <div className={`p-2 rounded-md bg-white/90 border ${theme.border} flex flex-col items-center`}>
-                    <span className="text-2xl">🏆</span>
-                    <span className={`text-xs font-medium ${theme.text}`}>{isEnglish ? "Trophies" : "Trofeos"}</span>
-                  </div>
-                  <div className={`p-2 rounded-md bg-white/90 border ${theme.border} flex flex-col items-center`}>
-                    <span className="text-2xl">⭐</span>
-                    <span className={`text-xs font-medium ${theme.text}`}>{isEnglish ? "Stars" : "Estrellas"}</span>
-                  </div>
-                </div>
-                <p className={`text-xs mt-3 ${theme.textSecondary} text-center italic`}>
-                  {isEnglish ? "The system will automatically choose which reward to display each time" : "El sistema elegirá automáticamente qué recompensa mostrar en cada ocasión"}
-                </p>
-              </div>
-            )}
+
           </div>
         </div>
 

@@ -215,7 +215,7 @@ export default function ProgressPage() {
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isClearing || (exerciseHistory.length === 0 && earnedRewards.length === 0)}>
+                <Button variant="outline" size="sm" disabled={isClearing || exerciseHistory.length === 0}>
                   {isClearing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
