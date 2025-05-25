@@ -674,14 +674,11 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500">Average Accuracy</p>
                                 <p className="text-sm font-medium text-blue-600">
                                   {(() => {
-                                    // Usar exactamente el mismo cálculo que Overall Summary
-                                    const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    if (moduleExercises.length === 0) return 'N/A';
-                                    
+                                    // COPIAR EXACTAMENTE el cálculo del Overall Summary
                                     let totalCorrect = 0;
                                     let totalProblems = 0;
                                     
-                                    moduleExercises.forEach((exercise: any) => {
+                                    recentExercises.forEach((exercise: any) => {
                                       if (exercise.score !== undefined && exercise.totalProblems) {
                                         const revealedAnswers = exercise.revealedAnswers || 
                                                                exercise.extraData?.revealedAnswers || 
@@ -703,14 +700,11 @@ export default function ProgressPage() {
                                   className="bg-blue-600 h-2.5 rounded-full"
                                   style={{ 
                                     width: `${(() => {
-                                      // Usar exactamente el mismo cálculo que Overall Summary
-                                      const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                      if (moduleExercises.length === 0) return 0;
-                                      
+                                      // COPIAR EXACTAMENTE el cálculo del Overall Summary
                                       let totalCorrect = 0;
                                       let totalProblems = 0;
                                       
-                                      moduleExercises.forEach((exercise: any) => {
+                                      recentExercises.forEach((exercise: any) => {
                                         if (exercise.score !== undefined && exercise.totalProblems) {
                                           const revealedAnswers = exercise.revealedAnswers || 
                                                                  exercise.extraData?.revealedAnswers || 

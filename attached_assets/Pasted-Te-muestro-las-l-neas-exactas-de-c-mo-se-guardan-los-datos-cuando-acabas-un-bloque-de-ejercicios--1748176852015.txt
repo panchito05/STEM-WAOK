@@ -1,0 +1,59 @@
+Te muestro las líneas exactas de cómo se guardan los datos cuando acabas un bloque de ejercicios:
+
+Líneas principales donde se guardan los datos:
+Ubicación: client/src/operations/addition/Exercise.tsx (líneas 1752-1794)
+
+// VERSIÓN 4.0: Estructura simplificada y optimizada para almacenamiento de datos
+saveExerciseResult({
+  operationId: "addition",
+  date: new Date().toISOString(),
+  score: puntajeCorregido,
+  totalProblems: problemsList.length,
+  timeSpent: timer,
+  difficulty: finalLevel as string,
+  
+  // Estadísticas precisas
+  accuracy: Math.round((puntajeCorregido / problemsList.length) * 100),
+  avgTimePerProblem: avgTimePerProblem,
+  avgAttempts: avgAttemptsValue,
+  revealedAnswers: revealedAnswers,
+  
+  // Datos extra con estructura clara
+  extra_data: {
+    // Metadatos para trazabilidad
+    version: "4.0",
+    timestamp: Date.now(),
+    exerciseId: `addition_${Date.now()}`,
+    
+    // Almacenar los problemas en una ubicación consistente
+    problemDetails: problemasCapturados,
+    
+    // Incluir también en ubicaciones alternativas para compatibilidad
+    problems: problemasCapturados,
+    capturedProblems: problemasCapturados,
+    
+    // Incluir información específica del tipo de ejercicio
+    exerciseType: "addition",
+    
+    // Incluir resumen para facilitar acceso rápido
+    summary: {
+      operation: "addition",
+      level: finalLevel,
+      score: {
+        correct: puntajeCorregido,
+        total: problemsList.length
+      },
+      time: timer
+    }
+  }
+});
+Cómo se calcula revealedAnswers:
+Línea 1451:
+
+const revealedAnswers = userAnswersHistory.filter(a => a && a.status === 'revealed').length;
+Explicación:
+
+Toma el historial de respuestas del usuario (userAnswersHistory)
+Filtra solo las que tienen status === 'revealed' (cuando presionaste el botón de revelar respuesta)
+Cuenta cuántas hay con .length
+Esto significa que cada vez que presionas el botón de "revelar respuesta" durante un ejercicio, se marca esa respuesta con status: 'revealed', y al final del ejercicio se cuenta cuántas veces usaste esa función.
