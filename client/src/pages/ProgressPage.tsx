@@ -25,6 +25,28 @@ export default function ProgressPage() {
   const [localExerciseHistory, setLocalExerciseHistory] = useState<any[]>([]);
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [explanationVisible, setExplanationVisible] = useState<string | null>(null);
+
+  // Explicaciones para cada métrica
+  const explanations = {
+    exercisesCompleted: "Cuenta el número total de sesiones de ejercicios que has completado en este módulo.",
+    problemsSolved: "Suma todos los problemas matemáticos individuales que has resuelto, incluyendo problemas de múltiples ejercicios.",
+    avgTimePerProblem: "Calcula el tiempo promedio que tardas en resolver cada problema individual, dividiendo el tiempo total entre el número de problemas.",
+    highestLevel: "Muestra el nivel de dificultad más alto que has alcanzado en este módulo (Principiante, Elemental, Intermedio, Avanzado, Experto).",
+    longestStreak: "Registra la secuencia más larga de respuestas correctas consecutivas que has logrado sin cometer errores.",
+    answersRevealed: "Cuenta cuántas veces has usado la función 'Revelar respuesta' cuando no pudiste resolver un problema.",
+    averageAccuracy: "Calcula tu porcentaje promedio de respuestas correctas en todos los ejercicios del módulo.",
+    levelProgress: "Muestra tu progreso hacia el siguiente nivel basado en respuestas correctas consecutivas (10 correctas = nuevo nivel).",
+    difficultyDistribution: "Muestra gráficamente qué porcentaje de tus ejercicios fueron de cada nivel de dificultad.",
+    timeImprovement: "Compara tu velocidad promedio en los primeros ejercicios vs. los más recientes para mostrar si has mejorado.",
+    problemasDesafiantes: "Cuenta problemas que requirieron múltiples intentos o que tuviste que revelar la respuesta.",
+    tasaError: "Calcula el porcentaje de respuestas incorrectas del total de problemas intentados."
+  };
+
+  // Función para alternar la visibilidad de explicaciones
+  const toggleExplanation = (metricKey: string) => {
+    setExplanationVisible(explanationVisible === metricKey ? null : metricKey);
+  };
   
   // Obtener el parámetro tab de la URL para seleccionar la pestaña inicial
   const [activeTab, setActiveTab] = useState(() => {
@@ -471,11 +493,23 @@ export default function ProgressPage() {
                         <CardContent className="p-5 bg-gradient-to-b from-white to-blue-50">
                           <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div 
+                                className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                                onClick={() => toggleExplanation(`${module.id}-exercisesCompleted`)}
+                              >
                                 <p className="text-sm text-gray-500">Exercises Completed</p>
                                 <p className="text-2xl font-bold">{progress?.totalCompleted || 0}</p>
+                                <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                                {explanationVisible === `${module.id}-exercisesCompleted` && (
+                                  <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                    {explanations.exercisesCompleted}
+                                  </div>
+                                )}
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div 
+                                className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                                onClick={() => toggleExplanation(`${module.id}-problemsSolved`)}
+                              >
                                 <p className="text-sm text-gray-500">Problems Solved</p>
                                 <p className="text-2xl font-bold">
                                   {(() => {
@@ -485,12 +519,21 @@ export default function ProgressPage() {
                                     return problemsSolved;
                                   })()}
                                 </p>
+                                <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                                {explanationVisible === `${module.id}-problemsSolved` && (
+                                  <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                    {explanations.problemsSolved}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
                             {/* Nuevas métricas */}
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div 
+                                className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                                onClick={() => toggleExplanation(`${module.id}-avgTimePerProblem`)}
+                              >
                                 <p className="text-sm text-gray-500">Avg. Time per Problem</p>
                                 <p className="text-2xl font-bold text-purple-600">
                                   {(() => {
@@ -518,8 +561,17 @@ export default function ProgressPage() {
                                     }
                                   })()}
                                 </p>
+                                <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                                {explanationVisible === `${module.id}-avgTimePerProblem` && (
+                                  <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                    {explanations.avgTimePerProblem}
+                                  </div>
+                                )}
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div 
+                                className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                                onClick={() => toggleExplanation(`${module.id}-highestLevel`)}
+                              >
                                 <p className="text-sm text-gray-500">Highest Level</p>
                                 <p className="text-lg font-bold text-emerald-600 overflow-hidden text-ellipsis">
                                   {(() => {
@@ -554,11 +606,20 @@ export default function ProgressPage() {
                                     return highestLevel >= 0 ? levelNames[highestLevel] : 'N/A';
                                   })()}
                                 </p>
+                                <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                                {explanationVisible === `${module.id}-highestLevel` && (
+                                  <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                    {explanations.highestLevel}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div 
+                                className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                                onClick={() => toggleExplanation(`${module.id}-longestStreak`)}
+                              >
                                 <p className="text-sm text-gray-500">Longest Streak</p>
                                 <p className="text-2xl font-bold text-amber-600">
                                   {(() => {
@@ -567,29 +628,47 @@ export default function ProgressPage() {
                                     let longestStreak = 0;
                                     
                                     moduleExercises.forEach(ex => {
-                                      const streak = ex.extraData?.longestStreak || ex.extraData?.consecutiveCorrect || 0;
+                                      const streak = ex.extra_data?.longestStreak || ex.extra_data?.consecutiveCorrect || 0;
                                       if (streak > longestStreak) longestStreak = streak;
                                     });
                                     
                                     return longestStreak;
                                   })()}
                                 </p>
+                                <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                                {explanationVisible === `${module.id}-longestStreak` && (
+                                  <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                    {explanations.longestStreak}
+                                  </div>
+                                )}
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div 
+                                className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                                onClick={() => toggleExplanation(`${module.id}-answersRevealed`)}
+                              >
                                 <p className="text-sm text-gray-500">Answers Revealed</p>
                                 <p className="text-2xl font-bold text-red-600">
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     const totalRevealed = moduleExercises.reduce((acc, ex) => 
-                                      acc + (ex.revealedAnswers || ex.extraData?.revealedAnswers || 0), 0);
+                                      acc + (ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0), 0);
                                     
                                     return totalRevealed;
                                   })()}
                                 </p>
+                                <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                                {explanationVisible === `${module.id}-answersRevealed` && (
+                                  <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                    {explanations.answersRevealed}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
-                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                            <div 
+                              className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                              onClick={() => toggleExplanation(`${module.id}-averageAccuracy`)}
+                            >
                               <div className="flex justify-between items-baseline mb-2">
                                 <p className="text-sm text-gray-500">Average Accuracy</p>
                                 <p className="text-sm font-medium text-blue-600">
@@ -602,10 +681,19 @@ export default function ProgressPage() {
                                   style={{ width: `${progress?.averageScore ? Math.round(progress.averageScore * 100) : 0}%` }}
                                 ></div>
                               </div>
+                              <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                              {explanationVisible === `${module.id}-averageAccuracy` && (
+                                <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                  {explanations.averageAccuracy}
+                                </div>
+                              )}
                             </div>
                             
                             {/* Progreso de nivel */}
-                            <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                            <div 
+                              className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                              onClick={() => toggleExplanation(`${module.id}-levelProgress`)}
+                            >
                               <div className="flex justify-between items-baseline mb-2">
                                 <p className="text-sm text-gray-500">Level Progress</p>
                                 <p className="font-semibold text-green-600">
@@ -652,6 +740,12 @@ export default function ProgressPage() {
                                   }}
                                 ></div>
                               </div>
+                              <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                              {explanationVisible === `${module.id}-levelProgress` && (
+                                <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                  {explanations.levelProgress}
+                                </div>
+                              )}
                             </div>
                             
                             {/* Gráfico de distribución de dificultad */}
