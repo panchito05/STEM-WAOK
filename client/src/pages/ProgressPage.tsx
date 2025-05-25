@@ -962,10 +962,12 @@ export default function ProgressPage() {
                             let totalProblems = 0;
                             
                             recentExercises.forEach((exercise: any) => {
-                              if (exercise.userAnswers && exercise.totalProblems) {
-                                // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
-                                const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                totalCorrect += finalScore;
+                              if (exercise.score !== undefined && exercise.totalProblems) {
+                                const revealedAnswers = exercise.revealedAnswers || 
+                                                       exercise.extraData?.revealedAnswers || 
+                                                       exercise.extra_data?.revealedAnswers || 0;
+                                const realScore = Math.max(0, exercise.score - revealedAnswers);
+                                totalCorrect += realScore;
                                 totalProblems += exercise.totalProblems;
                               }
                             });
@@ -1033,11 +1035,17 @@ export default function ProgressPage() {
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              {exercise.userAnswers && exercise.totalProblems ? (() => {
-                                // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
-                                const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
-                                return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
+                              {exercise.score !== undefined && exercise.totalProblems ? (() => {
+                                // Calcular el score real excluyendo respuestas reveladas
+                                // Verificar múltiples fuentes para revealedAnswers
+                                const revealedAnswers = exercise.revealedAnswers || 
+                                                       exercise.extraData?.revealedAnswers || 
+                                                       exercise.extra_data?.revealedAnswers || 
+                                                       exercise.extra_data?.screenshot?.scoreData?.revealed?.value || 
+                                                       0;
+                                const realScore = Math.max(0, exercise.score - revealedAnswers);
+                                const percentage = Math.round((realScore / exercise.totalProblems) * 100);
+                                return `${realScore}/${exercise.totalProblems} (${percentage}%)`;
                               })() :
                                 exercise.extraData?.accuracy ? 
                                   `${Math.round(exercise.extraData.accuracy)}%` : 
@@ -1073,27 +1081,7 @@ export default function ProgressPage() {
                                   </div>
 
                                   <div className="grid grid-cols-3 gap-2">
-                                    <div className="bg-blue-50 p-3 rounded-md">
-                                      <div className="flex items-center justify-center mb-1">
-                                        <p className="text-center text-sm text-gray-600">Score</p>
-                                        <ContextualTooltip 
-                                          type="accuracy"
-                                          additionalData={{
-                                            correct: Math.max(0, exercise.score - (exercise.revealedAnswers || 0)),
-                                            total: exercise.totalProblems,
-                                            revealed: exercise.revealedAnswers || 0
-                                          }}
-                                        />
-                                      </div>
-                                      <p className="text-center text-lg font-bold text-blue-600">
-                                        {exercise.userAnswers ? (() => {
-                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL + PORCENTAJE
-                                          const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                          const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
-                                          return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
-                                        })() : `${Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/${exercise.totalProblems}`}
-                                      </p>
-                                    </div>
+
                                     <div className="bg-green-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Accuracy</p>
                                       <p className="text-center text-lg font-bold text-green-600">
