@@ -2251,21 +2251,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   </TooltipProvider>
                 )}
 
-                {/* CONTADOR DE PUNTOS TOTALES - Siempre visible */}
-                {!viewingPrevious && (
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="font-medium p-1 rounded border-2 bg-yellow-100 text-yellow-800 border-yellow-400">
-                          ⭐ {rewardStats.totalPoints} pts
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Puntos totales acumulados en recompensas</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+
                 <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" :
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" :
@@ -2383,6 +2369,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <Link href="/rewards">
                 <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs text-yellow-600 hover:bg-yellow-50 h-7 border border-yellow-300 bg-yellow-50">
                   <Award className="h-4 w-4" />
+                  <span className="text-xs font-bold">⭐{rewardStats.totalPoints}</span>
                 </Button>
               </Link>
               <span className="text-xs mt-1 text-yellow-600">
@@ -2395,7 +2382,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-yellow-600 hover:bg-yellow-50 border border-yellow-300 bg-yellow-50">
                 <Award className="h-4 w-4" /> 
                 <span>
-                  {isEnglish ? "View Rewards" : "Ver Recompensas"}
+                  {isEnglish ? "View Rewards" : "Ver Recompensas"} (⭐{rewardStats.totalPoints} pts)
                 </span>
               </Button>
             </Link>
