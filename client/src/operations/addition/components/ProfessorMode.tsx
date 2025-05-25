@@ -28,7 +28,10 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [attempts, setAttempts] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [position, setPosition] = useState('top-right');
+  const [position, setPosition] = useState(() => {
+    console.log(`🔍 [POSITION-STATE] Inicializando estado position con: "top-right"`);
+    return 'top-right';
+  });
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
     problem: AdditionProblem;
@@ -48,6 +51,12 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
   // Obtener función de guardado del contexto
   const { saveExerciseResult } = useProgress();
+
+  // Effect para rastrear cambios en el estado position
+  useEffect(() => {
+    console.log(`🔍 [POSITION-EFFECT] Position cambió a: "${position}"`);
+    console.log(`🔍 [POSITION-EFFECT] Timestamp del cambio: ${Date.now()}`);
+  }, [position]);
 
   // FUNCIÓN PARA GUARDAR DATOS EXACTAMENTE COMO EL MODO NORMAL
   const saveExerciseDataLikeNormalMode = async (stats: any, history: any[]) => {
@@ -319,6 +328,10 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   // Sistema robusto de movimiento sincronizado en sentido horario
   // Panel de control y paleta de colores se mueven juntos de forma coordinada
   const movePanel = () => {
+    console.log(`🔍 [MOVE-PANEL] ===== INICIO MOVIMIENTO =====`);
+    console.log(`🔍 [MOVE-PANEL] Posición actual: "${position}"`);
+    console.log(`🔍 [MOVE-PANEL] Timestamp: ${Date.now()}`);
+    
     // Configuración robusta de posiciones sincronizadas:
     // Posición 1: Panel (top-left) + Colores (right)
     // Posición 2: Panel (top-right) + Colores (right) 
@@ -330,6 +343,8 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       { panel: 'bottomRight', colors: 'left' }, // Posición 3
       { panel: 'bottomLeft', colors: 'left' }   // Posición 4
     ];
+    
+    console.log(`🔍 [MOVE-PANEL] Posiciones disponibles:`, synchronizedPositions);
     
     // Mapeo de posiciones actuales a índices para mantener compatibilidad
     const positionToIndex = {
@@ -343,15 +358,25 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       'bottomLeft': 3
     };
     
+    console.log(`🔍 [MOVE-PANEL] Mapeo de posiciones:`, positionToIndex);
+    
     const currentIndex = positionToIndex[position] || 1; // Default a posición 2
+    console.log(`🔍 [MOVE-PANEL] Índice actual calculado: ${currentIndex} (position: "${position}")`);
+    
     const nextIndex = (currentIndex + 1) % synchronizedPositions.length;
+    console.log(`🔍 [MOVE-PANEL] Próximo índice calculado: ${nextIndex}`);
+    
     const nextPosition = synchronizedPositions[nextIndex];
+    console.log(`🔍 [MOVE-PANEL] Próxima posición:`, nextPosition);
+    
+    console.log(`🔍 [MOVE-PANEL] Llamando setPosition con: "${nextPosition.panel}"`);
     
     // Actualizar posición del panel - esto automáticamente actualizará los colores
     // porque DrawingArea está escuchando cambios en position
     setPosition(nextPosition.panel);
     
     console.log(`🎯 [SYNC] Panel movido a: ${nextPosition.panel}, Colores: ${nextPosition.colors}`);
+    console.log(`🔍 [MOVE-PANEL] ===== FIN MOVIMIENTO =====`);
   };
 
   // Función robusta para obtener las clases CSS según la posición sincronizada
@@ -530,7 +555,18 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           {/* Botón para mover panel */}
           <div className="flex justify-between items-center mb-2">
             <button
-              onClick={movePanel}
+              onClick={() => {
+                console.log(`🔍 [BUTTON-CLICK] ===== INICIO CLIC BOTÓN MOVER =====`);
+                console.log(`🔍 [BUTTON-CLICK] Timestamp: ${Date.now()}`);
+                console.log(`🔍 [BUTTON-CLICK] Position actual antes del clic: "${position}"`);
+                console.log(`🔍 [BUTTON-CLICK] Llamando función movePanel()...`);
+                
+                movePanel();
+                
+                console.log(`🔍 [BUTTON-CLICK] movePanel() ejecutado`);
+                console.log(`🔍 [BUTTON-CLICK] Position después del clic: "${position}"`);
+                console.log(`🔍 [BUTTON-CLICK] ===== FIN CLIC BOTÓN MOVER =====`);
+              }}
               className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
               title="Mover panel a otra esquina"
             >
