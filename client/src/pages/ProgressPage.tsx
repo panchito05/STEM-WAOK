@@ -651,7 +651,7 @@ export default function ProgressPage() {
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     const totalRevealed = moduleExercises.reduce((acc, ex) => 
-                                      acc + (ex.revealedAnswers || 0), 0);
+                                      acc + (ex.revealedAnswers || ex.extraData?.revealedAnswers || 0), 0);
                                     
                                     return totalRevealed;
                                   })()}
