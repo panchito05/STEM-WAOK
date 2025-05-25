@@ -625,30 +625,12 @@ export default function ProgressPage() {
                                   {(() => {
                                     // Calcular la racha más larga de respuestas correctas consecutivas
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    if (moduleExercises.length === 0) return 0;
-                                    
                                     let longestStreak = 0;
                                     
                                     moduleExercises.forEach(ex => {
-                                      const extraData = ex.extra_data;
-                                      if (extraData) {
-                                        // Buscar en diferentes posibles campos donde se guarda la racha
-                                        const streak = extraData.longestStreak || 
-                                                      extraData.consecutiveCorrect || 
-                                                      extraData.consecutiveCorrectAnswers || 
-                                                      extraData.maxStreak || 0;
-                                        
-                                        if (streak > longestStreak) {
-                                          longestStreak = streak;
-                                        }
-                                      }
+                                      const streak = ex.extra_data?.longestStreak || ex.extra_data?.consecutiveCorrect || 0;
+                                      if (streak > longestStreak) longestStreak = streak;
                                     });
-                                    
-                                    // Si no encontramos datos de racha en extra_data, calcular basado en score
-                                    if (longestStreak === 0 && moduleExercises.length > 0) {
-                                      const maxScore = Math.max(...moduleExercises.map(ex => ex.score || 0));
-                                      longestStreak = maxScore;
-                                    }
                                     
                                     return longestStreak;
                                   })()}
@@ -668,35 +650,9 @@ export default function ProgressPage() {
                                 <p className="text-2xl font-bold text-red-600">
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    if (moduleExercises.length === 0) return 0;
+                                    const totalRevealed = moduleExercises.reduce((acc, ex) => 
+                                      acc + (ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0), 0);
                                     
-                                    // NUEVO: Sistema mejorado de seguimiento de respuestas reveladas
-                                    let totalRevealed = 0;
-                                    
-                                    moduleExercises.forEach(ex => {
-                                      // Prioridad 1: Buscar en extra_data con nuestro nuevo sistema
-                                      if (ex.extra_data?.revealedAnswersCount !== undefined) {
-                                        totalRevealed += ex.extra_data.revealedAnswersCount;
-                                        console.log("📊 Respuestas reveladas encontradas en extra_data:", ex.extra_data.revealedAnswersCount);
-                                      }
-                                      // Prioridad 2: Buscar en extra_data tradicional
-                                      else if (ex.extra_data?.revealedAnswers) {
-                                        totalRevealed += ex.extra_data.revealedAnswers;
-                                      }
-                                      // Prioridad 3: Buscar en campo directo
-                                      else if (ex.revealedAnswers) {
-                                        totalRevealed += ex.revealedAnswers;
-                                      }
-                                      // Fallback: Usar datos disponibles para estimación conservadora
-                                      else if (ex.totalProblems && ex.score !== undefined) {
-                                        // Estimación muy conservadora basada en problemas no resueltos
-                                        const incorrectProblems = Math.max(0, ex.totalProblems - ex.score);
-                                        const estimatedRevealed = Math.min(incorrectProblems, Math.floor(incorrectProblems * 0.2));
-                                        totalRevealed += estimatedRevealed;
-                                      }
-                                    });
-                                    
-                                    console.log("📈 Total respuestas reveladas calculadas:", totalRevealed);
                                     return totalRevealed;
                                   })()}
                                 </p>
@@ -892,19 +848,30 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return 'N/A';
                                     
+                                    // Contar problemas desafiantes usando múltiples fuentes de datos
                                     let problemasDesafiantes = 0;
                                     let totalProblemas = 0;
                                     
-                                    // Método simplificado usando campos básicos disponibles
                                     moduleExercises.forEach(ex => {
-                                      const exerciseProblems = ex.totalProblems || 0;
-                                      const exerciseScore = ex.score || 0;
+                                      // Intentar múltiples fuentes de datos
+                                      const extraData = ex.extra_data;
                                       
-                                      if (exerciseProblems > 0) {
-                                        totalProblemas += exerciseProblems;
-                                        // Los problemas desafiantes son aquellos que no se resolvieron correctamente
-                                        const incorrectProblems = exerciseProblems - exerciseScore;
-                                        problemasDesafiantes += Math.max(0, incorrectProblems);
+                                      if (extraData && extraData.problemDetails) {
+                                        // Fuente 1: problemDetails en extra_data
+                                        extraData.problemDetails.forEach((problem: any) => {
+                                          if (problem) {
+                                            totalProblemas++;
+                                            if ((problem.attempts && problem.attempts > 1) || problem.status === 'revealed') {
+                                              problemasDesafiantes++;
+                                            }
+                                          }
+                                        });
+                                      } else if (ex.score !== undefined && ex.totalProblems !== undefined) {
+                                        // Fuente 2: datos básicos de score y totalProblems
+                                        totalProblemas += ex.totalProblems;
+                                        // Estimar problemas desafiantes como diferencia entre total y score
+                                        const problemasIncorrectos = ex.totalProblems - ex.score;
+                                        problemasDesafiantes += problemasIncorrectos;
                                       }
                                     });
                                     
@@ -985,26 +952,33 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return '0%';
                                     
+                                    // Contar problemas incorrectos vs total usando múltiples fuentes
                                     let totalProblemas = 0;
                                     let problemasIncorrectos = 0;
                                     
-                                    // Método simplificado usando campos básicos disponibles
                                     moduleExercises.forEach(ex => {
-                                      const exerciseProblems = ex.totalProblems || 0;
-                                      const exerciseScore = ex.score || 0;
+                                      const extraData = ex.extra_data;
                                       
-                                      if (exerciseProblems > 0) {
-                                        totalProblemas += exerciseProblems;
-                                        // Los problemas incorrectos son la diferencia entre total y score
-                                        const incorrectProblems = exerciseProblems - exerciseScore;
-                                        problemasIncorrectos += Math.max(0, incorrectProblems);
+                                      if (extraData && extraData.problemDetails) {
+                                        // Fuente 1: problemDetails en extra_data
+                                        extraData.problemDetails.forEach((problem: any) => {
+                                          if (problem) {
+                                            totalProblemas++;
+                                            if (!problem.isCorrect || problem.status === 'revealed') {
+                                              problemasIncorrectos++;
+                                            }
+                                          }
+                                        });
+                                      } else if (ex.score !== undefined && ex.totalProblems !== undefined) {
+                                        // Fuente 2: datos básicos de score y totalProblems
+                                        totalProblemas += ex.totalProblems;
+                                        problemasIncorrectos += (ex.totalProblems - ex.score);
                                       }
                                     });
                                     
                                     if (totalProblemas === 0) return '0%';
-                                    
                                     const errorRate = (problemasIncorrectos / totalProblemas) * 100;
-                                    return `${Math.round(Math.max(0, errorRate))}%`;
+                                    return `${Math.round(errorRate)}%`;
                                   })()}
                                 </p>
                               </div>

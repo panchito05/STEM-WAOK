@@ -447,47 +447,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const [viewingPrevious, setViewingPrevious] = useState(false);
   const [actualActiveProblemIndexBeforeViewingPrevious, setActualActiveProblemIndexBeforeViewingPrevious] = useState<number>(0);
-  
-  // ✨ NUEVO: Estado para rastrear respuestas reveladas por problema
-  const [revealedAnswers, setRevealedAnswers] = useState<Set<number>>(new Set());
-
-  // ✨ NUEVA FUNCIÓN: Manejar respuesta revelada de manera robusta
-  const handleRevealAnswer = () => {
-    if (!currentProblem || viewingPrevious || exerciseCompleted || waitingRef.current) {
-      return;
-    }
-
-    console.log("🔍 REVELANDO RESPUESTA para problema:", currentProblem.id, "en índice:", currentProblemIndex);
-    
-    // Detener temporizador si está activo
-    if (singleProblemTimerRef.current) {
-      clearInterval(singleProblemTimerRef.current);
-    }
-    
-    // Marcar este problema como revelado
-    setRevealedAnswers(prev => {
-      const newSet = new Set(prev);
-      newSet.add(currentProblemIndex);
-      console.log("✅ Marcando problema", currentProblemIndex, "como revelado. Total revelados:", newSet.size);
-      return newSet;
-    });
-    
-    // Reiniciar contador de respuestas correctas consecutivas
-    setConsecutiveCorrectAnswers(0);
-    console.log("🔄 Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
-    
-    // Mostrar mensaje con la respuesta correcta
-    const correctAnswer = currentProblem.correctAnswer;
-    setFeedbackMessage(`La respuesta correcta es: ${correctAnswer}`);
-    setFeedbackColor("blue");
-    setWaitingForContinue(true);
-    console.log("💡 Mostrando respuesta correcta:", correctAnswer);
-    
-    // Incrementar intentos si hay límite
-    if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
-      setCurrentAttempts(prev => prev + 1);
-    }
-  };
 
   const generalTimerRef = useRef<number | null>(null);
   const singleProblemTimerRef = useRef<number | null>(null);
@@ -1802,7 +1761,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       accuracy: Math.round((puntajeCorregido / problemsList.length) * 100),
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
-      revealedAnswers: revealedAnswers.size,
+      revealedAnswers: revealedAnswers,
       
       // Datos extra con estructura clara
       extra_data: {
@@ -1820,9 +1779,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // Incluir información específica del tipo de ejercicio
         exerciseType: "addition",
-        
-        // NUEVO: Asegurar que las respuestas reveladas estén disponibles en múltiples ubicaciones
-        revealedAnswersCount: revealedAnswers.size,
         
         // Incluir resumen para facilitar acceso rápido
         summary: {
@@ -2598,7 +2554,52 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   <Button
                       variant="outline" size="sm"
                       disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
-                      onClick={handleRevealAnswer}
+                      onClick={() => {
+                          if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
+                              if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+                              
+                              // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
+                              setConsecutiveCorrectAnswers(0);
+                              console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
+                              
+                              // Usamos la respuesta correcta del problema directamente
+                              setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                              setFeedbackColor("blue");
+                              setWaitingForContinue(true); // Pone waitingRef.current = true
+                              const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+                              const answerEntry = userAnswersHistory[problemIdxForHistory];
+                              if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
+                                  setUserAnswersHistory(prev => {
+                                      const newHistory = [...prev];
+                                      newHistory[problemIdxForHistory] = {
+                                          problemId: currentProblem.id,
+                                          problem: currentProblem,
+                                          userAnswer: NaN,
+                                          isCorrect: false,
+                                          status: 'revealed'
+                                      };
+                                      return newHistory;
+                                  });
+
+                                  // Añadir problema de compensación cuando se revela la respuesta
+                                  if (settings.enableCompensation) {
+                                      console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
+                                      const difficultyForCompensation = settings.enableAdaptiveDifficulty
+                                          ? adaptiveDifficulty
+                                          : (settings.difficulty as DifficultyLevel);
+
+                                      const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                                      setProblemsList(prev => [...prev, compensationProblem]);
+                                      // Agregamos null al historial para que coincida con el nuevo problema añadido
+                                      setUserAnswersHistory(prev => [...prev, null]);
+                                      console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+                                  }
+                              }
+                              if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
+                                  setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
+                              }
+                          }
+                      }}
                       className="flex-1 text-xs h-12"
                   >
                       <Info className="mr-1 h-3 w-3" /> {currentTranslations.showAnswer}
