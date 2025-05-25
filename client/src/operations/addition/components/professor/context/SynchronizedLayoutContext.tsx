@@ -10,12 +10,12 @@ export interface LayoutConfiguration {
   id: number;
 }
 
-// Configuración robusta de layouts sincronizados
+// Configuración robusta de layouts sincronizados - Colores siempre un paso adelante
 const SYNCHRONIZED_LAYOUTS: LayoutConfiguration[] = [
-  { id: 1, panelPosition: 'topLeft', colorPosition: 'right' },
-  { id: 2, panelPosition: 'topRight', colorPosition: 'right' },
-  { id: 3, panelPosition: 'bottomRight', colorPosition: 'left' },
-  { id: 4, panelPosition: 'bottomLeft', colorPosition: 'left' }
+  { id: 1, panelPosition: 'topLeft', colorPosition: 'right' },     // Panel sup-izq → Colores sup-der
+  { id: 2, panelPosition: 'topRight', colorPosition: 'left' },     // Panel sup-der → Colores inf-der  
+  { id: 3, panelPosition: 'bottomRight', colorPosition: 'left' },  // Panel inf-der → Colores inf-izq
+  { id: 4, panelPosition: 'bottomLeft', colorPosition: 'right' }   // Panel inf-izq → Colores sup-izq
 ];
 
 interface SynchronizedLayoutContextType {
