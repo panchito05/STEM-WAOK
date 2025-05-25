@@ -421,6 +421,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return settings.difficulty as DifficultyLevel;
   });
   const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveCorrectAnswers') || '0', 10));
+  const [maxConsecutiveStreak, setMaxConsecutiveStreak] = useState(() => parseInt(localStorage.getItem('addition_maxConsecutiveStreak') || '0', 10));
   const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveIncorrectAnswers') || '0', 10));
   const [currentAttempts, setCurrentAttempts] = useState(0);
   const [showLevelUpReward, setShowLevelUpReward] = useState(false);
@@ -680,6 +681,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const newConsecutive = consecutiveCorrectAnswers + 1;
       setConsecutiveCorrectAnswers(newConsecutive);
       setConsecutiveIncorrectAnswers(0);
+      
+      // Actualizar racha máxima si es necesario
+      if (newConsecutive > maxConsecutiveStreak) {
+        setMaxConsecutiveStreak(newConsecutive);
+        localStorage.setItem('addition_maxConsecutiveStreak', newConsecutive.toString());
+        console.log("[CONTADOR-V2] Nueva racha máxima alcanzada:", newConsecutive);
+      }
+      
+      localStorage.setItem('addition_consecutiveCorrectAnswers', newConsecutive.toString());
+      console.log("[CONTADOR-V2] Actualizado contador de respuestas correctas consecutivas a", newConsecutive);
 
       // 🎯 Sistema de Recompensas Simplificado - Detección de Hitos
       const checkSimpleRewards = () => {
@@ -925,6 +936,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const newConsecutiveInc = consecutiveIncorrectAnswers + 1;
       setConsecutiveIncorrectAnswers(newConsecutiveInc);
       setConsecutiveCorrectAnswers(0);
+      localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
 
       if (settings.enableAdaptiveDifficulty && newConsecutiveInc >= 5) {
           const difficultiesOrder: DifficultyLevel[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
@@ -2759,6 +2771,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             
                             // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
                             setConsecutiveCorrectAnswers(0);
+                            localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
                             console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
                             
                             // Usamos la respuesta correcta del problema directamente
