@@ -1095,15 +1095,27 @@ export default function ProgressPage() {
                                       </div>
                                       <p className="text-center text-lg font-bold text-blue-600">
                                         {/* Mostrar correctamente el score teniendo en cuenta las respuestas reveladas */}
-                                        {Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/{exercise.totalProblems}
+                                        {(() => {
+                                          const revealedAnswers = exercise.revealedAnswers || 
+                                                                 exercise.extraData?.revealedAnswers || 
+                                                                 exercise.extra_data?.revealedAnswers || 
+                                                                 exercise.extra_data?.screenshot?.scoreData?.revealed?.value || 
+                                                                 0;
+                                          const realScore = Math.max(0, exercise.score - revealedAnswers);
+                                          return `${realScore}/${exercise.totalProblems}`;
+                                        })()}
                                       </p>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Accuracy</p>
                                       <p className="text-center text-lg font-bold text-green-600">
                                         {(() => {
-                                          // Obtener el número de respuestas reveladas
-                                          const revealed = exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0;
+                                          // Obtener el número de respuestas reveladas usando múltiples fuentes
+                                          const revealed = exercise.revealedAnswers || 
+                                                         exercise.extraData?.revealedAnswers || 
+                                                         exercise.extra_data?.revealedAnswers || 
+                                                         exercise.extra_data?.screenshot?.scoreData?.revealed?.value || 
+                                                         0;
                                           // Calcular problemas intentados (excluyendo los revelados)
                                           const attemptedProblems = exercise.totalProblems - revealed;
                                           
@@ -1148,7 +1160,11 @@ export default function ProgressPage() {
                                         <ContextualTooltip type="revealed" />
                                       </div>
                                       <p className="text-center text-lg font-bold text-red-600">
-                                        {exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0}
+                                        {exercise.revealedAnswers || 
+                                         exercise.extraData?.revealedAnswers || 
+                                         exercise.extra_data?.revealedAnswers || 
+                                         exercise.extra_data?.screenshot?.scoreData?.revealed?.value || 
+                                         0}
                                       </p>
                                     </div>
                                     <div className="bg-teal-50 p-3 rounded-md">
