@@ -2308,12 +2308,93 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         {/* Bottom Control Buttons - Responsive: Optimized for all screen sizes */}
         <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+          {/* Mobile/Tablet: Previous and Show Answer in same row */}
+          <div className="flex sm:hidden w-full gap-3">
+            <Button
+              variant="outline" 
+              size="sm"
+              disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
+              onClick={moveToPreviousProblem}
+              className="flex-1 text-xs h-12"
+            >
+              <ChevronLeft className="mr-1 h-3 w-3" /> {currentTranslations.previous}
+            </Button>
+
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                      variant="outline" size="sm"
+                      disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
+                      onClick={() => {
+                          if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
+                              if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+                              
+                              // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
+                              setConsecutiveCorrectAnswers(0);
+                              console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
+                              
+                              // Usamos la respuesta correcta del problema directamente
+                              setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                              setFeedbackColor("blue");
+                              setWaitingForContinue(true); // Pone waitingRef.current = true
+                              const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+                              const answerEntry = userAnswersHistory[problemIdxForHistory];
+                              if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
+                                  setUserAnswersHistory(prev => {
+                                      const newHistory = [...prev];
+                                      newHistory[problemIdxForHistory] = {
+                                          problemId: currentProblem.id,
+                                          problem: currentProblem,
+                                          userAnswer: NaN,
+                                          isCorrect: false,
+                                          status: 'revealed'
+                                      };
+                                      return newHistory;
+                                  });
+
+                                  // Añadir problema de compensación cuando se revela la respuesta
+                                  if (settings.enableCompensation) {
+                                      console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
+                                      const difficultyForCompensation = settings.enableAdaptiveDifficulty
+                                          ? adaptiveDifficulty
+                                          : (settings.difficulty as DifficultyLevel);
+
+                                      const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                                      setProblemsList(prev => [...prev, compensationProblem]);
+                                      // Agregamos null al historial para que coincida con el nuevo problema añadido
+                                      setUserAnswersHistory(prev => [...prev, null]);
+                                      console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+                                  }
+                              }
+                              if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
+                                  setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
+                              }
+                          }
+                      }}
+                      className="flex-1 text-xs h-12"
+                  >
+                      <Info className="mr-1 h-3 w-3" /> {currentTranslations.showAnswer}
+                  </Button>
+                </TooltipTrigger>
+                {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
+                    <TooltipContent><p>{t('tooltips.activateShowAnswerInSettings')}</p></TooltipContent>
+                ) : viewingPrevious ? (
+                    <TooltipContent><p>{t('tooltips.showAnswerDisabledInHistory')}</p></TooltipContent>
+                ) : waitingRef.current ? ( // Usar waitingRef.current
+                    (<TooltipContent><p>{t('tooltips.showAnswerDisabledWhileWaiting')}</p></TooltipContent>)
+                ) : null }
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
+          {/* Desktop: Original layout */}
           <Button
             variant="outline" 
             size="sm"
             disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
             onClick={moveToPreviousProblem}
-            className="w-full sm:w-auto text-xs sm:text-sm md:text-base h-12 sm:h-10 order-1 sm:order-1"
+            className="hidden sm:flex w-auto text-xs sm:text-sm md:text-base h-12 sm:h-10 order-1 sm:order-1"
           >
             <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
           </Button>
@@ -2416,7 +2497,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             }
                         }
                     }}
-                    className="w-full sm:w-auto text-xs sm:text-sm h-12 sm:h-10"
+                    className="hidden sm:flex w-auto text-xs sm:text-sm h-12 sm:h-10"
                 >
                     <Info className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.showAnswer}
                 </Button>
