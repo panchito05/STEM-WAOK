@@ -143,7 +143,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
 
   // Mostrar indicador de posición actual para debugging
   const getPositionIndicator = () => {
-    const indicators = {
+    const indicators: Record<number, string> = {
       1: '↖️ TL',  // Top-Left
       2: '↗️ TR',  // Top-Right  
       3: '↘️ BR',  // Bottom-Right
