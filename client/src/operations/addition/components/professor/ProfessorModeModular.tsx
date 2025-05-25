@@ -26,7 +26,12 @@ export const ProfessorModeModular: React.FC<ProfessorModeModularProps> = ({
 }) => {
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [position, setPosition] = useState<Position>('topLeft');
+  // En escritorio (pantallas grandes), posicionar por defecto en el lado derecho
+  const [position, setPosition] = useState<Position>(() => {
+    // Detectar si es escritorio (ancho >= 1024px)
+    const isDesktop = window.innerWidth >= 1024;
+    return isDesktop ? 'topRight' : 'topLeft';
+  });
   const [attempts, setAttempts] = useState<number>(0);
   const canvasRef = useRef<any>(null);
   
