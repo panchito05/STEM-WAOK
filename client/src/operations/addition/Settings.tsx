@@ -412,8 +412,13 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             </div>
 
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="show-answer-explanation" className={`cursor-pointer ${theme.accent} flex items-center`}>
-                <span className="mr-2">❓</span>{isEnglish ? "Show answer explanations" : "Mostrar explicación de respuestas"}
+              <Label htmlFor="show-answer-explanation" className={`cursor-pointer ${theme.accent} flex items-center flex-col items-start`}>
+                <span className="flex items-center"><span className="mr-2">❓</span>{isEnglish ? "Show Answer" : "Mostrar Respuesta"}</span>
+                <span className="text-xs ml-5 opacity-80">
+                  {isEnglish 
+                    ? "When enabled, you can request the answer to an exercise using the 'Show Answer' button." 
+                    : "Al activar esta opción podrás solicitar la respuesta de un ejercicio en el botón Mostrar Respuesta."}
+                </span>
               </Label>
               <Switch
                 id="show-answer-explanation"
