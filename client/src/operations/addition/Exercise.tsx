@@ -2263,14 +2263,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         </div>
         {/* Number Keypad - Responsive: Larger touch targets on mobile, always visible */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-auto">
+        <div className="grid grid-cols-3 gap-1 sm:gap-3 md:gap-4 max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
               className={`
-                h-10 sm:h-14 md:h-16 
-                text-base sm:text-xl md:text-2xl font-semibold
+                h-9 sm:h-14 md:h-16 
+                text-sm sm:text-xl md:text-2xl font-semibold
                 transition-all duration-200
                 ${
                 key === "sequential_backspace" 
