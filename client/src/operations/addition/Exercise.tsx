@@ -20,8 +20,7 @@ import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
 import eventBus from '@/lib/eventBus'; // Eliminado 'on', 'off' ya que no se usan directamente aquí
 import LevelUpHandler from "@/components/LevelUpHandler";
 import { Link } from "wouter";
-import { useRewardsStore, awardReward, getRewardProbability, selectRandomReward } from '@/lib/rewards-system';
-import RewardAnimation from '@/components/rewards/RewardAnimation';
+
 import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
 
 interface ExerciseProps {
