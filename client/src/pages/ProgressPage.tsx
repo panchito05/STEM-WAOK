@@ -1035,8 +1035,12 @@ export default function ProgressPage() {
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              {exercise.score !== undefined && exercise.totalProblems ?
-                                `${exercise.score}/${exercise.totalProblems} (${Math.round((exercise.score / exercise.totalProblems) * 100)}%)` :
+                              {exercise.score !== undefined && exercise.totalProblems ? (() => {
+                                // Calcular el score real excluyendo respuestas reveladas
+                                const realScore = Math.max(0, exercise.score - (exercise.revealedAnswers || 0));
+                                const percentage = Math.round((realScore / exercise.totalProblems) * 100);
+                                return `${realScore}/${exercise.totalProblems} (${percentage}%)`;
+                              })() :
                                 exercise.extraData?.accuracy ? 
                                   `${Math.round(exercise.extraData.accuracy)}%` : 
                                   "N/A"}
