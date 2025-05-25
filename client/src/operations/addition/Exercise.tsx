@@ -1747,6 +1747,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas exactamente como se muestran en la UI
     const problemasCapturados = capturarProblemasExactos();
 
+    // 🔬 DIAGNÓSTICO AVANZADO: Logs para rastrear pérdida de datos
+    console.log("🔬 [DIAGNOSTIC] ===== INICIO GUARDADO DE EJERCICIO =====");
+    console.log("🔬 [DIAGNOSTIC] Score calculado en Exercise.tsx:", puntajeCorregido);
+    console.log("🔬 [DIAGNOSTIC] Total problemas:", problemsList.length);
+    console.log("🔬 [DIAGNOSTIC] Accuracy calculada:", Math.round((puntajeCorregido / problemsList.length) * 100));
+    console.log("🔬 [DIAGNOSTIC] Revealed answers:", revealedAnswers);
+    console.log("🔬 [DIAGNOSTIC] Problemas capturados:", problemasCapturados.length);
+    
+    // Verificar la integridad del score antes del envío
+    const scoreIntegridad = userAnswersHistory.filter(a => a && a.status === 'correct').length;
+    console.log("🔬 [DIAGNOSTIC] Score recalculado desde userAnswersHistory:", scoreIntegridad);
+    console.log("🔬 [DIAGNOSTIC] ¿Score coincide?", puntajeCorregido === scoreIntegridad ? "✅ SÍ" : "❌ NO");
+    
+    if (puntajeCorregido !== scoreIntegridad) {
+      console.warn("🚨 [DIAGNOSTIC] ALERTA: Discrepancia en score detectada antes del envío!");
+      console.log("🚨 [DIAGNOSTIC] userAnswersHistory completo:", userAnswersHistory);
+    }
+
     // VERSIÓN 4.0: Estructura simplificada y optimizada para almacenamiento de datos
     saveExerciseResult({
       operationId: "addition",

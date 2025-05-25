@@ -264,6 +264,13 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
     }
 
     try {
+      // 🔬 DIAGNÓSTICO CRÍTICO: Rastrear datos recibidos
+      console.log("🔬 [DIAGNOSTIC-CONTEXT] ===== DATOS RECIBIDOS EN ProgressContext =====");
+      console.log("🔬 [DIAGNOSTIC-CONTEXT] Score recibido:", result.score);
+      console.log("🔬 [DIAGNOSTIC-CONTEXT] Total problemas recibido:", result.totalProblems);
+      console.log("🔬 [DIAGNOSTIC-CONTEXT] Accuracy recibida:", result.accuracy);
+      console.log("🔬 [DIAGNOSTIC-CONTEXT] RevealedAnswers recibidas:", result.revealedAnswers);
+      console.log("🔬 [DIAGNOSTIC-CONTEXT] Objeto completo recibido:", JSON.stringify(result, null, 2));
       // MEJORA V3: Sistema robusto para garantizar que los problemas se guarden correctamente
       if (!result.extra_data) {
         result.extra_data = {};
