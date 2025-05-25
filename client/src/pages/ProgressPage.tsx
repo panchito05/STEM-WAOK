@@ -1061,15 +1061,31 @@ export default function ProgressPage() {
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              {exercise.userAnswers && exercise.totalProblems ? (() => {
-                                // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
-                                const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
-                                const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
-                                return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
-                              })() :
-                                exercise.extraData?.accuracy ? 
-                                  `${Math.round(exercise.extraData.accuracy)}%` : 
-                                  "N/A"}
+                              {(() => {
+                                if (exercise.userAnswers && exercise.totalProblems) {
+                                  // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
+                                  const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
+                                  const percentage = Math.round((finalScore / exercise.totalProblems) * 100);
+                                  return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
+                                } else if (exercise.totalProblems) {
+                                  // 🔧 CALCULAR SCORE DESDE PORCENTAJE EXISTENTE
+                                  let percentage = 0;
+                                  if (exercise.extraData?.accuracy) {
+                                    percentage = Math.round(exercise.extraData.accuracy);
+                                  } else {
+                                    // Calcular desde score y revealedAnswers
+                                    const revealed = exercise.revealedAnswers || 0;
+                                    const realScore = Math.max(0, exercise.score - revealed);
+                                    percentage = Math.round((realScore / exercise.totalProblems) * 100);
+                                  }
+                                  
+                                  // Calcular score desde porcentaje
+                                  const calculatedScore = Math.round((percentage * exercise.totalProblems) / 100);
+                                  return `${calculatedScore}/${exercise.totalProblems} (${percentage}%)`;
+                                } else {
+                                  return "N/A";
+                                }
+                              })()}
                             </td>
                             <td className="py-3 px-4">{exercise.timeSpent !== undefined ? `${exercise.timeSpent}s` : "N/A"}</td>
                             <td className="py-3 px-4">
