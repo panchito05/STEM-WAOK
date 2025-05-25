@@ -699,22 +699,21 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500">Level Progress</p>
                                 <p className="font-semibold text-green-600">
                                   {(() => {
-                                    // Calcular el progreso hacia el siguiente nivel (asumiendo que 10 respuestas correctas consecutivas = nivel)
+                                    // Usar el score real de todos los ejercicios del módulo
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return '0/10';
                                     
-                                    // Obtener el último ejercicio para ver el progreso actual
-                                    const lastExercise = moduleExercises[moduleExercises.length - 1];
-                                    let currentStreak = 0;
+                                    // Calcular total de problemas correctos excluyendo respuestas reveladas
+                                    let totalCorrect = 0;
+                                    moduleExercises.forEach(ex => {
+                                      const revealedAnswers = ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0;
+                                      const realScore = Math.max(0, (ex.score || 0) - revealedAnswers);
+                                      totalCorrect += realScore;
+                                    });
                                     
-                                    if (lastExercise?.extra_data?.consecutiveCorrectAnswers !== undefined) {
-                                      currentStreak = lastExercise.extra_data.consecutiveCorrectAnswers;
-                                    } else {
-                                      // Fallback: calcular una estimación básica basada en score reciente
-                                      currentStreak = Math.min(lastExercise?.score || 0, 10);
-                                    }
-                                    
-                                    return `${currentStreak}/10`;
+                                    // Mostrar progreso cada 10 problemas correctos
+                                    const currentProgress = totalCorrect % 10;
+                                    return `${currentProgress}/10`;
                                   })()}
                                 </p>
                               </div>
@@ -726,17 +725,17 @@ export default function ProgressPage() {
                                       const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                       if (moduleExercises.length === 0) return 0;
                                       
-                                      const lastExercise = moduleExercises[moduleExercises.length - 1];
-                                      let currentStreak = 0;
+                                      // Calcular total de problemas correctos excluyendo respuestas reveladas
+                                      let totalCorrect = 0;
+                                      moduleExercises.forEach(ex => {
+                                        const revealedAnswers = ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0;
+                                        const realScore = Math.max(0, (ex.score || 0) - revealedAnswers);
+                                        totalCorrect += realScore;
+                                      });
                                       
-                                      if (lastExercise?.extra_data?.consecutiveCorrectAnswers !== undefined) {
-                                        currentStreak = lastExercise.extra_data.consecutiveCorrectAnswers;
-                                      } else {
-                                        // Fallback: calcular una estimación básica basada en score reciente
-                                        currentStreak = Math.min(lastExercise?.score || 0, 10);
-                                      }
-                                      
-                                      return Math.min(100, (currentStreak / 10) * 100);
+                                      // Calcular progreso como porcentaje hacia el siguiente nivel
+                                      const currentProgress = totalCorrect % 10;
+                                      return (currentProgress / 10) * 100;
                                     })()}%` 
                                   }}
                                 ></div>
@@ -906,6 +905,61 @@ export default function ProgressPage() {
                   <CardDescription>Your last 10 completed exercises</CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {/* Total Score Summary */}
+                  <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Overall Summary</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600">Total Score</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {(() => {
+                            let totalCorrect = 0;
+                            let totalProblems = 0;
+                            
+                            recentExercises.forEach((exercise: any) => {
+                              if (exercise.score !== undefined && exercise.totalProblems) {
+                                const revealedAnswers = exercise.revealedAnswers || 
+                                                       exercise.extraData?.revealedAnswers || 
+                                                       exercise.extra_data?.revealedAnswers || 0;
+                                const realScore = Math.max(0, exercise.score - revealedAnswers);
+                                totalCorrect += realScore;
+                                totalProblems += exercise.totalProblems;
+                              }
+                            });
+                            
+                            if (totalProblems === 0) return 'N/A';
+                            const percentage = Math.round((totalCorrect / totalProblems) * 100);
+                            return `${totalCorrect}/${totalProblems} (${percentage}%)`;
+                          })()}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600">Total Time</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {(() => {
+                            const totalTime = recentExercises.reduce((acc: number, exercise: any) => 
+                              acc + (exercise.timeSpent || 0), 0);
+                            
+                            if (totalTime < 60) {
+                              return `${totalTime}s`;
+                            } else if (totalTime < 3600) {
+                              const minutes = Math.floor(totalTime / 60);
+                              const seconds = totalTime % 60;
+                              return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                            } else {
+                              const hours = Math.floor(totalTime / 3600);
+                              const minutes = Math.floor((totalTime % 3600) / 60);
+                              return `${hours}h ${minutes}m`;
+                            }
+                          })()}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-gray-600">Exercises</p>
+                        <p className="text-2xl font-bold text-purple-600">{recentExercises.length}</p>
+                      </div>
+                    </div>
+                  </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
