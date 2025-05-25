@@ -660,16 +660,51 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const isCorrect = checkAnswer(currentProblem, userNumericAnswer);
 
     const problemIndexForHistory = currentProblemIndex;
-    const newHistoryEntry: UserAnswerType = {
-        problemId: currentProblem.id,
-        problem: currentProblem,
-        userAnswer: userNumericAnswer,
-        isCorrect,
-        status: isCorrect ? 'correct' : 'incorrect' // Añadir status
-    };
+    
+    // Actualizar historial con intentos fallidos
     setUserAnswersHistory(prev => {
         const newHistory = [...prev];
-        newHistory[problemIndexForHistory] = newHistoryEntry;
+        const existingEntry = newHistory[problemIndexForHistory];
+        
+        if (existingEntry) {
+            // Si ya existe una entrada, agregar el intento fallido si es incorrecto
+            if (!isCorrect) {
+                const currentFailedAttempts = existingEntry.mistakes || [];
+                newHistory[problemIndexForHistory] = {
+                    ...existingEntry,
+                    userAnswer: userNumericAnswer,
+                    isCorrect,
+                    status: isCorrect ? 'correct' : 'incorrect',
+                    attempts: newAttempts,
+                    mistakes: [...currentFailedAttempts, userNumericAnswer],
+                    timestamp: Date.now()
+                };
+            } else {
+                // Si es correcto, actualizar con la respuesta final
+                newHistory[problemIndexForHistory] = {
+                    ...existingEntry,
+                    userAnswer: userNumericAnswer,
+                    isCorrect: true,
+                    status: 'correct',
+                    attempts: newAttempts,
+                    timestamp: Date.now()
+                };
+            }
+        } else {
+            // Crear nueva entrada
+            const newHistoryEntry: UserAnswerType = {
+                problemId: currentProblem.id,
+                problem: currentProblem,
+                userAnswer: userNumericAnswer,
+                isCorrect,
+                status: isCorrect ? 'correct' : 'incorrect',
+                attempts: newAttempts,
+                mistakes: isCorrect ? [] : [userNumericAnswer],
+                timestamp: Date.now()
+            };
+            newHistory[problemIndexForHistory] = newHistoryEntry;
+        }
+        
         return newHistory;
     });
     setActualActiveProblemIndexBeforeViewingPrevious(problemIndexForHistory);
@@ -2570,12 +2605,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                               if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
                                   setUserAnswersHistory(prev => {
                                       const newHistory = [...prev];
+                                      const existingEntry = newHistory[problemIdxForHistory];
+                                      
                                       newHistory[problemIdxForHistory] = {
                                           problemId: currentProblem.id,
                                           problem: currentProblem,
                                           userAnswer: NaN,
                                           isCorrect: false,
-                                          status: 'revealed'
+                                          status: 'revealed',
+                                          attempts: currentAttempts || (existingEntry?.attempts) || 1,
+                                          mistakes: existingEntry?.mistakes || [],
+                                          timestamp: Date.now()
                                       };
                                       return newHistory;
                                   });
