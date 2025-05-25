@@ -13,6 +13,7 @@ import { Loader2, RefreshCw, Check, X } from "lucide-react";
 import ProblemRenderer, { MathProblem } from "../components/ProblemRenderer";
 import AdditionProblemRenderer from '../components/AdditionProblemRenderer';
 import ExerciseHistoryDisplay from '../components/ExerciseHistoryDisplay';
+import ContextualTooltip from '../components/ContextualTooltip';
 
 
 export default function ProgressPage() {
@@ -842,7 +843,17 @@ export default function ProgressPage() {
                               onClick={() => toggleExplanation(`${module.id}-problemasDesafiantes`)}
                             >
                               <div className="flex justify-between items-baseline mb-2">
-                                <p className="text-sm text-gray-500">Problemas Desafiantes</p>
+                                <div className="flex items-center">
+                                  <p className="text-sm text-gray-500">Problemas Desafiantes</p>
+                                  <ContextualTooltip 
+                                    type="challengingProblems"
+                                    additionalData={{
+                                      total: exerciseHistory?.filter(ex => ex?.operationId === module.id).reduce((sum, ex) => sum + (ex.totalProblems || 0), 0),
+                                      correct: exerciseHistory?.filter(ex => ex?.operationId === module.id).reduce((sum, ex) => sum + (ex.score || 0), 0),
+                                      revealed: exerciseHistory?.filter(ex => ex?.operationId === module.id).reduce((sum, ex) => sum + (ex.revealedAnswers || 0), 0)
+                                    }}
+                                  />
+                                </div>
                                 <p className="font-semibold text-orange-600">
                                   {(() => {
                                     // VERSIÓN FINAL: ENFOQUE DIRECTO Y SIMPLE QUE FUNCIONA
@@ -1001,7 +1012,12 @@ export default function ProgressPage() {
                           <th className="text-left py-3 px-4">Date</th>
                           <th className="text-left py-3 px-4">Module</th>
                           <th className="text-left py-3 px-4">Difficulty</th>
-                          <th className="text-left py-3 px-4">Score</th>
+                          <th className="text-left py-3 px-4">
+                            <div className="flex items-center">
+                              Score
+                              <ContextualTooltip type="accuracy" />
+                            </div>
+                          </th>
                           <th className="text-left py-3 px-4">Time</th>
                           <th className="text-left py-3 px-4">Actions</th>
                         </tr>
@@ -1056,7 +1072,17 @@ export default function ProgressPage() {
 
                                   <div className="grid grid-cols-3 gap-2">
                                     <div className="bg-blue-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Score</p>
+                                      <div className="flex items-center justify-center mb-1">
+                                        <p className="text-center text-sm text-gray-600">Score</p>
+                                        <ContextualTooltip 
+                                          type="accuracy"
+                                          additionalData={{
+                                            correct: Math.max(0, exercise.score - (exercise.revealedAnswers || 0)),
+                                            total: exercise.totalProblems,
+                                            revealed: exercise.revealedAnswers || 0
+                                          }}
+                                        />
+                                      </div>
                                       <p className="text-center text-lg font-bold text-blue-600">
                                         {/* Mostrar correctamente el score teniendo en cuenta las respuestas reveladas */}
                                         {Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/{exercise.totalProblems}
@@ -1097,14 +1123,20 @@ export default function ProgressPage() {
 
                                   <div className="grid grid-cols-3 gap-2 mt-2">
                                     <div className="bg-yellow-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Avg. Attempts</p>
+                                      <div className="flex items-center justify-center mb-1">
+                                        <p className="text-center text-sm text-gray-600">Avg. Attempts</p>
+                                        <ContextualTooltip type="avgAttempts" />
+                                      </div>
                                       <p className="text-center text-lg font-bold text-yellow-600">
                                         {exercise.avgAttempts ? exercise.avgAttempts.toFixed(1) : 
                                          exercise.extraData?.avgAttempts ? exercise.extraData.avgAttempts.toFixed(1) : '1.0'}
                                       </p>
                                     </div>
                                     <div className="bg-red-50 p-3 rounded-md">
-                                      <p className="text-center text-sm text-gray-600">Revealed</p>
+                                      <div className="flex items-center justify-center mb-1">
+                                        <p className="text-center text-sm text-gray-600">Revealed</p>
+                                        <ContextualTooltip type="revealed" />
+                                      </div>
                                       <p className="text-center text-lg font-bold text-red-600">
                                         {exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0}
                                       </p>
