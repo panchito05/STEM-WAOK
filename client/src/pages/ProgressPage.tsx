@@ -837,58 +837,7 @@ export default function ProgressPage() {
                               </div>
                             </div>
                             
-                            {/* Tipo de problemas más difíciles */}
-                            <div 
-                              className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
-                              onClick={() => toggleExplanation(`${module.id}-problemasDesafiantes`)}
-                            >
-                              <div className="flex justify-between items-baseline mb-2">
-                                <div className="flex items-center">
-                                  <p className="text-sm text-gray-500">Problemas Desafiantes</p>
-                                  <ContextualTooltip 
-                                    type="challengingProblems"
-                                    additionalData={{
-                                      total: exerciseHistory?.filter(ex => ex?.operationId === module.id).reduce((sum, ex) => sum + (ex.totalProblems || 0), 0),
-                                      correct: exerciseHistory?.filter(ex => ex?.operationId === module.id).reduce((sum, ex) => sum + (ex.score || 0), 0),
-                                      revealed: exerciseHistory?.filter(ex => ex?.operationId === module.id).reduce((sum, ex) => sum + (ex.revealedAnswers || 0), 0)
-                                    }}
-                                  />
-                                </div>
-                                <p className="font-semibold text-orange-600">
-                                  {(() => {
-                                    // VERSIÓN FINAL: ENFOQUE DIRECTO Y SIMPLE QUE FUNCIONA
-                                    const moduleExercises = exerciseHistory?.filter(ex => ex?.operationId === module.id) || [];
-                                    
-                                    if (moduleExercises.length === 0) return 'N/A';
-                                    
-                                    let totalProblems = 0;
-                                    let challengingProblems = 0;
-                                    
-                                    moduleExercises.forEach(ex => {
-                                      // Usar datos que sabemos que existen
-                                      const total = ex.totalProblems || 0;
-                                      const correct = ex.score || 0;
-                                      const revealed = ex.revealedAnswers || 0;
-                                      
-                                      totalProblems += total;
-                                      
-                                      // Los problemas desafiantes son los que NO se resolvieron correctamente
-                                      // O que necesitaron ser revelados
-                                      const incorrect = total - correct;
-                                      challengingProblems += Math.max(incorrect, revealed);
-                                    });
-                                    
-                                    return totalProblems > 0 ? `${challengingProblems}/${totalProblems}` : 'N/A';
-                                  })()}
-                                </p>
-                              </div>
-                              <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
-                              {explanationVisible === `${module.id}-problemasDesafiantes` && (
-                                <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
-                                  {explanations.problemasDesafiantes}
-                                </div>
-                              )}
-                            </div>
+
                             
                             {/* Calendario de práctica */}
                             <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
