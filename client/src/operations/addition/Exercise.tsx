@@ -2109,6 +2109,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </Tooltip>
                   </TooltipProvider>
                 )}
+                
+                {/* CONTADOR VISUAL DE RACHA CONSECUTIVA - Para diagnóstico */}
+                {settings.enableAdaptiveDifficulty && !viewingPrevious && (
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className={`font-medium p-1 rounded border-2 ${
+                          consecutiveCorrectAnswers >= 8 
+                            ? "bg-green-100 text-green-800 border-green-400 animate-pulse" 
+                            : consecutiveCorrectAnswers >= 5 
+                            ? "bg-blue-100 text-blue-800 border-blue-400" 
+                            : consecutiveCorrectAnswers >= 3
+                            ? "bg-purple-100 text-purple-800 border-purple-400"
+                            : "bg-gray-100 text-gray-700 border-gray-300"
+                        }`}>
+                          🔥 Racha: {consecutiveCorrectAnswers}/10
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Respuestas correctas consecutivas para subir de nivel (necesitas 10)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
                 <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" :
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" :

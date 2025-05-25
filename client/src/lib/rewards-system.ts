@@ -805,3 +805,54 @@ export function getRewardProbability(
 }
 
 // El sistema de recompensas ha sido actualizado con probabilidades progresivas
+
+// Función para reiniciar completamente todas las recompensas
+export function resetAllRewards(): void {
+  console.log("🔄 [RESET-REWARDS] Iniciando reinicio completo del sistema de recompensas...");
+  
+  try {
+    // 1. Limpiar el store de Zustand
+    const { clearAllRewards } = useRewardsStore.getState();
+    clearAllRewards();
+    console.log("✅ [RESET-REWARDS] Store de Zustand limpiado");
+    
+    // 2. Limpiar localStorage específicamente
+    const rewardsKeys = [
+      'rewards-storage',
+      'user_rewards', 
+      'user_default_rewards',
+      'rewards_collection',
+      'album-rewards',
+      'rewards-unlocked',
+      'achievements-unlocked',
+      'trophies-earned',
+      'badges-collection'
+    ];
+    
+    rewardsKeys.forEach(key => {
+      localStorage.removeItem(key);
+      console.log(`🗑️ [RESET-REWARDS] Eliminada clave: ${key}`);
+    });
+    
+    // 3. Forzar actualización del estado
+    useRewardsStore.setState({ 
+      earnedRewards: [], 
+      unlockedCollections: [],
+      totalRewardsEarned: 0,
+      lastRewardDate: null 
+    });
+    
+    console.log("✅ [RESET-REWARDS] Sistema de recompensas reiniciado completamente");
+    
+    // 4. Verificar que efectivamente esté limpio
+    const { earnedRewards } = useRewardsStore.getState();
+    if (earnedRewards.length === 0) {
+      console.log("✅ [RESET-REWARDS] Verificación exitosa: 0 recompensas en el sistema");
+    } else {
+      console.error("❌ [RESET-REWARDS] ERROR: Aún hay recompensas después del reinicio:", earnedRewards);
+    }
+    
+  } catch (error) {
+    console.error("❌ [RESET-REWARDS] Error durante el reinicio:", error);
+  }
+}
