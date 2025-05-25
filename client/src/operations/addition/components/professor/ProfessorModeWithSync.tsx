@@ -362,7 +362,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
 // Componente principal que envuelve todo con el Provider
 export const ProfessorModeWithSync: React.FC<ProfessorModeProps> = (props) => {
   return (
-    <SynchronizedLayoutProvider initialLayoutId={2}>
+    <SynchronizedLayoutProvider initialLayoutId={1}>
       <ProfessorModeContent {...props} />
     </SynchronizedLayoutProvider>
   );
