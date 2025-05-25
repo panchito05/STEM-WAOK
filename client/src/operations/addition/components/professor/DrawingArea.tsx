@@ -1,25 +1,24 @@
 import React from 'react';
 import { DrawingCanvas } from '../DrawingCanvas';
 import { AdditionProblem } from '../../types';
+import { ColorPosition } from './context/SynchronizedLayoutContext';
 
 interface DrawingAreaProps {
   problem: AdditionProblem;
-  colorsPosition: 'left' | 'right';
+  colorPosition: ColorPosition; // Nueva prop que viene del contexto sincronizado
 }
 
 export const DrawingArea: React.FC<DrawingAreaProps> = ({
   problem,
-  colorsPosition
+  colorPosition
 }) => {
-  console.log(`🎨 [NEW ARCH] DrawingArea renderizado con colores en: ${colorsPosition}`);
-  
   return (
     <div className="absolute inset-0 w-full h-full">
       <DrawingCanvas 
         width={window.innerWidth} 
         height={window.innerHeight} 
         className="w-full h-full" 
-        position={colorsPosition} 
+        position={colorPosition} // Usar directamente la posición sincronizada
         currentProblem={problem}
       />
     </div>
