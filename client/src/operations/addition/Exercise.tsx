@@ -1821,6 +1821,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Incluir información específica del tipo de ejercicio
         exerciseType: "addition",
         
+        // NUEVO: Asegurar que las respuestas reveladas estén disponibles en múltiples ubicaciones
+        revealedAnswersCount: revealedAnswers.size,
+        
         // Incluir resumen para facilitar acceso rápido
         summary: {
           operation: "addition",
