@@ -189,11 +189,22 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
   };
 
   const getResponsiveClasses = () => {
-    const baseClasses = "bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg";
-    const mobileClasses = "fixed bottom-0 left-0 right-0 border-t-2 rounded-t-xl";
-    const desktopClasses = `fixed border-2 rounded-xl ${getPanelClasses()}`;
-    
-    return `${baseClasses} ${mobileClasses} lg:relative lg:border-2 lg:rounded-xl lg:${getPanelClasses()}`;
+    try {
+      const baseClasses = "bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg transition-all duration-300 ease-in-out";
+      const mobileClasses = "fixed bottom-0 left-0 right-0 border-t-2 rounded-t-xl";
+      const desktopClasses = getPanelClasses();
+      
+      // Verificar que las clases de escritorio son válidas
+      if (!desktopClasses || desktopClasses.trim() === '') {
+        console.warn('⚠️ [PANEL] Clases de desktop inválidas, usando fallback');
+        return `${baseClasses} ${mobileClasses} lg:fixed lg:border-2 lg:rounded-xl lg:top-4 lg:right-4`;
+      }
+      
+      return `${baseClasses} ${mobileClasses} lg:fixed lg:border-2 lg:rounded-xl ${desktopClasses}`;
+    } catch (error) {
+      console.error('🚨 [PANEL] Error generando clases responsivas:', error);
+      return "bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg fixed bottom-0 left-0 right-0 border-t-2 rounded-t-xl lg:top-4 lg:right-4 lg:border-2 lg:rounded-xl";
+    }
   };
 
   return (
