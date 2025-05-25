@@ -735,16 +735,24 @@ export default function ProgressPage() {
                                 <p className="font-semibold text-orange-600">
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    if (moduleExercises.length === 0) return 'N/A';
+                                    if (moduleExercises.length === 0) return 'N/A (Sin ejercicios)';
+                                    
+                                    // Debug: log de la estructura
+                                    console.log('Problemas Desafiantes - ModuleExercises:', moduleExercises);
+                                    console.log('Primer ejercicio:', moduleExercises[0]);
                                     
                                     // Contar problemas que requirieron múltiples intentos o fueron revelados
                                     let problemasDesafiantes = 0;
                                     let totalProblemas = 0;
                                     
-                                    moduleExercises.forEach(ex => {
+                                    moduleExercises.forEach((ex, index) => {
+                                      console.log(`Ejercicio ${index}:`, ex);
+                                      console.log(`extra_data:`, ex.extra_data);
+                                      
                                       // Usar los datos correctos guardados en extra_data
                                       const extraData = ex.extra_data;
                                       if (extraData && extraData.problemDetails) {
+                                        console.log('problemDetails encontrado:', extraData.problemDetails);
                                         extraData.problemDetails.forEach((problem: any) => {
                                           if (problem) {
                                             totalProblemas++;
@@ -754,10 +762,12 @@ export default function ProgressPage() {
                                             }
                                           }
                                         });
+                                      } else {
+                                        console.log('No se encontró problemDetails en extra_data');
                                       }
                                     });
                                     
-                                    if (totalProblemas === 0) return 'N/A';
+                                    if (totalProblemas === 0) return 'N/A (Sin problemas)';
                                     
                                     return `${problemasDesafiantes}/${totalProblemas}`;
                                   })()}
