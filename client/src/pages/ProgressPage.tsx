@@ -642,17 +642,26 @@ export default function ProgressPage() {
                                   </div>
                                 )}
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div 
+                                className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                                onClick={() => toggleExplanation(`${module.id}-answersRevealed`)}
+                              >
                                 <p className="text-sm text-gray-500">Answers Revealed</p>
                                 <p className="text-2xl font-bold text-red-600">
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     const totalRevealed = moduleExercises.reduce((acc, ex) => 
-                                      acc + (ex.revealedAnswers || ex.extraData?.revealedAnswers || 0), 0);
+                                      acc + (ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0), 0);
                                     
                                     return totalRevealed;
                                   })()}
                                 </p>
+                                <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                                {explanationVisible === `${module.id}-answersRevealed` && (
+                                  <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                    {explanations.answersRevealed}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
