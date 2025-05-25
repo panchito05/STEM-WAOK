@@ -845,71 +845,29 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500">Problemas Desafiantes</p>
                                 <p className="font-semibold text-orange-600">
                                   {(() => {
-                                    // VERSIÓN 3.0: ARQUITECTURA ULTRA GRANULAR CON FUNCIONES MODULARES
+                                    // VERSIÓN FINAL: ENFOQUE DIRECTO Y SIMPLE QUE FUNCIONA
+                                    const moduleExercises = exerciseHistory?.filter(ex => ex?.operationId === module.id) || [];
                                     
-                                    // Función 1: Extraer ejercicios del módulo específico
-                                    const extractModuleExercises = (moduleId: string) => {
-                                      return exerciseHistory?.filter(ex => ex && ex.operationId === moduleId) || [];
-                                    };
+                                    if (moduleExercises.length === 0) return 'N/A';
                                     
-                                    // Función 2: Recolectar contadores básicos de un ejercicio
-                                    const collectBasicCounters = (exercise: any) => {
-                                      return {
-                                        totalProblems: Number(exercise.totalProblems) || 0,
-                                        score: Number(exercise.score) || 0,
-                                        revealedAnswers: Number(exercise.revealedAnswers) || 0
-                                      };
-                                    };
+                                    let totalProblems = 0;
+                                    let challengingProblems = 0;
                                     
-                                    // Función 3: Calcular problemas incorrectos
-                                    const calculateIncorrectProblems = (total: number, correct: number) => {
-                                      return Math.max(0, total - correct);
-                                    };
-                                    
-                                    // Función 4: Determinar problemas desafiantes por ejercicio
-                                    const determineChallengingProblems = (incorrect: number, revealed: number) => {
-                                      // Lógica: Los problemas desafiantes son aquellos que causaron dificultad
-                                      // Incluye tanto incorrectos como revelados, sin doble conteo
-                                      return incorrect + revealed;
-                                    };
-                                    
-                                    // Función 5: Agregar totales de múltiples ejercicios
-                                    const aggregateTotals = (exercises: any[]) => {
-                                      let totalProblems = 0;
-                                      let totalChallenging = 0;
+                                    moduleExercises.forEach(ex => {
+                                      // Usar datos que sabemos que existen
+                                      const total = ex.totalProblems || 0;
+                                      const correct = ex.score || 0;
+                                      const revealed = ex.revealedAnswers || 0;
                                       
-                                      exercises.forEach(exercise => {
-                                        const counters = collectBasicCounters(exercise);
-                                        totalProblems += counters.totalProblems;
-                                        
-                                        const incorrect = calculateIncorrectProblems(counters.totalProblems, counters.score);
-                                        const challenging = determineChallengingProblems(incorrect, counters.revealedAnswers);
-                                        
-                                        totalChallenging += challenging;
-                                      });
+                                      totalProblems += total;
                                       
-                                      return { totalProblems, totalChallenging };
-                                    };
+                                      // Los problemas desafiantes son los que NO se resolvieron correctamente
+                                      // O que necesitaron ser revelados
+                                      const incorrect = total - correct;
+                                      challengingProblems += Math.max(incorrect, revealed);
+                                    });
                                     
-                                    // Función 6: Formatear resultado final
-                                    const formatResult = (challenging: number, total: number) => {
-                                      if (total === 0) return 'N/A';
-                                      return `${challenging}/${total}`;
-                                    };
-                                    
-                                    // EJECUTOR PRINCIPAL: Orquesta todas las funciones
-                                    const calculateChallengingProblemsV3 = () => {
-                                      const moduleExercises = extractModuleExercises(module.id);
-                                      
-                                      if (moduleExercises.length === 0) {
-                                        return formatResult(0, 0);
-                                      }
-                                      
-                                      const totals = aggregateTotals(moduleExercises);
-                                      return formatResult(totals.totalChallenging, totals.totalProblems);
-                                    };
-                                    
-                                    return calculateChallengingProblemsV3();
+                                    return totalProblems > 0 ? `${challengingProblems}/${totalProblems}` : 'N/A';
                                   })()}
                                 </p>
                               </div>
