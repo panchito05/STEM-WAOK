@@ -483,19 +483,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setWaitingForContinue(true);
     console.log("💡 Mostrando respuesta correcta:", correctAnswer);
     
-    // Agregar problema de compensación si está habilitado
-    if (settings.enableCompensation) {
-      console.log("➕ Agregando problema de compensación por respuesta revelada");
-      const difficultyForCompensation = settings.enableAdaptiveDifficulty
-        ? adaptiveDifficulty
-        : (settings.difficulty as DifficultyLevel);
-
-      const compensationProblem = generateAdditionProblem(difficultyForCompensation);
-      setProblemsList(prev => [...prev, compensationProblem]);
-      setUserAnswersHistory(prev => [...prev, null]);
-      console.log("✅ Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
-    }
-    
     // Incrementar intentos si hay límite
     if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
       setCurrentAttempts(prev => prev + 1);
@@ -1815,7 +1802,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       accuracy: Math.round((puntajeCorregido / problemsList.length) * 100),
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
-      revealedAnswers: revealedAnswers,
+      revealedAnswers: revealedAnswers.size,
       
       // Datos extra con estructura clara
       extra_data: {

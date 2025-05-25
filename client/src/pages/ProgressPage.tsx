@@ -670,25 +670,33 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return 0;
                                     
-                                    // Método simplificado usando campos básicos disponibles
+                                    // NUEVO: Sistema mejorado de seguimiento de respuestas reveladas
                                     let totalRevealed = 0;
                                     
                                     moduleExercises.forEach(ex => {
-                                      // Buscar en extra_data primero
-                                      if (ex.extra_data?.revealedAnswers) {
+                                      // Prioridad 1: Buscar en extra_data con nuestro nuevo sistema
+                                      if (ex.extra_data?.revealedAnswersCount !== undefined) {
+                                        totalRevealed += ex.extra_data.revealedAnswersCount;
+                                        console.log("📊 Respuestas reveladas encontradas en extra_data:", ex.extra_data.revealedAnswersCount);
+                                      }
+                                      // Prioridad 2: Buscar en extra_data tradicional
+                                      else if (ex.extra_data?.revealedAnswers) {
                                         totalRevealed += ex.extra_data.revealedAnswers;
                                       }
-                                      // Buscar en campo directo
+                                      // Prioridad 3: Buscar en campo directo
                                       else if (ex.revealedAnswers) {
                                         totalRevealed += ex.revealedAnswers;
                                       }
-                                      // Estimación basada en diferencia score vs totalProblems
+                                      // Fallback: Usar datos disponibles para estimación conservadora
                                       else if (ex.totalProblems && ex.score !== undefined) {
-                                        const possibleRevealed = Math.max(0, (ex.totalProblems - ex.score) * 0.3);
-                                        totalRevealed += Math.floor(possibleRevealed);
+                                        // Estimación muy conservadora basada en problemas no resueltos
+                                        const incorrectProblems = Math.max(0, ex.totalProblems - ex.score);
+                                        const estimatedRevealed = Math.min(incorrectProblems, Math.floor(incorrectProblems * 0.2));
+                                        totalRevealed += estimatedRevealed;
                                       }
                                     });
                                     
+                                    console.log("📈 Total respuestas reveladas calculadas:", totalRevealed);
                                     return totalRevealed;
                                   })()}
                                 </p>
