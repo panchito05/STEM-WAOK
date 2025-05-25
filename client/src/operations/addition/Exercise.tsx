@@ -1747,38 +1747,67 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Capturar los problemas exactamente como se muestran en la UI
     const problemasCapturados = capturarProblemasExactos();
 
-    // 🔬 DIAGNÓSTICO AVANZADO: Logs para rastrear pérdida de datos
-    console.log("🔬 [DIAGNOSTIC] ===== INICIO GUARDADO DE EJERCICIO =====");
-    console.log("🔬 [DIAGNOSTIC] Score calculado en Exercise.tsx:", puntajeCorregido);
-    console.log("🔬 [DIAGNOSTIC] Total problemas:", problemsList.length);
-    console.log("🔬 [DIAGNOSTIC] Accuracy calculada:", Math.round((puntajeCorregido / problemsList.length) * 100));
-    console.log("🔬 [DIAGNOSTIC] Revealed answers:", revealedAnswers);
-    console.log("🔬 [DIAGNOSTIC] Problemas capturados:", problemasCapturados.length);
+    // 🔬 SISTEMA ROBUSTO ANTIFRAGIL - Cálculo directo sin import
+    console.log("🔬 [ROBUST-CALC] ===== INICIO CÁLCULO ANTIFRAGIL =====");
+    console.log("🔬 [ROBUST-CALC] userAnswersHistory:", userAnswersHistory);
     
-    // Verificar la integridad del score antes del envío
-    const scoreIntegridad = userAnswersHistory.filter(a => a && a.status === 'correct').length;
-    console.log("🔬 [DIAGNOSTIC] Score recalculado desde userAnswersHistory:", scoreIntegridad);
-    console.log("🔬 [DIAGNOSTIC] ¿Score coincide?", puntajeCorregido === scoreIntegridad ? "✅ SÍ" : "❌ NO");
+    // FUNCIÓN INTERNA ROBUSTA - Múltiples métodos de verificación
+    const calcularScoreRobusto = (answers: any[]) => {
+      const answersValidas = answers.filter(a => a && typeof a === 'object' && a.status !== undefined);
+      
+      // Método 1: Por status 'correct'
+      const porStatus = answersValidas.filter(a => a.status === 'correct').length;
+      
+      // Método 2: Por campo isCorrect
+      const porIsCorrect = answersValidas.filter(a => a.isCorrect === true).length;
+      
+      // Método 3: Por verificación dual
+      const porVerificacion = answersValidas.reduce((count, answer) => {
+        const esCorrecta = (answer.status === 'correct' && answer.isCorrect === true);
+        return esCorrecta ? count + 1 : count;
+      }, 0);
+      
+      console.log("🔬 [ROBUST-CALC] Métodos de cálculo:");
+      console.log("🔬 [ROBUST-CALC] - Por status:", porStatus);
+      console.log("🔬 [ROBUST-CALC] - Por isCorrect:", porIsCorrect);
+      console.log("🔬 [ROBUST-CALC] - Por verificación:", porVerificacion);
+      
+      // Usar el valor más consistente
+      const scores = [porStatus, porIsCorrect, porVerificacion];
+      const scoreRobusto = scores.sort((a,b) => 
+        scores.filter(v => v === a).length - scores.filter(v => v === b).length
+      ).pop() || porStatus;
+      
+      const revealedAnswers = answersValidas.filter(a => a.status === 'revealed').length;
+      const totalProblems = answersValidas.length;
+      const accuracy = totalProblems > 0 ? Math.round((scoreRobusto / totalProblems) * 100) : 0;
+      
+      return { scoreRobusto, accuracy, revealedAnswers, totalProblems };
+    };
     
-    if (puntajeCorregido !== scoreIntegridad) {
-      console.warn("🚨 [DIAGNOSTIC] ALERTA: Discrepancia en score detectada antes del envío!");
-      console.log("🚨 [DIAGNOSTIC] userAnswersHistory completo:", userAnswersHistory);
-    }
+    const resultado = calcularScoreRobusto(userAnswersHistory);
+    
+    console.log("🔬 [ROBUST-CALC] ===== COMPARACIÓN SISTEMAS =====");
+    console.log("🔬 [ROBUST-CALC] Score original (frágil):", puntajeCorregido);
+    console.log("🔬 [ROBUST-CALC] Score robusto:", resultado.scoreRobusto);
+    console.log("🔬 [ROBUST-CALC] Accuracy original:", Math.round((puntajeCorregido / problemsList.length) * 100));
+    console.log("🔬 [ROBUST-CALC] Accuracy robusta:", resultado.accuracy);
+    console.log("🔬 [ROBUST-CALC] ¿Hay discrepancia?", puntajeCorregido !== resultado.scoreRobusto ? "❌ SÍ" : "✅ NO");
 
-    // VERSIÓN 4.0: Estructura simplificada y optimizada para almacenamiento de datos
+    // VERSIÓN 5.0 ANTIFRAGIL: Usando valores robustos calculados
     saveExerciseResult({
       operationId: "addition",
       date: new Date().toISOString(),
-      score: puntajeCorregido,
+      score: resultado.scoreRobusto, // ✅ Usando score robusto
       totalProblems: problemsList.length,
       timeSpent: timer,
       difficulty: finalLevel as string,
       
-      // Estadísticas precisas
-      accuracy: Math.round((puntajeCorregido / problemsList.length) * 100),
+      // Estadísticas precisas del sistema robusto
+      accuracy: resultado.accuracy, // ✅ Usando accuracy robusta
       avgTimePerProblem: avgTimePerProblem,
       avgAttempts: avgAttemptsValue,
-      revealedAnswers: revealedAnswers,
+      revealedAnswers: resultado.revealedAnswers, // ✅ Usando revealed robusto
       
       // Datos extra con estructura clara
       extra_data: {
