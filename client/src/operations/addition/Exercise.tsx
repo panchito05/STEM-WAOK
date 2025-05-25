@@ -457,11 +457,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { t } = useTranslations();
 
   // 🎯 Sistema de Recompensas Simplificado (sin hooks problemáticos)
-  const [rewardStats, setRewardStats] = useState({
-    totalProblems: 0,
-    currentStreak: 0,
-    showRewardModal: false,
-    lastReward: null as any
+  const [rewardStats, setRewardStats] = useState(() => {
+    // Cargar datos guardados al inicializar
+    const saved = localStorage.getItem('addition_rewards');
+    const defaultStats = {
+      totalProblems: 0,
+      currentStreak: 0,
+      showRewardModal: false,
+      lastReward: null as any,
+      totalPoints: 0,
+      unlockedRewards: [] as any[],
+      completedMilestones: new Set<number>(),
+      completedStreaks: new Set<number>()
+    };
+    
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          ...defaultStats,
+          totalPoints: parsed.totalPoints || 0,
+          unlockedRewards: parsed.unlockedRewards || [],
+          completedMilestones: new Set(parsed.completedMilestones || []),
+          completedStreaks: new Set(parsed.completedStreaks || [])
+        };
+      } catch (e) {
+        console.warn('Error cargando recompensas guardadas:', e);
+      }
+    }
+    return defaultStats;
   });
 
   // Traducciones para elementos específicos de la interfaz
@@ -661,68 +685,102 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const checkSimpleRewards = () => {
         const currentTotalProblems = userAnswersHistory.filter(answer => answer && answer.isCorrect).length + 1;
         
-        // Actualizar estadísticas
-        setRewardStats(prev => ({
-          ...prev,
-          totalProblems: currentTotalProblems,
-          currentStreak: newConsecutive
-        }));
-        
-        // Verificar hitos importantes
+        // Verificar hitos importantes (evitar duplicados)
         let rewardToShow = null;
         
-        if (currentTotalProblems === 5) {
+        // Recompensas por hitos (solo si no se han completado antes)
+        if (currentTotalProblems === 5 && !rewardStats.completedMilestones.has(5)) {
           rewardToShow = {
+            id: 'milestone_5',
             title: "¡Primeros Pasos!",
             description: "Has resuelto 5 problemas correctamente",
             points: 25,
             type: "milestone",
-            icon: "🌟"
+            icon: "🌟",
+            timestamp: Date.now()
           };
-        } else if (currentTotalProblems === 10) {
+        } else if (currentTotalProblems === 10 && !rewardStats.completedMilestones.has(10)) {
           rewardToShow = {
+            id: 'milestone_10',
             title: "¡Aprendiz Dedicado!",
             description: "Has completado 10 problemas de suma",
             points: 50,
             type: "milestone", 
-            icon: "🎯"
+            icon: "🎯",
+            timestamp: Date.now()
           };
-        } else if (currentTotalProblems === 25) {
+        } else if (currentTotalProblems === 25 && !rewardStats.completedMilestones.has(25)) {
           rewardToShow = {
+            id: 'milestone_25',
             title: "¡Matemático en Progreso!",
             description: "¡Increíble! 25 problemas resueltos correctamente",
             points: 100,
             type: "milestone",
-            icon: "🏆"
+            icon: "🏆",
+            timestamp: Date.now()
           };
-        } else if (newConsecutive === 5) {
+        } 
+        // Recompensas por rachas (solo si no se han completado antes)
+        else if (newConsecutive === 5 && !rewardStats.completedStreaks.has(5)) {
           rewardToShow = {
+            id: 'streak_5',
             title: "¡Racha Inicial!",
             description: "5 respuestas correctas consecutivas",
             points: 30,
             type: "streak",
-            icon: "⚡"
+            icon: "⚡",
+            timestamp: Date.now()
           };
-        } else if (newConsecutive === 10) {
+        } else if (newConsecutive === 10 && !rewardStats.completedStreaks.has(10)) {
           rewardToShow = {
+            id: 'streak_10',
             title: "¡Racha Fantástica!",
             description: "10 respuestas correctas seguidas",
             points: 75,
             type: "streak",
-            icon: "🔥"
+            icon: "🔥",
+            timestamp: Date.now()
           };
         }
         
-        // Mostrar recompensa si se desbloqueó una
+        // Mostrar y guardar recompensa si se desbloqueó una
         if (rewardToShow) {
           console.log(`🎉 ¡RECOMPENSA DESBLOQUEADA!`, rewardToShow);
-          setTimeout(() => {
-            setRewardStats(prev => ({
+          
+          // Actualizar estado con la nueva recompensa
+          setRewardStats(prev => {
+            const newStats = {
               ...prev,
+              totalProblems: currentTotalProblems,
+              currentStreak: newConsecutive,
+              totalPoints: prev.totalPoints + rewardToShow.points,
+              unlockedRewards: [...prev.unlockedRewards, rewardToShow],
+              completedMilestones: rewardToShow.type === 'milestone' ? 
+                new Set([...prev.completedMilestones, currentTotalProblems]) : prev.completedMilestones,
+              completedStreaks: rewardToShow.type === 'streak' ? 
+                new Set([...prev.completedStreaks, newConsecutive]) : prev.completedStreaks,
               showRewardModal: true,
               lastReward: rewardToShow
+            };
+            
+            // Guardar en localStorage
+            localStorage.setItem('addition_rewards', JSON.stringify({
+              totalPoints: newStats.totalPoints,
+              unlockedRewards: newStats.unlockedRewards,
+              completedMilestones: Array.from(newStats.completedMilestones),
+              completedStreaks: Array.from(newStats.completedStreaks)
             }));
-          }, 1000);
+            
+            console.log(`💾 Guardado: ${rewardToShow.points} puntos. Total: ${newStats.totalPoints}`);
+            return newStats;
+          });
+        } else {
+          // Solo actualizar estadísticas sin mostrar modal
+          setRewardStats(prev => ({
+            ...prev,
+            totalProblems: currentTotalProblems,
+            currentStreak: newConsecutive
+          }));
         }
       };
       
@@ -2188,6 +2246,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                           ? "Respuestas correctas consecutivas para subir de nivel (necesitas 10)"
                           : "Respuestas correctas consecutivas actuales"
                         }</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+
+                {/* CONTADOR DE PUNTOS TOTALES - Siempre visible */}
+                {!viewingPrevious && (
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="font-medium p-1 rounded border-2 bg-yellow-100 text-yellow-800 border-yellow-400">
+                          ⭐ {rewardStats.totalPoints} pts
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Puntos totales acumulados en recompensas</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
