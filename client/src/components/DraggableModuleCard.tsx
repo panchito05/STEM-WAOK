@@ -66,28 +66,28 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
   // Verificar si hay historial para este módulo
   const hasHistory = exerciseHistory && exerciseHistory.some(entry => entry.operationId === module.id);
 
+  // CONFIGURACIÓN DEL DRAG (ARRASTRAR)
   const [{ isDragging }, drag] = useDragItem(() => ({
     type: "MODULE_CARD",
     item: { id: module.id, index },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-  }));
+  }), [index]);
 
-  // @ts-ignore - Ignoramos los errores de tipo en el hook useDropTarget
-  const [drop_props, drop] = useDropTarget(() => ({
+  // CONFIGURACIÓN DEL DROP (SOLTAR)
+  const [{ handlerId }, drop] = useDropTarget(() => ({
     accept: "MODULE_CARD",
     collect(monitor) {
       return {
         handlerId: monitor.getHandlerId(),
       };
     },
-    // @ts-ignore - Ignoramos los errores de tipo para usar el objeto item del drag
-    hover(item, monitor) {
+    hover(item: any, monitor) {
       if (!ref.current) {
         return;
       }
-      // @ts-ignore - Accedemos al índice del elemento arrastrado
+      
       const dragIndex = item.index;
       const hoverIndex = index;
       
@@ -95,10 +95,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
         return;
       }
       
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverBoundingRect = ref.current.getBoundingClientRect();
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
-      const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
+      
+      if (!clientOffset) {
+        return;
+      }
+      
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
       
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
         return;
@@ -109,27 +114,32 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       }
       
       moveModule(dragIndex, hoverIndex);
-      // @ts-ignore - Asignamos el nuevo índice al elemento arrastrado
       item.index = hoverIndex;
     },
-  }));
+  }), [index, moveModule]);
   
   // Manejador para toggle favorite que previene la propagación de eventos
   const handleToggleFavorite = (e: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
+    e.preventDefault();
+    e.stopPropagation();
     toggleFavorite(module.id);
   };
   
   // Manejador para mostrar el historial del módulo directamente
   const handleViewHistory = (e: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
+    e.preventDefault();
+    e.stopPropagation();
     // Este evento no navegará, ahora mostrará un diálogo
   };
+
+  // Manejador para toggle hidden que previene la propagación de eventos
+  const handleToggleHidden = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleHidden(module.id);
+  };
   
+  // Combinamos las referencias de drag y drop
   drag(drop(ref));
   
   const getDifficultyBadge = (defaultDifficulty: string) => {
@@ -238,7 +248,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               variant="ghost" 
               size="icon" 
               className="text-white hover:bg-white/20 rounded-full h-6 w-6 min-[400px]:h-7 min-[400px]:w-7 sm:h-8 sm:w-8 p-0"
-              onClick={() => toggleHidden(module.id)}
+              onClick={handleToggleHidden}
             >
               {isHidden ? (
                 <Eye className="h-3 w-3 min-[400px]:h-3.5 min-[400px]:w-3.5 sm:h-5 sm:w-5 text-purple-300" />
@@ -290,7 +300,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
         border-blue-100
         hover:border-blue-200
       `}
-      data-handler-id={drop_props?.handlerId || ""}
+      data-handler-id={handlerId || ""}
     >
       {isModuleFavorite && (
         <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1.5 shadow-md z-20">
