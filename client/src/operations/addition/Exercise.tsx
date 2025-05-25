@@ -2447,8 +2447,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </TooltipProvider>
         </div>
       </div>
-    </>
-    
+    </div>
+
     {showProfessorMode && (
       <ProfessorMode
           problem={currentProblem}
