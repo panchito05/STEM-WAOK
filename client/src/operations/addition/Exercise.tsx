@@ -2052,10 +2052,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       } border-2`}>
         {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-            <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-              <h2 className="text-lg md:text-xl font-bold text-gray-800 text-center md:text-left">{currentTranslations.addition}</h2>
-              <span className="font-medium text-gray-700 text-center md:text-left text-sm mt-1 md:mt-0">
-                Problema {currentProblemIndex + 1} de {settings.problemCount}
+            <div className="flex flex-col items-center sm:items-start">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
+              <span className="font-medium text-gray-700 text-center text-sm mt-1">
+                Problema {currentProblemIndex} de {settings.problemCount}
               </span>
             </div>
             
