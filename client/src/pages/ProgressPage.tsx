@@ -674,7 +674,7 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500">Average Accuracy</p>
                                 <p className="text-sm font-medium text-blue-600">
                                   {(() => {
-                                    // Usar exactamente el mismo cálculo que Overall Summary
+                                    // 🔧 USAR EXACTAMENTE LA MISMA LÓGICA QUE EL "OVERALL SUMMARY"
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return 'N/A';
                                     
@@ -683,19 +683,27 @@ export default function ProgressPage() {
                                     
                                     moduleExercises.forEach((exercise: any) => {
                                       if (exercise.totalProblems) {
-                                        // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL FINAL
+                                        totalProblems += exercise.totalProblems;
+                                        
                                         if (exercise.userAnswers) {
+                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
                                           const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
                                           totalCorrect += finalScore;
-                                          totalProblems += exercise.totalProblems;
                                         } else {
-                                          // Fallback para ejercicios sin userAnswers
-                                          const revealedAnswers = exercise.revealedAnswers || 
-                                                                 exercise.extraData?.revealedAnswers || 
-                                                                 exercise.extra_data?.revealedAnswers || 0;
-                                          const realScore = Math.max(0, exercise.score - revealedAnswers);
-                                          totalCorrect += realScore;
-                                          totalProblems += exercise.totalProblems;
+                                          // 🔧 USAR LA MISMA LÓGICA DE FALLBACK QUE EL OVERALL SUMMARY
+                                          let percentage = 0;
+                                          if (exercise.extraData?.accuracy) {
+                                            percentage = Math.round(exercise.extraData.accuracy);
+                                          } else {
+                                            // Calcular desde score y revealedAnswers
+                                            const revealed = exercise.revealedAnswers || 0;
+                                            const realScore = Math.max(0, exercise.score - revealed);
+                                            percentage = Math.round((realScore / exercise.totalProblems) * 100);
+                                          }
+                                          
+                                          // Calcular score desde porcentaje
+                                          const calculatedScore = Math.round((percentage * exercise.totalProblems) / 100);
+                                          totalCorrect += calculatedScore;
                                         }
                                       }
                                     });
@@ -720,19 +728,27 @@ export default function ProgressPage() {
                                       
                                       moduleExercises.forEach((exercise: any) => {
                                         if (exercise.totalProblems) {
-                                          // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL FINAL
+                                          totalProblems += exercise.totalProblems;
+                                          
                                           if (exercise.userAnswers) {
+                                            // 🔧 APLICAR EXACTAMENTE LA MISMA LÓGICA DEL MODAL
                                             const finalScore = exercise.userAnswers.filter((a: any) => a && a.isCorrect).length;
                                             totalCorrect += finalScore;
-                                            totalProblems += exercise.totalProblems;
                                           } else {
-                                            // Fallback para ejercicios sin userAnswers
-                                            const revealedAnswers = exercise.revealedAnswers || 
-                                                                   exercise.extraData?.revealedAnswers || 
-                                                                   exercise.extra_data?.revealedAnswers || 0;
-                                            const realScore = Math.max(0, exercise.score - revealedAnswers);
-                                            totalCorrect += realScore;
-                                            totalProblems += exercise.totalProblems;
+                                            // 🔧 USAR LA MISMA LÓGICA DE FALLBACK QUE EL OVERALL SUMMARY
+                                            let percentage = 0;
+                                            if (exercise.extraData?.accuracy) {
+                                              percentage = Math.round(exercise.extraData.accuracy);
+                                            } else {
+                                              // Calcular desde score y revealedAnswers
+                                              const revealed = exercise.revealedAnswers || 0;
+                                              const realScore = Math.max(0, exercise.score - revealed);
+                                              percentage = Math.round((realScore / exercise.totalProblems) * 100);
+                                            }
+                                            
+                                            // Calcular score desde porcentaje
+                                            const calculatedScore = Math.round((percentage * exercise.totalProblems) / 100);
+                                            totalCorrect += calculatedScore;
                                           }
                                         }
                                       });
