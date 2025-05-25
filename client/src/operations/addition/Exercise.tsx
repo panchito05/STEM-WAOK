@@ -660,67 +660,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const isCorrect = checkAnswer(currentProblem, userNumericAnswer);
 
     const problemIndexForHistory = currentProblemIndex;
-    
-    // Actualizar historial con intentos fallidos
+    const newHistoryEntry: UserAnswerType = {
+        problemId: currentProblem.id,
+        problem: currentProblem,
+        userAnswer: userNumericAnswer,
+        isCorrect,
+        status: isCorrect ? 'correct' : 'incorrect' // Añadir status
+    };
     setUserAnswersHistory(prev => {
         const newHistory = [...prev];
-        const existingEntry = newHistory[problemIndexForHistory];
-        
-        if (existingEntry) {
-            // Si ya existe una entrada, agregar el intento fallido si es incorrecto
-            if (!isCorrect) {
-                const currentFailedAttempts = existingEntry.mistakes || [];
-                newHistory[problemIndexForHistory] = {
-                    ...existingEntry,
-                    // NO actualizar userAnswer para respuestas incorrectas
-                    isCorrect,
-                    status: 'incorrect',
-                    attempts: newAttempts,
-                    mistakes: [...currentFailedAttempts, userNumericAnswer],
-                    timestamp: Date.now()
-                };
-            } else {
-                // Si es correcto, actualizar con la respuesta final correcta
-                newHistory[problemIndexForHistory] = {
-                    ...existingEntry,
-                    userAnswer: userNumericAnswer,
-                    isCorrect: true,
-                    status: 'correct',
-                    attempts: newAttempts,
-                    timestamp: Date.now()
-                };
-            }
-        } else {
-            // Crear nueva entrada
-            if (!isCorrect) {
-                // Primera respuesta incorrecta - no establecer userAnswer aún
-                const newHistoryEntry: UserAnswerType = {
-                    problemId: currentProblem.id,
-                    problem: currentProblem,
-                    userAnswer: NaN, // No hay respuesta correcta aún
-                    isCorrect: false,
-                    status: 'incorrect',
-                    attempts: newAttempts,
-                    mistakes: [userNumericAnswer],
-                    timestamp: Date.now()
-                };
-                newHistory[problemIndexForHistory] = newHistoryEntry;
-            } else {
-                // Primera respuesta y es correcta
-                const newHistoryEntry: UserAnswerType = {
-                    problemId: currentProblem.id,
-                    problem: currentProblem,
-                    userAnswer: userNumericAnswer,
-                    isCorrect: true,
-                    status: 'correct',
-                    attempts: newAttempts,
-                    mistakes: [],
-                    timestamp: Date.now()
-                };
-                newHistory[problemIndexForHistory] = newHistoryEntry;
-            }
-        }
-        
+        newHistory[problemIndexForHistory] = newHistoryEntry;
         return newHistory;
     });
     setActualActiveProblemIndexBeforeViewingPrevious(problemIndexForHistory);
@@ -993,16 +942,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Mostrar mensaje en el formato "Answered (Incorrect!). The correct answer is = X"
         setFeedbackMessage(`Answered (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
         // Actualizar historial para reflejar que la respuesta fue revelada
+        const updatedHistoryEntry: UserAnswerType = { ...newHistoryEntry, status: 'revealed' };
         setUserAnswersHistory(prev => {
             const newHistory = [...prev];
-            const existingEntry = newHistory[problemIndexForHistory];
-            if (existingEntry) {
-                newHistory[problemIndexForHistory] = { 
-                    ...existingEntry, 
-                    status: 'revealed',
-                    timestamp: Date.now() 
-                };
-            }
+            newHistory[problemIndexForHistory] = updatedHistoryEntry;
             return newHistory;
         });
 
@@ -1122,16 +1065,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
         // Cambiar el mensaje a "Answered (Incorrect!). The correct answer is = X"
         setFeedbackMessage(`Answered (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
-        setUserAnswersHistory(prev => {
+        const updatedHistoryEntry: UserAnswerType = { ...newHistoryEntry, status: 'revealed' };
+         setUserAnswersHistory(prev => {
             const newHistory = [...prev];
-            const existingEntry = newHistory[problemIndexForHistory];
-            if (existingEntry) {
-                newHistory[problemIndexForHistory] = { 
-                    ...existingEntry, 
-                    status: 'revealed',
-                    timestamp: Date.now() 
-                };
-            }
+            newHistory[problemIndexForHistory] = updatedHistoryEntry;
             return newHistory;
         });
 
@@ -2633,17 +2570,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                               if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
                                   setUserAnswersHistory(prev => {
                                       const newHistory = [...prev];
-                                      const existingEntry = newHistory[problemIdxForHistory];
-                                      
                                       newHistory[problemIdxForHistory] = {
                                           problemId: currentProblem.id,
                                           problem: currentProblem,
                                           userAnswer: NaN,
                                           isCorrect: false,
-                                          status: 'revealed',
-                                          attempts: currentAttempts || (existingEntry?.attempts) || 1,
-                                          mistakes: existingEntry?.mistakes || [],
-                                          timestamp: Date.now()
+                                          status: 'revealed'
                                       };
                                       return newHistory;
                                   });

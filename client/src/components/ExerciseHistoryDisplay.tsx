@@ -158,23 +158,6 @@ const ExerciseHistoryDisplay: React.FC<ExerciseHistoryDisplayProps> = ({ exercis
                 </p>
               </div>
             </div>
-            
-            {/* Mostrar intentos fallidos si existen */}
-            {problem.mistakes && problem.mistakes.length > 0 && (
-              <div className="mt-3 pt-2 border-t border-gray-200">
-                <p className="text-xs text-gray-500 mb-1">Intentos fallidos:</p>
-                <div className="flex flex-wrap gap-1">
-                  {problem.mistakes.map((mistake, mistakeIdx) => (
-                    <span 
-                      key={mistakeIdx}
-                      className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-100 text-red-800"
-                    >
-                      {String(mistake)}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
             {problem.info && (
               <p className="text-xs text-gray-500 mt-2">
                 {problem.info}
