@@ -157,7 +157,13 @@ export default function ProgressPage() {
       if (!module.comingSoon) {
         const moduleResults = dayResults.filter(result => result.operationId === module.id);
         if (moduleResults.length > 0) {
-          const avgScore = moduleResults.reduce((sum, result) => sum + (result.score / result.totalProblems), 0) / moduleResults.length;
+          // 🔧 USANDO LA MISMA LÓGICA EXITOSA DEL MODAL FINAL
+          // Calcular promedio usando conteo directo de respuestas correctas
+          const avgScore = moduleResults.reduce((sum, result) => {
+            const userAnswersHistory = result.extra_data?.userAnswersHistory || result.extra_data?.problems || [];
+            const finalScore = userAnswersHistory.filter((a: any) => a && a.isCorrect).length;
+            return sum + (result.totalProblems > 0 ? finalScore / result.totalProblems : 0);
+          }, 0) / moduleResults.length;
           dayData[module.id] = Math.round(avgScore * 100);
         } else {
           dayData[module.id] = 0;
@@ -770,12 +776,13 @@ export default function ProgressPage() {
                                       const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                       if (moduleExercises.length === 0) return 0;
                                       
-                                      // Calcular total de problemas correctos excluyendo respuestas reveladas
+                                      // 🔧 USANDO LA MISMA LÓGICA EXITOSA DEL MODAL FINAL
+                                      // Calcular total de problemas correctos contando directamente isCorrect
                                       let totalCorrect = 0;
                                       moduleExercises.forEach(ex => {
-                                        const revealedAnswers = ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0;
-                                        const realScore = Math.max(0, (ex.score || 0) - revealedAnswers);
-                                        totalCorrect += realScore;
+                                        const userAnswersHistory = ex.extra_data?.userAnswersHistory || ex.extra_data?.problems || [];
+                                        const finalScore = userAnswersHistory.filter((a: any) => a && a.isCorrect).length;
+                                        totalCorrect += finalScore;
                                       });
                                       
                                       // Calcular progreso como porcentaje hacia el siguiente nivel
@@ -963,11 +970,11 @@ export default function ProgressPage() {
                             
                             recentExercises.forEach((exercise: any) => {
                               if (exercise.score !== undefined && exercise.totalProblems) {
-                                const revealedAnswers = exercise.revealedAnswers || 
-                                                       exercise.extraData?.revealedAnswers || 
-                                                       exercise.extra_data?.revealedAnswers || 0;
-                                const realScore = Math.max(0, exercise.score - revealedAnswers);
-                                totalCorrect += realScore;
+                                // 🔧 USANDO LA MISMA LÓGICA EXITOSA DEL MODAL FINAL
+                                // Contar directamente las respuestas correctas desde userAnswersHistory
+                                const userAnswersHistory = exercise.extra_data?.userAnswersHistory || exercise.extra_data?.problems || [];
+                                const finalScore = userAnswersHistory.filter((a: any) => a && a.isCorrect).length;
+                                totalCorrect += finalScore;
                                 totalProblems += exercise.totalProblems;
                               }
                             });
@@ -1036,16 +1043,12 @@ export default function ProgressPage() {
                             </td>
                             <td className="py-3 px-4">
                               {exercise.score !== undefined && exercise.totalProblems ? (() => {
-                                // Calcular el score real excluyendo respuestas reveladas
-                                // Verificar múltiples fuentes para revealedAnswers
-                                const revealedAnswers = exercise.revealedAnswers || 
-                                                       exercise.extraData?.revealedAnswers || 
-                                                       exercise.extra_data?.revealedAnswers || 
-                                                       exercise.extra_data?.screenshot?.scoreData?.revealed?.value || 
-                                                       0;
-                                const realScore = Math.max(0, exercise.score - revealedAnswers);
-                                const percentage = Math.round((realScore / exercise.totalProblems) * 100);
-                                return `${realScore}/${exercise.totalProblems} (${percentage}%)`;
+                                // 🔧 USANDO LA MISMA LÓGICA EXITOSA DEL MODAL FINAL
+                                // Contar directamente las respuestas correctas desde userAnswersHistory
+                                const userAnswersHistory = exercise.extra_data?.userAnswersHistory || exercise.extra_data?.problems || [];
+                                const finalScore = userAnswersHistory.filter((a: any) => a && a.isCorrect).length;
+                                const percentage = exercise.totalProblems > 0 ? Math.round((finalScore / exercise.totalProblems) * 100) : 0;
+                                return `${finalScore}/${exercise.totalProblems} (${percentage}%)`;
                               })() :
                                 exercise.extraData?.accuracy ? 
                                   `${Math.round(exercise.extraData.accuracy)}%` : 
@@ -1086,16 +1089,14 @@ export default function ProgressPage() {
                                       <p className="text-center text-sm text-gray-600">Accuracy</p>
                                       <p className="text-center text-lg font-bold text-green-600">
                                         {(() => {
-                                          // Obtener el número de respuestas reveladas
-                                          const revealed = exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0;
-                                          // Calcular problemas intentados (excluyendo los revelados)
-                                          const attemptedProblems = exercise.totalProblems - revealed;
+                                          // 🔧 USANDO LA MISMA LÓGICA EXITOSA DEL MODAL FINAL
+                                          // Contar directamente las respuestas correctas desde userAnswersHistory
+                                          const userAnswersHistory = exercise.extra_data?.userAnswersHistory || exercise.extra_data?.problems || [];
+                                          const finalScore = userAnswersHistory.filter((a: any) => a && a.isCorrect).length;
                                           
-                                          // Calcular accuracy excluyendo respuestas reveladas
-                                          if (attemptedProblems > 0) {
-                                            // Restar las respuestas reveladas del score para accuracy
-                                            const correctAnswers = Math.max(0, exercise.score - revealed);
-                                            return `${Math.round((correctAnswers / attemptedProblems) * 100)}%`;
+                                          if (exercise.totalProblems > 0) {
+                                            const accuracy = Math.round((finalScore / exercise.totalProblems) * 100);
+                                            return `${accuracy}%`;
                                           } else if (exercise.extraData?.accuracy) {
                                             return `${Math.round(exercise.extraData.accuracy)}%`;
                                           }
