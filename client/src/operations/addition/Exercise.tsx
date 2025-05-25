@@ -2096,25 +2096,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </span>
             </div>
             
-            {/* Control buttons row - Stack on mobile, inline on desktop */}
-            <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 flex-wrap">
-                {/* History button - Hide text on mobile, show icon only */}
-                <Link href="/progress?tab=recent">
-                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                    <History className="h-4 w-4" /> 
-                    <span className="hidden sm:inline">
-                      {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
-                    </span>
-                  </Button>
-                </Link>
-                {/* Settings button - Hide text on mobile, show icon only */}
-                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
-                  <Cog className="h-4 w-4" /> 
-                  <span className="hidden sm:inline">
-                    {currentTranslations.settings}
-                  </span>
-                </Button>
-            </div>
+
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         
