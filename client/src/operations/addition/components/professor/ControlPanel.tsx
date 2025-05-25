@@ -37,37 +37,58 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   // Usar el contexto de layout sincronizado
   const { currentLayout, getPanelCSSClasses } = useSynchronizedLayout();
 
-  // Sincronizar la posición local con el layout sincronizado
+  // Sistema de diagnóstico avanzado para sincronización de layout
   useEffect(() => {
-    console.log(`🔍 [CONTROL-PANEL] Layout sincronizado cambió:`, currentLayout);
+    console.log(`🔍 [CONTROL-PANEL] ===== DIAGNÓSTICO AVANZADO =====`);
+    console.log(`🔍 [CONTROL-PANEL] Layout sincronizado:`, currentLayout);
     console.log(`🔍 [CONTROL-PANEL] Position local actual: "${position}"`);
     console.log(`🔍 [CONTROL-PANEL] Position del layout: "${currentLayout.panelPosition}"`);
+    console.log(`🔍 [CONTROL-PANEL] ¿Son diferentes?`, position !== currentLayout.panelPosition);
+    console.log(`🔍 [CONTROL-PANEL] Función onPositionChange:`, typeof onPositionChange);
+    console.log(`🔍 [CONTROL-PANEL] Timestamp:`, Date.now());
     
     // Solo actualizar si la posición local es diferente
     if (position !== currentLayout.panelPosition) {
-      console.log(`🔍 [CONTROL-PANEL] Sincronizando position: "${position}" -> "${currentLayout.panelPosition}"`);
+      console.log(`🔍 [CONTROL-PANEL] 🔥 EJECUTANDO SINCRONIZACIÓN`);
+      console.log(`🔍 [CONTROL-PANEL] Cambiando: "${position}" -> "${currentLayout.panelPosition}"`);
+      console.log(`🔍 [CONTROL-PANEL] Llamando onPositionChange("${currentLayout.panelPosition}")`);
       onPositionChange(currentLayout.panelPosition);
+      console.log(`🔍 [CONTROL-PANEL] ✅ onPositionChange ejecutado`);
+    } else {
+      console.log(`🔍 [CONTROL-PANEL] ⚠️ NO SE EJECUTA SINCRONIZACIÓN (posiciones iguales)`);
     }
+    console.log(`🔍 [CONTROL-PANEL] ===== FIN DIAGNÓSTICO =====`);
   }, [currentLayout, position, onPositionChange]);
 
   // Función para obtener la posición correcta del ejercicio usando el sistema sincronizado
   const getPositionStyles = () => {
+    console.log(`🔍 [STYLES] ===== CALCULANDO ESTILOS =====`);
+    console.log(`🔍 [STYLES] Position local: "${position}"`);
+    console.log(`🔍 [STYLES] Layout position: "${currentLayout.panelPosition}"`);
+    
     // Usar las clases CSS del sistema sincronizado
     const cssClasses = getPanelCSSClasses();
-    console.log(`🔍 [CONTROL-PANEL] CSS classes del sistema sincronizado:`, cssClasses);
+    console.log(`🔍 [STYLES] CSS classes del sistema sincronizado:`, cssClasses);
     
     // Convertir clases CSS a styles inline para compatibilidad
+    let styles = {};
     if (cssClasses.includes('lg:top-4') && cssClasses.includes('lg:right-4')) {
-      return { top: '4px', right: '4px', left: 'auto', bottom: 'auto' };
+      styles = { top: '4px', right: '4px', left: 'auto', bottom: 'auto' };
+      console.log(`🔍 [STYLES] ✅ Detectado topRight, aplicando:`, styles);
+    } else if (cssClasses.includes('lg:bottom-4') && cssClasses.includes('lg:right-4')) {
+      styles = { bottom: '4px', right: '4px', top: 'auto', left: 'auto' };
+      console.log(`🔍 [STYLES] ✅ Detectado bottomRight, aplicando:`, styles);
+    } else if (cssClasses.includes('lg:bottom-4') && cssClasses.includes('lg:left-4')) {
+      styles = { bottom: '4px', left: '4px', top: 'auto', right: 'auto' };
+      console.log(`🔍 [STYLES] ✅ Detectado bottomLeft, aplicando:`, styles);
+    } else {
+      // topLeft por defecto
+      styles = { top: '4px', left: '4px', right: 'auto', bottom: 'auto' };
+      console.log(`🔍 [STYLES] ✅ Usando topLeft por defecto, aplicando:`, styles);
     }
-    if (cssClasses.includes('lg:bottom-4') && cssClasses.includes('lg:right-4')) {
-      return { bottom: '4px', right: '4px', top: 'auto', left: 'auto' };
-    }
-    if (cssClasses.includes('lg:bottom-4') && cssClasses.includes('lg:left-4')) {
-      return { bottom: '4px', left: '4px', top: 'auto', right: 'auto' };
-    }
-    // topLeft por defecto
-    return { top: '4px', left: '4px', right: 'auto', bottom: 'auto' };
+    
+    console.log(`🔍 [STYLES] ===== ESTILOS FINALES =====`, styles);
+    return styles;
   };
 
   return (
