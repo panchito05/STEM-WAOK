@@ -43,6 +43,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
     totalAttempts: 0,
     revealedAnswers: 0
   });
+  const [isPanelCollapsed, setIsPanelCollapsed] = React.useState(false);
 
   // Usar el contexto sincronizado - NUEVA ARQUITECTURA
   const { 
@@ -182,7 +183,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
             })() : {})
           }}
         >
-          {/* Botón para mover panel - NUEVA ARQUITECTURA */}
+          {/* Header del panel con botones centralizados */}
           <div className="flex justify-between items-center mb-2">
             <button
               onClick={() => {
@@ -202,13 +203,43 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
               </svg>
               Mover
             </button>
+            
+            {/* Botón central de colapsar/expandir */}
+            <button
+              onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
+              className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors"
+              title={isPanelCollapsed ? "Expandir panel" : "Colapsar panel"}
+            >
+              {isPanelCollapsed ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M8 9l4-4 4 4"/>
+                    <path d="M8 15l4 4 4-4"/>
+                  </svg>
+                  Expandir
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M8 15l4-4 4 4"/>
+                    <path d="M8 9l4 4 4-4"/>
+                  </svg>
+                  Colapsar
+                </>
+              )}
+            </button>
+            
             <span className="text-xs text-gray-500">
               {getPositionIndicator()} Layout {getCurrentLayoutId()}
             </span>
           </div>
           
-          {/* Mostrar problema */}
-          <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
+          {/* Contenido del panel (colapsable) */}
+          <div className={`transition-all duration-300 overflow-hidden ${
+            isPanelCollapsed ? 'max-h-0 opacity-0' : 'max-h-[1000px] opacity-100'
+          }`}>
+            {/* Mostrar problema */}
+            <div className="bg-white p-4 shadow-sm border border-gray-200 rounded-md mb-2">
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center text-sm font-medium text-gray-700">
                 <span>Problema {problemHistory.length + 1} de 3</span>
@@ -346,14 +377,15 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
             >
               ⌫
             </button>
-          </div>
-
-          {/* Mensaje de progreso */}
-          {attempts > 0 && attempts < settings.maxAttempts && !isProcessing && (
-            <div className="mt-2 text-center text-sm text-gray-600">
-              {settings.maxAttempts - attempts} intento{settings.maxAttempts - attempts !== 1 ? 's' : ''} restante{settings.maxAttempts - attempts !== 1 ? 's' : ''}
             </div>
-          )}
+
+            {/* Mensaje de progreso */}
+            {attempts > 0 && attempts < settings.maxAttempts && !isProcessing && (
+              <div className="mt-2 text-center text-sm text-gray-600">
+                {settings.maxAttempts - attempts} intento{settings.maxAttempts - attempts !== 1 ? 's' : ''} restante{settings.maxAttempts - attempts !== 1 ? 's' : ''}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
