@@ -2042,7 +2042,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         )}
 
-      <div className={`px-1 py-1 sm:px-4 sm:py-5 rounded-xl shadow-lg min-h-[calc(100vh-4rem)] md:min-h-0 flex flex-col ${
+      <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg min-h-[calc(100vh-8rem)] md:min-h-0 flex flex-col ${
         adaptiveDifficulty === "beginner" ? "bg-blue-50 border-blue-200" :
         adaptiveDifficulty === "elementary" ? "bg-emerald-50 border-emerald-200" :
         adaptiveDifficulty === "intermediate" ? "bg-orange-50 border-orange-200" :
@@ -2050,25 +2050,26 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        {/* Header - Reorganized to match image layout */}
-        <div className="flex items-center justify-between gap-4 mb-4">
-            {/* Left: Addition title and problem counter */}
-            <div className="flex flex-col">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-              <span className="font-medium text-gray-700 text-sm">
+        {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+            <div className="flex flex-col items-center sm:items-start">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
+              <span className="font-medium text-gray-700 text-center text-sm mt-1">
                 Problema {currentProblemIndex} de {settings.problemCount}
               </span>
             </div>
             
-            {/* Center: Timer, Attempts, and Level info */}
-            <div className="flex items-center gap-3 text-sm">
-                {/* Timer */}
+            {/* Top row info - Timer and basic stats */}
+            <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap">
                 <span className="font-medium text-gray-700 flex items-center">
                   <Info className="h-4 w-4 mr-1 opacity-70"/>
                   {formatTime(timer)}
                 </span>
-                
-                {/* Attempts */}
+                {settings.timeValue > 0 && !viewingPrevious && !waitingRef.current && exerciseStarted && (settings.maxAttempts === 0 || currentAttempts < settings.maxAttempts) && (
+                  <span className={`font-medium p-1 rounded ${problemTimerValue <= 5 && problemTimerValue > 0 ? "text-red-600 animate-pulse bg-red-100" : "text-gray-700 bg-gray-100"}`}>
+                    P: {problemTimerValue}s
+                  </span>
+                )}
                 {settings.maxAttempts > 0 && !viewingPrevious && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
@@ -2083,9 +2084,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </Tooltip>
                   </TooltipProvider>
                 )}
-                
-                {/* Level */}
-                <span className={`px-2 py-0.5 rounded-full font-semibold capitalize text-sm ${
+                <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "beginner" ? "bg-blue-100 text-blue-800" :
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "elementary" ? "bg-emerald-100 text-emerald-800" :
                   (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty) === "intermediate" ? "bg-orange-100 text-orange-800" :
@@ -2097,22 +2096,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </span>
             </div>
             
-            {/* Right: Exercise History and Settings buttons */}
-            <div className="flex items-center gap-2">
-                {/* Exercise History button */}
+            {/* Control buttons row - Stack on mobile, inline on desktop */}
+            <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 flex-wrap">
+                {/* History button - Hide text on mobile, show icon only */}
                 <Link href="/progress?tab=recent">
-                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-sm text-gray-600 hover:bg-gray-100">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                     <History className="h-4 w-4" /> 
-                    <span>
+                    <span className="hidden sm:inline">
                       {isEnglish ? "Exercise History" : "Historial de Ejercicios"}
                     </span>
                   </Button>
                 </Link>
-                
-                {/* Settings button */}
-                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-sm text-gray-600 hover:bg-gray-100">
+                {/* Settings button - Hide text on mobile, show icon only */}
+                <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> 
-                  <span>
+                  <span className="hidden sm:inline">
                     {currentTranslations.settings}
                   </span>
                 </Button>
@@ -2177,20 +2175,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
         </div>
 
-        {/* Problem Display Area - Responsive: Optimized for all screen sizes */}
-        <div className={`p-1 sm:p-4 md:p-6 rounded-lg mb-1 sm:mb-4 shadow-md bg-white flex-grow flex flex-col items-center justify-center max-h-[30vh] sm:max-h-none`}>
+        {/* Problem Display Area - Compact Design */}
+        <div className="p-4 rounded-lg mb-4 shadow-sm bg-gray-50 border">
           {currentProblem.layout === 'horizontal' ? (
-            <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 flex-wrap">
+            <div className="text-2xl font-bold flex items-center justify-center gap-2">
               <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600 mx-0.5 sm:mx-1">+</span>
+              <span className="text-gray-600">+</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
-              {currentProblem.operands.length > 2 && ( // Support for more than 2 operands if needed
+              {currentProblem.operands.length > 2 && (
                 <>
-                  <span className="text-gray-600 mx-0.5 sm:mx-1">+</span>
+                  <span className="text-gray-600">+</span>
                   <span>{currentProblem.operands[2]}</span>
                 </>
               )}
-              <span className="text-gray-600 mx-0.5 sm:mx-1">=</span>
+              <span className="text-gray-600">=</span>
             </div>
           ) : (
             <div className="inline-block text-right my-1 sm:my-2">
@@ -2213,8 +2211,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
 
-          {/* Answer Input Boxes - Responsive: Larger touch targets on mobile */}
-          <div className="mt-3 sm:mt-4 md:mt-5 flex items-center justify-center gap-0.5 sm:gap-1 md:gap-1.5 flex-wrap">
+          {/* Answer Input Boxes - Compact Design */}
+          <div className="mt-4 flex items-center justify-center gap-1">
             {Array(currentProblem.answerMaxDigits).fill(0).map((_, index) => {
               const integerDigitsCount = currentProblem.answerMaxDigits - (currentProblem.answerDecimalPosition || 0);
               const isVisualDecimalPointAfterThisBox = currentProblem.answerDecimalPosition !== undefined &&
@@ -2227,18 +2225,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   <div
                     ref={el => {
                       if (el) {
-                        // Guardar la referencia en el array auxiliar
                         boxRefsArrayRef.current[index] = el;
-                        // Actualizar la referencia principal para acceder globalmente
                         digitBoxRefs.current = boxRefsArrayRef.current;
                       }
                     }}
                     tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
                     className={`
-                      w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-18 lg:h-18
-                      border-2 rounded-lg
+                      w-12 h-12 border-2 rounded-md
                       flex items-center justify-center
-                      text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold
+                      text-xl font-bold
                       transition-all duration-200
                       ${viewingPrevious || exerciseCompleted || waitingRef.current 
                         ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed' 
@@ -2266,29 +2261,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           )}
         </div>
-        {/* Number Keypad - Responsive: Larger touch targets on mobile, always visible */}
-        <div className="grid grid-cols-3 gap-1 sm:gap-3 md:gap-4 max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-auto">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
+        {/* Number Keypad - Compact Design */}
+        <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", ">", "0", "<"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
               className={`
-                h-10 sm:h-14 md:h-16 
-                text-base sm:text-xl md:text-2xl font-semibold
+                h-12 text-lg font-semibold
                 transition-all duration-200
                 ${
-                key === "sequential_backspace" 
+                key === ">" 
                   ? "bg-white hover:bg-red-50 text-red-600 active:bg-red-100 shadow-sm border-red-200 hover:border-red-300" 
-                  : key === "" 
-                    ? "invisible pointer-events-none" 
+                  : key === "<" 
+                    ? "bg-white hover:bg-blue-50 text-blue-600 active:bg-blue-100 shadow-sm border-blue-200 hover:border-blue-300"
                     : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100 border-gray-300 hover:border-gray-400 hover:shadow-md"
               }`}
               onClick={() => {
                 if (viewingPrevious || exerciseCompleted || waitingRef.current || !key || key === "") return;
                 
-                if (key === "sequential_backspace") {
+                if (key === ">" || key === "sequential_backspace") {
                   handleSequentialBackspace();
-                } else if (key === "backspace") {
+                } else if (key === "<" || key === "backspace") {
                   handleBackspace();
                 } else {
                   handleDigitInput(key);
@@ -2306,7 +2300,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           ))}
         </div>
         {/* Bottom Control Buttons - Responsive: Optimized for all screen sizes */}
-        <div className="mt-2 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4">
+        <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
           <Button
             variant="outline" 
             size="sm"
