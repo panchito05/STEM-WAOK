@@ -2050,17 +2050,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         adaptiveDifficulty === "expert" ? "bg-rose-50 border-rose-200" :
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
-        {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
-            <div className="flex flex-col items-center sm:items-start">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
-              <span className="font-medium text-gray-700 text-center text-sm mt-1">
+        {/* Header - Three column layout: Title | Problem Info | Score */}
+        <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+            {/* Left: Module Name */}
+            <div className="flex-shrink-0">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
+            </div>
+            
+            {/* Center: Problem Info */}
+            <div className="flex-grow text-center">
+              <span className="font-medium text-gray-700 text-sm">
                 Problema {currentProblemIndex} de {settings.problemCount}
               </span>
             </div>
             
-            {/* Top row info - Timer and basic stats */}
-            <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap">
+            {/* Right: Score */}
+            <div className="flex-shrink-0">
+              <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs">
+                {t('exercises.score')}: {score}
+              </span>
+            </div>
+        </div>
+        
+        {/* Top row info - Timer and basic stats */}
+        <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap mb-3 sm:mb-4">
                 <span className="font-medium text-gray-700 flex items-center">
                   <Info className="h-4 w-4 mr-1 opacity-70"/>
                   {formatTime(timer)}
@@ -2120,12 +2133,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         {/* Unified Controls Row - Single horizontal row on mobile, maintain desktop layout */}
         <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 flex-wrap">
-            {/* Score - First item */}
-            <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs">
-              {t('exercises.score')}: {score}
-            </span>
+            {/* Score - First item - removed from here since it's now in header */}
             
-            {/* Modo Profesor button - Second item */}
+            {/* Modo Profesor button - First item */}
             <button
               className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50"
               onClick={() => setShowProfessorMode(true)}
@@ -2151,7 +2161,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               </svg>
             </button>
             
-            {/* Ver Video button - Third item */}
+            {/* Ver Video button - Second item */}
             <button
               className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7`}
               onClick={() => setShowVideoDialog(true)}
@@ -2174,14 +2184,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               )}
             </button>
             
-            {/* History button - Fourth item - duplicated here for mobile unified row */}
+            {/* History button - Third item - duplicated here for mobile unified row */}
             <Link href="/progress?tab=recent" className="sm:hidden">
               <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
                 <History className="h-4 w-4" />
               </Button>
             </Link>
             
-            {/* Settings button - Fifth item - duplicated here for mobile unified row */}
+            {/* Settings button - Fourth item - duplicated here for mobile unified row */}
             <Button variant="ghost" size="sm" onClick={onOpenSettings} className="sm:hidden flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
               <Cog className="h-4 w-4" />
             </Button>
@@ -2437,7 +2447,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </TooltipProvider>
         </div>
       </div>
-      {/* Modo Profesor - Nueva implementación con canvas para dibujo */}
+    </div>
+
+    {/* Modo Profesor - Nueva implementación con canvas para dibujo */}
       {showProfessorMode && (
         <ProfessorMode
           problem={currentProblem}
