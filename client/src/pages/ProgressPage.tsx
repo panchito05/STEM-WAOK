@@ -851,11 +851,23 @@ export default function ProgressPage() {
                                     let problemasDesafiantes = 0;
                                     let totalProblemas = 0;
                                     
-                                    moduleExercises.forEach(ex => {
+                                    // Debug: log de los datos para ver la estructura
+                                    console.log('📊 Analizando problemas desafiantes para módulo:', module.id);
+                                    console.log('📊 Ejercicios encontrados:', moduleExercises.length);
+                                    
+                                    moduleExercises.forEach((ex, index) => {
+                                      console.log(`📊 Ejercicio ${index + 1}:`, {
+                                        score: ex.score,
+                                        totalProblems: ex.totalProblems,
+                                        revealedAnswers: ex.revealedAnswers,
+                                        extraData: ex.extra_data
+                                      });
+                                      
                                       const extraData = ex.extra_data;
                                       
                                       // Priorizar problemDetails de extra_data (estructura más reciente y completa)
                                       if (extraData && extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
+                                        console.log('📊 Usando problemDetails de extra_data');
                                         extraData.problemDetails.forEach((problem: any) => {
                                           if (problem && problem.problem) {
                                             totalProblemas++;
@@ -877,6 +889,7 @@ export default function ProgressPage() {
                                       } 
                                       // Fallback para datos más antiguos o diferentes estructuras
                                       else if (extraData && (extraData.problems || extraData.capturedProblems)) {
+                                        console.log('📊 Usando problems/capturedProblems de extra_data');
                                         const problems = extraData.problems || extraData.capturedProblems;
                                         if (Array.isArray(problems)) {
                                           problems.forEach((problem: any) => {
@@ -894,14 +907,24 @@ export default function ProgressPage() {
                                           });
                                         }
                                       }
-                                      // Último recurso: usar datos básicos de score y totalProblems
-                                      else if (ex.score !== undefined && ex.totalProblems !== undefined) {
-                                        totalProblemas += ex.totalProblems;
-                                        // Estimar problemas desafiantes como problemas incorrectos
-                                        const problemasIncorrectos = ex.totalProblems - ex.score;
-                                        problemasDesafiantes += problemasIncorrectos;
+                                      // Último recurso: usar datos básicos
+                                      else {
+                                        console.log('📊 Usando datos básicos de score y totalProblems');
+                                        if (ex.score !== undefined && ex.totalProblems !== undefined) {
+                                          totalProblemas += ex.totalProblems;
+                                          // Contar problemas incorrectos como desafiantes
+                                          const problemasIncorrectos = ex.totalProblems - ex.score;
+                                          problemasDesafiantes += problemasIncorrectos;
+                                          
+                                          // También incluir respuestas reveladas si están disponibles
+                                          if (ex.revealedAnswers && ex.revealedAnswers > 0) {
+                                            problemasDesafiantes += ex.revealedAnswers;
+                                          }
+                                        }
                                       }
                                     });
+                                    
+                                    console.log('📊 Resultado final:', { problemasDesafiantes, totalProblemas });
                                     
                                     if (totalProblemas === 0) return 'N/A';
                                     
