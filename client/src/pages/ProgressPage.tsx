@@ -668,8 +668,29 @@ export default function ProgressPage() {
                                 <p className="text-2xl font-bold text-red-600">
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    const totalRevealed = moduleExercises.reduce((acc, ex) => 
-                                      acc + (ex.revealedAnswers || ex.extra_data?.revealedAnswers || 0), 0);
+                                    if (moduleExercises.length === 0) return 0;
+                                    
+                                    let totalRevealed = 0;
+                                    
+                                    moduleExercises.forEach(ex => {
+                                      const extraData = ex.extra_data;
+                                      
+                                      // Buscar en problemDetails si está disponible
+                                      if (extraData && extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
+                                        extraData.problemDetails.forEach((problem: any) => {
+                                          if (problem && problem.status === 'revealed') {
+                                            totalRevealed++;
+                                          }
+                                        });
+                                      } else {
+                                        // Buscar en otros campos posibles
+                                        const revealed = ex.revealedAnswers || 
+                                                        extraData?.revealedAnswers || 
+                                                        extraData?.answersRevealed || 
+                                                        extraData?.revealed || 0;
+                                        totalRevealed += revealed;
+                                      }
+                                    });
                                     
                                     return totalRevealed;
                                   })()}
