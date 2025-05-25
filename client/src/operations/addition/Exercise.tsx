@@ -211,7 +211,7 @@ const YoutubeVideoDialog = ({
 
         {currentPlayingVideo ? (
           // Modo de reproducción de video
-          <div className={`relative ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}>
+          (<div className={`relative ${isFullscreen ? 'w-full h-full' : 'aspect-video'}`}>
             <iframe
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${currentPlayingVideo}?autoplay=1&rel=0`}
@@ -219,7 +219,6 @@ const YoutubeVideoDialog = ({
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             ></iframe>
-
             <div className="absolute top-2 right-2 flex gap-2">
               <Button
                 variant="outline"
@@ -241,7 +240,6 @@ const YoutubeVideoDialog = ({
                 </Button>
               )}
             </div>
-
             {!isFullscreen && (
               <div className="p-3 flex justify-between items-center">
                 <Button
@@ -263,14 +261,13 @@ const YoutubeVideoDialog = ({
                 </Button>
               </div>
             )}
-          </div>
+          </div>)
         ) : isEditMode ? (
           // Modo de edición
-          <div className="space-y-4 py-4">
+          (<div className="space-y-4 py-4">
             <div className="text-sm text-gray-600 mb-2">
               Añade hasta 2 enlaces de YouTube para videos explicativos de este ejercicio.
             </div>
-
             {videoLinks.map((link, index) => (
               <div key={index} className="flex items-center gap-2">
                 <Input
@@ -289,7 +286,6 @@ const YoutubeVideoDialog = ({
                 </Button>
               </div>
             ))}
-
             {videoLinks.length < 2 && (
               <Button
                 variant="outline"
@@ -301,7 +297,6 @@ const YoutubeVideoDialog = ({
                 <Plus className="h-4 w-4 mr-2" /> Añadir Video
               </Button>
             )}
-
             <DialogFooter className="mt-4">
               <Button type="button" onClick={() => {
                 setIsEditMode(false);
@@ -311,10 +306,10 @@ const YoutubeVideoDialog = ({
               </Button>
               <Button type="button" onClick={handleSave}>Guardar</Button>
             </DialogFooter>
-          </div>
+          </div>)
         ) : (
           // Modo de visualización de miniaturas
-          <div className="space-y-6 py-4">
+          (<div className="space-y-6 py-4">
             {videosMetadata.map((video, index) => (
               <div key={index} className="border rounded-lg overflow-hidden">
                 <div
@@ -363,7 +358,6 @@ const YoutubeVideoDialog = ({
                 </div>
               </div>
             ))}
-
             <DialogFooter>
               <Button type="button" onClick={handleEnterEditMode} variant="outline">
                 <Cog className="h-4 w-4 mr-2" />
@@ -371,7 +365,7 @@ const YoutubeVideoDialog = ({
               </Button>
               <Button type="button" onClick={onClose}>Cerrar</Button>
             </DialogFooter>
-          </div>
+          </div>)
         )}
       </DialogContent>
     </Dialog>
@@ -2014,7 +2008,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     <div className="relative">
       <LevelUpHandler />
       <RewardAnimation />
-
       {/* Diálogo para gestionar videos explicativos */}
       <YoutubeVideoDialog
         isOpen={showVideoDialog}
@@ -2022,9 +2015,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         videos={youtubeVideos}
         onSave={handleSaveYoutubeVideos}
       />
-
       {/* El botón de YouTube ahora se muestra en la barra superior junto a los otros controles */}
-
       {showLevelUpReward && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-white p-6 sm:p-8 rounded-lg shadow-xl text-center max-w-md w-full">
@@ -2041,7 +2032,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
           </div>
         )}
-
       <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg min-h-[calc(100vh-8rem)] md:min-h-0 flex flex-col ${
         adaptiveDifficulty === "beginner" ? "bg-blue-50 border-blue-200" :
         adaptiveDifficulty === "elementary" ? "bg-emerald-50 border-emerald-200" :
@@ -2103,8 +2093,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {/* Unified Controls Row - Single horizontal row on mobile, maintain desktop layout */}
         <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 flex-wrap">
             {/* Problem Progress - Desktop only */}
-            <span className="hidden sm:inline font-semibold px-2 py-1 border border-gray-300 rounded-md bg-blue-50 text-xs text-blue-700">
-              {currentProblemIndex + 1} de {settings.problemCount}
+            <span className="hidden sm:inline font-semibold px-2 py-1 border border-gray-300 rounded-md text-xs text-[#070808] bg-[#5b84ee]">
+              Problem : {currentProblemIndex + 1} de {settings.problemCount}
             </span>
             
             {/* Score - First item */}
@@ -2336,34 +2326,34 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')}
             </Button>
           ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
-            <Button
+            (<Button
                 ref={continueButtonRef}
                 onClick={handleContinue}
                 className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-2.5 text-base sm:text-lg md:text-xl animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center h-12 sm:h-10 order-2 sm:order-2"
             >
-                <span className="flex-grow text-center font-medium">{t('Continue')}</span>
-                <TooltipProvider delayDuration={300}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div
-                        className="ml-2 sm:ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setAutoContinue(prev => !prev);
-                        }}
-                      >
-                        <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
-                          {autoContinue && <Check className="h-3 w-3 text-green-700" />}
-                        </div>
-                        <span className="text-xs font-medium">{t('Auto')}</span>
+              <span className="flex-grow text-center font-medium">{t('Continue')}</span>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className="ml-2 sm:ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAutoContinue(prev => !prev);
+                      }}
+                    >
+                      <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
+                        {autoContinue && <Check className="h-3 w-3 text-green-700" />}
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-            </Button>
+                      <span className="text-xs font-medium">{t('Auto')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Button>)
           ) : (
             <Button 
               onClick={checkCurrentAnswer} 
@@ -2436,7 +2426,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               ) : viewingPrevious ? (
                   <TooltipContent><p>{t('tooltips.showAnswerDisabledInHistory')}</p></TooltipContent>
               ) : waitingRef.current ? ( // Usar waitingRef.current
-                  <TooltipContent><p>{t('tooltips.showAnswerDisabledWhileWaiting')}</p></TooltipContent>
+                  (<TooltipContent><p>{t('tooltips.showAnswerDisabledWhileWaiting')}</p></TooltipContent>)
               ) : null }
             </Tooltip>
           </TooltipProvider>
