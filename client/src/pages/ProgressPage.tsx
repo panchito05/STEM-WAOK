@@ -13,11 +13,11 @@ import { Loader2, RefreshCw, Check, X } from "lucide-react";
 import ProblemRenderer, { MathProblem } from "../components/ProblemRenderer";
 import AdditionProblemRenderer from '../components/AdditionProblemRenderer';
 import ExerciseHistoryDisplay from '../components/ExerciseHistoryDisplay';
-import { useRewardsStore } from "@/lib/rewards-system";
+
 
 export default function ProgressPage() {
   const { exerciseHistory, moduleProgress, clearProgress, refreshProgress, isLoading } = useProgress();
-  const { earnedRewards } = useRewardsStore();
+
   const [isClearing, setIsClearing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState(new Date());

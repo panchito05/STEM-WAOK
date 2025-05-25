@@ -469,24 +469,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         localStorage.removeItem('rewards-storage');
         console.log("✅ [Nueva Fase] Borrado directo de rewards-storage");
         
-        // CRÍTICO: Llamar directamente a la función de reinicio de recompensas
-        console.log("🔄 [CLEAR-PROGRESS-V2] ==================== INICIANDO BORRADO DE RECOMPENSAS ====================");
-        import('../lib/rewards-system').then(({ resetAllRewards }) => {
-          console.log("🔄 [CLEAR-PROGRESS-V2] Función resetAllRewards importada exitosamente");
-          resetAllRewards();
-          console.log("✅ [CLEAR-PROGRESS-V2] resetAllRewards() ejecutado");
-        }).catch(error => {
-          console.error("❌ [CLEAR-PROGRESS-V2] ERROR CRÍTICO al importar sistema de recompensas:", error);
-        });
-        
-        // Intentar limpiar la memoria del sistema de recompensas si está disponible
-        // Esta parte se ejecutará en el cliente, no en el servidor
-        if (typeof window !== 'undefined') {
-          // Publicar un evento global para que otros componentes sepan que las recompensas se han reiniciado
-          const resetEvent = new CustomEvent('rewards-reset');
-          window.dispatchEvent(resetEvent);
-          console.log("✅ [Nueva Fase] Evento de reinicio de recompensas emitido");
-        }
+
       } catch (rewardsError) {
         console.error("Error al reiniciar sistema de recompensas:", rewardsError);
       }
@@ -578,14 +561,7 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         
         console.log("🔄 [Fase 5] Emitidos eventos de limpieza para todos los componentes");
         
-        // IMPORTANTE: Reiniciar el sistema de recompensas
-        try {
-          console.log("🏆 Reseteando sistema de recompensas...");
-          resetAllRewards();
-          console.log("✅ [Fase 5] Sistema de recompensas reseteado correctamente");
-        } catch (error) {
-          console.error("Error al resetear recompensas:", error);
-        }
+
       }
       
       console.log(`🏆 Borrada toda la información del Álbum de Recompensas y colecciones`);
