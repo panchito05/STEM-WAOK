@@ -230,7 +230,6 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           </Button>
         </div>
       </div>
-
       <div className="space-y-6">
         <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
           <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
@@ -468,7 +467,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               />
             </div>
             {localSettings.enableRewards && (
-              <div className={`ml-6 mt-3 p-3 rounded-md bg-white/70 border ${theme.border}`}>
+              <div className="mt-3 p-3 rounded-md bg-white/70 border border-rose-200 ml-[0px] mr-[0px]">
                 <p className={`text-sm ${theme.accent}`}>
                   <span className="mr-2">🎲</span>{isEnglish ? "Rewards will appear randomly during exercises:" : "Las recompensas aparecerán de forma aleatoria durante los ejercicios:"}
                 </p>

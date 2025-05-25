@@ -2044,8 +2044,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div className="flex flex-row justify-between items-center sm:flex-col sm:items-start">
               <h2 className="text-lg sm:text-xl font-bold text-gray-800">{currentTranslations.addition}</h2>
-              <span className="sm:hidden font-medium text-gray-700 text-sm">
-                Problema {currentProblemIndex + 1} de {settings.problemCount}
+              <span className="sm:hidden font-medium text-sm bg-[#3b82f6] text-[#f9fafb]">
+                Problem {currentProblemIndex + 1} de {settings.problemCount}
               </span>
             </div>
             
@@ -2093,7 +2093,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {/* Unified Controls Row - Single horizontal row on mobile, maintain desktop layout */}
         <div className="flex items-center justify-between sm:justify-end gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 flex-wrap">
             {/* Problem Progress - Desktop only */}
-            <span className="hidden sm:inline font-semibold px-2 py-1 border border-gray-300 rounded-md text-xs text-[#070808] bg-[#5b84ee]">
+            <span className="hidden sm:inline font-semibold px-2 py-1 border border-gray-300 rounded-md text-xs bg-[#2563eb] text-[#ffffff]">
               Problem : {currentProblemIndex + 1} de {settings.problemCount}
             </span>
             
