@@ -422,9 +422,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   });
   const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveCorrectAnswers') || '0', 10));
   const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveIncorrectAnswers') || '0', 10));
-  
-  // 🏆 Estado para la racha más larga histórica (por módulo)
-  const [longestStreak, setLongestStreak] = useState(() => parseInt(localStorage.getItem('addition_longestStreak') || '0', 10));
   const [currentAttempts, setCurrentAttempts] = useState(0);
   const [showLevelUpReward, setShowLevelUpReward] = useState(false);
 
@@ -683,13 +680,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const newConsecutive = consecutiveCorrectAnswers + 1;
       setConsecutiveCorrectAnswers(newConsecutive);
       setConsecutiveIncorrectAnswers(0);
-
-      // 🏆 ACTUALIZAR RACHA MÁS LARGA HISTÓRICA
-      if (newConsecutive > longestStreak) {
-        console.log(`[RACHA-HISTÓRICA] 🎯 ¡NUEVO RÉCORD! Racha anterior: ${longestStreak} → Nueva racha: ${newConsecutive}`);
-        setLongestStreak(newConsecutive);
-        localStorage.setItem('addition_longestStreak', newConsecutive.toString());
-      }
 
       // 🎯 Sistema de Recompensas Simplificado - Detección de Hitos
       const checkSimpleRewards = () => {
@@ -1865,11 +1855,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             total: problemsList.length
           },
           time: timer
-        },
-
-        // 🏆 RACHA MÁS LARGA - Almacenar tanto la racha actual como la histórica
-        longestStreak: longestStreak,
-        consecutiveCorrect: consecutiveCorrectAnswers
+        }
       }
     });
   };

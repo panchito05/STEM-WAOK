@@ -623,57 +623,15 @@ export default function ProgressPage() {
                                 <p className="text-sm text-gray-500 text-center">Racha Mas Larga</p>
                                 <p className="text-2xl font-bold text-amber-600">
                                   {(() => {
-                                    // 🏆 SOLUCIÓN SIMPLE: Tomar el valor más alto que encontremos en CUALQUIER lugar
+                                    // Calcular la racha más larga de respuestas correctas consecutivas
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     let longestStreak = 0;
                                     
-                                    // Verificar localStorage primero
-                                    try {
-                                      const localStreak = localStorage.getItem(`longestStreak_${module.id}`) || '0';
-                                      longestStreak = Math.max(longestStreak, parseInt(localStreak, 10) || 0);
-                                    } catch (e) {
-                                      console.log("No localStorage disponible");
-                                    }
-                                    
-                                    // Buscar en todos los ejercicios guardados - MEJORADO
-                                    console.log(`[RACHA-DEBUG] Ejercicios encontrados para módulo ${module.id}:`, moduleExercises.length);
-                                    
-                                    moduleExercises.forEach((ex, idx) => {
-                                      console.log(`[RACHA-DEBUG] Ejercicio ${idx + 1}:`, {
-                                        id: ex.id,
-                                        extra_data: ex.extra_data,
-                                        score: ex.score,
-                                        totalProblems: ex.totalProblems
-                                      });
-                                      
-                                      // Verificar en extra_data (donde se está guardando según Exercise.tsx)
-                                      const dbStreak = ex.extra_data?.longestStreak || 0;
-                                      const dbConsecutive = ex.extra_data?.consecutiveCorrect || 0;
-                                      
-                                      // Verificar en campos directos también por si acaso
-                                      const directStreak = (ex as any).longestStreak || 0;
-                                      const directConsecutive = (ex as any).consecutiveCorrect || 0;
-                                      
-                                      // Tomar el valor más alto encontrado
-                                      const maxFromThisExercise = Math.max(dbStreak, dbConsecutive, directStreak, directConsecutive);
-                                      
-                                      console.log(`[RACHA-DEBUG] Ejercicio ${idx + 1} valores:`, {
-                                        dbStreak,
-                                        dbConsecutive, 
-                                        directStreak,
-                                        directConsecutive,
-                                        maxFromThisExercise
-                                      });
-                                      
-                                      if (maxFromThisExercise > longestStreak) {
-                                        longestStreak = maxFromThisExercise;
-                                        console.log(`[RACHA-DEBUG] Nueva racha más larga: ${longestStreak}`);
-                                      }
+                                    moduleExercises.forEach(ex => {
+                                      const streak = ex.extra_data?.longestStreak || ex.extra_data?.consecutiveCorrect || 0;
+                                      if (streak > longestStreak) longestStreak = streak;
                                     });
                                     
-
-                                    
-                                    console.log(`[RACHA-DISPLAY] Módulo ${module.id}: Racha más larga = ${longestStreak}`);
                                     return longestStreak;
                                   })()}
                                 </p>
