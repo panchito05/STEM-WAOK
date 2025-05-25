@@ -2200,6 +2200,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             
             {/* Top row info - Timer and basic stats */}
             <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap">
+                {/* Rewards button - Desktop only, left of timer */}
+                <Link href="/rewards" className="hidden sm:flex">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs text-yellow-600 hover:bg-yellow-50 border border-yellow-300 bg-yellow-50">
+                    <Award className="h-4 w-4" /> 
+                    <span>
+                      {isEnglish ? "View Rewards" : "Ver Recompensas"} (⭐{rewardStats.totalPoints} pts)
+                    </span>
+                  </Button>
+                </Link>
+                
                 <span className="font-medium text-gray-700 flex items-center">
                   <Info className="h-4 w-4 mr-1 opacity-70"/>
                   {formatTime(timer)}
@@ -2377,15 +2387,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               </span>
             </div>
             
-            {/* Rewards button - Desktop version (with text) */}
-            <Link href="/rewards" className="hidden sm:flex">
-              <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-yellow-600 hover:bg-yellow-50 border border-yellow-300 bg-yellow-50">
-                <Award className="h-4 w-4" /> 
-                <span>
-                  {isEnglish ? "View Rewards" : "Ver Recompensas"} (⭐{rewardStats.totalPoints} pts)
-                </span>
-              </Button>
-            </Link>
+
             
             {/* Settings button - Mobile version (icon only) */}
             <div className="flex flex-col items-center sm:hidden">
