@@ -207,8 +207,20 @@ export default function RewardsAlbum() {
   
   // REWARD GUARDIAN: Filtrar recompensas automáticamente al abrir el álbum
   useEffect(() => {
+    if (isOpen) {
+      // Al abrir el álbum, resetear contador de nuevas recompensas
+      resetNewRewardsCount();
+    } else {
+      // Al cerrar el álbum, limpiar estado del Guardian
+      setGuardianFilteredRewards([]);
+      setGuardianIsLoading(false);
+    }
+  }, [isOpen, resetNewRewardsCount]);
+
+  // Ejecutar Guardian filtering solo cuando se abra el álbum por primera vez
+  useEffect(() => {
     const runGuardianFilter = async () => {
-      if (isOpen && earnedRewards.length > 0) {
+      if (isOpen && earnedRewards.length > 0 && guardianFilteredRewards.length === 0) {
         console.log("🛡️ [REWARD-GUARDIAN] Iniciando filtrado automático de recompensas...");
         setGuardianIsLoading(true);
         
@@ -236,13 +248,9 @@ export default function RewardsAlbum() {
     };
 
     if (isOpen) {
-      // Al abrir el álbum, resetear contador de nuevas recompensas
-      resetNewRewardsCount();
-      
-      // Ejecutar filtrado del Guardian
       runGuardianFilter();
     }
-  }, [isOpen, resetNewRewardsCount, earnedRewards]);
+  }, [isOpen, earnedRewards]);
   
   return (
     <>
