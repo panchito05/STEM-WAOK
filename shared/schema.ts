@@ -165,7 +165,6 @@ export interface ModuleSettingsData {
   enableAdaptiveDifficulty?: boolean;
   enableCompensation?: boolean;
   requireSimplified?: boolean;
-  fractionType?: string;
   favorites?: string[];
   [key: string]: any;
 }
@@ -201,6 +200,5 @@ export const moduleSettingsSchema = z.object({
   enableAdaptiveDifficulty: z.boolean().optional(),
   enableCompensation: z.boolean().optional(),
   requireSimplified: z.boolean().optional(),
-  fractionType: z.string().optional(),
   favorites: z.array(z.string()).optional(),
 }).passthrough();

@@ -1,6 +1,4 @@
 import * as Addition from "../operations/addition";
-import * as Fractions from "../operations/fractions";
-import * as Counting from "../operations/counting";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -58,29 +56,11 @@ export const operationModules: Module[] = [
   //   color: "#3b82f6", // Un azul diferente
   //   icon: "PlusCircle",
   // },
-  {
-    id: "fractions",
-    displayName: "Fractions",
-    description: "Learn to add, subtract, and compare fractions",
-    difficulty: "advanced",
-    color: "#ff5c57", // Rojo-naranja
-    icon: "PieChart",
-  },
-  // Los módulos de Alphabet han sido eliminados
-  {
-    id: "counting",
-    displayName: "Counting Numbers",
-    description: "Practice counting with fun visualization",
-    difficulty: "beginner",
-    color: "#4299e1", // Azul claro como en la imagen
-    icon: "Hash",
-  },
+
 
 ];
 
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
-  fractions: Fractions,
-  counting: Counting,
 };

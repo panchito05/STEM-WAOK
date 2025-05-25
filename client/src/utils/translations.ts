@@ -76,14 +76,7 @@ type TranslationKeys = {
       name: string;
       description: string;
     };
-    fractions: {
-      name: string;
-      description: string;
-    };
-    counting: {
-      name: string;
-      description: string;
-    };
+
   };
 };
 
@@ -163,14 +156,7 @@ export const enTranslations: TranslationKeys = {
       name: "Addition",
       description: "Practice addition with various difficulty levels"
     },
-    fractions: {
-      name: "Fractions",
-      description: "Learn to add, subtract, and compare fractions"
-    },
-    counting: {
-      name: "Counting Numbers",
-      description: "Practice counting with fun visualization"
-    }
+
   },
 };
 
@@ -250,14 +236,7 @@ export const esTranslations: TranslationKeys = {
       name: "Suma",
       description: "Practica sumas con varios niveles de dificultad"
     },
-    fractions: {
-      name: "Fracciones",
-      description: "Aprende a sumar, restar y comparar fracciones"
-    },
-    counting: {
-      name: "Conteo de Números",
-      description: "Practica conteo con visualización divertida"
-    }
+
   },
 };
 
