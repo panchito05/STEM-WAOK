@@ -390,9 +390,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const boxRefsArrayRef = useRef<HTMLDivElement[]>([]);
 
   const [userAnswersHistory, setUserAnswersHistory] = useState<UserAnswerType[]>([]);
-  
-  // Nuevo estado para capturar TODOS los intentos fallidos de cada problema
-  const [problemAttemptsHistory, setProblemAttemptsHistory] = useState<{[problemIndex: number]: Array<{userAnswer: number, isCorrect: boolean, attemptNumber: number, timestamp: number}>}>({});
   const [timer, setTimer] = useState(0);
   const [problemTimerValue, setProblemTimerValue] = useState(settings.timeValue);
   const [exerciseStarted, setExerciseStarted] = useState(false);
@@ -663,62 +660,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const isCorrect = checkAnswer(currentProblem, userNumericAnswer);
 
     const problemIndexForHistory = currentProblemIndex;
-    
-    // NUEVO: Capturar TODOS los intentos (correctos e incorrectos) en el historial detallado
-    setProblemAttemptsHistory(prev => {
-        const problemAttempts = prev[problemIndexForHistory] || [];
-        const newAttempt = {
-            userAnswer: userNumericAnswer,
-            isCorrect,
-            attemptNumber: newAttempts,
-            timestamp: Date.now()
-        };
-        return {
-            ...prev,
-            [problemIndexForHistory]: [...problemAttempts, newAttempt]
-        };
+    const newHistoryEntry: UserAnswerType = {
+        problemId: currentProblem.id,
+        problem: currentProblem,
+        userAnswer: userNumericAnswer,
+        isCorrect,
+        status: isCorrect ? 'correct' : 'incorrect' // Añadir status
+    };
+    setUserAnswersHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[problemIndexForHistory] = newHistoryEntry;
+        return newHistory;
     });
-
-    // Solo actualizar userAnswersHistory si es la respuesta final (correcta o si es el último intento)
-    // Para mantener todos los intentos, solo actualizamos cuando sea correcto o cuando se agote el tiempo/intentos
-    if (isCorrect) {
-        const newHistoryEntry: UserAnswerType = {
-            problemId: currentProblem.id,
-            problem: currentProblem,
-            userAnswer: userNumericAnswer,
-            isCorrect,
-            status: 'correct'
-        };
-        setUserAnswersHistory(prev => {
-            const newHistory = [...prev];
-            newHistory[problemIndexForHistory] = newHistoryEntry;
-            return newHistory;
-        });
-    } else {
-        // Para respuestas incorrectas, mantener la entrada existente o crear una temporal
-        // que se actualizará solo cuando se finalice el problema
-        setUserAnswersHistory(prev => {
-            const newHistory = [...prev];
-            if (!newHistory[problemIndexForHistory]) {
-                newHistory[problemIndexForHistory] = {
-                    problemId: currentProblem.id,
-                    problem: currentProblem,
-                    userAnswer: userNumericAnswer,
-                    isCorrect: false,
-                    status: 'incorrect'
-                };
-            } else {
-                // Actualizar solo la última respuesta incorrecta
-                newHistory[problemIndexForHistory] = {
-                    ...newHistory[problemIndexForHistory],
-                    userAnswer: userNumericAnswer,
-                    isCorrect: false,
-                    status: 'incorrect'
-                };
-            }
-            return newHistory;
-        });
-    }
     setActualActiveProblemIndexBeforeViewingPrevious(problemIndexForHistory);
 
     if (isCorrect) {
@@ -989,20 +942,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Mostrar mensaje en el formato "Answered (Incorrect!). The correct answer is = X"
         setFeedbackMessage(`Answered (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
         // Actualizar historial para reflejar que la respuesta fue revelada
+        const updatedHistoryEntry: UserAnswerType = { ...newHistoryEntry, status: 'revealed' };
         setUserAnswersHistory(prev => {
             const newHistory = [...prev];
-            const currentEntry = newHistory[problemIndexForHistory];
-            if (currentEntry) {
-                newHistory[problemIndexForHistory] = { ...currentEntry, status: 'revealed' };
-            } else {
-                newHistory[problemIndexForHistory] = {
-                    problemId: currentProblem.id,
-                    problem: currentProblem,
-                    userAnswer: userNumericAnswer,
-                    isCorrect: false,
-                    status: 'revealed'
-                };
-            }
+            newHistory[problemIndexForHistory] = updatedHistoryEntry;
             return newHistory;
         });
 
@@ -1754,9 +1697,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Usar la respuesta correcta del problema o calcularla
         const respuestaCorrecta = problema.correctAnswer || (operandoA + operandoB);
         
-        // Obtener el historial completo de intentos para este problema
-        const intentosDelProblema = problemAttemptsHistory[i] || [];
-        
         // Crear un objeto que incluya TODOS los datos necesarios para este tipo de problema
         const problemaCompleto = {
           // Metadatos para identificación
@@ -1778,14 +1718,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           isCorrect: esRespuestaNula ? false : respuesta.isCorrect,
           status: esRespuestaNula ? "unanswered" : (respuesta.status || (respuesta.isCorrect ? "correct" : "incorrect")),
           
-          // NUEVO: Historial completo de TODOS los intentos (correctos e incorrectos)
-          allAttempts: intentosDelProblema.map(intento => ({
-            userAnswer: intento.userAnswer,
-            isCorrect: intento.isCorrect,
-            attemptNumber: intento.attemptNumber,
-            timestamp: intento.timestamp
-          })),
-          
           // Metadatos adicionales
           level: (settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty),
           attempts: esRespuestaNula ? 0 : (respuesta.attempts || currentAttempts || 1),
@@ -1794,7 +1726,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           // Campo info para visualización rápida
           info: esRespuestaNula 
             ? `Nivel: ${finalLevel}, Sin respuesta, Tiempo: ${Math.round(timer / problemsList.length)}s` 
-            : `Nivel: ${finalLevel}, Intentos: ${intentosDelProblema.length || 1}, Tiempo: ${Math.round(timer / problemsList.length)}s`
+            : `Nivel: ${finalLevel}, Intentos: ${respuesta.attempts || 1}, Tiempo: ${Math.round(timer / problemsList.length)}s`
         };
         
         problemasCapturados.push(problemaCompleto);
