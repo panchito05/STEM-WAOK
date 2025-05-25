@@ -2098,65 +2098,83 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </span>
             
             {/* Score - First item */}
-            <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs">
-              Score: {score}
-            </span>
+            <div className="flex flex-col items-center">
+              <span className="font-semibold px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs">
+                Score: {score}
+              </span>
+              <span className="text-xs mt-1 sm:hidden text-gray-500">Score</span>
+            </div>
             
             {/* Modo Profesor button - Second item */}
-            <button
-              className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50"
-              onClick={() => setShowProfessorMode(true)}
-              title="Modo Profesor"
-            >
-              <span className="text-xs font-medium mr-1 hidden sm:inline">
-                {settings.language === 'english' ? 'Professor Mode' : 'Modo Profesor'}
-              </span>
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width="16" 
-                height="16" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-                className="h-4 w-4"
+            <div className="flex flex-col items-center">
+              <button
+                className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50"
+                onClick={() => setShowProfessorMode(true)}
+                title="Modo Profesor"
               >
-                <path d="M12 20h9"></path>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-              </svg>
-            </button>
+                <span className="text-xs font-medium mr-1 hidden sm:inline">
+                  {settings.language === 'english' ? 'Professor Mode' : 'Modo Profesor'}
+                </span>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </button>
+              <span className="text-xs mt-1 sm:hidden text-gray-500">
+                {settings.language === 'english' ? 'Prof' : 'Prof'}
+              </span>
+            </div>
             
             {/* Ver Video button - Third item */}
-            <button
-              className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7`}
-              onClick={() => setShowVideoDialog(true)}
-              title="Videos explicativos"
-            >
-              <span className="text-xs font-medium mr-1 hidden sm:inline">
-                {settings.language === 'english' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
-              </span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 16"
-                fill="currentColor"
-                className="h-5 w-6"
+            <div className="flex flex-col items-center">
+              <button
+                className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7`}
+                onClick={() => setShowVideoDialog(true)}
+                title="Videos explicativos"
               >
-                <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
-                <polygon points="9,5 16,8 9,11" fill="currentColor" />
-              </svg>
-              {youtubeVideos.length > 0 && (
-                <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
-              )}
-            </button>
+                <span className="text-xs font-medium mr-1 hidden sm:inline">
+                  {settings.language === 'english' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 16"
+                  fill="currentColor"
+                  className="h-5 w-6"
+                >
+                  <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
+                  <polygon points="9,5 16,8 9,11" fill="currentColor" />
+                </svg>
+                {youtubeVideos.length > 0 && (
+                  <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
+                )}
+              </button>
+              <span className="text-xs mt-1 sm:hidden text-gray-500">
+                {settings.language === 'english' ? 'Video' : 'Video'}
+              </span>
+            </div>
             
             {/* History button - Mobile version (icon only) */}
-            <Link href="/progress?tab=recent" className="sm:hidden">
-              <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
-                <History className="h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="flex flex-col items-center sm:hidden">
+              <Link href="/progress?tab=recent">
+                <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
+                  <History className="h-4 w-4" />
+                </Button>
+              </Link>
+              <span className="text-xs mt-1 text-gray-500">
+                {settings.language === 'english' ? 'History' : 'Historial'}
+              </span>
+            </div>
             
             {/* History button - Desktop version (with text) */}
             <Link href="/progress?tab=recent" className="hidden sm:flex">
@@ -2169,9 +2187,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Link>
             
             {/* Settings button - Mobile version (icon only) */}
-            <Button variant="ghost" size="sm" onClick={onOpenSettings} className="sm:hidden flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
-              <Cog className="h-4 w-4" />
-            </Button>
+            <div className="flex flex-col items-center sm:hidden">
+              <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-100 h-7 border border-gray-300">
+                <Cog className="h-4 w-4" />
+              </Button>
+              <span className="text-xs mt-1 text-gray-500">
+                {settings.language === 'english' ? 'Settings' : 'Config'}
+              </span>
+            </div>
             
             {/* Settings button - Desktop version (with text) */}
             <Button variant="ghost" size="sm" onClick={onOpenSettings} className="hidden sm:flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
