@@ -15,7 +15,7 @@ export default function AboutPage() {
               <section>
                 <h2 className="text-2xl font-semibold text-gray-800 mb-3">Our Mission</h2>
                 <p className="text-gray-600 leading-relaxed">
-                  Math W+A+O+K is an innovative interactive math learning platform designed to transform 
+                  Math W+A+O+K is an innovative interactive STEM and math learning platform designed to transform 
                   mathematical practice into an engaging and adaptive educational experience. We focus on 
                   personalized learning and user motivation through cutting-edge technological solutions.
                 </p>

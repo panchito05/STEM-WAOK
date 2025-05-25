@@ -50,10 +50,44 @@ export default function ModuleList() {
 
     // Filter by search query
     if (searchQuery) {
-      modules = modules.filter(module =>
-        module.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        module.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      modules = modules.filter(module => {
+        const searchLower = searchQuery.toLowerCase();
+        
+        // Spanish to English mapping for module names
+        const spanishToEnglish: Record<string, string> = {
+          'suma': 'addition',
+          'adición': 'addition',
+          'sumas': 'addition',
+          'fracciones': 'fractions',
+          'fracción': 'fractions',
+          'conteo': 'counting',
+          'contar': 'counting',
+          'números': 'numbers',
+          'numero': 'numbers',
+          'resta': 'subtraction',
+          'restar': 'subtraction',
+          'restas': 'subtraction',
+          'multiplicacion': 'multiplication',
+          'multiplicar': 'multiplication',
+          'division': 'division',
+          'dividir': 'division'
+        };
+        
+        // Check direct match first
+        const directMatch = module.displayName.toLowerCase().includes(searchLower) ||
+                           module.description.toLowerCase().includes(searchLower);
+        
+        // Check Spanish term match
+        const spanishMatch = Object.entries(spanishToEnglish).some(([spanish, english]) => {
+          if (searchLower.includes(spanish)) {
+            return module.id.toLowerCase().includes(english) ||
+                   module.displayName.toLowerCase().includes(english);
+          }
+          return false;
+        });
+        
+        return directMatch || spanishMatch;
+      });
     }
 
     // Filter by favorites if necessary
