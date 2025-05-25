@@ -344,18 +344,25 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
   // Función para obtener las clases CSS según la posición - Solo para desktop
   const getPanelClasses = () => {
+    let classes = '';
     switch (position) {
       case 'top-left':
-        return 'top-4 left-4';
+        classes = 'lg:top-4 lg:left-4';
+        break;
       case 'top-right':
-        return 'top-4 right-4';
+        classes = 'lg:top-4 lg:right-4';
+        break;
       case 'bottom-left':
-        return 'bottom-4 left-4';
+        classes = 'lg:bottom-4 lg:left-4';
+        break;
       case 'bottom-right':
-        return 'bottom-4 right-4';
+        classes = 'lg:bottom-4 lg:right-4';
+        break;
       default:
-        return 'top-4 right-4';
+        classes = 'lg:top-4 lg:right-4';
     }
+    console.log('🎯 [DEBUG] getPanelClasses for position:', position, 'returning:', classes);
+    return classes;
   };
 
   // Clases responsivas del panel
