@@ -30,13 +30,6 @@ export function DrawingCanvas({
   position = 'right', // Nueva propiedad para posicionar los controles: 'left' o 'right'
   currentProblem
 }: DrawingCanvasProps & { position?: 'left' | 'right' }) {
-  // Debug: Log cuando cambia la posición
-  console.log(`🎨 [CANVAS] DrawingCanvas recibió position: "${position}"`);
-  
-  // Añadir efecto para detectar cambios en position
-  React.useEffect(() => {
-    console.log(`🎨 [CANVAS] Position cambió a: "${position}"`);
-  }, [position]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);

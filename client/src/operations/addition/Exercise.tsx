@@ -8,7 +8,8 @@ import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "
 import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
-import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
+import { ProfessorMode } from "./components/ProfessorMode";
+import { ProfessorModeModular } from "./components/professor/ProfessorModeModular";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -2536,9 +2537,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </TooltipProvider>
         </div>
       </div>
-      {/* Modo Profesor - Nueva implementación con canvas para dibujo */}
+      {/* Modo Profesor - Nueva arquitectura completamente rediseñada */}
       {showProfessorMode && (
-        <ProfessorMode
+        <ProfessorModeModular
           problem={currentProblem}
           onClose={() => setShowProfessorMode(false)}
           onCorrectAnswer={(wasCorrect: boolean) => {
