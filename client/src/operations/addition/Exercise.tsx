@@ -8,6 +8,9 @@ import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "
 import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
+import { ResponsiveGrid, GridItem } from '@/components/layout/ResponsiveGrid';
+import { FlexBox, FlexItem } from '@/components/layout/FlexBox';
+import { useResponsive } from '@/hooks/useResponsive';
 import { ProfessorMode } from "./components/ProfessorMode";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
@@ -382,6 +385,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Acceder a la información de historial mediante el contexto de progreso
   const { exerciseHistory } = useProgress();
   const moduleId = "addition"; // ID del módulo de suma
+  
+  // Hook para control responsive extremo
+  const { isMobile, isTablet, isDesktop } = useResponsive();
 
   const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
@@ -2097,8 +2103,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
             
             {/* Control buttons row - Stack on mobile, inline on desktop */}
-            <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 flex-wrap">
-                {/* History button - Hide text on mobile, show icon only */}
+            {/* Controles superiores - Sistema de control extremo responsive */}
+            {isDesktop ? (
+              // Vista Desktop - Mantener diseño original
+              <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 flex-wrap">
                 <Link href="/progress?tab=recent">
                   <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                     <History className="h-4 w-4" /> 
@@ -2107,14 +2115,49 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </span>
                   </Button>
                 </Link>
-                {/* Settings button - Hide text on mobile, show icon only */}
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> 
                   <span className="hidden sm:inline">
                     {currentTranslations.settings}
                   </span>
                 </Button>
-            </div>
+              </div>
+            ) : (
+              // Vista Móvil/Tablet - Grid de 2 columnas para los controles superiores
+              <ResponsiveGrid
+                areas={[
+                  { name: 'history' },
+                  { name: 'settings' }
+                ]}
+                mobileTemplate={`
+                  "history settings"
+                `}
+                tabletTemplate={`
+                  "history settings"
+                `}
+                gap={{ mobile: '0.5rem', tablet: '0.5rem' }}
+                className="max-w-xs mx-auto"
+              >
+                <GridItem area="history" animate animationVariant="fadeIn">
+                  <Link href="/progress?tab=recent">
+                    <Button variant="ghost" size="sm" className="w-full flex flex-col items-center gap-1 py-2 px-2 text-xs text-gray-600 hover:bg-gray-100">
+                      <History className="h-4 w-4" />
+                      <span className="text-xs">
+                        {isEnglish ? "History" : "Historial"}
+                      </span>
+                    </Button>
+                  </Link>
+                </GridItem>
+                <GridItem area="settings" animate animationVariant="fadeIn">
+                  <Button variant="ghost" size="sm" onClick={onOpenSettings} className="w-full flex flex-col items-center gap-1 py-2 px-2 text-xs text-gray-600 hover:bg-gray-100">
+                    <Cog className="h-4 w-4" />
+                    <span className="text-xs">
+                      {isEnglish ? "Settings" : "Config"}
+                    </span>
+                  </Button>
+                </GridItem>
+              </ResponsiveGrid>
+            )}
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         {/* Progress Info Row - Responsive: Center on mobile, right-align on desktop */}
@@ -2125,54 +2168,121 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               </span>
             </div>
             
-            {/* Action buttons row - Stack on mobile, inline on tablet+ */}
-            <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
-              <button
-                className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50"
-                onClick={() => setShowProfessorMode(true)}
-                title="Modo Profesor"
-              >
-                <span className="text-xs font-medium mr-1 hidden sm:inline">
-                  {settings.language === 'english' ? 'Professor Mode' : 'Modo Profesor'}
-                </span>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="16" 
-                  height="16" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
+            {/* Controles de herramientas - Sistema de control extremo responsive */}
+            {isDesktop ? (
+              // Vista Desktop - Mantener diseño original
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
+                <button
+                  className="px-2 py-1 flex items-center justify-center text-indigo-600 border border-gray-300 rounded-md h-7 hover:bg-indigo-50"
+                  onClick={() => setShowProfessorMode(true)}
+                  title="Modo Profesor"
                 >
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-              </button>
-              <button
-                className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7`}
-                onClick={() => setShowVideoDialog(true)}
-                title="Videos explicativos"
-              >
-                <span className="text-xs font-medium mr-1 hidden sm:inline">
-                  {settings.language === 'english' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
-                </span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 16"
-                  fill="currentColor"
-                  className="h-5 w-6"
+                  <span className="text-xs font-medium mr-1 hidden sm:inline">
+                    {settings.language === 'english' ? 'Professor Mode' : 'Modo Profesor'}
+                  </span>
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    className="h-4 w-4"
+                  >
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                  </svg>
+                </button>
+                <button
+                  className={`px-2 py-1 flex items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-7`}
+                  onClick={() => setShowVideoDialog(true)}
+                  title="Videos explicativos"
                 >
-                  <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
-                  <polygon points="9,5 16,8 9,11" fill="currentColor" />
-                </svg>
-                {youtubeVideos.length > 0 && (
-                  <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
-                )}
-              </button>
-            </div>
+                  <span className="text-xs font-medium mr-1 hidden sm:inline">
+                    {settings.language === 'english' ? 'Watch Explanatory Video' : 'Ver Video Explicativo'}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 16"
+                    fill="currentColor"
+                    className="h-5 w-6"
+                  >
+                    <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
+                    <polygon points="9,5 16,8 9,11" fill="currentColor" />
+                  </svg>
+                  {youtubeVideos.length > 0 && (
+                    <span className="ml-1 text-xs font-medium">{youtubeVideos.length}</span>
+                  )}
+                </button>
+              </div>
+            ) : (
+              // Vista Móvil/Tablet - Grid de 2 columnas para herramientas
+              <ResponsiveGrid
+                areas={[
+                  { name: 'professor' },
+                  { name: 'videos' }
+                ]}
+                mobileTemplate={`
+                  "professor videos"
+                `}
+                tabletTemplate={`
+                  "professor videos"
+                `}
+                gap={{ mobile: '0.5rem', tablet: '0.5rem' }}
+                className="max-w-xs mx-auto"
+              >
+                <GridItem area="professor" animate animationVariant="fadeIn">
+                  <button
+                    className="w-full px-2 py-2 flex flex-col items-center justify-center text-indigo-600 border border-gray-300 rounded-md hover:bg-indigo-50"
+                    onClick={() => setShowProfessorMode(true)}
+                    title="Modo Profesor"
+                  >
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="16" 
+                      height="16" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="2" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                      className="h-4 w-4 mb-1"
+                    >
+                      <path d="M12 20h9"></path>
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    <span className="text-xs font-medium">
+                      {settings.language === 'english' ? 'Professor' : 'Profesor'}
+                    </span>
+                  </button>
+                </GridItem>
+                <GridItem area="videos" animate animationVariant="fadeIn">
+                  <button
+                    className={`w-full px-2 py-2 flex flex-col items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md`}
+                    onClick={() => setShowVideoDialog(true)}
+                    title="Videos explicativos"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 16"
+                      fill="currentColor"
+                      className="h-4 w-4 mb-1"
+                    >
+                      <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
+                      <polygon points="9,5 16,8 9,11" fill="currentColor" />
+                    </svg>
+                    <span className="text-xs font-medium">
+                      {settings.language === 'english' ? 'Videos' : 'Videos'}
+                      {youtubeVideos.length > 0 && ` (${youtubeVideos.length})`}
+                    </span>
+                  </button>
+                </GridItem>
+              </ResponsiveGrid>
+            )}
         </div>
 
         {/* Problem Display Area - Compact Design */}
@@ -2299,131 +2409,274 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ))}
         </div>
-        {/* Bottom Control Buttons - Responsive: Optimized for all screen sizes */}
-        <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
-          <Button
-            variant="outline" 
-            size="sm"
-            disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
-            onClick={moveToPreviousProblem}
-            className="w-full sm:w-auto text-xs sm:text-sm md:text-base h-12 sm:h-10 order-1 sm:order-1"
-          >
-            <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
-          </Button>
-
-          {viewingPrevious ? (
-            <Button 
-              onClick={returnToActiveProblem} 
-              className="w-full sm:w-auto px-4 sm:px-5 text-sm sm:text-base md:text-lg bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 order-2 sm:order-2"
-            >
-                <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')}
-            </Button>
-          ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
+        {/* Controles inferiores - Sistema de control extremo responsive */}
+        {isDesktop ? (
+          // Vista Desktop - Mantener diseño original horizontal
+          <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
             <Button
-                ref={continueButtonRef}
-                onClick={handleContinue}
-                className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-2.5 text-base sm:text-lg md:text-xl animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center h-12 sm:h-10 order-2 sm:order-2"
+              variant="outline" 
+              size="sm"
+              disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
+              onClick={moveToPreviousProblem}
+              className="w-full sm:w-auto text-xs sm:text-sm md:text-base h-12 sm:h-10 order-1 sm:order-1"
             >
-                <span className="flex-grow text-center font-medium">{t('Continue')}</span>
+              <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
+            </Button>
+
+            {viewingPrevious ? (
+              <Button 
+                onClick={returnToActiveProblem} 
+                className="w-full sm:w-auto px-4 sm:px-5 text-sm sm:text-base md:text-lg bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 order-2 sm:order-2"
+              >
+                  <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')}
+              </Button>
+            ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
+              <Button
+                  ref={continueButtonRef}
+                  onClick={handleContinue}
+                  className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-2.5 text-base sm:text-lg md:text-xl animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center h-12 sm:h-10 order-2 sm:order-2"
+              >
+                  <span className="flex-grow text-center font-medium">{t('Continue')}</span>
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className="ml-2 sm:ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAutoContinue(prev => !prev);
+                          }}
+                        >
+                          <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
+                            {autoContinue && <Check className="h-3 w-3 text-green-700" />}
+                          </div>
+                          <span className="text-xs font-medium">{t('Auto')}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+              </Button>
+            ) : (
+              <Button 
+                onClick={checkCurrentAnswer} 
+                disabled={exerciseCompleted || waitingRef.current} 
+                className="w-full sm:w-auto px-5 sm:px-6 text-sm sm:text-base md:text-lg bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 order-2 sm:order-2"
+              >
+                {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
+              </Button>
+            )}
+
+            <TooltipProvider delayDuration={300}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                      variant="outline" size="sm"
+                      disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
+                      onClick={() => {
+                          if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
+                              if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+                              
+                              // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
+                              setConsecutiveCorrectAnswers(0);
+                              console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
+                              
+                              // Usamos la respuesta correcta del problema directamente
+                              setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                              setFeedbackColor("blue");
+                              setWaitingForContinue(true); // Pone waitingRef.current = true
+                              const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+                              const answerEntry = userAnswersHistory[problemIdxForHistory];
+                              if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
+                                  setUserAnswersHistory(prev => {
+                                      const newHistory = [...prev];
+                                      newHistory[problemIdxForHistory] = {
+                                          problemId: currentProblem.id,
+                                          problem: currentProblem,
+                                          userAnswer: NaN,
+                                          isCorrect: false,
+                                          status: 'revealed'
+                                      };
+                                      return newHistory;
+                                  });
+
+                                  // Añadir problema de compensación cuando se revela la respuesta
+                                  if (settings.enableCompensation) {
+                                      console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
+                                      const difficultyForCompensation = settings.enableAdaptiveDifficulty
+                                          ? adaptiveDifficulty
+                                          : (settings.difficulty as DifficultyLevel);
+
+                                      const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                                      setProblemsList(prev => [...prev, compensationProblem]);
+                                      // Agregamos null al historial para que coincida con el nuevo problema añadido
+                                      setUserAnswersHistory(prev => [...prev, null]);
+                                      console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+                                  }
+                              }
+                              if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
+                                  setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
+                              }
+                          }
+                      }}
+                      className="w-full sm:w-auto text-xs sm:text-sm h-12 sm:h-10"
+                  >
+                      <Info className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.showAnswer}
+                  </Button>
+                </TooltipTrigger>
+                {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
+                    <TooltipContent><p>{t('tooltips.activateShowAnswerInSettings')}</p></TooltipContent>
+                ) : viewingPrevious ? (
+                    <TooltipContent><p>{t('tooltips.showAnswerDisabledInHistory')}</p></TooltipContent>
+                ) : waitingRef.current ? ( // Usar waitingRef.current
+                    <TooltipContent><p>{t('tooltips.showAnswerDisabledWhileWaiting')}</p></TooltipContent>
+                ) : null }
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        ) : (
+          // Vista Móvil/Tablet - Grid de 3 columnas 
+          <div className="mt-4">
+            <ResponsiveGrid
+              areas={[
+                { name: 'previous' },
+                { name: 'main-action' },
+                { name: 'show-answer' }
+              ]}
+              mobileTemplate={`
+                "previous main-action show-answer"
+              `}
+              tabletTemplate={`
+                "previous main-action show-answer"
+              `}
+              gap={{ mobile: '0.5rem', tablet: '0.75rem' }}
+              className="max-w-md mx-auto"
+            >
+              <GridItem area="previous" animate animationVariant="slideInLeft">
+                <Button
+                  variant="outline" 
+                  size="sm"
+                  disabled={(viewingPrevious ? currentProblemIndex === 0 : actualActiveProblemIndexBeforeViewingPrevious === 0 && currentProblemIndex === 0 && !viewingPrevious) || exerciseCompleted}
+                  onClick={moveToPreviousProblem}
+                  className="w-full flex flex-col items-center gap-1 py-3 px-2 text-xs h-16"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="text-xs">
+                    {isEnglish ? "Previous" : "Anterior"}
+                  </span>
+                </Button>
+              </GridItem>
+
+              <GridItem area="main-action" animate animationVariant="fadeIn">
+                {viewingPrevious ? (
+                  <Button 
+                    onClick={returnToActiveProblem} 
+                    className="w-full flex flex-col items-center gap-1 py-3 px-2 text-xs bg-orange-500 hover:bg-orange-600 text-white h-16"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    <span className="text-xs text-center">
+                      {isEnglish ? "Return" : "Regresar"}
+                    </span>
+                  </Button>
+                ) : waitingRef.current ? (
+                  <Button
+                      ref={continueButtonRef}
+                      onClick={handleContinue}
+                      className="w-full flex flex-col items-center gap-1 py-3 px-2 text-xs animate-pulse bg-green-500 hover:bg-green-600 text-white h-16"
+                  >
+                    <Check className="h-4 w-4" />
+                    <span className="text-xs">{isEnglish ? "Continue" : "Continuar"}</span>
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={checkCurrentAnswer} 
+                    disabled={exerciseCompleted || waitingRef.current} 
+                    className="w-full flex flex-col items-center gap-1 py-3 px-2 text-xs bg-blue-500 hover:bg-blue-600 text-white h-16"
+                  >
+                    <Check className="h-4 w-4" />
+                    <span className="text-xs">
+                      {!exerciseStarted ? (isEnglish ? "Start" : "Iniciar") : (isEnglish ? "Check" : "Verificar")}
+                    </span>
+                  </Button>
+                )}
+              </GridItem>
+
+              <GridItem area="show-answer" animate animationVariant="slideInRight">
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div
-                        className="ml-2 sm:ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setAutoContinue(prev => !prev);
-                        }}
+                      <Button
+                          variant="outline" size="sm"
+                          disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
+                          onClick={() => {
+                              if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
+                                  if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
+                                  
+                                  // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
+                                  setConsecutiveCorrectAnswers(0);
+                                  console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
+                                  
+                                  // Usamos la respuesta correcta del problema directamente
+                                  setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                                  setFeedbackColor("blue");
+                                  setWaitingForContinue(true); // Pone waitingRef.current = true
+                                  const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+                                  const answerEntry = userAnswersHistory[problemIdxForHistory];
+                                  if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
+                                      setUserAnswersHistory(prev => {
+                                          const newHistory = [...prev];
+                                          newHistory[problemIdxForHistory] = {
+                                              problemId: currentProblem.id,
+                                              problem: currentProblem,
+                                              userAnswer: NaN,
+                                              isCorrect: false,
+                                              status: 'revealed'
+                                          };
+                                          return newHistory;
+                                      });
+
+                                      // Añadir problema de compensación cuando se revela la respuesta
+                                      if (settings.enableCompensation) {
+                                          console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
+                                          const difficultyForCompensation = settings.enableAdaptiveDifficulty
+                                              ? adaptiveDifficulty
+                                              : (settings.difficulty as DifficultyLevel);
+
+                                          const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                                          setProblemsList(prev => [...prev, compensationProblem]);
+                                          // Agregamos null al historial para que coincida con el nuevo problema añadido
+                                          setUserAnswersHistory(prev => [...prev, null]);
+                                          console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+                                      }
+                                  }
+                                  if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
+                                      setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
+                                  }
+                              }
+                          }}
+                          className="w-full flex flex-col items-center gap-1 py-3 px-2 text-xs h-16"
                       >
-                        <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
-                          {autoContinue && <Check className="h-3 w-3 text-green-700" />}
-                        </div>
-                        <span className="text-xs font-medium">{t('Auto')}</span>
-                      </div>
+                          <Info className="h-4 w-4" />
+                          <span className="text-xs text-center">
+                            {isEnglish ? "Show Answer" : "Ver Respuesta"}
+                          </span>
+                      </Button>
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
-                    </TooltipContent>
+                    {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
+                        <TooltipContent><p>{t('tooltips.activateShowAnswerInSettings')}</p></TooltipContent>
+                    ) : viewingPrevious ? (
+                        <TooltipContent><p>{t('tooltips.showAnswerDisabledInHistory')}</p></TooltipContent>
+                    ) : waitingRef.current ? ( // Usar waitingRef.current
+                        <TooltipContent><p>{t('tooltips.showAnswerDisabledWhileWaiting')}</p></TooltipContent>
+                    ) : null }
                   </Tooltip>
                 </TooltipProvider>
-            </Button>
-          ) : (
-            <Button 
-              onClick={checkCurrentAnswer} 
-              disabled={exerciseCompleted || waitingRef.current} 
-              className="w-full sm:w-auto px-5 sm:px-6 text-sm sm:text-base md:text-lg bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 order-2 sm:order-2"
-            >
-              {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
-            </Button>
-          )}
-
-          <TooltipProvider delayDuration={300}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                    variant="outline" size="sm"
-                    disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
-                    onClick={() => {
-                        if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
-                            if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
-                            
-                            // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
-                            setConsecutiveCorrectAnswers(0);
-                            console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
-                            
-                            // Usamos la respuesta correcta del problema directamente
-                            setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
-                            setFeedbackColor("blue");
-                            setWaitingForContinue(true); // Pone waitingRef.current = true
-                            const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
-                            const answerEntry = userAnswersHistory[problemIdxForHistory];
-                            if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
-                                setUserAnswersHistory(prev => {
-                                    const newHistory = [...prev];
-                                    newHistory[problemIdxForHistory] = {
-                                        problemId: currentProblem.id,
-                                        problem: currentProblem,
-                                        userAnswer: NaN,
-                                        isCorrect: false,
-                                        status: 'revealed'
-                                    };
-                                    return newHistory;
-                                });
-
-                                // Añadir problema de compensación cuando se revela la respuesta
-                                if (settings.enableCompensation) {
-                                    console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
-                                    const difficultyForCompensation = settings.enableAdaptiveDifficulty
-                                        ? adaptiveDifficulty
-                                        : (settings.difficulty as DifficultyLevel);
-
-                                    const compensationProblem = generateAdditionProblem(difficultyForCompensation);
-                                    setProblemsList(prev => [...prev, compensationProblem]);
-                                    // Agregamos null al historial para que coincida con el nuevo problema añadido
-                                    setUserAnswersHistory(prev => [...prev, null]);
-                                    console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
-                                }
-                            }
-                            if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
-                                setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
-                            }
-                        }
-                    }}
-                    className="w-full sm:w-auto text-xs sm:text-sm h-12 sm:h-10"
-                >
-                    <Info className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.showAnswer}
-                </Button>
-              </TooltipTrigger>
-              {(!settings.showAnswerWithExplanation && !viewingPrevious && !waitingRef.current) ? (
-                  <TooltipContent><p>{t('tooltips.activateShowAnswerInSettings')}</p></TooltipContent>
-              ) : viewingPrevious ? (
-                  <TooltipContent><p>{t('tooltips.showAnswerDisabledInHistory')}</p></TooltipContent>
-              ) : waitingRef.current ? ( // Usar waitingRef.current
-                  <TooltipContent><p>{t('tooltips.showAnswerDisabledWhileWaiting')}</p></TooltipContent>
-              ) : null }
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+              </GridItem>
+            </ResponsiveGrid>
+          </div>
+        )}
       </div>
       {/* Modo Profesor - Nueva implementación con canvas para dibujo */}
       {showProfessorMode && (
