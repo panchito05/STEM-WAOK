@@ -2103,10 +2103,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </div>
             
             {/* Control buttons row - Stack on mobile, inline on desktop */}
-            {/* Controles superiores - Sistema de control extremo responsive */}
-            {isDesktop ? (
-              // Vista Desktop - Mantener diseño original
-              <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 flex-wrap">
+            <div className="flex items-center justify-center sm:justify-end gap-1 sm:gap-2 flex-wrap">
+                {/* History button - Hide text on mobile, show icon only */}
                 <Link href="/progress?tab=recent">
                   <Button variant="ghost" size="sm" className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                     <History className="h-4 w-4" /> 
@@ -2115,49 +2113,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     </span>
                   </Button>
                 </Link>
+                {/* Settings button - Hide text on mobile, show icon only */}
                 <Button variant="ghost" size="sm" onClick={onOpenSettings} className="flex items-center gap-1 py-1 px-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100">
                   <Cog className="h-4 w-4" /> 
                   <span className="hidden sm:inline">
                     {currentTranslations.settings}
                   </span>
                 </Button>
-              </div>
-            ) : (
-              // Vista Móvil/Tablet - Grid de 2 columnas para los controles superiores
-              <ResponsiveGrid
-                areas={[
-                  { name: 'history' },
-                  { name: 'settings' }
-                ]}
-                mobileTemplate={`
-                  "history settings"
-                `}
-                tabletTemplate={`
-                  "history settings"
-                `}
-                gap={{ mobile: '0.5rem', tablet: '0.5rem' }}
-                className="max-w-xs mx-auto"
-              >
-                <GridItem area="history" animate animationVariant="fadeIn">
-                  <Link href="/progress?tab=recent">
-                    <Button variant="ghost" size="sm" className="w-full flex flex-col items-center gap-1 py-2 px-2 text-xs text-gray-600 hover:bg-gray-100">
-                      <History className="h-4 w-4" />
-                      <span className="text-xs">
-                        {isEnglish ? "History" : "Historial"}
-                      </span>
-                    </Button>
-                  </Link>
-                </GridItem>
-                <GridItem area="settings" animate animationVariant="fadeIn">
-                  <Button variant="ghost" size="sm" onClick={onOpenSettings} className="w-full flex flex-col items-center gap-1 py-2 px-2 text-xs text-gray-600 hover:bg-gray-100">
-                    <Cog className="h-4 w-4" />
-                    <span className="text-xs">
-                      {isEnglish ? "Settings" : "Config"}
-                    </span>
-                  </Button>
-                </GridItem>
-              </ResponsiveGrid>
-            )}
+            </div>
         </div>
         <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
         {/* Progress Info Row - Responsive: Center on mobile, right-align on desktop */}
@@ -2168,7 +2131,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               </span>
             </div>
             
-            {/* Controles de herramientas - Sistema de control extremo responsive */}
+            {/* Sistema de control extremo - Todos los controles en 3 columnas para móvil/tablet */}
             {isDesktop ? (
               // Vista Desktop - Mantener diseño original
               <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
@@ -2219,69 +2182,95 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 </button>
               </div>
             ) : (
-              // Vista Móvil/Tablet - Grid de 2 columnas para herramientas
-              <ResponsiveGrid
-                areas={[
-                  { name: 'professor' },
-                  { name: 'videos' }
-                ]}
-                mobileTemplate={`
-                  "professor videos"
-                `}
-                tabletTemplate={`
-                  "professor videos"
-                `}
-                gap={{ mobile: '0.5rem', tablet: '0.5rem' }}
-                className="max-w-xs mx-auto"
-              >
-                <GridItem area="professor" animate animationVariant="fadeIn">
-                  <button
-                    className="w-full px-2 py-2 flex flex-col items-center justify-center text-indigo-600 border border-gray-300 rounded-md hover:bg-indigo-50"
-                    onClick={() => setShowProfessorMode(true)}
-                    title="Modo Profesor"
-                  >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      width="16" 
-                      height="16" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      strokeWidth="2" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                      className="h-4 w-4 mb-1"
+              // Vista Móvil/Tablet - TODOS los controles en grid de 3 columnas (4 elementos total)
+              <div className="max-w-sm mx-auto">
+                <ResponsiveGrid
+                  areas={[
+                    { name: 'history' },
+                    { name: 'settings' },
+                    { name: 'professor' },
+                    { name: 'videos' }
+                  ]}
+                  mobileTemplate={`
+                    "history settings professor"
+                    ". videos ."
+                  `}
+                  tabletTemplate={`
+                    "history settings professor"
+                    ". videos ."
+                  `}
+                  gap={{ mobile: '0.5rem', tablet: '0.75rem' }}
+                >
+                  <GridItem area="history" animate animationVariant="fadeIn">
+                    <Link href="/progress?tab=recent">
+                      <Button variant="ghost" size="sm" className="w-full flex flex-col items-center gap-1 py-3 px-2 text-xs text-gray-600 hover:bg-gray-100 h-16">
+                        <History className="h-4 w-4" />
+                        <span className="text-xs">
+                          {isEnglish ? "History" : "Historial"}
+                        </span>
+                      </Button>
+                    </Link>
+                  </GridItem>
+                  
+                  <GridItem area="settings" animate animationVariant="fadeIn">
+                    <Button variant="ghost" size="sm" onClick={onOpenSettings} className="w-full flex flex-col items-center gap-1 py-3 px-2 text-xs text-gray-600 hover:bg-gray-100 h-16">
+                      <Cog className="h-4 w-4" />
+                      <span className="text-xs">
+                        {isEnglish ? "Settings" : "Config"}
+                      </span>
+                    </Button>
+                  </GridItem>
+                  
+                  <GridItem area="professor" animate animationVariant="fadeIn">
+                    <button
+                      className="w-full px-2 py-3 flex flex-col items-center justify-center text-indigo-600 border border-gray-300 rounded-md hover:bg-indigo-50 h-16"
+                      onClick={() => setShowProfessorMode(true)}
+                      title="Modo Profesor"
                     >
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                    </svg>
-                    <span className="text-xs font-medium">
-                      {settings.language === 'english' ? 'Professor' : 'Profesor'}
-                    </span>
-                  </button>
-                </GridItem>
-                <GridItem area="videos" animate animationVariant="fadeIn">
-                  <button
-                    className={`w-full px-2 py-2 flex flex-col items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md`}
-                    onClick={() => setShowVideoDialog(true)}
-                    title="Videos explicativos"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 16"
-                      fill="currentColor"
-                      className="h-4 w-4 mb-1"
+                      <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                        className="h-4 w-4 mb-1"
+                      >
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                      </svg>
+                      <span className="text-xs font-medium">
+                        {settings.language === 'english' ? 'Professor' : 'Profesor'}
+                      </span>
+                    </button>
+                  </GridItem>
+                  
+                  <GridItem area="videos" animate animationVariant="fadeIn">
+                    <button
+                      className={`w-full px-2 py-3 flex flex-col items-center justify-center ${youtubeVideos.length > 0 ? "text-red-600" : "text-gray-500 hover:text-red-500"} border border-gray-300 rounded-md h-16`}
+                      onClick={() => setShowVideoDialog(true)}
+                      title="Videos explicativos"
                     >
-                      <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
-                      <polygon points="9,5 16,8 9,11" fill="currentColor" />
-                    </svg>
-                    <span className="text-xs font-medium">
-                      {settings.language === 'english' ? 'Videos' : 'Videos'}
-                      {youtubeVideos.length > 0 && ` (${youtubeVideos.length})`}
-                    </span>
-                  </button>
-                </GridItem>
-              </ResponsiveGrid>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 16"
+                        fill="currentColor"
+                        className="h-4 w-4 mb-1"
+                      >
+                        <rect x="1" y="2" width="22" height="12" rx="4" fill="currentColor" fillOpacity="0.3" />
+                        <polygon points="9,5 16,8 9,11" fill="currentColor" />
+                      </svg>
+                      <span className="text-xs font-medium">
+                        {settings.language === 'english' ? 'Videos' : 'Videos'}
+                        {youtubeVideos.length > 0 && ` (${youtubeVideos.length})`}
+                      </span>
+                    </button>
+                  </GridItem>
+                </ResponsiveGrid>
+              </div>
             )}
         </div>
 
@@ -2554,7 +2543,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               gap={{ mobile: '0.5rem', tablet: '0.75rem' }}
               className="max-w-md mx-auto"
             >
-              <GridItem area="previous" animate animationVariant="slideInLeft">
+              <GridItem area="previous" animate animationVariant="slideLeft">
                 <Button
                   variant="outline" 
                   size="sm"
@@ -2603,7 +2592,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 )}
               </GridItem>
 
-              <GridItem area="show-answer" animate animationVariant="slideInRight">
+              <GridItem area="show-answer" animate animationVariant="slideRight">
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger asChild>
