@@ -642,7 +642,10 @@ export default function ProgressPage() {
                                   </div>
                                 )}
                               </div>
-                              <div className="bg-white shadow p-4 rounded-lg border border-gray-100">
+                              <div 
+                                className="bg-white shadow p-4 rounded-lg border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors relative"
+                                onClick={() => toggleExplanation(`${module.id}-answersRevealed`)}
+                              >
                                 <p className="text-sm text-gray-500">Answers Revealed</p>
                                 <p className="text-2xl font-bold text-red-600">
                                   {(() => {
@@ -653,6 +656,12 @@ export default function ProgressPage() {
                                     return totalRevealed;
                                   })()}
                                 </p>
+                                <div className="absolute top-2 right-2 text-gray-400 text-xs">ℹ️</div>
+                                {explanationVisible === `${module.id}-answersRevealed` && (
+                                  <div className="absolute top-full left-0 right-0 mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800 z-10">
+                                    {explanations.answersRevealed}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -839,34 +848,30 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return 'N/A';
                                     
+                                    // Contar problemas desafiantes usando múltiples fuentes de datos
                                     let problemasDesafiantes = 0;
                                     let totalProblemas = 0;
                                     
                                     moduleExercises.forEach(ex => {
+                                      // Intentar múltiples fuentes de datos
                                       const extraData = ex.extra_data;
                                       
-                                      // Agregar el total de problemas del ejercicio
-                                      if (ex.totalProblems) {
-                                        totalProblemas += ex.totalProblems;
-                                      }
-                                      
-                                      // Contar respuestas reveladas como problemas desafiantes
-                                      const revealedAnswers = ex.revealedAnswers || 0;
-                                      problemasDesafiantes += revealedAnswers;
-                                      
-                                      // Buscar problemas con múltiples intentos en problemDetails
-                                      if (extraData && extraData.problemDetails && Array.isArray(extraData.problemDetails)) {
+                                      if (extraData && extraData.problemDetails) {
+                                        // Fuente 1: problemDetails en extra_data
                                         extraData.problemDetails.forEach((problem: any) => {
-                                          if (problem && problem.attempts > 1 && problem.status !== 'revealed') {
-                                            problemasDesafiantes++;
+                                          if (problem) {
+                                            totalProblemas++;
+                                            if ((problem.attempts && problem.attempts > 1) || problem.status === 'revealed') {
+                                              problemasDesafiantes++;
+                                            }
                                           }
                                         });
-                                      } else {
-                                        // Fallback: usar la diferencia entre totalProblems y score como estimación
-                                        if (ex.score !== undefined && ex.totalProblems !== undefined) {
-                                          const problemasIncorrectos = ex.totalProblems - ex.score - revealedAnswers;
-                                          problemasDesafiantes += Math.max(0, problemasIncorrectos);
-                                        }
+                                      } else if (ex.score !== undefined && ex.totalProblems !== undefined) {
+                                        // Fuente 2: datos básicos de score y totalProblems
+                                        totalProblemas += ex.totalProblems;
+                                        // Estimar problemas desafiantes como diferencia entre total y score
+                                        const problemasIncorrectos = ex.totalProblems - ex.score;
+                                        problemasDesafiantes += problemasIncorrectos;
                                       }
                                     });
                                     
