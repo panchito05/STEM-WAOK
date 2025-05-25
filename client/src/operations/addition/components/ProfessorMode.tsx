@@ -315,28 +315,63 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     setExerciseStartTime(Date.now());
   };
 
-  // Función para mover el panel entre las cuatro esquinas (sentido horario)
+  // Sistema robusto de movimiento sincronizado en sentido horario
+  // Panel de control y paleta de colores se mueven juntos de forma coordinada
   const movePanel = () => {
-    const positions = ['top-right', 'bottom-right', 'bottom-left', 'top-left'];
-    const currentIndex = positions.indexOf(position);
-    const nextIndex = (currentIndex + 1) % positions.length;
-    setPosition(positions[nextIndex]);
+    // Configuración robusta de posiciones sincronizadas:
+    // Posición 1: Panel (top-left) + Colores (right)
+    // Posición 2: Panel (top-right) + Colores (right) 
+    // Posición 3: Panel (bottom-right) + Colores (left)
+    // Posición 4: Panel (bottom-left) + Colores (left)
+    const synchronizedPositions = [
+      { panel: 'topLeft', colors: 'right' },    // Posición 1
+      { panel: 'topRight', colors: 'right' },   // Posición 2
+      { panel: 'bottomRight', colors: 'left' }, // Posición 3
+      { panel: 'bottomLeft', colors: 'left' }   // Posición 4
+    ];
+    
+    // Mapeo de posiciones actuales a índices para mantener compatibilidad
+    const positionToIndex = {
+      'top-left': 0,
+      'topLeft': 0,
+      'top-right': 1, 
+      'topRight': 1,
+      'bottom-right': 2,
+      'bottomRight': 2,
+      'bottom-left': 3,
+      'bottomLeft': 3
+    };
+    
+    const currentIndex = positionToIndex[position] || 1; // Default a posición 2
+    const nextIndex = (currentIndex + 1) % synchronizedPositions.length;
+    const nextPosition = synchronizedPositions[nextIndex];
+    
+    // Actualizar posición del panel - esto automáticamente actualizará los colores
+    // porque DrawingArea está escuchando cambios en position
+    setPosition(nextPosition.panel);
+    
+    console.log(`🎯 [SYNC] Panel movido a: ${nextPosition.panel}, Colores: ${nextPosition.colors}`);
   };
 
-  // Función para obtener las clases CSS según la posición - Solo para desktop
+  // Función robusta para obtener las clases CSS según la posición sincronizada
   const getPanelClasses = () => {
-    switch (position) {
-      case 'top-left':
-        return 'top-4 left-4';
-      case 'top-right':
-        return 'top-4 right-4';
-      case 'bottom-left':
-        return 'bottom-4 left-4';
-      case 'bottom-right':
-        return 'bottom-4 right-4';
-      default:
-        return 'top-4 right-4';
-    }
+    // Mapeo robusto que maneja tanto formatos antiguos como nuevos
+    const positionMap = {
+      // Formato nuevo (preferido)
+      'topLeft': 'lg:top-4 lg:left-4',
+      'topRight': 'lg:top-4 lg:right-4', 
+      'bottomLeft': 'lg:bottom-4 lg:left-4',
+      'bottomRight': 'lg:bottom-4 lg:right-4',
+      // Formato antiguo (compatibilidad)
+      'top-left': 'lg:top-4 lg:left-4',
+      'top-right': 'lg:top-4 lg:right-4',
+      'bottom-left': 'lg:bottom-4 lg:left-4', 
+      'bottom-right': 'lg:bottom-4 lg:right-4'
+    };
+    
+    const classes = positionMap[position] || 'lg:top-4 lg:right-4'; // Default seguro
+    console.log(`🎯 [DEBUG] getPanelClasses for position: ${position} returning: ${classes}`);
+    return classes;
   };
 
   // Clases responsivas del panel
