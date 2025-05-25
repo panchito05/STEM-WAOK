@@ -169,7 +169,15 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
           {/* Botón para mover panel - NUEVA ARQUITECTURA */}
           <div className="flex justify-between items-center mb-2">
             <button
-              onClick={moveToNextLayout}
+              onClick={() => {
+                console.log(`🔥 [BUTTON-CLICK] ===== CLIC EN BOTÓN MOVER =====`);
+                console.log(`🔥 [BUTTON-CLICK] moveToNextLayout function:`, moveToNextLayout);
+                console.log(`🔥 [BUTTON-CLICK] getCurrentLayoutId():`, getCurrentLayoutId());
+                console.log(`🔥 [BUTTON-CLICK] Timestamp:`, Date.now());
+                moveToNextLayout();
+                console.log(`🔥 [BUTTON-CLICK] moveToNextLayout() ejecutado`);
+                console.log(`🔥 [BUTTON-CLICK] ===== FIN CLIC BOTÓN =====`);
+              }}
               className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
               title="Mover panel y colores de forma sincronizada"
             >
