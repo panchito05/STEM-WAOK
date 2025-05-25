@@ -73,21 +73,23 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
-  }), [index]);
+  }));
 
   // CONFIGURACIÓN DEL DROP (SOLTAR)
-  const [{ handlerId }, drop] = useDropTarget(() => ({
+  // @ts-ignore - Ignoramos los errores de tipo en el hook useDropTarget
+  const [drop_props, drop] = useDropTarget(() => ({
     accept: "MODULE_CARD",
     collect(monitor) {
       return {
         handlerId: monitor.getHandlerId(),
       };
     },
-    hover(item: any, monitor) {
+    // @ts-ignore - Ignoramos los errores de tipo para usar el objeto item del drag
+    hover(item, monitor) {
       if (!ref.current) {
         return;
       }
-      
+      // @ts-ignore - Accedemos al índice del elemento arrastrado
       const dragIndex = item.index;
       const hoverIndex = index;
       
@@ -95,15 +97,10 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
         return;
       }
       
-      const hoverBoundingRect = ref.current.getBoundingClientRect();
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
-      
-      if (!clientOffset) {
-        return;
-      }
-      
-      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
       
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
         return;
@@ -114,83 +111,76 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
       }
       
       moveModule(dragIndex, hoverIndex);
+      // @ts-ignore - Asignamos el nuevo índice al elemento arrastrado
       item.index = hoverIndex;
     },
-  }), [index, moveModule]);
+  }));
   
   // Manejador para toggle favorite que previene la propagación de eventos
   const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) {
+      e.stopPropagation();
+    }
     toggleFavorite(module.id);
   };
   
   // Manejador para mostrar el historial del módulo directamente
   const handleViewHistory = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e) {
+      e.stopPropagation();
+    }
     // Este evento no navegará, ahora mostrará un diálogo
   };
-
-  // Manejador para toggle hidden que previene la propagación de eventos
-  const handleToggleHidden = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleHidden(module.id);
-  };
   
-  // Combinamos las referencias de drag y drop
+  // COMBINAMOS LAS REFERENCIAS DE DRAG Y DROP
   drag(drop(ref));
   
   const getDifficultyBadge = (defaultDifficulty: string) => {
     // Si el módulo tiene configuración personalizada, mostrar esa dificultad en lugar de la predeterminada
     const difficulty = moduleConfig?.difficulty || defaultDifficulty;
-    const badgeClass = "font-medium px-1.5 min-[400px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] min-[400px]:text-xs sm:text-sm";
     
     switch (difficulty) {
       case "beginner":
-        return <Badge variant="outline" className={`bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 ${badgeClass}`}>{t('difficulty.beginner')}</Badge>;
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100 font-medium px-3 py-1 rounded-full">{t('difficulty.beginner')}</Badge>;
       case "elementary":
-        return <Badge variant="outline" className={`bg-green-100 text-green-800 border-green-200 hover:bg-green-100 ${badgeClass}`}>{t('difficulty.elementary')}</Badge>;
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 font-medium px-3 py-1 rounded-full">{t('difficulty.elementary')}</Badge>;
       case "intermediate":
-        return <Badge variant="outline" className={`bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 ${badgeClass}`}>{t('difficulty.intermediate')}</Badge>;
+        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-100 font-medium px-3 py-1 rounded-full">{t('difficulty.intermediate')}</Badge>;
       case "advanced":
-        return <Badge variant="outline" className={`bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 ${badgeClass}`}>{t('difficulty.advanced')}</Badge>;
+        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100 font-medium px-3 py-1 rounded-full">{t('difficulty.advanced')}</Badge>;
       case "expert":
-        return <Badge variant="outline" className={`bg-red-100 text-red-800 border-red-200 hover:bg-red-100 ${badgeClass}`}>{t('difficulty.expert')}</Badge>;
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 hover:bg-red-100 font-medium px-3 py-1 rounded-full">{t('difficulty.expert')}</Badge>;
       default:
-        return <Badge variant="outline" className={`bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 ${badgeClass}`}>{t('common.comingSoon')}</Badge>;
+        return <Badge variant="outline" className="bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-100 font-medium px-3 py-1 rounded-full">{t('common.comingSoon')}</Badge>;
     }
   };
 
-  // Función para obtener el icono correspondiente con tamaño responsive
+  // Función para obtener el icono correspondiente
   const getModuleIcon = () => {
-    const iconClass = "h-4 w-4 min-[400px]:h-5 min-[400px]:w-5 sm:h-6 sm:w-6";
-    
-    if (!module.icon) return <Plus className={iconClass} />;
+    if (!module.icon) return <Plus className="h-6 w-6" />;
     
     switch (module.icon) {
-      case "Plus": return <Plus className={iconClass} />;
-      case "Minus": return <Minus className={iconClass} />;
-      case "X": return <X className={iconClass} />;
-      case "DivideIcon": return <DivideIcon className={iconClass} />;
-      case "PieChart": return <PieChart className={iconClass} />;
-      case "BookOpen": return <BookOpen className={iconClass} />;
-      case "Hash": return <Hash className={iconClass} />;
-      case "Calculator": return <Calculator className={iconClass} />;
-      case "ArrowLeftRight": return <ArrowLeftRight className={iconClass} />;
-      case "Square": return <Square className={iconClass} />;
-      case "Percent": return <Percent className={iconClass} />;
-      case "Triangle": return <Triangle className={iconClass} />;
-      case "MapIcon": return <MapIcon className={iconClass} />;
-      default: return <Plus className={iconClass} />;
+      case "Plus": return <Plus className="h-6 w-6" />;
+      case "Minus": return <Minus className="h-6 w-6" />;
+      case "X": return <X className="h-6 w-6" />;
+      case "DivideIcon": return <DivideIcon className="h-6 w-6" />;
+      case "PieChart": return <PieChart className="h-6 w-6" />;
+      case "BookOpen": return <BookOpen className="h-6 w-6" />;
+      case "Hash": return <Hash className="h-6 w-6" />;
+      case "Calculator": return <Calculator className="h-6 w-6" />;
+      case "ArrowLeftRight": return <ArrowLeftRight className="h-6 w-6" />;
+      case "Square": return <Square className="h-6 w-6" />;
+      case "Percent": return <Percent className="h-6 w-6" />;
+      case "Triangle": return <Triangle className="h-6 w-6" />;
+      case "MapIcon": return <MapIcon className="h-6 w-6" />;
+      default: return <Plus className="h-6 w-6" />;
     }
   };
 
   const cardContent = (
     <>
       <div 
-        className="flex justify-between items-center p-2 sm:p-3 border-b border-gray-200 relative overflow-hidden"
+        className="flex justify-between items-center p-4 border-b border-gray-200 relative overflow-hidden"
         style={{ 
           backgroundColor: module.color || '#ffffff',
           color: 'white',
@@ -209,25 +199,23 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           </svg>
         </div>
         
-        <div className="flex items-center relative z-10 min-w-0 flex-1">
-          <div className="mr-1 sm:mr-2 cursor-move text-white opacity-80 hover:opacity-100 transition-opacity hidden sm:block" aria-hidden="true">
-            <GripVertical className="h-4 w-4 sm:h-5 sm:w-5" />
+        <div className="flex items-center relative z-10">
+          {/* ICONO DE ARRASTRE - GRIP VERTICAL */}
+          <div className="mr-2 cursor-move text-white opacity-80 hover:opacity-100 transition-opacity" aria-hidden="true">
+            <GripVertical className="h-5 w-5" />
           </div>
-          <div className="flex items-center min-w-0 flex-1">
-            <div className="mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
+          <div className="flex items-center">
+            <div className="mr-3 bg-white/25 p-2 rounded-lg shadow-inner">
               {getModuleIcon()}
             </div>
-            <h3 
-              className="text-xs min-[350px]:text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white text-shadow line-clamp-2 leading-tight"
-              title={t(`modules.${module.id}.name`)}
-            >
+            <h3 className="text-xl font-bold text-white text-shadow">
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
         </div>
-        <div className="flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10">
+        <div className="flex space-x-2 relative z-10">
           <button 
-            className={`focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
+            className={`focus:outline-none p-1.5 rounded-full transition-all ${
               module.comingSoon 
                 ? "text-gray-300 cursor-not-allowed" 
                 : isModuleFavorite 
@@ -238,7 +226,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             disabled={module.comingSoon}
             aria-label={isModuleFavorite ? t('favorites.remove') : t('favorites.add')}
           >
-            <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+            <Star className={`h-5 w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
           
           {/* History button and dropdown menu removed - only visibility toggle left */}
@@ -247,35 +235,35 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-white hover:bg-white/20 rounded-full h-6 w-6 min-[400px]:h-7 min-[400px]:w-7 sm:h-8 sm:w-8 p-0"
-              onClick={handleToggleHidden}
+              className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0"
+              onClick={() => toggleHidden(module.id)}
             >
               {isHidden ? (
-                <Eye className="h-3 w-3 min-[400px]:h-3.5 min-[400px]:w-3.5 sm:h-5 sm:w-5 text-purple-300" />
+                <Eye className="h-5 w-5 text-purple-300" />
               ) : (
-                <EyeOff className="h-3 w-3 min-[400px]:h-3.5 min-[400px]:w-3.5 sm:h-5 sm:w-5" />
+                <EyeOff className="h-5 w-5" />
               )}
             </Button>
           )}
         </div>
       </div>
-      <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50">
-        <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
+      <div className="p-5 bg-gradient-to-b from-white to-blue-50">
+        <p className={`text-sm mb-4 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
           {t(`modules.${module.id}.description`)}
         </p>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div className="flex items-center w-full sm:w-auto">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center">
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
-            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto">
+            <Button disabled variant="default" className="text-white bg-gray-300 cursor-not-allowed rounded-full px-4 text-sm h-9">
               {t('common.comingSoon')}
             </Button>
           ) : (
-            <Link href={`/operation/${module.id}`} className="w-full sm:w-auto">
+            <Link href={`/operation/${module.id}`}>
               <Button 
                 variant="default" 
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto"
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-4 text-sm h-9"
               >
                 {t('common.start')}
               </Button>
@@ -300,7 +288,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
         border-blue-100
         hover:border-blue-200
       `}
-      data-handler-id={handlerId || ""}
+      data-handler-id={drop_props?.handlerId || ""}
     >
       {isModuleFavorite && (
         <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1.5 shadow-md z-20">
