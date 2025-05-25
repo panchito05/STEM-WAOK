@@ -490,7 +490,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         </div>
         
         {/* Panel de control - Responsivo */}
-        <div className="fixed bottom-0 left-0 right-0 w-full max-h-80 border-t overflow-y-auto lg:absolute lg:top-4 lg:right-4 lg:max-w-sm lg:max-h-none lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0 bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg">
+        <div className={`fixed bottom-0 left-0 right-0 w-full max-h-80 border-t overflow-y-auto lg:absolute lg:${getPanelClasses()} lg:max-w-sm lg:max-h-none lg:border lg:rounded-lg lg:overflow-visible lg:border-t-0 bg-white border-gray-200 p-3 lg:p-4 z-40 shadow-lg`}>
           {/* Botón para mover panel */}
           <div className="flex justify-between items-center mb-2">
             <button
