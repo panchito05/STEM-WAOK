@@ -989,10 +989,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Mostrar mensaje en el formato "Answered (Incorrect!). The correct answer is = X"
         setFeedbackMessage(`Answered (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
         // Actualizar historial para reflejar que la respuesta fue revelada
-        const updatedHistoryEntry: UserAnswerType = { ...newHistoryEntry, status: 'revealed' };
         setUserAnswersHistory(prev => {
             const newHistory = [...prev];
-            newHistory[problemIndexForHistory] = updatedHistoryEntry;
+            const currentEntry = newHistory[problemIndexForHistory];
+            if (currentEntry) {
+                newHistory[problemIndexForHistory] = { ...currentEntry, status: 'revealed' };
+            } else {
+                newHistory[problemIndexForHistory] = {
+                    problemId: currentProblem.id,
+                    problem: currentProblem,
+                    userAnswer: userNumericAnswer,
+                    isCorrect: false,
+                    status: 'revealed'
+                };
+            }
             return newHistory;
         });
 
