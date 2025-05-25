@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Reward, RewardCollection, useRewardsStore } from '@/lib/rewards-system';
+import { guardianFilterRewards, guardianGetDiagnostics } from '@/lib/reward-guardian';
 import { 
   Star, 
   Award, 
@@ -158,12 +159,17 @@ export default function RewardsAlbum() {
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
   const [filter, setFilter] = useState<string>('all');
   const [showRewardDetails, setShowRewardDetails] = useState(false);
+  const [guardianFilteredRewards, setGuardianFilteredRewards] = useState<Reward[]>([]);
+  const [guardianIsLoading, setGuardianIsLoading] = useState(false);
   
   // Definir algunos recompensas fijas que el usuario no ha desbloqueado aún
   const lockedRewardCount = 6;
   
+  // Usar recompensas verificadas por el Guardian o las originales si aún no se han filtrado
+  const rewardsToUse = guardianFilteredRewards.length > 0 ? guardianFilteredRewards : earnedRewards;
+  
   // Filtrar recompensas según categoría
-  const filteredRewards = earnedRewards.filter(reward => {
+  const filteredRewards = rewardsToUse.filter(reward => {
     if (filter === 'all') return true;
     if (filter === 'recent') {
       // Muestra recompensas de los últimos 7 días
@@ -199,12 +205,44 @@ export default function RewardsAlbum() {
     }
   };
   
+  // REWARD GUARDIAN: Filtrar recompensas automáticamente al abrir el álbum
   useEffect(() => {
+    const runGuardianFilter = async () => {
+      if (isOpen && earnedRewards.length > 0) {
+        console.log("🛡️ [REWARD-GUARDIAN] Iniciando filtrado automático de recompensas...");
+        setGuardianIsLoading(true);
+        
+        try {
+          // Filtrar recompensas usando el Guardian
+          const verifiedRewards = await guardianFilterRewards(earnedRewards);
+          setGuardianFilteredRewards(verifiedRewards);
+          
+          // Mostrar diagnósticos del Guardian
+          const diagnostics = guardianGetDiagnostics();
+          console.log("🛡️ [REWARD-GUARDIAN] Filtrado completado:", {
+            original: earnedRewards.length,
+            filtered: verifiedRewards.length,
+            blocked: earnedRewards.length - verifiedRewards.length
+          });
+          
+        } catch (error) {
+          console.error("🛡️ [REWARD-GUARDIAN] Error en filtrado:", error);
+          // En caso de error, mostrar recompensas originales
+          setGuardianFilteredRewards(earnedRewards);
+        } finally {
+          setGuardianIsLoading(false);
+        }
+      }
+    };
+
     if (isOpen) {
       // Al abrir el álbum, resetear contador de nuevas recompensas
       resetNewRewardsCount();
+      
+      // Ejecutar filtrado del Guardian
+      runGuardianFilter();
     }
-  }, [isOpen, resetNewRewardsCount]);
+  }, [isOpen, resetNewRewardsCount, earnedRewards]);
   
   return (
     <>
@@ -237,7 +275,12 @@ export default function RewardsAlbum() {
                 <TabsTrigger value="rewards" className="flex items-center gap-1">
                   <Trophy className="h-4 w-4" />
                   <span>Recompensas</span>
-                  <Badge variant="outline" className="ml-1">{earnedRewards.length}</Badge>
+                  <Badge variant="outline" className="ml-1">
+                    {guardianIsLoading ? "..." : guardianFilteredRewards.length > 0 ? guardianFilteredRewards.length : earnedRewards.length}
+                  </Badge>
+                  {guardianIsLoading && (
+                    <div className="ml-1 w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
+                  )}
                 </TabsTrigger>
                 <TabsTrigger value="collections" className="flex items-center gap-1">
                   <Layers className="h-4 w-4" />
@@ -280,6 +323,20 @@ export default function RewardsAlbum() {
             
             <div className="flex-1 overflow-y-auto mt-4 pr-2">
               <TabsContent value="rewards" className="m-0">
+                {/* Mensaje informativo del Guardian */}
+                {guardianFilteredRewards.length > 0 && guardianFilteredRewards.length < earnedRewards.length && (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-blue-700">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">🛡️</span>
+                      </div>
+                      <span className="text-sm font-medium">
+                        Sistema de verificación activo: Se bloquearon {earnedRewards.length - guardianFilteredRewards.length} recompensas no válidas
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
                 {sortedRewards.length === 0 ? (
                   <div className="text-center py-10">
                     <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-4" />
