@@ -2334,13 +2334,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             ? "bg-purple-100 text-purple-800 border-purple-400"
                             : "bg-gray-100 text-gray-700 border-gray-300"
                         }`}>
-                          🔥 Racha: {consecutiveCorrectAnswers}
+                          🔥 Racha: {consecutiveCorrectAnswers} ({maxConsecutiveStreak})
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>{settings.enableAdaptiveDifficulty 
-                          ? "Respuestas correctas consecutivas para subir de nivel (necesitas 10)"
-                          : "Respuestas correctas consecutivas actuales"
+                          ? `Racha actual: ${consecutiveCorrectAnswers} | Récord máximo: ${maxConsecutiveStreak} (necesitas 10 para subir nivel)`
+                          : `Racha actual: ${consecutiveCorrectAnswers} | Récord máximo alcanzado: ${maxConsecutiveStreak}`
                         }</p>
                       </TooltipContent>
                     </Tooltip>

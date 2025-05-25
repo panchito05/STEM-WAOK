@@ -55,6 +55,8 @@ export default function RewardsPage() {
   const clearAllRewards = () => {
     if (confirm('¿Estás seguro de que quieres borrar todas las recompensas? Esta acción no se puede deshacer.')) {
       localStorage.removeItem('addition_rewards');
+      localStorage.removeItem('addition_maxConsecutiveStreak'); // Reset max streak record
+      localStorage.removeItem('addition_consecutiveCorrectAnswers'); // Reset current streak
       setRewardStats({
         totalPoints: 0,
         unlockedRewards: [],
