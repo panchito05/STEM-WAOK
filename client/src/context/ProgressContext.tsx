@@ -429,12 +429,36 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         return; // Salir temprano si no hay ejercicios
       }
       
-      // CORRECCIÓN CRÍTICA: Calcular problemas CORRECTAMENTE RESUELTOS, no el total de problemas
+      // SISTEMA DE DOBLE VERIFICACIÓN V2: Contar problemas desde CERO siempre
       const totalProblemsCompleted = exerciseHistory.reduce((acc, exercise) => {
         const problemasCorrectos = exercise.score || 0;
         console.log(`🔍 [RECOMPENSAS-DEBUG] Ejercicio ID:${exercise.id}, Score:${exercise.score}, TotalProblems:${exercise.totalProblems}, Sumando:${problemasCorrectos}`);
         return acc + problemasCorrectos;
       }, 0);
+      
+      // VERIFICACIÓN INDEPENDIENTE: Contar ejercicios completados desde historial real
+      const ejerciciosCompletados = exerciseHistory.length;
+      const totalProblemasEnHistorial = exerciseHistory.reduce((acc, ex) => acc + (ex.totalProblems || 0), 0);
+      
+      console.log(`🔒 [CONTADOR-INDEPENDIENTE] ==================== VERIFICACIÓN DOBLE ====================`);
+      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Ejercicios en historial: ${ejerciciosCompletados}`);
+      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Total problemas en historial: ${totalProblemasEnHistorial}`);
+      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Problemas correctos calculados: ${totalProblemsCompleted}`);
+      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Fecha de esta verificación: ${new Date().toISOString()}`);
+      
+      // VALIDACIÓN CRÍTICA: Si no hay ejercicios, NO debe haber problemas completados
+      let finalProblemsCount = totalProblemsCompleted;
+      if (ejerciciosCompletados === 0) {
+        console.error(`❌ [CONTADOR-INDEPENDIENTE] ERROR CRÍTICO: 0 ejercicios pero ${totalProblemsCompleted} problemas calculados`);
+        console.error(`❌ [CONTADOR-INDEPENDIENTE] FORZANDO contador a 0 para evitar recompensas fantasma`);
+        finalProblemsCount = 0;
+        
+        console.log(`🔧 [CONTADOR-INDEPENDIENTE] Contador corregido de ${totalProblemsCompleted} a ${finalProblemsCount}`);
+      }
+      
+      // SISTEMA DE VERIFICACIÓN DOBLE: Usar siempre el contador independiente
+      console.log(`🔒 [CONTADOR-INDEPENDIENTE] USANDO CONTADOR FINAL: ${finalProblemsCount} problemas`);
+      console.log(`🔒 [CONTADOR-INDEPENDIENTE] Basado en: ${ejerciciosCompletados} ejercicios reales en historial`);
 
       // Logs adicionales para diagnóstico completo
       const totalEjercicios = exerciseHistory.length;
@@ -455,10 +479,13 @@ export function ProgressProvider({ children }: ProgressProviderProps) {
         });
       }
 
-      // Verificar y otorgar recompensas de milestones
+      // Verificar y otorgar recompensas de milestones - USANDO CONTADOR VERIFICADO
       const rewardConditions = {
-        problemsCompleted: totalProblemsCompleted
+        problemsCompleted: finalProblemsCount // ✅ USAR EL CONTADOR VERIFICADO
       };
+      
+      console.log(`🎯 [CONTADOR-VERIFICADO] Enviando a recompensas: ${finalProblemsCount} problemas (verificados)`);
+      console.log(`🎯 [CONTADOR-VERIFICADO] Original era: ${totalProblemsCompleted}, corregido a: ${finalProblemsCount}`);
 
       console.log(`🏆 [RECOMPENSAS-DEBUG] Condiciones para recompensas:`, rewardConditions);
 

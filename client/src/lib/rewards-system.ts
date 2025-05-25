@@ -503,6 +503,36 @@ export function awardReward(
 }
 
 // Función para verificar y otorgar recompensas basadas en condiciones
+// SISTEMA DE VERIFICACIÓN INDEPENDIENTE - NUNCA CONFÍA EN DATOS EXTERNOS
+function validateProblemsFromHistory(): number {
+  // Obtener historial directamente desde localStorage como verificación independiente
+  const progressKey = 'progress-storage';
+  const progressData = localStorage.getItem(progressKey);
+  
+  if (!progressData) {
+    console.log("🔒 [VALIDADOR-INDEPENDIENTE] No hay datos de progreso en localStorage");
+    return 0;
+  }
+  
+  try {
+    const parsed = JSON.parse(progressData);
+    const history = parsed.state?.exerciseHistory || [];
+    
+    const totalFromHistory = history.reduce((acc: number, exercise: any) => {
+      const score = exercise.score || 0;
+      return acc + score;
+    }, 0);
+    
+    console.log(`🔒 [VALIDADOR-INDEPENDIENTE] Calculado desde localStorage: ${totalFromHistory} problemas`);
+    console.log(`🔒 [VALIDADOR-INDEPENDIENTE] Basado en ${history.length} ejercicios en historial`);
+    
+    return totalFromHistory;
+  } catch (error) {
+    console.error("🔒 [VALIDADOR-INDEPENDIENTE] Error parseando datos:", error);
+    return 0;
+  }
+}
+
 export function checkAndAwardRewards(
   conditions: Record<string, number>,
   moduleData?: {
@@ -562,14 +592,31 @@ export function checkAndAwardRewards(
     console.log("🏆 [REWARD-CHECK-V2] localStorage de recompensas está limpio");
   }
   
+  // VERIFICACIÓN DOBLE: Validar con contador independiente
+  const independentCount = validateProblemsFromHistory();
+  const receivedCount = conditions.problemsCompleted || 0;
+  
+  console.log(`🔒 [DOBLE-VERIFICACIÓN] ==================== COMPARACIÓN CRÍTICA ====================`);
+  console.log(`🔒 [DOBLE-VERIFICACIÓN] Contador recibido: ${receivedCount}`);
+  console.log(`🔒 [DOBLE-VERIFICACIÓN] Contador independiente: ${independentCount}`);
+  
+  // USAR SIEMPRE EL MENOR DE LOS DOS PARA EVITAR RECOMPENSAS FALSAS
+  const finalCount = Math.min(receivedCount, independentCount);
+  console.log(`🔒 [DOBLE-VERIFICACIÓN] Contador final (menor): ${finalCount}`);
+  
+  if (receivedCount !== independentCount) {
+    console.warn(`⚠️ [DOBLE-VERIFICACIÓN] DISCREPANCIA DETECTADA: Recibido=${receivedCount}, Independiente=${independentCount}`);
+    console.warn(`⚠️ [DOBLE-VERIFICACIÓN] Usando el menor para prevenir recompensas falsas: ${finalCount}`);
+  }
+  
   // Verificar condiciones para las recompensas de problemas completados
-  if (conditions.problemsCompleted) {
-    console.log(`🏆 [RECOMPENSAS-SISTEMA] Verificando problemas completados: ${conditions.problemsCompleted}`);
+  if (finalCount > 0) {
+    console.log(`🏆 [REWARD-CHECK-V3] Verificando problemas completados: ${finalCount} (verificado doble)`);
     
-    if (conditions.problemsCompleted >= 10) {
-      console.log("🏆 [REWARD-CHECK-V2] Cumple condición para addition-novice (10+ problemas)");
-      const alreadyHas = currentState.earnedRewards.some(r => r.id === 'addition-novice');
-      console.log(`🏆 [REWARD-CHECK-V2] ¿Ya tiene addition-novice? ${alreadyHas}`);
+    if (finalCount >= 10) {
+      console.log("🏆 [REWARD-CHECK-V3] Cumple condición para addition-novice (10+ problemas)");
+      const alreadyHas = currentState.earnedRewards.some((r: any) => r.id === 'addition-novice');
+      console.log(`🏆 [REWARD-CHECK-V3] ¿Ya tiene addition-novice? ${alreadyHas}`);
       
       if (!alreadyHas) {
         const success = awardReward('addition-novice', moduleData);
@@ -584,10 +631,10 @@ export function checkAndAwardRewards(
       }
     }
     
-    if (conditions.problemsCompleted >= 25) {
-      console.log("🏆 [RECOMPENSAS-SISTEMA] Cumple condición para addition-enthusiast (25+ problemas)");
-      const alreadyHas = earnedRewards.some(r => r.id === 'addition-enthusiast');
-      console.log(`🏆 [RECOMPENSAS-SISTEMA] ¿Ya tiene addition-enthusiast? ${alreadyHas}`);
+    if (finalCount >= 25) {
+      console.log("🏆 [REWARD-CHECK-V3] Cumple condición para addition-enthusiast (25+ problemas)");
+      const alreadyHas = currentState.earnedRewards.some((r: any) => r.id === 'addition-enthusiast');
+      console.log(`🏆 [REWARD-CHECK-V3] ¿Ya tiene addition-enthusiast? ${alreadyHas}`);
       
       if (!alreadyHas) {
         const success = awardReward('addition-enthusiast', moduleData);
@@ -602,10 +649,10 @@ export function checkAndAwardRewards(
       }
     }
     
-    if (conditions.problemsCompleted >= 50) {
-      console.log("🏆 [RECOMPENSAS-SISTEMA] Cumple condición para addition-expert (50+ problemas)");
-      const alreadyHas = earnedRewards.some(r => r.id === 'addition-expert');
-      console.log(`🏆 [RECOMPENSAS-SISTEMA] ¿Ya tiene addition-expert? ${alreadyHas}`);
+    if (finalCount >= 50) {
+      console.log("🏆 [REWARD-CHECK-V3] Cumple condición para addition-expert (50+ problemas)");
+      const alreadyHas = currentState.earnedRewards.some((r: any) => r.id === 'addition-expert');
+      console.log(`🏆 [REWARD-CHECK-V3] ¿Ya tiene addition-expert? ${alreadyHas}`);
       
       if (!alreadyHas) {
         const success = awardReward('addition-expert', moduleData);
@@ -620,10 +667,10 @@ export function checkAndAwardRewards(
       }
     }
     
-    if (conditions.problemsCompleted >= 100) {
-      console.log("🏆 [RECOMPENSAS-SISTEMA] Cumple condición para addition-master (100+ problemas)");
-      const alreadyHas = earnedRewards.some(r => r.id === 'addition-master');
-      console.log(`🏆 [RECOMPENSAS-SISTEMA] ¿Ya tiene addition-master? ${alreadyHas}`);
+    if (finalCount >= 100) {
+      console.log("🏆 [REWARD-CHECK-V3] Cumple condición para addition-master (100+ problemas)");
+      const alreadyHas = currentState.earnedRewards.some((r: any) => r.id === 'addition-master');
+      console.log(`🏆 [REWARD-CHECK-V3] ¿Ya tiene addition-master? ${alreadyHas}`);
       
       if (!alreadyHas) {
         const success = awardReward('addition-master', moduleData);
