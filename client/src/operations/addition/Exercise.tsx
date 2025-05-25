@@ -2088,7 +2088,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             
 
         </div>
-        <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1" />
+        <ProgressBarUI value={progressValue} className="h-1.5 sm:h-2 mb-1 bg-[#c5dbeb]" />
         
         {/* Unified Controls Row - Single horizontal row on mobile, maintain desktop layout */}
         <div className="flex items-center justify-between sm:justify-center gap-1 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 flex-wrap">
