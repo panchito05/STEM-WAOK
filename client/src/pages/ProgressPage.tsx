@@ -1037,7 +1037,13 @@ export default function ProgressPage() {
                             <td className="py-3 px-4">
                               {exercise.score !== undefined && exercise.totalProblems ? (() => {
                                 // Calcular el score real excluyendo respuestas reveladas
-                                const realScore = Math.max(0, exercise.score - (exercise.revealedAnswers || 0));
+                                // Verificar múltiples fuentes para revealedAnswers
+                                const revealedAnswers = exercise.revealedAnswers || 
+                                                       exercise.extraData?.revealedAnswers || 
+                                                       exercise.extra_data?.revealedAnswers || 
+                                                       exercise.extra_data?.screenshot?.scoreData?.revealed?.value || 
+                                                       0;
+                                const realScore = Math.max(0, exercise.score - revealedAnswers);
                                 const percentage = Math.round((realScore / exercise.totalProblems) * 100);
                                 return `${realScore}/${exercise.totalProblems} (${percentage}%)`;
                               })() :
