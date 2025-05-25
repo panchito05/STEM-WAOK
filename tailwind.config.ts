@@ -195,12 +195,53 @@ export default {
           "50%": {
             transform: "translateY(-15px)"
           }
+        },
+        // Animaciones personalizadas para control extremo
+        'slide-in-left': {
+          '0%': { transform: 'translateX(-100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        'slide-in-right': {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        'slide-in-top': {
+          '0%': { transform: 'translateY(-100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        'slide-in-bottom': {
+          '0%': { transform: 'translateY(100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        'scale-in': {
+          '0%': { transform: 'scale(0)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        'rotate-in': {
+          '0%': { transform: 'rotate(-180deg)', opacity: '0' },
+          '100%': { transform: 'rotate(0deg)', opacity: '1' },
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        'pulse-soft': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' },
         }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "bounce-slow": "bounce-slow 2s infinite ease-in-out"
+        "bounce-slow": "bounce-slow 2s infinite ease-in-out",
+        'slide-in-left': 'slide-in-left 0.5s ease-out',
+        'slide-in-right': 'slide-in-right 0.5s ease-out',
+        'slide-in-top': 'slide-in-top 0.5s ease-out',
+        'slide-in-bottom': 'slide-in-bottom 0.5s ease-out',
+        'scale-in': 'scale-in 0.3s ease-out',
+        'rotate-in': 'rotate-in 0.5s ease-out',
+        'float': 'float 3s ease-in-out infinite',
+        'pulse-soft': 'pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },
