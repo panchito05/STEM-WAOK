@@ -456,13 +456,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { updateModuleSettings } = useSettings();
   const { t } = useTranslations();
 
-  // 🎯 Sistema de Recompensas Integrado (temporalmente deshabilitado para resolver loop)
-  // const rewards = useRewards({
-  //   moduleId: 'addition',
-  //   userId: 'current-user',
-  //   autoCheck: false
-  // });
-  // const rewardQueue = useRewardQueue();
+  // 🎯 Sistema de Recompensas Simplificado (sin hooks problemáticos)
+  const [rewardStats, setRewardStats] = useState({
+    totalProblems: 0,
+    currentStreak: 0,
+    showRewardModal: false,
+    lastReward: null as any
+  });
 
   // Traducciones para elementos específicos de la interfaz
   const translations = {
@@ -657,30 +657,76 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setConsecutiveCorrectAnswers(newConsecutive);
       setConsecutiveIncorrectAnswers(0);
 
-      // 🎯 Verificar Recompensas por Problema Completado (temporalmente deshabilitado)
-      // const checkRewardsForProgress = async () => {
-      //   try {
-      //     const currentTotalProblems = userAnswersHistory.filter(answer => answer && answer.isCorrect).length + 1;
-      //     const progressData = RewardUtils.transformExerciseProgress({
-      //       totalProblems: currentTotalProblems,
-      //       currentStreak: newConsecutive,
-      //       longestStreak: Math.max(newConsecutive, consecutiveCorrectAnswers),
-      //       difficulty: adaptiveDifficulty,
-      //       operationId: 'addition',
-      //       accuracy: (currentTotalProblems / (currentProblemIndex + 1)) * 100,
-      //       avgTimePerProblem: timer / (currentProblemIndex + 1)
-      //     });
-      //     const newRewards = await rewards.checkForRewards(progressData);
-      //     if (newRewards.length > 0) {
-      //       setTimeout(() => {
-      //         rewardQueue.addToQueue(newRewards);
-      //       }, 1500);
-      //     }
-      //   } catch (error) {
-      //     console.warn('Error verificando recompensas:', error);
-      //   }
-      // };
-      // checkRewardsForProgress();
+      // 🎯 Sistema de Recompensas Simplificado - Detección de Hitos
+      const checkSimpleRewards = () => {
+        const currentTotalProblems = userAnswersHistory.filter(answer => answer && answer.isCorrect).length + 1;
+        
+        // Actualizar estadísticas
+        setRewardStats(prev => ({
+          ...prev,
+          totalProblems: currentTotalProblems,
+          currentStreak: newConsecutive
+        }));
+        
+        // Verificar hitos importantes
+        let rewardToShow = null;
+        
+        if (currentTotalProblems === 5) {
+          rewardToShow = {
+            title: "¡Primeros Pasos!",
+            description: "Has resuelto 5 problemas correctamente",
+            points: 25,
+            type: "milestone",
+            icon: "🌟"
+          };
+        } else if (currentTotalProblems === 10) {
+          rewardToShow = {
+            title: "¡Aprendiz Dedicado!",
+            description: "Has completado 10 problemas de suma",
+            points: 50,
+            type: "milestone", 
+            icon: "🎯"
+          };
+        } else if (currentTotalProblems === 25) {
+          rewardToShow = {
+            title: "¡Matemático en Progreso!",
+            description: "¡Increíble! 25 problemas resueltos correctamente",
+            points: 100,
+            type: "milestone",
+            icon: "🏆"
+          };
+        } else if (newConsecutive === 5) {
+          rewardToShow = {
+            title: "¡Racha Inicial!",
+            description: "5 respuestas correctas consecutivas",
+            points: 30,
+            type: "streak",
+            icon: "⚡"
+          };
+        } else if (newConsecutive === 10) {
+          rewardToShow = {
+            title: "¡Racha Fantástica!",
+            description: "10 respuestas correctas seguidas",
+            points: 75,
+            type: "streak",
+            icon: "🔥"
+          };
+        }
+        
+        // Mostrar recompensa si se desbloqueó una
+        if (rewardToShow) {
+          console.log(`🎉 ¡RECOMPENSA DESBLOQUEADA!`, rewardToShow);
+          setTimeout(() => {
+            setRewardStats(prev => ({
+              ...prev,
+              showRewardModal: true,
+              lastReward: rewardToShow
+            }));
+          }, 1000);
+        }
+      };
+      
+      checkSimpleRewards();
 
       // Sistema mejorado y más robusto para verificar subida de nivel
       // Doble verificación con logs para diagnóstico
@@ -2694,13 +2740,45 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         />
       )}
 
-      {/* 🎯 Modal de Recompensas (temporalmente deshabilitado) */}
-      {/* <RewardModal
-        reward={rewardQueue.currentReward}
-        isOpen={rewardQueue.isModalOpen}
-        onClose={rewardQueue.closeModal}
-        onViewReward={rewards.markRewardAsViewed}
-      /> */}
+      {/* 🎯 Modal de Recompensas Simplificado */}
+      {rewardStats.showRewardModal && rewardStats.lastReward && (
+        <Dialog open={rewardStats.showRewardModal} onOpenChange={(open) => {
+          if (!open) {
+            setRewardStats(prev => ({ ...prev, showRewardModal: false, lastReward: null }));
+          }
+        }}>
+          <DialogContent className="sm:max-w-md text-center">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-yellow-600 flex items-center justify-center gap-2">
+                <span className="text-3xl">{rewardStats.lastReward.icon}</span>
+                ¡Recompensa Desbloqueada!
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-6">
+              <div className="text-4xl mb-4">{rewardStats.lastReward.icon}</div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                {rewardStats.lastReward.title}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {rewardStats.lastReward.description}
+              </p>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 inline-block">
+                <span className="text-yellow-700 font-semibold">
+                  +{rewardStats.lastReward.points} puntos
+                </span>
+              </div>
+            </div>
+            <DialogFooter className="justify-center">
+              <Button 
+                onClick={() => setRewardStats(prev => ({ ...prev, showRewardModal: false, lastReward: null }))}
+                className="bg-yellow-600 hover:bg-yellow-700 text-white"
+              >
+                ¡Genial! Continuar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
