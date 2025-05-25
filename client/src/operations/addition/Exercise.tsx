@@ -2110,8 +2110,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   </TooltipProvider>
                 )}
                 
-                {/* CONTADOR VISUAL DE RACHA CONSECUTIVA - Para diagnóstico */}
-                {settings.enableAdaptiveDifficulty && !viewingPrevious && (
+                {/* CONTADOR VISUAL DE RACHA CONSECUTIVA - Siempre visible */}
+                {!viewingPrevious && (
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -2124,11 +2124,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             ? "bg-purple-100 text-purple-800 border-purple-400"
                             : "bg-gray-100 text-gray-700 border-gray-300"
                         }`}>
-                          🔥 Racha: {consecutiveCorrectAnswers}/10
+                          🔥 Racha: {consecutiveCorrectAnswers}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>Respuestas correctas consecutivas para subir de nivel (necesitas 10)</p>
+                        <p>{settings.enableAdaptiveDifficulty 
+                          ? "Respuestas correctas consecutivas para subir de nivel (necesitas 10)"
+                          : "Respuestas correctas consecutivas actuales"
+                        }</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
