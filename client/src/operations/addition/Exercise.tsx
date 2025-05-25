@@ -2042,7 +2042,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           </div>
         )}
 
-      <div className={`px-2 py-2 sm:px-4 sm:py-5 rounded-xl shadow-lg min-h-[calc(100vh-6rem)] md:min-h-0 flex flex-col ${
+      <div className={`px-1 py-1 sm:px-4 sm:py-5 rounded-xl shadow-lg min-h-[calc(100vh-4rem)] md:min-h-0 flex flex-col ${
         adaptiveDifficulty === "beginner" ? "bg-blue-50 border-blue-200" :
         adaptiveDifficulty === "elementary" ? "bg-emerald-50 border-emerald-200" :
         adaptiveDifficulty === "intermediate" ? "bg-orange-50 border-orange-200" :
@@ -2051,7 +2051,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         "bg-indigo-50 border-indigo-200"
       } border-2`}>
         {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 mb-2 sm:mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 mb-1 sm:mb-4">
             <h2 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">{currentTranslations.addition}</h2>
             
             {/* Top row info - Timer and basic stats */}
@@ -2174,7 +2174,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
 
         {/* Problem Display Area - Responsive: Optimized for all screen sizes */}
-        <div className={`p-2 sm:p-4 md:p-6 rounded-lg mb-2 sm:mb-4 shadow-md bg-white flex-grow flex flex-col items-center justify-center max-h-[35vh] sm:max-h-none`}>
+        <div className={`p-1 sm:p-4 md:p-6 rounded-lg mb-1 sm:mb-4 shadow-md bg-white flex-grow flex flex-col items-center justify-center max-h-[30vh] sm:max-h-none`}>
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold flex items-center justify-center gap-1 sm:gap-1.5 md:gap-2 flex-wrap">
               <span>{currentProblem.operands[0]}</span>
@@ -2263,7 +2263,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
         </div>
         {/* Number Keypad - Responsive: Larger touch targets on mobile, always visible */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-auto">
+        <div className="grid grid-cols-3 gap-1 sm:gap-3 md:gap-4 max-w-xs sm:max-w-sm md:max-w-md mx-auto mt-auto">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", "sequential_backspace", "0", "backspace"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
