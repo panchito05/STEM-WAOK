@@ -616,7 +616,14 @@ export default function ProgressPage() {
                                     
                                     // Obtener el último ejercicio para ver el progreso actual
                                     const lastExercise = moduleExercises[moduleExercises.length - 1];
-                                    const currentStreak = lastExercise?.extra_data?.consecutiveCorrectAnswers || 0;
+                                    let currentStreak = 0;
+                                    
+                                    if (lastExercise?.extra_data?.consecutiveCorrectAnswers !== undefined) {
+                                      currentStreak = lastExercise.extra_data.consecutiveCorrectAnswers;
+                                    } else {
+                                      // Fallback: calcular una estimación básica basada en score reciente
+                                      currentStreak = Math.min(lastExercise?.score || 0, 10);
+                                    }
                                     
                                     return `${currentStreak}/10`;
                                   })()}
@@ -631,7 +638,14 @@ export default function ProgressPage() {
                                       if (moduleExercises.length === 0) return 0;
                                       
                                       const lastExercise = moduleExercises[moduleExercises.length - 1];
-                                      const currentStreak = lastExercise?.extra_data?.consecutiveCorrectAnswers || 0;
+                                      let currentStreak = 0;
+                                      
+                                      if (lastExercise?.extra_data?.consecutiveCorrectAnswers !== undefined) {
+                                        currentStreak = lastExercise.extra_data.consecutiveCorrectAnswers;
+                                      } else {
+                                        // Fallback: calcular una estimación básica basada en score reciente
+                                        currentStreak = Math.min(lastExercise?.score || 0, 10);
+                                      }
                                       
                                       return Math.min(100, (currentStreak / 10) * 100);
                                     })()}%` 
@@ -735,39 +749,36 @@ export default function ProgressPage() {
                                 <p className="font-semibold text-orange-600">
                                   {(() => {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
-                                    if (moduleExercises.length === 0) return 'N/A (Sin ejercicios)';
+                                    if (moduleExercises.length === 0) return 'N/A';
                                     
-                                    // Debug: log de la estructura
-                                    console.log('Problemas Desafiantes - ModuleExercises:', moduleExercises);
-                                    console.log('Primer ejercicio:', moduleExercises[0]);
-                                    
-                                    // Contar problemas que requirieron múltiples intentos o fueron revelados
+                                    // Contar problemas desafiantes usando múltiples fuentes de datos
                                     let problemasDesafiantes = 0;
                                     let totalProblemas = 0;
                                     
-                                    moduleExercises.forEach((ex, index) => {
-                                      console.log(`Ejercicio ${index}:`, ex);
-                                      console.log(`extra_data:`, ex.extra_data);
-                                      
-                                      // Usar los datos correctos guardados en extra_data
+                                    moduleExercises.forEach(ex => {
+                                      // Intentar múltiples fuentes de datos
                                       const extraData = ex.extra_data;
+                                      
                                       if (extraData && extraData.problemDetails) {
-                                        console.log('problemDetails encontrado:', extraData.problemDetails);
+                                        // Fuente 1: problemDetails en extra_data
                                         extraData.problemDetails.forEach((problem: any) => {
                                           if (problem) {
                                             totalProblemas++;
-                                            // Problema desafiante: más de 1 intento O respuesta revelada
                                             if ((problem.attempts && problem.attempts > 1) || problem.status === 'revealed') {
                                               problemasDesafiantes++;
                                             }
                                           }
                                         });
-                                      } else {
-                                        console.log('No se encontró problemDetails en extra_data');
+                                      } else if (ex.score !== undefined && ex.totalProblems !== undefined) {
+                                        // Fuente 2: datos básicos de score y totalProblems
+                                        totalProblemas += ex.totalProblems;
+                                        // Estimar problemas desafiantes como diferencia entre total y score
+                                        const problemasIncorrectos = ex.totalProblems - ex.score;
+                                        problemasDesafiantes += problemasIncorrectos;
                                       }
                                     });
                                     
-                                    if (totalProblemas === 0) return 'N/A (Sin problemas)';
+                                    if (totalProblemas === 0) return 'N/A';
                                     
                                     return `${problemasDesafiantes}/${totalProblemas}`;
                                   })()}
@@ -835,22 +846,27 @@ export default function ProgressPage() {
                                     const moduleExercises = exerciseHistory.filter(ex => ex.operationId === module.id);
                                     if (moduleExercises.length === 0) return '0%';
                                     
-                                    // Contar problemas incorrectos vs total usando extra_data
+                                    // Contar problemas incorrectos vs total usando múltiples fuentes
                                     let totalProblemas = 0;
                                     let problemasIncorrectos = 0;
                                     
                                     moduleExercises.forEach(ex => {
                                       const extraData = ex.extra_data;
+                                      
                                       if (extraData && extraData.problemDetails) {
+                                        // Fuente 1: problemDetails en extra_data
                                         extraData.problemDetails.forEach((problem: any) => {
                                           if (problem) {
                                             totalProblemas++;
-                                            // Contar como incorrecto si no es correcto O si fue revelado
                                             if (!problem.isCorrect || problem.status === 'revealed') {
                                               problemasIncorrectos++;
                                             }
                                           }
                                         });
+                                      } else if (ex.score !== undefined && ex.totalProblems !== undefined) {
+                                        // Fuente 2: datos básicos de score y totalProblems
+                                        totalProblemas += ex.totalProblems;
+                                        problemasIncorrectos += (ex.totalProblems - ex.score);
                                       }
                                     });
                                     

@@ -2282,7 +2282,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="flex items-center justify-between sm:justify-center gap-1 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 flex-wrap">
             {/* Problem Progress - Desktop only */}
             <span className="hidden sm:inline font-semibold px-2 py-1 border border-gray-300 rounded-md text-xs bg-[#2563eb] text-[#ffffff]">
-              Problem : {currentProblemIndex + 1} de {settings.problemCount}
+              Problem : {currentProblemIndex + 1} de {problemsList.length}
             </span>
             
             {/* Score - First item */}
