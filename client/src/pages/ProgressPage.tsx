@@ -1081,7 +1081,23 @@ export default function ProgressPage() {
                                   </div>
 
                                   <div className="grid grid-cols-3 gap-2">
-
+                                    <div className="bg-blue-50 p-3 rounded-md">
+                                      <div className="flex items-center justify-center mb-1">
+                                        <p className="text-center text-sm text-gray-600">Score</p>
+                                        <ContextualTooltip 
+                                          type="accuracy"
+                                          additionalData={{
+                                            correct: Math.max(0, exercise.score - (exercise.revealedAnswers || 0)),
+                                            total: exercise.totalProblems,
+                                            revealed: exercise.revealedAnswers || 0
+                                          }}
+                                        />
+                                      </div>
+                                      <p className="text-center text-lg font-bold text-blue-600">
+                                        {/* Mostrar correctamente el score teniendo en cuenta las respuestas reveladas */}
+                                        {Math.max(0, exercise.score - (exercise.revealedAnswers || exercise.extraData?.revealedAnswers || 0))}/{exercise.totalProblems}
+                                      </p>
+                                    </div>
                                     <div className="bg-green-50 p-3 rounded-md">
                                       <p className="text-center text-sm text-gray-600">Accuracy</p>
                                       <p className="text-center text-lg font-bold text-green-600">
