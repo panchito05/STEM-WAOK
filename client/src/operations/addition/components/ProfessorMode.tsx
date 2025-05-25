@@ -27,7 +27,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   const [attempts, setAttempts] = useState(0);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [position, setPosition] = useState('top-right');
+  const [position, setPosition] = useState<'top-left' | 'top-right' | 'bottom-right' | 'bottom-left'>('top-left');
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
     problem: AdditionProblem;
@@ -492,7 +492,12 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       <div className="h-full w-full flex flex-col lg:flex-row overflow-hidden">
         {/* Área de dibujo - Ocupa todo el espacio en móvil/tablet */}
         <div className="flex-1 relative overflow-hidden">
-          <DrawingArea position={position} problem={problem} />
+          <DrawingArea 
+            position={position === 'top-left' ? 'topLeft' as const : 
+                     position === 'top-right' ? 'topRight' as const : 
+                     position === 'bottom-left' ? 'bottomLeft' as const : 'bottomRight' as const} 
+            problem={problem} 
+          />
         </div>
         
         {/* Panel de control - Responsivo */}
