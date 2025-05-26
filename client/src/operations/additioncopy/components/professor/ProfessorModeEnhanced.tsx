@@ -203,7 +203,7 @@ const ProfessorModeContent: React.FC<ProfessorModeEnhancedProps> = ({
                   <span key={index}>
                     <span className="mx-1">{typeof op === 'number' ? op : parseFloat(op.toString())}</span>
                     {index < problem.operands.length - 1 && (
-                      <span className="mx-2 text-blue-600 font-bold">+</span>
+                      <span className="mx-2 text-blue-600 font-bold">×</span>
                     )}
                   </span>
                 ))}

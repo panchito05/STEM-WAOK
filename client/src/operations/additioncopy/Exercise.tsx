@@ -2605,11 +2605,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl font-bold flex items-center justify-center gap-2">
               <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600">x</span>
+              <span className="text-gray-600">×</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
               {currentProblem.operands.length > 2 && (
                 <>
-                  <span className="text-gray-600">+</span>
+                  <span className="text-gray-600">×</span>
                   <span>{currentProblem.operands[2]}</span>
                 </>
               )}
@@ -2620,7 +2620,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <div className="inline-block text-right my-1 sm:my-2">
                 {operandsFormatted.map((op, index) => (
                   <div key={`op-${index}-${currentProblem.id}`} className={verticalOperandStyle}>
-                    {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>x</span>}
+                    {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>×</span>}
                     <span>{op.intStr}</span>
                     {maxDecLength > 0 && (
                       <>
