@@ -1,0 +1,32 @@
+Prompt 1: Conversión Automática Completa a Nueva Operación Matemática
+Convierte el módulo " AdditionCopy2” de suma a uno de DIVISION Realiza una conversión completa manteniendo exactamente la misma estructura, diseño e interfaz.
+Cambios específicos requeridos:
+1. Lógica Matemática:
+•	Generación de problemas: Cambiar funciones de creación de ejercicios para la nueva operación
+•	Validación de respuestas: Modificar lógica de verificación de respuestas correctas
+•	Ejemplos de dificultad: Actualizar todos los ejemplos en DifficultyExamples component
+2. Referencias Hardcodeadas (CRÍTICO):
+•	Settings.tsx: Cambiar updateModuleSettings("[original]", ...) → updateModuleSettings("[nuevo]", ...)
+•	Settings.tsx: Cambiar resetModuleSettings("[original]") → resetModuleSettings("[nuevo]")
+•	Settings.tsx: Actualizar referencias en localStorage de [original] → [nuevo]
+•	Settings.tsx: Cambiar operation="[original]" → operation="[nuevo]" en DifficultyExamples
+•	Settings.tsx: Actualizar textos descriptivos de operaciones en las descripciones de dificultad
+•	Exercise.tsx: Verificar y corregir cualquier referencia hardcodeada al módulo original
+•	Todos los logs de consola: [ORIGINAL] → [NUEVO]
+3. Componentes y UI:
+•	Títulos y textos: Cambiar todos los textos que mencionen la operación anterior
+•	Símbolos matemáticos: Actualizar operadores (+, -, ×, ÷) en toda la interfaz
+•	DifficultyExamples: Agregar ejemplos específicos para la nueva operación
+•	Descripciones de dificultad: Cambiar textos explicativos (ej: "sumas" → "restas")
+4. Nombres y Tipos:
+•	Actualizar nombres de funciones, tipos y variables para reflejar la nueva operación
+•	Cambiar nombres de archivos si es necesario
+•	Actualizar imports y exports correspondientes
+Mantener intacto:
+•	Toda la UI, navegación, configuraciones, guardado de progreso
+•	Sistema de recompensas, adaptabilidad, temporizadores
+•	Estructura de carpetas y arquitectura general
+Verificar especialmente:
+•	Que las configuraciones se guarden correctamente al navegar entre ejercicio y configuraciones
+•	Que no queden referencias al módulo original en API calls o localStorage
+•	Que todos los ejemplos de dificultad muestren la operación correcta
