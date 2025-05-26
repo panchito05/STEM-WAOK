@@ -21,6 +21,7 @@ export interface ModuleSettings {
   showAnswerWithExplanation: boolean; // Botón de ayuda que muestra respuesta con explicación
   enableAdaptiveDifficulty: boolean; // Ajusta automáticamente la dificultad según desempeño
   enableCompensation: boolean; // Añade problemas adicionales por respuestas incorrectas/reveladas
+  enableSmartCursor?: boolean; // Detección inteligente de cursor para sumas complejas
   enableRewards: boolean; // Activar sistema de recompensas/premios
   rewardType: "medals" | "trophies" | "stars"; // Tipo de premio a mostrar
   language?: "english" | "spanish"; // Idioma para el módulo

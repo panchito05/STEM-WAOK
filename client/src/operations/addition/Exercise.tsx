@@ -23,6 +23,7 @@ import { Link } from "wouter";
 
 import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
 import { useRewards, RewardModal, useRewardQueue, RewardUtils } from '@/rewards';
+import { detectIntentionalDirection, isEligibleForSmartCursor, isSmartCursorEnabled } from '@/utils/smartCursorDetection';
 
 interface ExerciseProps {
   settings: ModuleSettings;

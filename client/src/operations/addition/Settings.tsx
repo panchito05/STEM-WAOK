@@ -460,6 +460,22 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                 className={theme.bgLight}
               />
             </div>
+            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
+              <Label htmlFor="enable-smart-cursor" className={`cursor-pointer ${theme.accent} flex items-center flex-col items-start`}>
+                <span className="flex items-center"><span className="mr-2">🎯</span>{isEnglish ? "Smart Cursor Detection" : "Detección Inteligente de Cursor"}</span>
+                <span className="text-xs ml-5 opacity-80">
+                  {isEnglish 
+                    ? "Automatically detects if you know the answer by memory or want to solve step by step based on your first digit." 
+                    : "Detecta automáticamente si sabes la respuesta de memoria o quieres resolver paso a paso según tu primer dígito."}
+                </span>
+              </Label>
+              <Switch
+                id="enable-smart-cursor"
+                checked={localSettings.enableSmartCursor !== false}
+                onCheckedChange={(checked) => handleUpdateSetting("enableSmartCursor", checked)}
+                className={theme.bgLight}
+              />
+            </div>
 
           </div>
         </div>
