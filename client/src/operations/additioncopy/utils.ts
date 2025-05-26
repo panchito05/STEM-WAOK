@@ -1,5 +1,5 @@
 // utils.ts
-import { AdditionCopyProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
+import { AdditionCopyProblem, DifficultyLevel, ExerciseLayout, Problem, Operand } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -8,18 +8,19 @@ const getRandomInt = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-const getRandomBool = (probability: number = 0.5): boolean => Math.random() < probability;
+const getRandomBool = (probability: number = 0.5): boolean => {
+  return Math.random() < probability;
+};
 
 function getRandomDecimal(min: number, max: number, maxDecimals: 0 | 1 | 2): number {
-  if (maxDecimals === 0) {
-    return getRandomInt(min, max);
-  }
-  const range = max - min;
-  let value = Math.random() * range + min;
+  const intValue = getRandomInt(min, max);
+  if (maxDecimals === 0) return intValue;
+  
+  const decimalPart = Math.random();
   const factor = Math.pow(10, maxDecimals);
-  value = Math.round(value * factor) / factor;
-  const fixedString = value.toFixed(maxDecimals); // Importante para mantener ceros finales para el conteo de dígitos
-  return parseFloat(fixedString);
+  const roundedDecimal = Math.floor(decimalPart * factor) / factor;
+  
+  return parseFloat((intValue + roundedDecimal).toFixed(maxDecimals));
 }
 
 function generateUniqueId(): string {
@@ -32,16 +33,17 @@ function generateUniqueId(): string {
  */
 export function additionCopyProblemToProblem(problem: AdditionCopyProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
   // Convertir operandos simples a tipo Operand
-  const operands: Operand[] = problem.operands.map(value => ({ value }));
+  const operands: Operand[] = problem.operands.map((value: number) => ({ value }));
   
   return {
     id: problem.id,
     operands,
-    displayFormat: problem.layout, // El layout de AdditionCopyProblem es el displayFormat de Problem
+    operator: '+',
     correctAnswer: problem.correctAnswer,
-    difficulty, // Usamos el parámetro de dificultad o el predeterminado
+    displayFormat: problem.layout === 'vertical' ? 'vertical' : 'horizontal',
+    difficulty,
     allowDecimals: problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0,
-    maxAttempts: 3 // Por defecto permitimos 3 intentos
+    maxAttempts: 3
   };
 }
 
@@ -51,29 +53,23 @@ export function additionCopyProblemToProblem(problem: AdditionCopyProblem, diffi
  */
 export function problemToAdditionCopyProblem(problem: Problem): AdditionCopyProblem {
   const operands = problem.operands.map(op => op.value);
-  let answerDecimalPosition: number | undefined = undefined;
+  const layout: ExerciseLayout = problem.displayFormat === 'vertical' ? 'vertical' : 'horizontal';
   
-  if (problem.allowDecimals) {
-    // Determinar el número de decimales a partir de los operandos
-    const decimals = Math.max(...operands.map(op => {
-      const strOp = op.toString();
-      const dotIndex = strOp.indexOf('.');
-      return dotIndex >= 0 ? strOp.length - dotIndex - 1 : 0;
-    }));
-    if (decimals > 0) {
-      answerDecimalPosition = decimals;
-    }
-  }
+  // Calcular answerMaxDigits y answerDecimalPosition basándose en la respuesta correcta
+  const correctAnswerStr = problem.correctAnswer.toString();
+  const [integerPart, decimalPart = ""] = correctAnswerStr.split('.');
+  const answerMaxDigits = integerPart.length + decimalPart.length;
+  const answerDecimalPosition = decimalPart.length > 0 ? decimalPart.length : undefined;
   
   return {
     id: problem.id,
+    operands,
     num1: operands[0] || 0,
     num2: operands[1] || 0,
-    operands,
     correctAnswer: problem.correctAnswer,
-    layout: problem.displayFormat as ExerciseLayout, // Solo horizontal o vertical, no 'word'
-    answerMaxDigits: problem.correctAnswer.toString().replace('.', '').length,
-    answerDecimalPosition
+    layout,
+    answerMaxDigits,
+    answerDecimalPosition,
   };
 }
 

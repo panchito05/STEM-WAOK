@@ -1,4 +1,5 @@
 import * as Addition from "../operations/addition";
+import * as AdditionCopy from "../operations/additioncopy";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -47,17 +48,14 @@ export const operationModules: Module[] = [
     color: "#4287f5", // Azul vivo como en la imagen
     icon: "Plus",
   },
-  // Eliminamos la entrada de "Addition (New)" ya que ahora usamos el módulo estándar
-  // {
-  //   id: "unifiedAddition",
-  //   displayName: "Addition (New)",
-  //   description: "Practice addition with our improved unified module",
-  //   difficulty: "beginner",
-  //   color: "#3b82f6", // Un azul diferente
-  //   icon: "PlusCircle",
-  // },
-
-
+  {
+    id: "additioncopy",
+    displayName: "Addition Copy",
+    description: "Practice addition with the copied module for testing",
+    difficulty: "beginner",
+    color: "#3b82f6", // Un azul diferente
+    icon: "PlusCircle",
+  },
 ];
 
 // Map operation IDs to their React components
