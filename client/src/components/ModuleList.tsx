@@ -79,7 +79,7 @@ export default function ModuleList() {
         
         // Check Spanish term match
         const spanishMatch = Object.entries(spanishToEnglish).some(([spanish, english]) => {
-          if (searchLower.includes(spanish)) {
+          if (spanish.includes(searchLower)) {  // Corregido: buscar si la palabra española contiene la búsqueda
             return module.id.toLowerCase().includes(english) ||
                    module.displayName.toLowerCase().includes(english);
           }
