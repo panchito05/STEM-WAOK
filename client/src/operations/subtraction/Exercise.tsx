@@ -503,7 +503,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       of: "of"
     },
     spanish: {
-      addition: "Suma",
+      subtraction: "Resta",
       attempts: "Intentos",
       level: "Nivel",
       settings: "Ajustes",
