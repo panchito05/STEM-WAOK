@@ -2349,7 +2349,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   return (
     <div className="relative">
       <LevelUpHandler />
-
       {/* Diálogo para gestionar videos explicativos */}
       <YoutubeVideoDialog
         isOpen={showVideoDialog}
@@ -2606,7 +2605,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl font-bold flex items-center justify-center gap-2">
               <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600">+</span>
+              <span className="text-gray-600">x</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
               {currentProblem.operands.length > 2 && (
                 <>
@@ -2621,7 +2620,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <div className="inline-block text-right my-1 sm:my-2">
                 {operandsFormatted.map((op, index) => (
                   <div key={`op-${index}-${currentProblem.id}`} className={verticalOperandStyle}>
-                    {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>+</span>}
+                    {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>x</span>}
                     <span>{op.intStr}</span>
                     {maxDecLength > 0 && (
                       <>
@@ -2996,7 +2995,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           }}
         />
       )}
-
       {/* 🎯 Modal de Recompensas Simplificado */}
       {rewardStats.showRewardModal && rewardStats.lastReward && (
         <Dialog open={rewardStats.showRewardModal} onOpenChange={(open) => {

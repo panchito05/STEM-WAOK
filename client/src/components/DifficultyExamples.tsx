@@ -64,6 +64,13 @@ export default function DifficultyExamples({
       advanced: ["2 3/4 + 1 5/6 = ?", "3 1/3 - 1 2/5 = ?"],
       expert: ["5 2/3 ÷ 2 1/2 = ?", "3 3/4 × 2 2/5 = ?"]
     },
+    multiplication: {
+      beginner: ["3 × 4 = ?", "7 × 6 = ?"],
+      elementary: ["12 × 8 = ?", "15 × 7 = ?"],
+      intermediate: ["23 × 6 = ?", "18 × 9 = ?"],
+      advanced: ["34 × 27 = ?", "56 × 43 = ?"],
+      expert: ["8.5 × 12.3 = ?", "15.7 × 9.2 = ?"]
+    },
     counting: {
       beginner: ["Count to 5", "Count by 1s to 10"],
       elementary: ["Count by 2s to 20", "Count by 5s to 50"],

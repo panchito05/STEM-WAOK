@@ -195,7 +195,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   // Determinar textos según el idioma actual
   const isEnglish = localSettings.language === "english";
-  const headerTitle = isEnglish ? "Configuration - Addition Copy Exercise" : "Configuración - Ejercicio de Suma Copia";
+  const headerTitle = isEnglish ? "Configuration - Multiplication Exercise" : "Configuración - Ejercicio de Multiplicación";
   const subheaderText = isEnglish ? "Customize your exercise experience" : "Personaliza tu experiencia de ejercicio";
   const backButtonText = isEnglish ? "Back to Exercise" : "Volver al Ejercicio";
   const languageButtonText = isEnglish ? "Español" : "English";
@@ -239,7 +239,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           
           <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
             <DifficultyExamples 
-              operation="additioncopy" 
+              operation="multiplication" 
               activeDifficulty={localSettings.difficulty}
               onSelectDifficulty={(difficulty) => 
                 handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
@@ -250,19 +250,19 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           
           <div className="mt-3 mb-2 space-y-1.5">
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Beginner:" : "Principiante:"}</span> {isEnglish ? "Simple digit additions (1+8, 7+5)" : "Sumas con dígitos simples (1+8, 7+5)"}
+              <span className="font-bold">{isEnglish ? "Beginner:" : "Principiante:"}</span> {isEnglish ? "Single digit multiplications (3×4, 7×6)" : "Multiplicaciones con dígitos simples (3×4, 7×6)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Elementary:" : "Elemental:"}</span> {isEnglish ? "Two-digit number additions (12+15, 24+13)" : "Sumas de números de dos dígitos (12+15, 24+13)"}
+              <span className="font-bold">{isEnglish ? "Elementary:" : "Elemental:"}</span> {isEnglish ? "Two-digit by single digit (12×8, 15×7)" : "Dos dígitos por un dígito (12×8, 15×7)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Additions with large numbers (65+309, 392+132)" : "Sumas con números grandes (65+309, 392+132)"}
+              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Two-digit by single digit (23×6, 18×9)" : "Dos dígitos por un dígito (23×6, 18×9)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Advanced:" : "Avanzado:"}</span> {isEnglish ? "4-digit number additions (1247+3568, 5934+8742)" : "Sumas de números de 4 dígitos (1247+3568, 5934+8742)"}
+              <span className="font-bold">{isEnglish ? "Advanced:" : "Avanzado:"}</span> {isEnglish ? "Two-digit by two-digit (34×27, 56×43)" : "Dos dígitos por dos dígitos (34×27, 56×43)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Expert:" : "Experto:"}</span> {isEnglish ? "Very large number additions (70960+11650, 28730+59436)" : "Sumas con números muy grandes (70960+11650, 28730+59436)"}
+              <span className="font-bold">{isEnglish ? "Expert:" : "Experto:"}</span> {isEnglish ? "Decimal multiplications (8.5×12.3, 15.7×9.2)" : "Multiplicaciones decimales (8.5×12.3, 15.7×9.2)"}
             </p>
           </div>
         </div>
