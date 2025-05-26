@@ -1546,7 +1546,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (!problem) return null;
 
         // Este es el formato EXACTO que se muestra en la pantalla final
-        const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+        const problemText = `${problem.operands[0]} - ${problem.operands[1]} = ${problem.correctAnswer}`;
 
         // Objeto con la información completa del problema tal como se muestra en la UI
         return {
@@ -1604,7 +1604,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         const respuesta = userAnswersHistory[i];
         const problema = problemsList[i];
         console.log(`   Problema #${i+1}: ${problema.id}`);
-        console.log(`   - Operación: ${problema.operands?.[0]} + ${problema.operands?.[1]} = ${problema.correctAnswer}`);
+        console.log(`   - Operación: ${problema.operands?.[0]} - ${problema.operands?.[1]} = ${problema.correctAnswer}`);
         console.log(`   - Tiene respuesta: ${respuesta ? "SÍ" : "NO"}`);
         if (respuesta) {
           console.log(`   - Respuesta dada: ${respuesta.userAnswer}`);
@@ -1618,7 +1618,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         console.log(`🔴 PROBLEMA ACTUAL (posiblemente el último):
           - Índice: ${currentProblemIndex}
           - ID: ${currentProblem.id}
-          - Operación: ${currentProblem.operands?.[0]} + ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}
+          - Operación: ${currentProblem.operands?.[0]} - ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}
           - Respuesta en teclado: ${digitAnswers.join("")}
           - Tiene respuesta registrada: ${userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"}
         `);
@@ -1630,7 +1630,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         console.log(`🔴 VERIFICACIÓN CRÍTICA - ÚLTIMO PROBLEMA #${currentProblemIndex+1}:`, {
           id: currentProblem.id,
-          operación: `${currentProblem.operands?.[0]} + ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}`,
+          operación: `${currentProblem.operands?.[0]} - ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}`,
           enTeclado: digitAnswers.join(""),
           tieneDigitos: digitAnswers.length > 0 ? "SÍ" : "NO",
           respuestaRegistrada: userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"
@@ -2273,7 +2273,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               let problemDisplay = '';
               if (problem.operands && problem.operands.length > 0) {
                 if (problem.operands.length === 2) {
-                  problemDisplay = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+                  problemDisplay = `${problem.operands[0]} - ${problem.operands[1]} = ${problem.correctAnswer}`;
                   if (answer.userAnswer !== problem.correctAnswer && !isNaN(answer.userAnswer)) {
                     problemDisplay += ` (${answer.userAnswer})`;
                   }
@@ -2606,11 +2606,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl font-bold flex items-center justify-center gap-2">
               <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600">+</span>
+              <span className="text-gray-600">-</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
               {currentProblem.operands.length > 2 && (
                 <>
-                  <span className="text-gray-600">+</span>
+                  <span className="text-gray-600">-</span>
                   <span>{currentProblem.operands[2]}</span>
                 </>
               )}
