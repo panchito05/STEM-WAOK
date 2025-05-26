@@ -262,7 +262,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               {t('common.comingSoon')}
             </Button>
           ) : (
-            <Link href={`/operations/${module.id}`} className="w-full sm:w-auto">
+            <Link href={`/operation/${module.id}`} className="w-full sm:w-auto">
               <Button 
                 variant="default" 
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto"
