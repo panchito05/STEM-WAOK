@@ -85,43 +85,26 @@ export function generateMultiplicationProblem(difficulty: DifficultyLevel): Mult
   let problemMaxDecimals: 0 | 1 | 2 = 0;
 
   switch (difficulty) {
-    case "beginner": // Sumas simples, ej: 1+1 a 9+9 (del código original)
+    case "beginner": // Multiplicaciones simples, ej: 1×1 a 9×9
       operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
       layout = 'horizontal';
       break;
-    case "elementary": // Dos dígitos + un dígito, sin acarreo (adaptado) ej: 12+5, o dos dígitos simples
-      operands = [getRandomInt(10, 30), getRandomInt(1, 9)]; // ej: 23 + 7
-      if (getRandomBool(0.5)) { // 50% chance de dos dígitos + dos dígitos simples
-          operands = [getRandomInt(10, 20), getRandomInt(10, 20)]; // ej: 12 + 15
-      }
+    case "elementary": // Un dígito × dos dígitos, ej: 3×12
+      operands = [getRandomInt(2, 9), getRandomInt(10, 99)];
       layout = 'horizontal';
       break;
-    case "intermediate": // 2 líneas, aleatoriamente vertical, posible 1 decimal
+    case "intermediate": // Dos dígitos × un dígito, formato vertical o horizontal
       layout = getRandomBool(0.75) ? 'vertical' : 'horizontal'; // 75% vertical
-      if (layout === 'vertical' && getRandomBool(0.4)) { // 40% de chance de 1 decimal si es vertical
-        problemMaxDecimals = 1;
-        operands = [
-          getRandomDecimal(10, 99, problemMaxDecimals),
-          getRandomDecimal(10, 99, problemMaxDecimals)
-        ];
-      } else { // Enteros o formato horizontal
-        operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
-      }
+      operands = [getRandomInt(10, 99), getRandomInt(2, 9)];
       break;
-    case "advanced": // 3 líneas, siempre vertical, 1 o 2 decimales
+    case "advanced": // Dos dígitos × dos dígitos, siempre vertical
       layout = 'vertical';
-      problemMaxDecimals = getRandomBool(0.6) ? 2 : 1; // 60% chance de 2 decimales
-      for (let i = 0; i < 3; i++) {
-        operands.push(getRandomDecimal(10, getRandomInt(200, 999), problemMaxDecimals));
-      }
+      operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
       break;
-    case "expert": // 4 o 5 líneas, siempre vertical, 1 o 2 decimales
+    case "expert": // Multiplicaciones con decimales, siempre vertical
       layout = 'vertical';
-      const numLines = getRandomBool() ? 4 : 5;
       problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
-      for (let i = 0; i < numLines; i++) {
-        operands.push(getRandomDecimal(100, getRandomInt(2000, 9999), problemMaxDecimals));
-      }
+      operands = [getRandomDecimal(10, 99, problemMaxDecimals), getRandomInt(2, 9)];
       break;
     default: // Fallback a beginner si la dificultad no es reconocida
       operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
@@ -190,7 +173,7 @@ export function getVerticalAlignmentInfo(
     maxIntLength: number;
     maxDecLength: number;
     operandsFormatted: Array<{ original: number, intStr: string, decStr: string }>;
-    sumLineTotalCharWidth: number;
+    productLineTotalCharWidth: number;
 } {
     const effectiveDecimalPlacesToShow = problemOverallDecimalPrecision || 0;
 
@@ -213,7 +196,7 @@ export function getVerticalAlignmentInfo(
         decStr: info.decPart.padEnd(maxDecLength, '0')
     }));
 
-    const sumLineTotalCharWidth = maxIntLength + (maxDecLength > 0 ? 1 : 0) + maxDecLength;
+    const productLineTotalCharWidth = maxIntLength + (maxDecLength > 0 ? 1 : 0) + maxDecLength;
 
-    return { maxIntLength, maxDecLength, operandsFormatted, sumLineTotalCharWidth };
+    return { maxIntLength, maxDecLength, operandsFormatted, productLineTotalCharWidth };
 }
