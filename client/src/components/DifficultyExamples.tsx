@@ -50,6 +50,13 @@ export default function DifficultyExamples({
       advanced: ["1247 + 3568 = ?", "5934 + 8742 = ?"],
       expert: ["70960 + 11650 = ?", "28730 + 59436 = ?"]
     },
+    subtraction: {
+      beginner: ["9 - 3 = ?", "8 - 5 = ?"],
+      elementary: ["25 - 13 = ?", "42 - 18 = ?"],
+      intermediate: ["65 - 309 = ?", "392 - 132 = ?"],
+      advanced: ["1247 - 3568 = ?", "5934 - 8742 = ?"],
+      expert: ["70960 - 11650 = ?", "28730 - 59436 = ?"]
+    },
     fractions: {
       beginner: ["1/4 + 2/4 = ?", "3/5 - 1/5 = ?"],
       elementary: ["2/3 + 1/6 = ?", "3/4 - 1/8 = ?"],
