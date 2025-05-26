@@ -1,4 +1,4 @@
-// Definición de tipos para Empty Module - plantilla para nuevos módulos
+// Definición de tipos para el módulo Empty Template - Copia exacta del módulo Addition
 
 // Niveles de dificultad estandarizados para todos los módulos
 export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
@@ -6,14 +6,17 @@ export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'adva
 // Formatos de visualización para los problemas
 export type ExerciseLayout = 'horizontal' | 'vertical';
 
-// Definición de un problema genérico - personaliza según tu necesidad
-export interface EmptyProblem {
+// Definición de un problema de suma específico
+export interface AdditionProblem {
   id: string;
-  content: any;             // Contenido del problema - personalízalo según tu módulo
-  correctAnswer: any;       // Respuesta correcta - puede ser string, number, array, etc.
+  operands: number[];       // Operandos de la suma (puede ser más de 2 en niveles avanzados)
+  num1?: number;            // Campo legacy para compatibilidad
+  num2?: number;            // Campo legacy para compatibilidad
+  correctAnswer: number;    // Respuesta correcta
   layout: ExerciseLayout;   // Formato de visualización
-  metadata?: any;           // Metadatos adicionales para el problema
-  index?: number;           // Índice del problema en la secuencia
+  answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
+  answerDecimalPosition?: number; // Posición del decimal en la respuesta (si aplica)
+  index?: number;           // Índice del problema en la secuencia (para mostrar Problema X de Y)
   total?: number;           // Total de problemas en el ejercicio
 }
 
