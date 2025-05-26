@@ -560,9 +560,9 @@ export function DrawingCanvas({
       yPosition += lineHeight;
     }
     
-    // Dibujar el signo + para el último operando
+    // Dibujar el signo × para el último operando
     context.fillText(
-      '+', 
+      '×', 
       signXPosition, 
       yPosition
     );
