@@ -73,23 +73,38 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
     
     try {
       const response = await apiRequest("GET", "/api/child-profiles");
+      
+      // SOLUCIÓN: Verificar si la respuesta es exitosa
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+      
       const data = await response.json();
       
       setProfiles(data);
       
       // Buscar el perfil activo
       const activeProfileResponse = await apiRequest("GET", "/api/child-profiles/active");
-      const activeProfileData = await activeProfileResponse.json();
       
-      if (activeProfileData) {
-        setActiveProfileState(activeProfileData);
-      } else if (data.length > 0) {
-        // Si no hay perfil activo pero hay perfiles, activar el primero
-        await activateProfile(data[0].id);
+      if (activeProfileResponse.ok) {
+        const activeProfileData = await activeProfileResponse.json();
+        
+        if (activeProfileData) {
+          setActiveProfileState(activeProfileData);
+        } else if (data.length > 0) {
+          // Si no hay perfil activo pero hay perfiles, activar el primero
+          await activateProfile(data[0].id);
+        } else {
+          setActiveProfileState(null);
+        }
       } else {
-        setActiveProfileState(null);
+        // Si no se puede obtener el perfil activo, usar el primero disponible
+        if (data.length > 0) {
+          await activateProfile(data[0].id);
+        }
       }
     } catch (err) {
+      console.error("Error fetching profiles:", err);
       setError(err instanceof Error ? err : new Error("Failed to fetch profiles"));
       toast({
         title: "Error al cargar perfiles",
