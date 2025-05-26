@@ -31,9 +31,9 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
         {problem.operands.map((op, index) => (
           <div key={index} className="flex items-center mb-1">
             {index < problem.operands.length - 1 ? (
-              <span className="mr-4">+</span>
+              <span className="mr-4">×</span>
             ) : (
-              <span className="mr-4 border-t border-black dark:border-white pt-1">+</span>
+              <span className="mr-4 border-t border-black dark:border-white pt-1">×</span>
             )}
             <span>{formatNumber(op.value)}</span>
           </div>
@@ -63,7 +63,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
             <React.Fragment key={index}>
               <span className="text-lg">{formatNumber(op.value)}</span>
               {index < problem.operands.length - 1 && (
-                <span className="mx-2 text-lg">+</span>
+                <span className="mx-2 text-lg">×</span>
               )}
             </React.Fragment>
           ))}
@@ -85,7 +85,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
       return op.label ? 
         `${formatNumber(op.value)} ${op.label}` : 
         formatNumber(op.value);
-    }).join(' + ');
+    }).join(' × ');
     
     return (
       <div className="p-4 bg-white dark:bg-slate-800 rounded-lg shadow-sm">

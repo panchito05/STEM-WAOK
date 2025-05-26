@@ -260,7 +260,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                 {problem.operands.map((op, index) => (
                   <div key={index} className="mb-1">
                     {index === problem.operands.length - 1 && problem.operands.length > 1 && (
-                      <span className="text-blue-600 font-bold mr-2">X</span>
+                      <span className="text-blue-600 font-bold mr-2">+</span>
                     )}
                     <span>{typeof op === 'number' ? op : parseFloat(op.toString())}</span>
                   </div>
