@@ -503,7 +503,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       of: "of"
     },
     spanish: {
-      addition: "Suma",
+      additioncopy2: "Suma Copia 2",
       attempts: "Intentos",
       level: "Nivel",
       settings: "Ajustes",
@@ -531,11 +531,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (consecutiveCorrectAnswers !== undefined) {
       try {
         // 1. Almacenar en localStorage para persistencia
-        localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString());
+        localStorage.setItem('additioncopy2_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString());
         
         // 2. También almacenar en sessionStorage para verificación cruzada
-        sessionStorage.setItem('addition_lastConsecutiveCorrect', consecutiveCorrectAnswers.toString());
-        sessionStorage.setItem('addition_lastConsecutiveUpdateTime', Date.now().toString());
+        sessionStorage.setItem('additioncopy2_lastConsecutiveCorrect', consecutiveCorrectAnswers.toString());
+        sessionStorage.setItem('additioncopy2_lastConsecutiveUpdateTime', Date.now().toString());
         
         // 3. Logs detallados para seguimiento
         console.log(`[CONTADOR-V2] Actualizado contador de respuestas correctas consecutivas a ${consecutiveCorrectAnswers}`);
@@ -550,7 +550,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           
           if (currentLevelIdx < difficultiesOrder.length - 1) {
             console.log(`[CONTADOR-V2] ✅ Confirmado: condiciones cumplidas para subir de nivel`);
-            sessionStorage.setItem('addition_levelUpEligible', 'true');
+            sessionStorage.setItem('additioncopy2_levelUpEligible', 'true');
           }
         }
       } catch (error) {
@@ -688,11 +688,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Actualizar racha máxima si es necesario
       if (newConsecutive > maxConsecutiveStreak) {
         setMaxConsecutiveStreak(newConsecutive);
-        localStorage.setItem('addition_maxConsecutiveStreak', newConsecutive.toString());
+        localStorage.setItem('additioncopy2_maxConsecutiveStreak', newConsecutive.toString());
         console.log("[CONTADOR-V2] Nueva racha máxima alcanzada:", newConsecutive);
       }
       
-      localStorage.setItem('addition_consecutiveCorrectAnswers', newConsecutive.toString());
+      localStorage.setItem('additioncopy2_consecutiveCorrectAnswers', newConsecutive.toString());
       console.log("[CONTADOR-V2] Actualizado contador de respuestas correctas consecutivas a", newConsecutive);
 
       // 🎯 Sistema de Recompensas Simplificado - Detección de Hitos
@@ -778,7 +778,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             };
             
             // Guardar en localStorage
-            localStorage.setItem('addition_rewards', JSON.stringify({
+            localStorage.setItem('additioncopy2_rewards', JSON.stringify({
               totalPoints: newStats.totalPoints,
               unlockedRewards: newStats.unlockedRewards,
               completedMilestones: Array.from(newStats.completedMilestones),
@@ -861,8 +861,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   console.log(`[NIVEL] ✅ Progreso guardado exitosamente antes del avance de nivel`);
                   
                   // Actualizar localStorage con el nuevo nivel
-                  localStorage.setItem('addition_adaptiveDifficulty', newLevel);
-                  localStorage.setItem('addition_currentLevel', newLevel);
+                  localStorage.setItem('additioncopy2_adaptiveDifficulty', newLevel);
+                  localStorage.setItem('additioncopy2_currentLevel', newLevel);
                   
                   // Actualizar los estados para la UI
                   setAdaptiveDifficulty(newLevel);
@@ -873,7 +873,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   
                   // Reiniciar contador de respuestas correctas
                   setConsecutiveCorrectAnswers(0);
-                  localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+                  localStorage.setItem('additioncopy2_consecutiveCorrectAnswers', '0');
                   
                   // Mostrar recompensa y bloquear avance automático
                   setShowLevelUpReward(true);
@@ -939,7 +939,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const newConsecutiveInc = consecutiveIncorrectAnswers + 1;
       setConsecutiveIncorrectAnswers(newConsecutiveInc);
       setConsecutiveCorrectAnswers(0);
-      localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+      localStorage.setItem('additioncopy2_consecutiveCorrectAnswers', '0');
 
       if (settings.enableAdaptiveDifficulty && newConsecutiveInc >= 5) {
           const difficultiesOrder: DifficultyLevel[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
@@ -1160,9 +1160,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
        handleTimeOrAttemptsUp, problemTimerValue // Incluir problemTimerValue si se resetea aquí
      ]);
 
-  useEffect(() => localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
-  useEffect(() => localStorage.setItem('addition_consecutiveIncorrectAnswers', consecutiveIncorrectAnswers.toString()), [consecutiveIncorrectAnswers]);
-  useEffect(() => localStorage.setItem('addition_autoContinue', autoContinue.toString()), [autoContinue]);
+  useEffect(() => localStorage.setItem('additioncopy2_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
+  useEffect(() => localStorage.setItem('additioncopy2_consecutiveIncorrectAnswers', consecutiveIncorrectAnswers.toString()), [consecutiveIncorrectAnswers]);
+  useEffect(() => localStorage.setItem('additioncopy2_autoContinue', autoContinue.toString()), [autoContinue]);
 
   const generateNewProblemSet = () => {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
@@ -1467,7 +1467,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
     // Nivel final - usamos el último nivel alcanzado
     const finalLevel = settings.enableAdaptiveDifficulty
-      ? localStorage.getItem('addition_adaptiveDifficulty') || adaptiveDifficulty
+      ? localStorage.getItem('additioncopy2_adaptiveDifficulty') || adaptiveDifficulty
       : settings.difficulty;
 
     // Construir detalles de problemas para guardar en historial
@@ -1750,7 +1750,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Respaldo simple en localStorage (solo para depuración)
       try {
         const timestamp = Date.now();
-        const claveRespaldo = `math_addition_${timestamp}`;
+        const claveRespaldo = `math_additioncopy2_${timestamp}`;
         localStorage.setItem(claveRespaldo, JSON.stringify(problemasCapturados));
       } catch (error) {
         console.error("Error al guardar respaldo local:", error);
@@ -1849,7 +1849,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Metadatos para trazabilidad
         version: "4.0",
         timestamp: Date.now(),
-        exerciseId: `addition_${Date.now()}`,
+        exerciseId: `additioncopy2_${Date.now()}`,
         
         // Almacenar los problemas en una ubicación consistente
         problemDetails: problemasCapturados,
@@ -2201,7 +2201,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Nivel final - actualizamos para detectar posibles cambios de nivel durante el ejercicio
     // Si se usa dificultad adaptativa, el nivel mostrado será el último alcanzado
     const finalLevel = settings.enableAdaptiveDifficulty
-      ? localStorage.getItem('addition_adaptiveDifficulty') || adaptiveDifficulty
+      ? localStorage.getItem('additioncopy2_adaptiveDifficulty') || adaptiveDifficulty
       : settings.difficulty;
 
     return (
@@ -2338,7 +2338,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Función para manejar los videos explicativos de YouTube
   const handleSaveYoutubeVideos = (newVideos: string[]) => {
     setYoutubeVideos(newVideos);
-    localStorage.setItem('addition_youtubeVideos', JSON.stringify(newVideos));
+    localStorage.setItem('additioncopy2_youtubeVideos', JSON.stringify(newVideos));
   };
 
   // Función para mostrar un video de YouTube en una nueva pestaña
@@ -2878,7 +2878,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             
                             // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
                             setConsecutiveCorrectAnswers(0);
-                            localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+                            localStorage.setItem('additioncopy2_consecutiveCorrectAnswers', '0');
                             console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
                             
                             // Usamos la respuesta correcta del problema directamente
