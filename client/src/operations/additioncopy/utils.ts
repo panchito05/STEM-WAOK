@@ -1,5 +1,5 @@
 // utils.ts
-import { AdditionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
+import { MultiplicationProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -27,17 +27,17 @@ function generateUniqueId(): string {
 }
 
 /**
- * Convierte un problema de tipo AdditionProblem al tipo genérico Problem
+ * Convierte un problema de tipo MultiplicationProblem al tipo genérico Problem
  * Este adaptador garantiza la compatibilidad entre los dos tipos
  */
-export function additionProblemToProblem(problem: AdditionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
+export function multiplicationProblemToProblem(problem: MultiplicationProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
   // Convertir operandos simples a tipo Operand
   const operands: Operand[] = problem.operands.map(value => ({ value }));
   
   return {
     id: problem.id,
     operands,
-    displayFormat: problem.layout, // El layout de AdditionProblem es el displayFormat de Problem
+    displayFormat: problem.layout, // El layout de MultiplicationProblem es el displayFormat de Problem
     correctAnswer: problem.correctAnswer,
     difficulty, // Usamos el parámetro de dificultad o el predeterminado
     allowDecimals: problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0,
@@ -46,10 +46,10 @@ export function additionProblemToProblem(problem: AdditionProblem, difficulty: D
 }
 
 /**
- * Convierte un problema de tipo Problem al tipo específico AdditionProblem
- * Este adaptador se usa cuando necesitamos utilizar funciones que requieren AdditionProblem
+ * Convierte un problema de tipo Problem al tipo específico MultiplicationProblem
+ * Este adaptador se usa cuando necesitamos utilizar funciones que requieren MultiplicationProblem
  */
-export function problemToAdditionProblem(problem: Problem): AdditionProblem {
+export function problemToMultiplicationProblem(problem: Problem): MultiplicationProblem {
   const operands = problem.operands.map(op => op.value);
   let answerDecimalPosition: number | undefined = undefined;
   
@@ -78,7 +78,7 @@ export function problemToAdditionProblem(problem: Problem): AdditionProblem {
 }
 
 // --- Generación del Problema ---
-export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionProblem {
+export function generateMultiplicationProblem(difficulty: DifficultyLevel): MultiplicationProblem {
   const id = generateUniqueId();
   let operands: number[] = [];
   let layout: ExerciseLayout = 'horizontal';
@@ -132,7 +132,7 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
     operands = [getRandomInt(1,5), getRandomInt(1,5)];
   }
 
-  const sum = operands.reduce((acc, val) => acc + val, 0);
+  const product = operands.reduce((acc, val) => acc * val, 1);
 
   let effectiveMaxDecimalsInAnswer = 0;
   if (problemMaxDecimals > 0) {
@@ -143,16 +143,16 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
           return (opStr.split('.')[1] || '').length;
       }));
   }
-  const correctAnswer = parseFloat(sum.toFixed(effectiveMaxDecimalsInAnswer));
+  const correctAnswer = parseFloat(product.toFixed(effectiveMaxDecimalsInAnswer));
 
   const correctAnswerStr = correctAnswer.toFixed(effectiveMaxDecimalsInAnswer);
-  const [integerPartOfSumStr, decimalPartOfSumStr = ""] = correctAnswerStr.split('.');
+  const [integerPartOfProductStr, decimalPartOfProductStr = ""] = correctAnswerStr.split('.');
 
-  const answerMaxDigits = integerPartOfSumStr.length + decimalPartOfSumStr.length;
+  const answerMaxDigits = integerPartOfProductStr.length + decimalPartOfProductStr.length;
 
   let answerDecimalPosition: number | undefined = undefined;
-  if (effectiveMaxDecimalsInAnswer > 0 && decimalPartOfSumStr.length > 0) {
-    answerDecimalPosition = decimalPartOfSumStr.length;
+  if (effectiveMaxDecimalsInAnswer > 0 && decimalPartOfProductStr.length > 0) {
+    answerDecimalPosition = decimalPartOfProductStr.length;
   }
 
   return {
@@ -168,7 +168,7 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
 }
 
 // --- Validación de la Respuesta ---
-export function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
+export function checkAnswer(problem: MultiplicationProblem, userAnswer: number): boolean {
   if (isNaN(userAnswer)) return false;
 
   const precisionForComparison = problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0
