@@ -20,8 +20,10 @@ console.log("VITE_FIREBASE_APP_ID:", import.meta.env.VITE_FIREBASE_APP_ID || "No
 // Configuración de Firebase
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
-  // Usar el dominio de Firebase para autenticación, pero también permitir nuestro dominio actual
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.firebaseapp.com`,
+  // Usar el dominio actual para autenticación si estamos en Replit
+  authDomain: window.location.hostname.includes('replit.dev') 
+    ? window.location.hostname 
+    : `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.firebaseapp.com`,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo",
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || "demo"}.appspot.com`,
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
