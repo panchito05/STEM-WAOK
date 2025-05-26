@@ -1,4 +1,4 @@
-// Definición de tipos para el módulo de suma
+// Definición de tipos para el módulo de resta
 
 // Niveles de dificultad estandarizados para todos los módulos
 export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
@@ -6,12 +6,12 @@ export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'adva
 // Formatos de visualización para los problemas
 export type ExerciseLayout = 'horizontal' | 'vertical';
 
-// Definición de un problema de suma específico
-export interface AdditionProblem {
+// Definición de un problema de resta específico
+export interface SubtractionProblem {
   id: string;
-  operands: number[];       // Operandos de la suma (puede ser más de 2 en niveles avanzados)
-  num1?: number;            // Campo legacy para compatibilidad
-  num2?: number;            // Campo legacy para compatibilidad
+  operands: number[];       // Operandos de la resta (minuendo y sustraendo)
+  num1?: number;            // Campo legacy para compatibilidad (minuendo)
+  num2?: number;            // Campo legacy para compatibilidad (sustraendo)
   correctAnswer: number;    // Respuesta correcta
   layout: ExerciseLayout;   // Formato de visualización
   answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
@@ -32,7 +32,7 @@ export interface Operand {
 export interface Problem {
   id: string;
   operands: Operand[];
-  operator?: string;       // El operador matemático (no usado en suma, pero útil para otros módulos)
+  operator?: string;       // El operador matemático (será "-" para resta)
   correctAnswer: number;
   displayFormat: string;   // Cómo mostrar el problema (horizontal, vertical, word)
   difficulty: DifficultyLevel;
