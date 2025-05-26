@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { Helmet } from "react-helmet";
 import { operationComponents, operationModules } from "@/utils/operationComponents";
@@ -61,20 +61,18 @@ export default function OperationPage() {
       <div className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
         <Card className="shadow-lg">
           <CardContent className="p-0">
-            <Suspense fallback={<div className="flex items-center justify-center p-8">Cargando...</div>}>
-              {showSettings ? (
-                <Settings 
-                  settings={moduleSettings} 
-                  onBack={handleBackFromSettings} 
-                />
-              ) : (
-                <Exercise 
-                  key={`exercise-${operationId}-${settingsUpdated}`}
-                  settings={moduleSettings} 
-                  onOpenSettings={() => setShowSettings(true)} 
-                />
-              )}
-            </Suspense>
+            {showSettings ? (
+              <Settings 
+                settings={moduleSettings} 
+                onBack={handleBackFromSettings} 
+              />
+            ) : (
+              <Exercise 
+                key={`exercise-${operationId}-${settingsUpdated}`}
+                settings={moduleSettings} 
+                onOpenSettings={() => setShowSettings(true)} 
+              />
+            )}
           </CardContent>
         </Card>
       </div>
