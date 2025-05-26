@@ -254,19 +254,18 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
               </div>
             </div>
             
-            {/* Problema matemático - Formato vertical */}
+            {/* Problema matemático - Formato vertical para división */}
             <div className="bg-gray-50 p-3 rounded border-2 border-dashed border-gray-200">
-              <div className="font-mono text-2xl font-bold select-none text-right">
-                {problem.operands.map((op, index) => (
-                  <div key={index} className="mb-1">
-                    {index === problem.operands.length - 1 && problem.operands.length > 1 && (
-                      <span className="text-blue-600 font-bold mr-2">+</span>
-                    )}
-                    <span>{typeof op === 'number' ? op : parseFloat(op.toString())}</span>
-                  </div>
-                ))}
-                <div className="border-t-2 border-black mt-1 pt-1">
+              <div className="font-mono text-2xl font-bold select-none text-center">
+                <div className="mb-2">
                   <span className="text-gray-400 italic">?</span>
+                </div>
+                <div className="flex items-center justify-center mb-2">
+                  <span className="text-blue-600 font-bold mr-2">√</span>
+                  <span>{typeof problem.dividend === 'number' ? problem.dividend : parseFloat(problem.dividend.toString())}</span>
+                </div>
+                <div className="text-lg">
+                  <span>÷ {typeof problem.divisor === 'number' ? problem.divisor : parseFloat(problem.divisor.toString())}</span>
                 </div>
               </div>
             </div>
