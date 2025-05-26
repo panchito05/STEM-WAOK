@@ -66,45 +66,72 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchProfiles = async () => {
-    if (!isAuthenticated) return;
+    console.log("🔍 [PROFILES] Iniciando fetchProfiles...");
+    console.log("🔍 [PROFILES] isAuthenticated:", isAuthenticated);
+    
+    if (!isAuthenticated) {
+      console.log("❌ [PROFILES] Usuario no autenticado, abortando fetchProfiles");
+      return;
+    }
     
     setIsLoading(true);
     setError(null);
     
     try {
+      console.log("📡 [PROFILES] Consultando /api/child-profiles...");
       const response = await apiRequest("GET", "/api/child-profiles");
       
-      // SOLUCIÓN: Verificar si la respuesta es exitosa
+      console.log("📦 [PROFILES] Respuesta recibida:", {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText
+      });
+      
+      // DIAGNÓSTICO: Verificar si la respuesta es exitosa
       if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
+        console.error("❌ [PROFILES] Error del servidor:", response.status, response.statusText);
+        throw new Error(`Server error: ${response.status} - ${response.statusText}`);
       }
       
       const data = await response.json();
+      console.log("✅ [PROFILES] Perfiles obtenidos:", data);
       
       setProfiles(data);
       
       // Buscar el perfil activo
+      console.log("📡 [PROFILES] Consultando perfil activo...");
       const activeProfileResponse = await apiRequest("GET", "/api/child-profiles/active");
+      
+      console.log("📦 [PROFILES] Respuesta perfil activo:", {
+        ok: activeProfileResponse.ok,
+        status: activeProfileResponse.status
+      });
       
       if (activeProfileResponse.ok) {
         const activeProfileData = await activeProfileResponse.json();
+        console.log("✅ [PROFILES] Perfil activo obtenido:", activeProfileData);
         
         if (activeProfileData) {
           setActiveProfileState(activeProfileData);
         } else if (data.length > 0) {
-          // Si no hay perfil activo pero hay perfiles, activar el primero
+          console.log("🔄 [PROFILES] No hay perfil activo, activando el primero...");
           await activateProfile(data[0].id);
         } else {
+          console.log("⚠️ [PROFILES] No hay perfiles disponibles");
           setActiveProfileState(null);
         }
       } else {
-        // Si no se puede obtener el perfil activo, usar el primero disponible
+        console.warn("⚠️ [PROFILES] No se pudo obtener perfil activo, usando el primero disponible");
         if (data.length > 0) {
           await activateProfile(data[0].id);
         }
       }
+      
+      console.log("✅ [PROFILES] fetchProfiles completado exitosamente");
     } catch (err) {
-      console.error("Error fetching profiles:", err);
+      console.error("💥 [PROFILES] Error crítico en fetchProfiles:", err);
+      console.error("💥 [PROFILES] Stack trace:", err instanceof Error ? err.stack : 'No stack trace');
+      
       setError(err instanceof Error ? err : new Error("Failed to fetch profiles"));
       toast({
         title: "Error al cargar perfiles",
@@ -113,6 +140,7 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
       });
     } finally {
       setIsLoading(false);
+      console.log("🏁 [PROFILES] fetchProfiles terminado (finally)");
     }
   };
 
