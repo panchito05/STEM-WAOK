@@ -274,8 +274,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [compensationProblems, setCompensationProblems] = useState(0);
   
   // Estados para el sistema de recompensas
-  const { addReward } = useRewards();
-  const { showRewardModal, currentReward, hideReward } = useRewardQueue();
+  const { addToQueue, isModalOpen, closeModal, currentReward } = useRewards({ moduleId: 'division' });
   
   // Referencias para gestión de temporizadores
   const timerRef = useRef<NodeJS.Timeout | null>(null);
