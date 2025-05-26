@@ -1,6 +1,7 @@
 import * as Addition from "../operations/addition";
 import * as Subtraction from "../operations/subtraction";
 import * as AdditionCopy from "../operations/additioncopy";
+import * as AdditionCopy2 from "../operations/additioncopy2";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -65,6 +66,14 @@ export const operationModules: Module[] = [
     color: "#8b5cf6", // Violeta para distinguir de otros módulos
     icon: "X",
   },
+  {
+    id: "additioncopy2",
+    displayName: "Addition Copy 2",
+    description: "Practice addition with various difficulty levels (Copy 2)",
+    difficulty: "beginner",
+    color: "#10b981", // Verde para distinguir de otros módulos
+    icon: "Plus",
+  },
 ];
 
 // Map operation IDs to their React components
@@ -72,4 +81,5 @@ export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
   subtraction: Subtraction, // El módulo de resta
   additioncopy: AdditionCopy, // El módulo copia de adición
+  additioncopy2: AdditionCopy2, // El segundo módulo copia de adición
 };
