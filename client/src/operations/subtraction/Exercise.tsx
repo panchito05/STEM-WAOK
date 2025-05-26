@@ -381,8 +381,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { exerciseHistory } = useProgress();
   const moduleId = "subtraction"; // ID del módulo de resta
 
-  const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
-  const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
+  const [problemsList, setProblemsList] = useState<SubtractionProblem[]>([]);
+  const [currentProblem, setCurrentProblem] = useState<SubtractionProblem | null>(null);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
 
   const [digitAnswers, setDigitAnswers] = useState<string[]>([]);

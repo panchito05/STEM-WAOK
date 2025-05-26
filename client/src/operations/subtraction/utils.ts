@@ -196,7 +196,9 @@ export function getVerticalAlignmentInfo(problem: SubtractionProblem) {
       minuendPadding: 0,
       subtrahendPadding: 0,
       answerPadding: 0,
-      maxLength: 1
+      maxLength: 1,
+      maxDigits: 1,
+      digitPositions: [0]
     };
   }
   
@@ -221,10 +223,11 @@ export function formatSubtractionProblem(problem: SubtractionProblem, layout: Ex
     return `${problem.minuend} - ${problem.subtrahend} = ?`;
   } else {
     const alignInfo = getVerticalAlignmentInfo(problem);
-    const minuendPadded = problem.minuend.toString().padStart(alignInfo.maxDigits, ' ');
-    const subtrahendPadded = problem.subtrahend.toString().padStart(alignInfo.maxDigits, ' ');
+    const maxDigits = alignInfo.maxDigits || 1;
+    const minuendPadded = problem.minuend.toString().padStart(maxDigits, ' ');
+    const subtrahendPadded = problem.subtrahend.toString().padStart(maxDigits, ' ');
     
-    return `  ${minuendPadded}\n- ${subtrahendPadded}\n${'='.repeat(alignInfo.maxDigits + 2)}`;
+    return `  ${minuendPadded}\n- ${subtrahendPadded}\n${'='.repeat(maxDigits + 2)}`;
   }
 }
 
