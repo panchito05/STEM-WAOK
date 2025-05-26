@@ -2605,35 +2605,38 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         <div className="p-4 rounded-lg mb-4 shadow-sm bg-gray-50 border">
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl font-bold flex items-center justify-center gap-2">
-              <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600">+</span>
-              <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
-              {currentProblem.operands.length > 2 && (
-                <>
-                  <span className="text-gray-600">+</span>
-                  <span>{currentProblem.operands[2]}</span>
-                </>
-              )}
+              <span>{currentProblem.dividend}</span>
+              <span className="text-gray-600">÷</span>
+              <span>{currentProblem.divisor}</span>
               <span className="text-gray-600">=</span>
             </div>
           ) : (
             <div className="flex justify-center">
               <div className="inline-block text-right my-1 sm:my-2">
-                {operandsFormatted.map((op, index) => (
-                  <div key={`op-${index}-${currentProblem.id}`} className={verticalOperandStyle}>
-                    {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>+</span>}
-                    <span>{op.intStr}</span>
-                    {maxDecLength > 0 && (
-                      <>
-                        <span className="opacity-60">.</span>
-                        <span>{op.decStr}</span>
-                      </>
-                    )}
-                  </div>
-                ))}
+                {/* Divisor */}
+                <div className={verticalOperandStyle}>
+                  <span>{divisorFormatted.intStr}</span>
+                  {maxDecLength > 0 && (
+                    <>
+                      <span className="opacity-60">.</span>
+                      <span>{divisorFormatted.decStr}</span>
+                    </>
+                  )}
+                  <span className="ml-2">)</span>
+                </div>
+                {/* Dividend */}
+                <div className={verticalOperandStyle}>
+                  <span>{dividendFormatted.intStr}</span>
+                  {maxDecLength > 0 && (
+                    <>
+                      <span className="opacity-60">.</span>
+                      <span>{dividendFormatted.decStr}</span>
+                    </>
+                  )}
+                </div>
                 <div
                   className={sumLineStyle}
-                  style={{width: `${Math.max(5, sumLineTotalCharWidth + 2)}ch`, marginLeft: 'auto', marginRight: '0'}}
+                  style={{width: `${Math.max(5, divisionLineTotalCharWidth + 2)}ch`, marginLeft: 'auto', marginRight: '0'}}
                 />
               </div>
             </div>
