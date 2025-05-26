@@ -72,7 +72,7 @@ export const operationModules: Module[] = [
     description: "Practice division with various difficulty levels",
     difficulty: "beginner",
     color: "#8b5cf6", // Violeta para distinguir de otros módulos
-    icon: "Divide",
+    icon: "DivideIcon",
   },
 
 ];
