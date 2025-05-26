@@ -68,8 +68,8 @@ export default function DifficultyExamples({
       beginner: ["3 × 4 = ?", "7 × 6 = ?"],
       elementary: ["12 × 8 = ?", "15 × 7 = ?"],
       intermediate: ["23 × 6 = ?", "18 × 9 = ?"],
-      advanced: ["34 × 27 = ?", "56 × 43 = ?"],
-      expert: ["8.5 × 12.3 = ?", "15.7 × 9.2 = ?"]
+      advanced: ["34 × 27 = ?", "45.6 × 23 = ?"],
+      expert: ["125 × 34 = ?", "156.7 × 28 = ?"]
     },
     counting: {
       beginner: ["Count to 5", "Count by 1s to 10"],

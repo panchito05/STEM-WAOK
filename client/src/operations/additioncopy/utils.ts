@@ -97,14 +97,25 @@ export function generateMultiplicationProblem(difficulty: DifficultyLevel): Mult
       layout = getRandomBool(0.75) ? 'vertical' : 'horizontal'; // 75% vertical
       operands = [getRandomInt(10, 99), getRandomInt(2, 9)];
       break;
-    case "advanced": // Dos dígitos × dos dígitos, siempre vertical
+    case "advanced": // Dos dígitos × dos dígitos, con decimales ocasionales
       layout = 'vertical';
-      operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
+      // Aproximadamente 2 de cada 6 ejercicios tendrán decimales (33% chance)
+      if (getRandomBool(0.33)) {
+        problemMaxDecimals = 1; // Un decimal para nivel avanzado
+        operands = [getRandomDecimal(10, 99, 1), getRandomInt(10, 99)];
+      } else {
+        operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
+      }
       break;
-    case "expert": // Multiplicaciones con decimales, siempre vertical
+    case "expert": // Multiplicaciones más grandes con decimales ocasionales
       layout = 'vertical';
-      problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
-      operands = [getRandomDecimal(10, 99, problemMaxDecimals), getRandomInt(2, 9)];
+      // Aproximadamente 2 de cada 6 ejercicios tendrán decimales (33% chance)
+      if (getRandomBool(0.33)) {
+        problemMaxDecimals = getRandomBool(0.5) ? 2 : 1; // 1 o 2 decimales
+        operands = [getRandomDecimal(50, 199, problemMaxDecimals), getRandomInt(10, 99)];
+      } else {
+        operands = [getRandomInt(50, 199), getRandomInt(10, 99)];
+      }
       break;
     default: // Fallback a beginner si la dificultad no es reconocida
       operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
