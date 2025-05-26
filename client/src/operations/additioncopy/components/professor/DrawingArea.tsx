@@ -1,10 +1,10 @@
 import React from 'react';
 import { DrawingCanvas } from '../DrawingCanvas';
-import { AdditionCopyProblem } from '../../types';
+import { AdditionProblem } from '../../types';
 import { ColorPosition } from './context/SynchronizedLayoutContext';
 
 interface DrawingAreaProps {
-  problem: AdditionCopyProblem;
+  problem: AdditionProblem;
   colorPosition: ColorPosition; // Nueva prop que viene del contexto sincronizado
 }
 

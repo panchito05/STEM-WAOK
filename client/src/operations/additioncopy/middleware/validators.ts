@@ -4,7 +4,7 @@
  * Este middleware se encarga de validar todos los datos de entrada
  * y garantizar que sean correctos antes de ser procesados.
  */
-import { AdditionCopyProblem, DifficultyLevel, Problem, UserAnswer } from '../types';
+import { AdditionProblem, DifficultyLevel, Problem, UserAnswer } from '../types';
 
 // Constantes para validación
 const MAX_SAFE_VALUE = 9999999; // Valor máximo que se puede manejar con seguridad
@@ -102,7 +102,7 @@ export function validateLayout(layout: string): ValidationError[] {
 /**
  * Valida un problema de suma completo
  */
-export function validateAdditionCopyProblem(problem: AdditionCopyProblem): ValidationResult {
+export function validateAdditionProblem(problem: AdditionProblem): ValidationResult {
   const errors: ValidationError[] = [];
   
   // Validar ID

@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { AdditionCopyProblem } from '../../../types';
+import { AdditionProblem } from '../../../types';
 
 // Tipos para el estado global
 type Position = 'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft';
 
 interface ProfessorState {
   // Estado del problema actual
-  currentProblem: AdditionCopyProblem | null;
+  currentProblem: AdditionProblem | null;
   userAnswer: string;
   isCorrect: boolean | null;
   attempts: number;
@@ -29,7 +29,7 @@ interface ProfessorState {
 
 // Acciones disponibles
 type ProfessorAction =
-  | { type: 'SET_PROBLEM'; payload: AdditionCopyProblem }
+  | { type: 'SET_PROBLEM'; payload: AdditionProblem }
   | { type: 'SET_USER_ANSWER'; payload: string }
   | { type: 'SET_CORRECT'; payload: boolean }
   | { type: 'INCREMENT_ATTEMPTS' }
@@ -154,7 +154,7 @@ interface ProfessorContextType {
   dispatch: React.Dispatch<ProfessorAction>;
   
   // Acciones de conveniencia
-  setProblem: (problem: AdditionCopyProblem) => void;
+  setProblem: (problem: AdditionProblem) => void;
   setUserAnswer: (answer: string) => void;
   setCorrect: (correct: boolean) => void;
   incrementAttempts: () => void;
@@ -172,7 +172,7 @@ const ProfessorContext = createContext<ProfessorContextType | undefined>(undefin
 // Provider
 interface ProfessorProviderProps {
   children: React.ReactNode;
-  initialProblem?: AdditionCopyProblem;
+  initialProblem?: AdditionProblem;
   initialSettings?: Partial<ProfessorState['settings']>;
 }
 
@@ -207,7 +207,7 @@ export const ProfessorProvider: React.FC<ProfessorProviderProps> = ({
     state,
     dispatch,
     
-    setProblem: (problem: AdditionCopyProblem) => 
+    setProblem: (problem: AdditionProblem) => 
       dispatch({ type: 'SET_PROBLEM', payload: problem }),
     
     setUserAnswer: (answer: string) => 

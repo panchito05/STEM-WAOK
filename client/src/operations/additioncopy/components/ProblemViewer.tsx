@@ -1,8 +1,8 @@
 import React from 'react';
-import { AdditionCopyProblem } from '../types';
+import { AdditionProblem } from '../types';
 
 interface ProblemViewerProps {
-  problem: AdditionCopyProblem;
+  problem: AdditionProblem;
   onClose: () => void;
 }
 

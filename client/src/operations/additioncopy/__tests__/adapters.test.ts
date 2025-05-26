@@ -1,20 +1,20 @@
-// Tests para los adaptadores de tipos entre AdditionCopyProblem y Problem
+// Tests para los adaptadores de tipos entre AdditionProblem y Problem
 import { 
-  AdditionCopyProblem, 
+  AdditionProblem, 
   Problem, 
   DifficultyLevel 
 } from '../types';
 import { 
-  additionCopyProblemToProblem, 
-  problemToAdditionCopyProblem 
+  additionProblemToProblem, 
+  problemToAdditionProblem 
 } from '../utils';
 
 describe('Adaptadores de tipos', () => {
-  // Caso de prueba: Conversión de AdditionCopyProblem a Problem
-  describe('additionCopyProblemToProblem', () => {
+  // Caso de prueba: Conversión de AdditionProblem a Problem
+  describe('additionProblemToProblem', () => {
     test('convierte correctamente un problema de suma sin decimales', () => {
       // Arrange - Problema de suma simple
-      const additionProblem: AdditionCopyProblem = {
+      const additionProblem: AdditionProblem = {
         id: '123',
         operands: [5, 7],
         correctAnswer: 12,
@@ -23,7 +23,7 @@ describe('Adaptadores de tipos', () => {
       };
       
       // Act - Convertir a Problem
-      const problem = additionCopyProblemToProblem(additionProblem, 'elementary');
+      const problem = additionProblemToProblem(additionProblem, 'elementary');
       
       // Assert - Verificar conversión correcta
       expect(problem).toBeDefined();
@@ -40,7 +40,7 @@ describe('Adaptadores de tipos', () => {
     
     test('convierte correctamente un problema con decimales', () => {
       // Arrange - Problema con decimales
-      const additionProblem: AdditionCopyProblem = {
+      const additionProblem: AdditionProblem = {
         id: '456',
         operands: [5.5, 7.25],
         correctAnswer: 12.75,
@@ -50,7 +50,7 @@ describe('Adaptadores de tipos', () => {
       };
       
       // Act - Convertir a Problem
-      const problem = additionCopyProblemToProblem(additionProblem);
+      const problem = additionProblemToProblem(additionProblem);
       
       // Assert - Verificar conversión correcta
       expect(problem).toBeDefined();
@@ -67,7 +67,7 @@ describe('Adaptadores de tipos', () => {
     
     test('convierte correctamente un problema con múltiples operandos', () => {
       // Arrange - Problema con múltiples operandos
-      const additionProblem: AdditionCopyProblem = {
+      const additionProblem: AdditionProblem = {
         id: '789',
         operands: [10, 20, 30, 40],
         correctAnswer: 100,
@@ -76,7 +76,7 @@ describe('Adaptadores de tipos', () => {
       };
       
       // Act - Convertir a Problem
-      const problem = additionCopyProblemToProblem(additionProblem, 'advanced');
+      const problem = additionProblemToProblem(additionProblem, 'advanced');
       
       // Assert - Verificar conversión correcta
       expect(problem).toBeDefined();
@@ -91,8 +91,8 @@ describe('Adaptadores de tipos', () => {
     });
   });
   
-  // Caso de prueba: Conversión de Problem a AdditionCopyProblem
-  describe('problemToAdditionCopyProblem', () => {
+  // Caso de prueba: Conversión de Problem a AdditionProblem
+  describe('problemToAdditionProblem', () => {
     test('convierte correctamente un problema sin decimales', () => {
       // Arrange - Problema genérico
       const problem: Problem = {
@@ -105,8 +105,8 @@ describe('Adaptadores de tipos', () => {
         maxAttempts: 3
       };
       
-      // Act - Convertir a AdditionCopyProblem
-      const additionProblem = problemToAdditionCopyProblem(problem);
+      // Act - Convertir a AdditionProblem
+      const additionProblem = problemToAdditionProblem(problem);
       
       // Assert - Verificar conversión correcta
       expect(additionProblem).toBeDefined();
@@ -130,8 +130,8 @@ describe('Adaptadores de tipos', () => {
         maxAttempts: 3
       };
       
-      // Act - Convertir a AdditionCopyProblem
-      const additionProblem = problemToAdditionCopyProblem(problem);
+      // Act - Convertir a AdditionProblem
+      const additionProblem = problemToAdditionProblem(problem);
       
       // Assert - Verificar conversión correcta
       expect(additionProblem).toBeDefined();
@@ -160,8 +160,8 @@ describe('Adaptadores de tipos', () => {
         maxAttempts: 3
       };
       
-      // Act - Convertir a AdditionCopyProblem
-      const additionProblem = problemToAdditionCopyProblem(problem);
+      // Act - Convertir a AdditionProblem
+      const additionProblem = problemToAdditionProblem(problem);
       
       // Assert - Verificar conversión correcta
       expect(additionProblem).toBeDefined();
@@ -174,19 +174,19 @@ describe('Adaptadores de tipos', () => {
     });
     
     test('maneja correctamente casos con displayFormat no válido', () => {
-      // Arrange - Problema con formato inválido para AdditionCopyProblem
+      // Arrange - Problema con formato inválido para AdditionProblem
       const problem: Problem = {
         id: '123',
         operands: [{ value: 5 }, { value: 7 }],
         correctAnswer: 12,
-        displayFormat: 'word', // No es válido para AdditionCopyProblem
+        displayFormat: 'word', // No es válido para AdditionProblem
         difficulty: 'elementary',
         allowDecimals: false,
         maxAttempts: 3
       };
       
-      // Act - Convertir a AdditionCopyProblem
-      const additionProblem = problemToAdditionCopyProblem(problem);
+      // Act - Convertir a AdditionProblem
+      const additionProblem = problemToAdditionProblem(problem);
       
       // Assert - Debe elegir un formato predeterminado
       expect(additionProblem.layout).toBe('horizontal'); // Default de seguridad

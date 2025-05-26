@@ -1,11 +1,11 @@
 import React from 'react';
-import { AdditionCopyProblem } from '../../types';
+import { AdditionProblem } from '../../types';
 import { SynchronizedLayoutProvider, useSynchronizedLayout } from './context/SynchronizedLayoutContext';
 import { CloseButton } from './CloseButton';
 import { DrawingArea } from './DrawingArea';
 
 interface ProfessorModeProps {
-  problem: AdditionCopyProblem;
+  problem: AdditionProblem;
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
@@ -29,7 +29,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [exerciseStartTime, setExerciseStartTime] = React.useState<number>(0);
   const [problemHistory, setProblemHistory] = React.useState<Array<{
-    problem: AdditionCopyProblem;
+    problem: AdditionProblem;
     userAnswer: number;
     isCorrect: boolean;
     attempts: number;

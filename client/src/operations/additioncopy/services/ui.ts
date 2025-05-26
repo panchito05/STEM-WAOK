@@ -6,7 +6,7 @@
  * y efectos visuales.
  */
 
-import { AdditionCopyProblem, DifficultyLevel } from '../types';
+import { AdditionProblem, DifficultyLevel } from '../types';
 import { on, off } from '../middleware';
 
 // Definición de interfaces para desacoplar la implementación

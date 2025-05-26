@@ -4,13 +4,13 @@ import { ProblemDisplay } from './ProblemDisplay';
 import { AnswerInput } from './AnswerInput';
 import { CheckButton } from './CheckButton';
 import { KeypadContainer } from './KeypadContainer';
-import { AdditionCopyProblem } from '../../types';
+import { AdditionProblem } from '../../types';
 import { useSynchronizedLayout } from './context/SynchronizedLayoutContext';
 
 type Position = 'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft';
 
 interface ControlPanelProps {
-  problem: AdditionCopyProblem;
+  problem: AdditionProblem;
   position: Position;
   onPositionChange: (newPosition: Position) => void;
   userAnswer: string;

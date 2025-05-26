@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 import { SettingsProvider } from '@/context/SettingsContext';
 import { ProgressProvider } from '@/context/ProgressContext';
 import Exercise from '../Exercise';
-import { UserAnswer, AdditionCopyProblem } from '../types';
+import { UserAnswer, AdditionProblem } from '../types';
 import * as utils from '../utils';
 
 // Mock para las dependencias
@@ -16,7 +16,7 @@ jest.mock('../utils', () => {
   // Sobreescribimos solo las funciones que necesitamos controlar
   return {
     ...originalModule,
-    generateAdditionCopyProblem: jest.fn(),
+    generateAdditionProblem: jest.fn(),
     saveExerciseResult: jest.fn(),
   };
 });
@@ -50,7 +50,7 @@ jest.mock('@/context/ProgressContext', () => {
 });
 
 // Funciones helper para las pruebas
-const generateMockProblem = (n1: number, n2: number): AdditionCopyProblem => {
+const generateMockProblem = (n1: number, n2: number): AdditionProblem => {
   return {
     id: `test-${n1}-${n2}`,
     operands: [n1, n2],
@@ -75,7 +75,7 @@ const clickButton = (buttonText: string) => {
 };
 
 // Simulación de respuesta a un problema usando el teclado virtual
-const solveAdditionCopyProblem = (operands: number[], correctAnswer: boolean = true) => {
+const solveAdditionProblem = (operands: number[], correctAnswer: boolean = true) => {
   const answer = correctAnswer ? operands.reduce((a, b) => a + b, 0) : operands.reduce((a, b) => a + b, 0) + 1;
   enterAnswer(answer.toString());
   clickButton('Comprobar');
@@ -88,7 +88,7 @@ describe('Módulo de Suma - Pruebas de Integración', () => {
     jest.clearAllMocks();
     
     // Configurar el mock para generar problemas controlados
-    (utils.generateAdditionCopyProblem as jest.Mock).mockImplementation((difficulty) => {
+    (utils.generateAdditionProblem as jest.Mock).mockImplementation((difficulty) => {
       if (difficulty === 'beginner') {
         return generateMockProblem(2, 3);
       } else if (difficulty === 'elementary') {

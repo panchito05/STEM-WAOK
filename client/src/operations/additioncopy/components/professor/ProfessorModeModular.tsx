@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AdditionCopyProblem } from '../../types';
+import { AdditionProblem } from '../../types';
 import { CloseButton } from './CloseButton';
 import { DrawingArea } from './DrawingArea';
 import { ControlPanel } from './ControlPanel';
@@ -7,7 +7,7 @@ import { ControlPanel } from './ControlPanel';
 type Position = 'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft';
 
 interface ProfessorModeModularProps {
-  problem: AdditionCopyProblem;
+  problem: AdditionProblem;
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;

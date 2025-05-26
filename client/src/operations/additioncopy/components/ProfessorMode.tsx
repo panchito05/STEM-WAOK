@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { AdditionCopyProblem } from '../types';
+import { AdditionProblem } from '../types';
 import { CloseButton } from './professor/CloseButton';
 import { DrawingArea } from './professor/DrawingArea';
 import { useProgress } from '../../../context/ProgressContext';
 import { SynchronizedLayoutProvider, useSynchronizedLayout } from './professor/context/SynchronizedLayoutContext';
 
 interface ProfessorModeProps {
-  problem: AdditionCopyProblem;
+  problem: AdditionProblem;
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
@@ -34,7 +34,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   });
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
-    problem: AdditionCopyProblem;
+    problem: AdditionProblem;
     userAnswer: number;
     isCorrect: boolean;
     attempts: number;
@@ -147,7 +147,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   // Calcular respuesta correcta
-  const calculateCorrectAnswer = useCallback((prob: AdditionCopyProblem): number => {
+  const calculateCorrectAnswer = useCallback((prob: AdditionProblem): number => {
     return prob.operands.reduce((sum, operand) => {
       const num = typeof operand === 'number' ? operand : parseFloat(operand.toString());
       return sum + (isNaN(num) ? 0 : num);

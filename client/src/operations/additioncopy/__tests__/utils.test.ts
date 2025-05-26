@@ -1,4 +1,4 @@
-import { generateAdditionCopyProblem, checkAnswer, getVerticalAlignmentInfo } from '../utils';
+import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from '../utils';
 import { DifficultyLevel } from '../types';
 
 // Mock para funciones aleatorias para hacer los tests determinísticos
@@ -11,7 +11,7 @@ jest.mock('math', () => ({
 
 describe('Módulo de Suma - Funciones Utilitarias', () => {
   
-  describe('generateAdditionCopyProblem', () => {
+  describe('generateAdditionProblem', () => {
     // Prueba que la función genere un problema válido para cada nivel de dificultad
     test.each([
       ['beginner' as DifficultyLevel],
@@ -20,7 +20,7 @@ describe('Módulo de Suma - Funciones Utilitarias', () => {
       ['advanced' as DifficultyLevel],
       ['expert' as DifficultyLevel]
     ])('genera problemas válidos para dificultad %s', (difficulty) => {
-      const problem = generateAdditionCopyProblem(difficulty);
+      const problem = generateAdditionProblem(difficulty);
       
       // Verificaciones comunes para todas las dificultades
       expect(problem).toBeDefined();
@@ -62,13 +62,13 @@ describe('Módulo de Suma - Funciones Utilitarias', () => {
     
     // Prueba que los problemas generados tengan valores dentro de los rangos esperados
     test('genera números dentro de los rangos esperados para cada dificultad', () => {
-      const beginnerProblem = generateAdditionCopyProblem('beginner' as DifficultyLevel);
+      const beginnerProblem = generateAdditionProblem('beginner' as DifficultyLevel);
       expect(beginnerProblem.operands[0]).toBeLessThanOrEqual(9);
       expect(beginnerProblem.operands[0]).toBeGreaterThanOrEqual(1);
       expect(beginnerProblem.operands[1]).toBeLessThanOrEqual(9);
       expect(beginnerProblem.operands[1]).toBeGreaterThanOrEqual(1);
       
-      const elementaryProblem = generateAdditionCopyProblem('elementary' as DifficultyLevel);
+      const elementaryProblem = generateAdditionProblem('elementary' as DifficultyLevel);
       elementaryProblem.operands.forEach(op => {
         expect(op).toBeGreaterThanOrEqual(1);
         expect(op).toBeLessThanOrEqual(30);

@@ -10,7 +10,7 @@ jest.mock('../utils', () => {
   const originalModule = jest.requireActual('../utils');
   return {
     ...originalModule,
-    generateAdditionCopyProblem: jest.fn(),
+    generateAdditionProblem: jest.fn(),
     saveExerciseResult: jest.fn(),
   };
 });
@@ -41,7 +41,7 @@ jest.mock('@/context/ProgressContext', () => {
   };
 });
 
-// La función generateAdditionCopyProblem devuelve un problema de suma simple para las pruebas
+// La función generateAdditionProblem devuelve un problema de suma simple para las pruebas
 const mockGenerateProblem = () => {
   return {
     id: 'test-123',
@@ -59,7 +59,7 @@ describe('Componente Exercise de suma', () => {
     jest.clearAllMocks();
     
     // Configurar el mock para que genere un problema de prueba
-    (utils.generateAdditionCopyProblem as jest.Mock).mockImplementation(mockGenerateProblem);
+    (utils.generateAdditionProblem as jest.Mock).mockImplementation(mockGenerateProblem);
   });
   
   test('se renderiza correctamente y muestra los controles básicos', () => {
@@ -153,8 +153,8 @@ describe('Componente Exercise de suma', () => {
     // Act - Renderizar el componente
     render(<Exercise settings={mockSettings} onOpenSettings={mockOpenSettings} />);
     
-    // Assert - Verificar que se llamó a generateAdditionCopyProblem con la dificultad correcta
-    expect(utils.generateAdditionCopyProblem).toHaveBeenCalledWith('intermediate');
+    // Assert - Verificar que se llamó a generateAdditionProblem con la dificultad correcta
+    expect(utils.generateAdditionProblem).toHaveBeenCalledWith('intermediate');
   });
   
   // Puedes agregar más pruebas según sea necesario

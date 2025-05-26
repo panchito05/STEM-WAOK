@@ -1,5 +1,5 @@
 // utils.ts
-import { AdditionCopyProblem, DifficultyLevel, ExerciseLayout, Problem, Operand } from "./types";
+import { AdditionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -8,19 +8,18 @@ const getRandomInt = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-const getRandomBool = (probability: number = 0.5): boolean => {
-  return Math.random() < probability;
-};
+const getRandomBool = (probability: number = 0.5): boolean => Math.random() < probability;
 
 function getRandomDecimal(min: number, max: number, maxDecimals: 0 | 1 | 2): number {
-  const intValue = getRandomInt(min, max);
-  if (maxDecimals === 0) return intValue;
-  
-  const decimalPart = Math.random();
+  if (maxDecimals === 0) {
+    return getRandomInt(min, max);
+  }
+  const range = max - min;
+  let value = Math.random() * range + min;
   const factor = Math.pow(10, maxDecimals);
-  const roundedDecimal = Math.floor(decimalPart * factor) / factor;
-  
-  return parseFloat((intValue + roundedDecimal).toFixed(maxDecimals));
+  value = Math.round(value * factor) / factor;
+  const fixedString = value.toFixed(maxDecimals); // Importante para mantener ceros finales para el conteo de dígitos
+  return parseFloat(fixedString);
 }
 
 function generateUniqueId(): string {
@@ -28,53 +27,58 @@ function generateUniqueId(): string {
 }
 
 /**
- * Convierte un problema de tipo AdditionCopyProblem al tipo genérico Problem
+ * Convierte un problema de tipo AdditionProblem al tipo genérico Problem
  * Este adaptador garantiza la compatibilidad entre los dos tipos
  */
-export function additionCopyProblemToProblem(problem: AdditionCopyProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
+export function additionProblemToProblem(problem: AdditionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
   // Convertir operandos simples a tipo Operand
-  const operands: Operand[] = problem.operands.map((value: number) => ({ value }));
+  const operands: Operand[] = problem.operands.map(value => ({ value }));
   
   return {
     id: problem.id,
     operands,
-    operator: '+',
+    displayFormat: problem.layout, // El layout de AdditionProblem es el displayFormat de Problem
     correctAnswer: problem.correctAnswer,
-    displayFormat: problem.layout === 'vertical' ? 'vertical' : 'horizontal',
-    difficulty,
+    difficulty, // Usamos el parámetro de dificultad o el predeterminado
     allowDecimals: problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0,
-    maxAttempts: 3
+    maxAttempts: 3 // Por defecto permitimos 3 intentos
   };
 }
 
 /**
- * Convierte un problema de tipo Problem al tipo específico AdditionCopyProblem
- * Este adaptador se usa cuando necesitamos utilizar funciones que requieren AdditionCopyProblem
+ * Convierte un problema de tipo Problem al tipo específico AdditionProblem
+ * Este adaptador se usa cuando necesitamos utilizar funciones que requieren AdditionProblem
  */
-export function problemToAdditionCopyProblem(problem: Problem): AdditionCopyProblem {
+export function problemToAdditionProblem(problem: Problem): AdditionProblem {
   const operands = problem.operands.map(op => op.value);
-  const layout: ExerciseLayout = problem.displayFormat === 'vertical' ? 'vertical' : 'horizontal';
+  let answerDecimalPosition: number | undefined = undefined;
   
-  // Calcular answerMaxDigits y answerDecimalPosition basándose en la respuesta correcta
-  const correctAnswerStr = problem.correctAnswer.toString();
-  const [integerPart, decimalPart = ""] = correctAnswerStr.split('.');
-  const answerMaxDigits = integerPart.length + decimalPart.length;
-  const answerDecimalPosition = decimalPart.length > 0 ? decimalPart.length : undefined;
+  if (problem.allowDecimals) {
+    // Determinar el número de decimales a partir de los operandos
+    const decimals = Math.max(...operands.map(op => {
+      const strOp = op.toString();
+      const dotIndex = strOp.indexOf('.');
+      return dotIndex >= 0 ? strOp.length - dotIndex - 1 : 0;
+    }));
+    if (decimals > 0) {
+      answerDecimalPosition = decimals;
+    }
+  }
   
   return {
     id: problem.id,
-    operands,
     num1: operands[0] || 0,
     num2: operands[1] || 0,
+    operands,
     correctAnswer: problem.correctAnswer,
-    layout,
-    answerMaxDigits,
-    answerDecimalPosition,
+    layout: problem.displayFormat as ExerciseLayout, // Solo horizontal o vertical, no 'word'
+    answerMaxDigits: problem.correctAnswer.toString().replace('.', '').length,
+    answerDecimalPosition
   };
 }
 
 // --- Generación del Problema ---
-export function generateAdditionCopyProblem(difficulty: DifficultyLevel): AdditionCopyProblem {
+export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionProblem {
   const id = generateUniqueId();
   let operands: number[] = [];
   let layout: ExerciseLayout = 'horizontal';
@@ -164,7 +168,7 @@ export function generateAdditionCopyProblem(difficulty: DifficultyLevel): Additi
 }
 
 // --- Validación de la Respuesta ---
-export function checkAnswer(problem: AdditionCopyProblem, userAnswer: number): boolean {
+export function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
   if (isNaN(userAnswer)) return false;
 
   const precisionForComparison = problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0

@@ -5,8 +5,8 @@
  * registro y aplicación de reglas de negocio.
  */
 
-import { AdditionCopyProblem, DifficultyLevel, Problem, UserAnswer } from '../types';
-import { validateAdditionCopyProblem, validateProblem, validateUserAnswer, ValidationResult } from './validators';
+import { AdditionProblem, DifficultyLevel, Problem, UserAnswer } from '../types';
+import { validateAdditionProblem, validateProblem, validateUserAnswer, ValidationResult } from './validators';
 
 // Tipo para las funciones de middleware
 type MiddlewareFunction<T> = (data: T) => T;
@@ -64,7 +64,7 @@ export class AdditionMiddleware {
   private observer: AdditionObserver;
   
   // Cadenas de middleware para cada tipo de operación
-  private problemMiddlewares: MiddlewareFunction<AdditionCopyProblem>[] = [];
+  private problemMiddlewares: MiddlewareFunction<AdditionProblem>[] = [];
   private userAnswerMiddlewares: MiddlewareFunction<UserAnswer>[] = [];
   
   private constructor() {
@@ -89,7 +89,7 @@ export class AdditionMiddleware {
   /**
    * Agrega un middleware a la cadena de procesamiento de problemas
    */
-  public addProblemMiddleware(middleware: MiddlewareFunction<AdditionCopyProblem>): void {
+  public addProblemMiddleware(middleware: MiddlewareFunction<AdditionProblem>): void {
     this.problemMiddlewares.push(middleware);
   }
   
@@ -103,7 +103,7 @@ export class AdditionMiddleware {
   /**
    * Procesa un problema a través de toda la cadena de middleware
    */
-  public processProblem(problem: AdditionCopyProblem): AdditionCopyProblem {
+  public processProblem(problem: AdditionProblem): AdditionProblem {
     let processedProblem = { ...problem };
     
     for (const middleware of this.problemMiddlewares) {
@@ -135,8 +135,8 @@ export class AdditionMiddleware {
   /**
    * Middleware de validación para problemas
    */
-  private validateProblemMiddleware: MiddlewareFunction<AdditionCopyProblem> = (problem) => {
-    const validation = validateAdditionCopyProblem(problem);
+  private validateProblemMiddleware: MiddlewareFunction<AdditionProblem> = (problem) => {
+    const validation = validateAdditionProblem(problem);
     
     if (!validation.isValid) {
       // Notificar error de validación
@@ -183,7 +183,7 @@ export class AdditionMiddleware {
   /**
    * Middleware de registro para problemas
    */
-  private logProblemMiddleware: MiddlewareFunction<AdditionCopyProblem> = (problem) => {
+  private logProblemMiddleware: MiddlewareFunction<AdditionProblem> = (problem) => {
     try {
       // Registrar solo información relevante para debugging
       const simplifiedProblem = {
@@ -228,7 +228,7 @@ export class AdditionMiddleware {
 /**
  * Procesa un problema a través del middleware
  */
-export function processProblem(problem: AdditionCopyProblem): AdditionCopyProblem {
+export function processProblem(problem: AdditionProblem): AdditionProblem {
   return AdditionMiddleware.getInstance().processProblem(problem);
 }
 
@@ -256,7 +256,7 @@ export function off(event: string, callback: Function): void {
 /**
  * Middleware auxiliar para aplicar reglas de negocio a problemas según su dificultad
  */
-export function applyDifficultyRules(problem: AdditionCopyProblem, difficulty: DifficultyLevel): AdditionCopyProblem {
+export function applyDifficultyRules(problem: AdditionProblem, difficulty: DifficultyLevel): AdditionProblem {
   let modifiedProblem = { ...problem };
   
   switch (difficulty) {
