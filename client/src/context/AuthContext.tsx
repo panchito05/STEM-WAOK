@@ -121,6 +121,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (firebaseUser) {
         // El usuario está autenticado en Firebase, pero necesitamos sincronizar con nuestro backend
         console.log("Firebase user authenticated:", firebaseUser.email);
+        
+        // SOLUCIÓN: Sincronizar automáticamente con el backend
+        console.log("🔄 Sincronizando usuario Firebase con backend...");
+        try {
+          await handleGoogleAuthSuccess(
+            firebaseUser.uid,
+            firebaseUser.email || '',
+            firebaseUser.displayName || '',
+            firebaseUser.photoURL || ''
+          );
+        } catch (error) {
+          console.error("Error sincronizando usuario Firebase:", error);
+        }
       }
     });
 
