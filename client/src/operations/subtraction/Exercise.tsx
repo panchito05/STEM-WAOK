@@ -1170,9 +1170,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const generateNewProblemSet = () => {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
-    const newProblemsArray: AdditionProblem[] = [];
+    const newProblemsArray: SubtractionProblem[] = [];
     for (let i = 0; i < settings.problemCount; i++) {
-      const problem = generateAdditionProblem(difficultyToUse);
+      const problem = generateSubtractionProblem(difficultyToUse);
       // Agregar información de índice y total a cada problema
       problem.index = i;
       problem.total = settings.problemCount;
