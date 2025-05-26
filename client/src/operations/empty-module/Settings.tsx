@@ -5,9 +5,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { ModuleSettings } from './types';
-import { defaultModuleSettings } from './utils';
-import { useModuleSettings } from '@/context/ModuleSettingsContext';
+import { ModuleSettings } from '@/context/SettingsContext';
+import { useSettings } from '@/context/SettingsContext';
+import { defaultModuleSettings } from '@/utils/operationComponents';
 
 // Función debounce para optimizar las actualizaciones
 function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
@@ -24,7 +24,7 @@ interface SettingsProps {
 }
 
 export default function Settings({ settings, onBack }: SettingsProps) {
-  const { updateModuleSettings, resetModuleSettings } = useModuleSettings();
+  const { updateModuleSettings, resetModuleSettings } = useSettings();
   const { toast } = useToast();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...defaultModuleSettings, ...settings });
