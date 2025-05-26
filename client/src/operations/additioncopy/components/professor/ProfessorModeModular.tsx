@@ -56,7 +56,7 @@ export const ProfessorModeModular: React.FC<ProfessorModeModularProps> = ({
     setAttempts(newAttempts);
     
     const numAnswer = Number(userAnswer);
-    const correctAnswer = problem.operands.reduce((a, b) => a + b, 0);
+    const correctAnswer = problem.operands.reduce((a, b) => a * b, 1);
     const result = numAnswer === correctAnswer;
     
     setIsCorrect(result);

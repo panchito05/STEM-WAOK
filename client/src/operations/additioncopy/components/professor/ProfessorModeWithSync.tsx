@@ -66,7 +66,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
 
     setIsProcessing(true);
     const userNum = parseFloat(userAnswer.trim());
-    const correctAnswer = problem.operands.reduce((sum, operand) => sum + parseFloat(operand.toString()), 0);
+    const correctAnswer = problem.operands.reduce((product, operand) => product * parseFloat(operand.toString()), 1);
     const isAnswerCorrect = Math.abs(userNum - correctAnswer) < 0.001;
     const currentAttempts = attempts + 1;
     const problemTimeSpent = Math.floor((Date.now() - exerciseStartTime) / 1000);
@@ -260,7 +260,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                 {problem.operands.map((op, index) => (
                   <div key={index} className="mb-1">
                     {index === problem.operands.length - 1 && problem.operands.length > 1 && (
-                      <span className="text-blue-600 font-bold mr-2">+</span>
+                      <span className="text-blue-600 font-bold mr-2">×</span>
                     )}
                     <span>{typeof op === 'number' ? op : parseFloat(op.toString())}</span>
                   </div>
