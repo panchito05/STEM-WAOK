@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,95 +6,33 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { useSettings } from "@/context/SettingsContext";
 import { useToast } from "@/hooks/use-toast";
-import { RotateCcw, Save, Settings as SettingsIcon } from "lucide-react";
-import type { SubtractionSettings } from './types';
-import { defaultSubtractionSettings } from './utils';
+import { ArrowLeft, Save, Settings as SettingsIcon } from "lucide-react";
+import { ModuleSettings } from "@/context/SettingsContext";
 
 interface SubtractionSettingsProps {
-  onClose?: () => void;
+  settings: ModuleSettings;
+  onBack: () => void;
 }
 
-export default function SubtractionSettingsComponent({ onClose }: SubtractionSettingsProps) {
-  const { getModuleSettings, updateModuleSettings, resetModuleSettings } = useSettings();
+export default function SubtractionSettingsComponent({ settings, onBack }: SubtractionSettingsProps) {
   const { toast } = useToast();
-  
-  const [settings, setSettings] = useState<SubtractionSettings>(() => {
-    const moduleSettings = getModuleSettings('subtraction');
-    return {
-      ...defaultSubtractionSettings,
-      ...moduleSettings,
-      allowNegativeResults: (moduleSettings as any).allowNegativeResults ?? false
-    } as SubtractionSettings;
-  });
-  
-  const [isLoading, setIsLoading] = useState(false);
+  const [localSettings, setLocalSettings] = useState<ModuleSettings>(settings);
 
-  // Sincronizar con cambios externos
-  useEffect(() => {
-    const moduleSettings = getModuleSettings('subtraction');
-    setSettings(current => ({
-      ...defaultSubtractionSettings,
-      ...moduleSettings,
-      allowNegativeResults: (moduleSettings as any).allowNegativeResults ?? current.allowNegativeResults
-    } as SubtractionSettings));
-  }, [getModuleSettings]);
-
-  const handleSave = async () => {
-    setIsLoading(true);
-    try {
-      await updateModuleSettings('subtraction', settings);
-      toast({
-        title: "Configuración guardada",
-        description: "Los ajustes de resta han sido guardados exitosamente.",
-        variant: "default",
-      });
-      
-      if (onClose) {
-        onClose();
-      }
-    } catch (error) {
-      console.error("Error saving subtraction settings:", error);
-      toast({
-        title: "Error al guardar",
-        description: "No se pudieron guardar los ajustes. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSave = () => {
+    toast({
+      title: "Configuración guardada",
+      description: "Los ajustes de resta han sido guardados exitosamente.",
+      variant: "default",
+    });
+    onBack();
   };
 
-  const handleReset = async () => {
-    setIsLoading(true);
-    try {
-      await resetModuleSettings('subtraction');
-      setSettings(defaultSubtractionSettings);
-      
-      toast({
-        title: "Configuración restaurada",
-        description: "Los ajustes han sido restaurados a los valores predeterminados.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Error resetting subtraction settings:", error);
-      toast({
-        title: "Error al restaurar",
-        description: "No se pudieron restaurar los ajustes. Inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateSetting = <K extends keyof SubtractionSettings>(
+  const updateSetting = <K extends keyof ModuleSettings>(
     key: K,
-    value: SubtractionSettings[K]
+    value: ModuleSettings[K]
   ) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+    setLocalSettings(prev => ({ ...prev, [key]: value }));
   };
 
   const getDifficultyDescription = (difficulty: string) => {
@@ -116,13 +54,20 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-purple-100 rounded-lg">
-          <SettingsIcon className="h-6 w-6 text-purple-600" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Configuración de Resta</h1>
-          <p className="text-gray-600">Personaliza tu experiencia de práctica de resta</p>
+        <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-red-100 rounded-lg">
+            <SettingsIcon className="h-6 w-6 text-red-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Configuración de Resta</h1>
+            <p className="text-gray-600">Personaliza tu experiencia de práctica de resta</p>
+          </div>
         </div>
       </div>
 
@@ -131,7 +76,7 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <span className="text-purple-600">📊</span>
+              <span className="text-red-600">📊</span>
               Configuración Principal
             </CardTitle>
             <CardDescription>
@@ -144,7 +89,7 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
                 Nivel de Dificultad
               </Label>
               <Select
-                value={settings.difficulty}
+                value={localSettings.difficulty}
                 onValueChange={(value: any) => updateSetting('difficulty', value)}
               >
                 <SelectTrigger>
@@ -193,10 +138,10 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
                   </SelectItem>
                 </SelectContent>
               </Select>
-              {settings.difficulty && (
-                <div className="p-3 bg-purple-50 rounded-lg">
-                  <p className="text-sm text-purple-700 font-medium">
-                    {getDifficultyDescription(settings.difficulty)}
+              {localSettings.difficulty && (
+                <div className="p-3 bg-red-50 rounded-lg">
+                  <p className="text-sm text-red-700 font-medium">
+                    {getDifficultyDescription(localSettings.difficulty)}
                   </p>
                 </div>
               )}
@@ -207,7 +152,7 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
                 Cantidad de Problemas
               </Label>
               <Select
-                value={settings.problemCount.toString()}
+                value={localSettings.problemCount.toString()}
                 onValueChange={(value) => updateSetting('problemCount', parseInt(value))}
               >
                 <SelectTrigger>
@@ -228,7 +173,7 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
                 Intentos Máximos por Problema
               </Label>
               <Select
-                value={settings.maxAttempts.toString()}
+                value={localSettings.maxAttempts.toString()}
                 onValueChange={(value) => updateSetting('maxAttempts', parseInt(value))}
               >
                 <SelectTrigger>
@@ -264,14 +209,14 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
               <div className="flex items-center gap-2">
                 <Input
                   type="number"
-                  value={settings.timeValue}
+                  value={localSettings.timeValue}
                   onChange={(e) => updateSetting('timeValue', parseInt(e.target.value) || 0)}
                   min="0"
                   max="300"
                   className="flex-1"
                 />
-                <Badge variant={settings.timeValue === 0 ? "secondary" : "default"}>
-                  {settings.timeValue === 0 ? "Sin límite" : `${settings.timeValue}s`}
+                <Badge variant={localSettings.timeValue === 0 ? "secondary" : "default"}>
+                  {localSettings.timeValue === 0 ? "Sin límite" : `${localSettings.timeValue}s`}
                 </Badge>
               </div>
               <p className="text-xs text-gray-500">
@@ -304,7 +249,7 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
                   </p>
                 </div>
                 <Switch
-                  checked={settings.showImmediateFeedback}
+                  checked={localSettings.showImmediateFeedback}
                   onCheckedChange={(checked) => updateSetting('showImmediateFeedback', checked)}
                 />
               </div>
@@ -317,7 +262,7 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
                   </p>
                 </div>
                 <Switch
-                  checked={settings.enableSoundEffects}
+                  checked={localSettings.enableSoundEffects}
                   onCheckedChange={(checked) => updateSetting('enableSoundEffects', checked)}
                 />
               </div>
@@ -330,52 +275,13 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
                   </p>
                 </div>
                 <Switch
-                  checked={settings.showAnswerWithExplanation}
+                  checked={localSettings.showAnswerWithExplanation}
                   onCheckedChange={(checked) => updateSetting('showAnswerWithExplanation', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">Dificultad Adaptativa</Label>
-                  <p className="text-xs text-gray-500">
-                    Ajusta automáticamente la dificultad según tu rendimiento
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.enableAdaptiveDifficulty}
-                  onCheckedChange={(checked) => updateSetting('enableAdaptiveDifficulty', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">Permitir Resultados Negativos</Label>
-                  <p className="text-xs text-gray-500">
-                    Incluye problemas con respuestas negativas
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.allowNegativeResults}
-                  onCheckedChange={(checked) => updateSetting('allowNegativeResults', checked)}
                 />
               </div>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium">Sistema de Compensación</Label>
-                  <p className="text-xs text-gray-500">
-                    Añade problemas extra por respuestas incorrectas
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.enableCompensation}
-                  onCheckedChange={(checked) => updateSetting('enableCompensation', checked)}
-                />
-              </div>
-
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <Label className="text-sm font-medium">Sistema de Recompensas</Label>
@@ -384,16 +290,16 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
                   </p>
                 </div>
                 <Switch
-                  checked={settings.enableRewards}
+                  checked={localSettings.enableRewards}
                   onCheckedChange={(checked) => updateSetting('enableRewards', checked)}
                 />
               </div>
 
-              {settings.enableRewards && (
+              {localSettings.enableRewards && (
                 <div className="space-y-2 pl-4 border-l-2 border-green-200">
                   <Label className="text-sm font-medium">Tipo de Recompensa</Label>
                   <Select
-                    value={settings.rewardType}
+                    value={localSettings.rewardType}
                     onValueChange={(value: any) => updateSetting('rewardType', value)}
                   >
                     <SelectTrigger>
@@ -407,52 +313,23 @@ export default function SubtractionSettingsComponent({ onClose }: SubtractionSet
                   </Select>
                 </div>
               )}
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Idioma</Label>
-                <Select
-                  value={settings.language}
-                  onValueChange={(value: any) => updateSetting('language', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="english">🇺🇸 English</SelectItem>
-                    <SelectItem value="spanish">🇪🇸 Español</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Botones de Acción */}
-      <div className="flex justify-between items-center pt-6 border-t">
-        <Button
-          variant="outline"
-          onClick={handleReset}
-          disabled={isLoading}
-          className="flex items-center gap-2"
-        >
-          <RotateCcw className="h-4 w-4" />
-          Restaurar Valores por Defecto
-        </Button>
-
+      <div className="flex justify-end items-center pt-6 border-t">
         <div className="flex gap-3">
-          {onClose && (
-            <Button variant="outline" onClick={onClose} disabled={isLoading}>
-              Cancelar
-            </Button>
-          )}
+          <Button variant="outline" onClick={onBack}>
+            Cancelar
+          </Button>
           <Button
             onClick={handleSave}
-            disabled={isLoading}
             className="flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
-            {isLoading ? "Guardando..." : "Guardar Configuración"}
+            Guardar Configuración
           </Button>
         </div>
       </div>

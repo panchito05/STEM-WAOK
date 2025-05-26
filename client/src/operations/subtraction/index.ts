@@ -1,8 +1,12 @@
 import { lazy } from 'react';
 
 // Lazy load components for better performance
-export const SubtractionExercise = lazy(() => import('./Exercise'));
-export const SubtractionSettings = lazy(() => import('./Settings'));
+const SubtractionExercise = lazy(() => import('./Exercise'));
+const SubtractionSettings = lazy(() => import('./Settings'));
+
+// Export the module structure expected by the system
+export const Exercise = SubtractionExercise;
+export const Settings = SubtractionSettings;
 
 // Export types
 export type { 

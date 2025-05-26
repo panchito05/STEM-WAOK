@@ -7,23 +7,50 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Settings, Timer, CheckCircle, SkipForward, Lightbulb, RotateCcw } from "lucide-react";
-import type { SubtractionProblem, SubtractionSettings, SubtractionExerciseState } from './types';
+import { ModuleSettings } from "@/context/SettingsContext";
+import type { SubtractionProblem } from './types';
 import { 
   generateSubtractionProblem, 
   validateSubtractionAnswer, 
   formatNumberForDisplay,
   getVerticalAlignmentInfo,
-  generateSubtractionExplanation
+  generateSubtractionExplanation,
+  defaultSubtractionSettings
 } from './utils';
 
 interface SubtractionExerciseProps {
-  settings: SubtractionSettings;
+  settings: ModuleSettings;
   onOpenSettings: () => void;
+}
+
+interface UserAnswer {
+  problemId: string;
+  userAnswer: number | null;
+  isCorrect: boolean;
+  attempts: number;
+  timeSpent: number;
+  hintsUsed: number;
+  status: 'pending' | 'correct' | 'incorrect' | 'revealed' | 'skipped';
+}
+
+interface ExerciseState {
+  currentProblemIndex: number;
+  problems: SubtractionProblem[];
+  userAnswers: UserAnswer[];
+  exerciseStartTime: number;
+  isComplete: boolean;
+  score: {
+    correct: number;
+    incorrect: number;
+    revealed: number;
+    total: number;
+    percentage: number;
+  };
 }
 
 export default function SubtractionExerciseComponent({ settings, onOpenSettings }: SubtractionExerciseProps) {
   const { toast } = useToast();
-  const [exerciseState, setExerciseState] = useState<SubtractionExerciseState>({
+  const [exerciseState, setExerciseState] = useState<ExerciseState>({
     currentProblemIndex: 0,
     problems: [],
     userAnswers: [],
@@ -39,12 +66,27 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
   });
 
   const [currentAnswer, setCurrentAnswer] = useState<string>("");
-  const [timeLeft, setTimeLeft] = useState<number>(settings.timeValue);
+  const [timeLeft, setTimeLeft] = useState<number>(settings.timeValue || 0);
   const [showExplanation, setShowExplanation] = useState(false);
   const [problemStartTime, setProblemStartTime] = useState<number>(Date.now());
   const [attempts, setAttempts] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Convert ModuleSettings to SubtractionSettings
+  const subtractionSettings = {
+    ...defaultSubtractionSettings,
+    difficulty: settings.difficulty as any,
+    problemCount: settings.problemCount,
+    timeValue: settings.timeValue || 0,
+    maxAttempts: settings.maxAttempts,
+    showImmediateFeedback: settings.showImmediateFeedback,
+    enableSoundEffects: settings.enableSoundEffects,
+    showAnswerWithExplanation: settings.showAnswerWithExplanation,
+    enableRewards: settings.enableRewards,
+    rewardType: settings.rewardType as any,
+    allowNegativeResults: (settings as any).allowNegativeResults ?? false,
+  };
 
   // Generar problemas al inicio
   useEffect(() => {
@@ -53,7 +95,7 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
 
   // Timer effect
   useEffect(() => {
-    if (settings.timeValue > 0 && !exerciseState.isComplete && !showExplanation) {
+    if (subtractionSettings.timeValue > 0 && !exerciseState.isComplete && !showExplanation) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
@@ -74,7 +116,7 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
         }
       };
     }
-  }, [exerciseState.currentProblemIndex, exerciseState.isComplete, showExplanation, settings.timeValue]);
+  }, [exerciseState.currentProblemIndex, exerciseState.isComplete, showExplanation]);
 
   // Focus input when problem changes
   useEffect(() => {
@@ -85,8 +127,8 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
 
   const generateProblems = () => {
     const problems: SubtractionProblem[] = [];
-    for (let i = 0; i < settings.problemCount; i++) {
-      const problem = generateSubtractionProblem(settings, `sub-${Date.now()}-${i}`);
+    for (let i = 0; i < subtractionSettings.problemCount; i++) {
+      const problem = generateSubtractionProblem(subtractionSettings, `sub-${Date.now()}-${i}`);
       problems.push(problem);
     }
 
@@ -106,7 +148,7 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
     });
 
     setCurrentAnswer("");
-    setTimeLeft(settings.timeValue);
+    setTimeLeft(subtractionSettings.timeValue);
     setProblemStartTime(Date.now());
     setAttempts(0);
     setShowExplanation(false);
@@ -122,14 +164,14 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
 
     // Marcar como incorrecto por tiempo agotado
     const timeSpent = Date.now() - problemStartTime;
-    const userAnswer = {
+    const userAnswer: UserAnswer = {
       problemId: currentProblem.id,
       userAnswer: null,
       isCorrect: false,
       attempts: attempts + 1,
       timeSpent,
       hintsUsed: showExplanation ? 1 : 0,
-      status: 'incorrect' as const
+      status: 'incorrect'
     };
 
     setExerciseState(prev => {
@@ -150,10 +192,6 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
         }
       };
     });
-
-    if (settings.enableSoundEffects) {
-      // Sonido de tiempo agotado (opcional)
-    }
 
     toast({
       title: "⏰ Tiempo agotado",
@@ -184,14 +222,14 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
     const timeSpent = Date.now() - problemStartTime;
     const currentAttempts = attempts + 1;
 
-    const userAnswer = {
+    const userAnswer: UserAnswer = {
       problemId: currentProblem.id,
       userAnswer: userAnswerNumber,
       isCorrect,
       attempts: currentAttempts,
       timeSpent,
       hintsUsed: showExplanation ? 1 : 0,
-      status: isCorrect ? 'correct' : 'incorrect' as const
+      status: isCorrect ? 'correct' : 'incorrect'
     };
 
     setExerciseState(prev => {
@@ -213,11 +251,7 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
       };
     });
 
-    if (settings.enableSoundEffects) {
-      // Reproducir sonido según resultado
-    }
-
-    if (settings.showImmediateFeedback) {
+    if (subtractionSettings.showImmediateFeedback) {
       toast({
         title: isCorrect ? "¡Correcto! ✅" : "Incorrecto ❌",
         description: isCorrect 
@@ -227,10 +261,10 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
       });
     }
 
-    if (isCorrect || currentAttempts >= settings.maxAttempts) {
+    if (isCorrect || currentAttempts >= subtractionSettings.maxAttempts) {
       setTimeout(() => {
         nextProblem();
-      }, settings.showImmediateFeedback ? 2000 : 500);
+      }, subtractionSettings.showImmediateFeedback ? 2000 : 500);
     } else {
       setAttempts(currentAttempts);
       setCurrentAnswer("");
@@ -261,7 +295,7 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
       }));
       
       setCurrentAnswer("");
-      setTimeLeft(settings.timeValue);
+      setTimeLeft(subtractionSettings.timeValue);
       setProblemStartTime(Date.now());
       setAttempts(0);
       setShowExplanation(false);
@@ -273,14 +307,14 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
     if (!currentProblem) return;
 
     const timeSpent = Date.now() - problemStartTime;
-    const userAnswer = {
+    const userAnswer: UserAnswer = {
       problemId: currentProblem.id,
       userAnswer: null,
       isCorrect: false,
       attempts: attempts,
       timeSpent,
       hintsUsed: showExplanation ? 1 : 0,
-      status: 'skipped' as const
+      status: 'skipped'
     };
 
     setExerciseState(prev => {
@@ -310,7 +344,7 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
 
   const handleHideExplanation = () => {
     setShowExplanation(false);
-    setTimeLeft(settings.timeValue);
+    setTimeLeft(subtractionSettings.timeValue);
     setProblemStartTime(Date.now());
   };
 
@@ -399,7 +433,7 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
       </div>
 
       {/* Timer */}
-      {settings.timeValue > 0 && (
+      {subtractionSettings.timeValue > 0 && (
         <div className="flex items-center justify-center gap-2">
           <Timer className="h-4 w-4 text-blue-600" />
           <Badge variant={timeLeft <= 10 ? "destructive" : "default"}>
@@ -466,10 +500,10 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
           </div>
 
           {/* Attempts Counter */}
-          {settings.maxAttempts > 0 && attempts > 0 && (
+          {subtractionSettings.maxAttempts > 0 && attempts > 0 && (
             <div className="text-center">
               <Badge variant="outline">
-                Intento {attempts} de {settings.maxAttempts}
+                Intento {attempts} de {subtractionSettings.maxAttempts}
               </Badge>
             </div>
           )}
@@ -500,7 +534,7 @@ export default function SubtractionExerciseComponent({ settings, onOpenSettings 
                   Verificar Respuesta
                 </Button>
                 
-                {settings.showAnswerWithExplanation && (
+                {subtractionSettings.showAnswerWithExplanation && (
                   <Button 
                     variant="outline" 
                     onClick={handleShowExplanation}
