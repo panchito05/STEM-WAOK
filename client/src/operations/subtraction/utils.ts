@@ -1,323 +1,292 @@
-import type { SubtractionProblem, SubtractionSettings } from './types';
+// utils.ts - Subtraction module utilities
+import { SubtractionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand } from "./types";
 
-/**
- * Genera un problema de resta según la dificultad especificada
- */
-export function generateSubtractionProblem(
-  settings: SubtractionSettings,
-  problemId: string
-): SubtractionProblem {
-  const { difficulty } = settings;
-  
-  switch (difficulty) {
-    case "beginner":
-      return generateBeginnerProblem(problemId, settings);
-    case "elementary":
-      return generateElementaryProblem(problemId, settings);
-    case "intermediate":
-      return generateIntermediateProblem(problemId, settings);
-    case "advanced":
-      return generateAdvancedProblem(problemId, settings);
-    case "expert":
-      return generateExpertProblem(problemId, settings);
-    default:
-      return generateBeginnerProblem(problemId, settings);
-  }
-}
-
-/**
- * Beginner: Restas de 1 dígito (5 - 3, 8 - 2)
- */
-function generateBeginnerProblem(problemId: string, settings: SubtractionSettings): SubtractionProblem {
-  let minuend: number, subtrahend: number;
-  
-  if (settings.allowNegativeResults) {
-    minuend = Math.floor(Math.random() * 9) + 1; // 1-9
-    subtrahend = Math.floor(Math.random() * 9) + 1; // 1-9
-  } else {
-    // Asegurar resultado positivo
-    minuend = Math.floor(Math.random() * 9) + 1; // 1-9
-    subtrahend = Math.floor(Math.random() * minuend) + 1; // 1 hasta minuend
-  }
-  
-  return {
-    id: problemId,
-    operands: [minuend, subtrahend],
-    correctAnswer: minuend - subtrahend,
-    difficulty: "beginner",
-    created: Date.now(),
-    allowsNegativeResults: settings.allowNegativeResults,
-    requiresBorrowing: false,
-    hasDecimals: false
-  };
-}
-
-/**
- * Elementary: Restas de 2 dígitos sin prestar (25 - 12, 38 - 15)
- */
-function generateElementaryProblem(problemId: string, settings: SubtractionSettings): SubtractionProblem {
-  let minuend: number, subtrahend: number;
-  
-  do {
-    minuend = Math.floor(Math.random() * 90) + 10; // 10-99
-    
-    if (settings.allowNegativeResults) {
-      subtrahend = Math.floor(Math.random() * 90) + 10; // 10-99
-    } else {
-      subtrahend = Math.floor(Math.random() * (minuend - 10)) + 10; // 10 hasta minuend-1
-    }
-    
-    // Verificar que no requiera prestar (para elementary)
-    const minuendUnits = minuend % 10;
-    const subtrahendUnits = subtrahend % 10;
-    const minuendTens = Math.floor(minuend / 10);
-    const subtrahendTens = Math.floor(subtrahend / 10);
-    
-    // No debe requerir prestar en ninguna posición
-    if (minuendUnits >= subtrahendUnits && minuendTens >= subtrahendTens) {
-      break;
-    }
-  } while (true);
-  
-  return {
-    id: problemId,
-    operands: [minuend, subtrahend],
-    correctAnswer: minuend - subtrahend,
-    difficulty: "elementary",
-    created: Date.now(),
-    allowsNegativeResults: settings.allowNegativeResults,
-    requiresBorrowing: false,
-    hasDecimals: false
-  };
-}
-
-/**
- * Intermediate: Restas de 2 dígitos con prestar (53 - 28, 72 - 49)
- */
-function generateIntermediateProblem(problemId: string, settings: SubtractionSettings): SubtractionProblem {
-  let minuend: number, subtrahend: number;
-  
-  do {
-    minuend = Math.floor(Math.random() * 90) + 10; // 10-99
-    
-    if (settings.allowNegativeResults) {
-      subtrahend = Math.floor(Math.random() * 90) + 10; // 10-99
-    } else {
-      subtrahend = Math.floor(Math.random() * (minuend - 10)) + 10; // 10 hasta minuend-1
-    }
-    
-    // Verificar que SÍ requiera prestar
-    const minuendUnits = minuend % 10;
-    const subtrahendUnits = subtrahend % 10;
-    
-    // Debe requerir prestar en las unidades
-    if (minuendUnits < subtrahendUnits) {
-      break;
-    }
-  } while (true);
-  
-  return {
-    id: problemId,
-    operands: [minuend, subtrahend],
-    correctAnswer: minuend - subtrahend,
-    difficulty: "intermediate",
-    created: Date.now(),
-    allowsNegativeResults: settings.allowNegativeResults,
-    requiresBorrowing: true,
-    hasDecimals: false
-  };
-}
-
-/**
- * Advanced: Restas de 3 dígitos (125 - 87, 234 - 156)
- */
-function generateAdvancedProblem(problemId: string, settings: SubtractionSettings): SubtractionProblem {
-  let minuend: number, subtrahend: number;
-  
-  minuend = Math.floor(Math.random() * 900) + 100; // 100-999
-  
-  if (settings.allowNegativeResults) {
-    subtrahend = Math.floor(Math.random() * 900) + 100; // 100-999
-  } else {
-    subtrahend = Math.floor(Math.random() * (minuend - 100)) + 100; // 100 hasta minuend-1
-  }
-  
-  // Determinar si requiere prestar
-  const requiresBorrowing = checkIfRequiresBorrowing(minuend, subtrahend);
-  
-  return {
-    id: problemId,
-    operands: [minuend, subtrahend],
-    correctAnswer: minuend - subtrahend,
-    difficulty: "advanced",
-    created: Date.now(),
-    allowsNegativeResults: settings.allowNegativeResults,
-    requiresBorrowing,
-    hasDecimals: false
-  };
-}
-
-/**
- * Expert: Restas de 3 dígitos con decimales (123.5 - 67.8, 456.7 - 123.4)
- */
-function generateExpertProblem(problemId: string, settings: SubtractionSettings): SubtractionProblem {
-  let minuend: number, subtrahend: number;
-  
-  // Generar números de 3 dígitos con 1 decimal
-  const minuendWhole = Math.floor(Math.random() * 900) + 100; // 100-999
-  const minuendDecimal = Math.floor(Math.random() * 10); // 0-9
-  minuend = parseFloat(`${minuendWhole}.${minuendDecimal}`);
-  
-  if (settings.allowNegativeResults) {
-    const subtrahendWhole = Math.floor(Math.random() * 900) + 100; // 100-999
-    const subtrahendDecimal = Math.floor(Math.random() * 10); // 0-9
-    subtrahend = parseFloat(`${subtrahendWhole}.${subtrahendDecimal}`);
-  } else {
-    // Asegurar resultado positivo
-    const maxSubtrahend = minuend - 0.1;
-    const subtrahendWhole = Math.floor(Math.random() * Math.floor(maxSubtrahend)) + 1;
-    const subtrahendDecimal = Math.floor(Math.random() * 10);
-    subtrahend = parseFloat(`${subtrahendWhole}.${subtrahendDecimal}`);
-    
-    // Verificar que no sea mayor que minuend
-    if (subtrahend >= minuend) {
-      subtrahend = minuend - 0.1;
-    }
-  }
-  
-  const result = parseFloat((minuend - subtrahend).toFixed(1));
-  
-  return {
-    id: problemId,
-    operands: [minuend, subtrahend],
-    correctAnswer: result,
-    difficulty: "expert",
-    created: Date.now(),
-    allowsNegativeResults: settings.allowNegativeResults,
-    requiresBorrowing: true, // Los decimales casi siempre requieren "prestar"
-    hasDecimals: true
-  };
-}
-
-/**
- * Verifica si una resta requiere prestar
- */
-function checkIfRequiresBorrowing(minuend: number, subtrahend: number): boolean {
-  const minuendStr = minuend.toString();
-  const subtrahendStr = subtrahend.toString();
-  
-  // Comparar dígito por dígito desde las unidades
-  for (let i = 0; i < Math.max(minuendStr.length, subtrahendStr.length); i++) {
-    const minuendDigit = parseInt(minuendStr[minuendStr.length - 1 - i] || '0');
-    const subtrahendDigit = parseInt(subtrahendStr[subtrahendStr.length - 1 - i] || '0');
-    
-    if (minuendDigit < subtrahendDigit) {
-      return true;
-    }
-  }
-  
-  return false;
-}
-
-/**
- * Valida si una respuesta es correcta
- */
-export function validateSubtractionAnswer(
-  problem: SubtractionProblem,
-  userAnswer: number
-): boolean {
-  if (problem.hasDecimals) {
-    // Para decimales, permitir pequeña diferencia por precisión de punto flotante
-    return Math.abs(userAnswer - problem.correctAnswer) < 0.01;
-  }
-  
-  return userAnswer === problem.correctAnswer;
-}
-
-/**
- * Formatea un número para mostrar en el problema
- */
-export function formatNumberForDisplay(num: number, hasDecimals: boolean): string {
-  if (hasDecimals) {
-    return num.toFixed(1);
-  }
-  return num.toString();
-}
-
-/**
- * Obtiene información sobre el alineamiento vertical para mostrar la resta
- */
-export function getVerticalAlignmentInfo(problem: SubtractionProblem | null) {
-  if (!problem) {
-    console.log('getVerticalAlignmentInfo: problema inválido', problem);
-    return {
-      minuend: '',
-      subtrahend: '',
-      maxLength: 0,
-      minuendPadding: 0,
-      subtrahendPadding: 0
-    };
-  }
-
-  const [minuend, subtrahend] = problem.operands;
-  const minuendStr = formatNumberForDisplay(minuend, problem.hasDecimals);
-  const subtrahendStr = formatNumberForDisplay(subtrahend, problem.hasDecimals);
-  
-  const maxLength = Math.max(minuendStr.length, subtrahendStr.length);
-  
-  return {
-    minuend: minuendStr,
-    subtrahend: subtrahendStr,
-    maxLength,
-    minuendPadding: maxLength - minuendStr.length,
-    subtrahendPadding: maxLength - subtrahendStr.length
-  };
-}
-
-/**
- * Genera una explicación paso a paso de la resta
- */
-export function generateSubtractionExplanation(problem: SubtractionProblem): string {
-  const [minuend, subtrahend] = problem.operands;
-  const result = problem.correctAnswer;
-  
-  if (problem.hasDecimals) {
-    return `Para resolver ${formatNumberForDisplay(minuend, true)} - ${formatNumberForDisplay(subtrahend, true)}:\n` +
-           `1. Alineamos los números por el punto decimal\n` +
-           `2. Restamos las décimas: ${(minuend * 10) % 10} - ${(subtrahend * 10) % 10}\n` +
-           `3. Restamos las unidades y demás posiciones\n` +
-           `4. El resultado es ${formatNumberForDisplay(result, true)}`;
-  }
-  
-  if (problem.requiresBorrowing) {
-    return `Para resolver ${minuend} - ${subtrahend}:\n` +
-           `1. Comenzamos por las unidades\n` +
-           `2. Como necesitamos prestar, tomamos de la siguiente posición\n` +
-           `3. Continuamos con las demás posiciones\n` +
-           `4. El resultado es ${result}`;
-  }
-  
-  return `Para resolver ${minuend} - ${subtrahend}:\n` +
-         `1. Restamos dígito por dígito, comenzando por las unidades\n` +
-         `2. ${minuend} - ${subtrahend} = ${result}`;
-}
-
-/**
- * Configuraciones por defecto para resta
- */
-export const defaultSubtractionSettings: SubtractionSettings = {
-  difficulty: "beginner",
-  problemCount: 10,
-  timeLimit: "per-problem",
-  timeValue: 0, // Sin límite por defecto
-  maxAttempts: 2,
-  showImmediateFeedback: true,
-  enableSoundEffects: true,
-  showAnswerWithExplanation: true,
-  enableAdaptiveDifficulty: true,
-  enableCompensation: true,
-  enableRewards: true,
-  rewardType: "stars",
-  language: "english",
-  allowNegativeResults: false
+// --- Funciones auxiliares ---
+const getRandomInt = (min: number, max: number): number => {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+
+const getRandomBool = (probability: number = 0.5): boolean => Math.random() < probability;
+
+function getRandomDecimal(min: number, max: number, maxDecimals: 0 | 1 | 2): number {
+  if (maxDecimals === 0) {
+    return getRandomInt(min, max);
+  }
+  const range = max - min;
+  let value = Math.random() * range + min;
+  const factor = Math.pow(10, maxDecimals);
+  value = Math.round(value * factor) / factor;
+  const fixedString = value.toFixed(maxDecimals);
+  return parseFloat(fixedString);
+}
+
+function generateUniqueId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
+/**
+ * Convierte un problema de tipo SubtractionProblem al tipo genérico Problem
+ * Este adaptador garantiza la compatibilidad entre los dos tipos
+ */
+export function subtractionProblemToProblem(problem: SubtractionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
+  const operands: Operand[] = problem.operands.map(value => ({ value }));
+  
+  return {
+    id: problem.id,
+    operands,
+    operator: '-',
+    displayFormat: problem.layout,
+    correctAnswer: problem.correctAnswer,
+    difficulty,
+    allowDecimals: problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0,
+    maxAttempts: 3
+  };
+}
+
+/**
+ * Convierte un problema de tipo Problem al tipo específico SubtractionProblem
+ */
+export function problemToSubtractionProblem(problem: Problem): SubtractionProblem {
+  const operands = problem.operands.map(op => op.value);
+  let answerDecimalPosition: number | undefined = undefined;
+  
+  if (problem.allowDecimals) {
+    const decimals = Math.max(...operands.map(op => {
+      const strOp = op.toString();
+      const dotIndex = strOp.indexOf('.');
+      return dotIndex >= 0 ? strOp.length - dotIndex - 1 : 0;
+    }));
+    if (decimals > 0) {
+      answerDecimalPosition = decimals;
+    }
+  }
+  
+  return {
+    id: problem.id,
+    num1: operands[0] || 0,
+    num2: operands[1] || 0,
+    operands,
+    correctAnswer: problem.correctAnswer,
+    layout: problem.displayFormat as ExerciseLayout,
+    answerMaxDigits: problem.correctAnswer.toString().replace('.', '').length,
+    answerDecimalPosition
+  };
+}
+
+// --- Generación del Problema de Resta ---
+export function generateSubtractionProblem(difficulty: DifficultyLevel): SubtractionProblem {
+  const id = generateUniqueId();
+  let minuend: number = 0;
+  let subtrahend: number = 0;
+  let layout: ExerciseLayout = 'horizontal';
+  let problemMaxDecimals: 0 | 1 | 2 = 0;
+
+  switch (difficulty) {
+    case "beginner": // Restas de 1 dígito (5 - 3, 8 - 2)
+      minuend = getRandomInt(5, 9);
+      subtrahend = getRandomInt(1, minuend - 1);
+      layout = 'horizontal';
+      break;
+
+    case "elementary": // Restas de 2 dígitos sin prestar (25 - 12, 38 - 15)
+      minuend = getRandomInt(25, 89);
+      // Asegurar que no se necesite prestar
+      const minuendTens = Math.floor(minuend / 10);
+      const minuendOnes = minuend % 10;
+      const subtrahendTens = getRandomInt(1, minuendTens);
+      const subtrahendOnes = getRandomInt(0, minuendOnes);
+      subtrahend = subtrahendTens * 10 + subtrahendOnes;
+      layout = 'horizontal';
+      break;
+
+    case "intermediate": // Restas de 2 dígitos con prestar (53 - 28, 72 - 49)
+      minuend = getRandomInt(30, 99);
+      subtrahend = getRandomInt(15, minuend - 5);
+      // Forzar que se necesite prestar
+      while ((minuend % 10) >= (subtrahend % 10) && minuend - subtrahend > 10) {
+        subtrahend = getRandomInt(15, minuend - 5);
+      }
+      layout = getRandomBool(0.75) ? 'vertical' : 'horizontal';
+      if (layout === 'vertical' && getRandomBool(0.4)) {
+        problemMaxDecimals = 1;
+        minuend = getRandomDecimal(30, 99, problemMaxDecimals);
+        subtrahend = getRandomDecimal(15, minuend - 5, problemMaxDecimals);
+      }
+      break;
+
+    case "advanced": // Restas de 3 dígitos (125 - 87, 234 - 156)
+      layout = 'vertical';
+      problemMaxDecimals = getRandomBool(0.6) ? 2 : 1;
+      minuend = getRandomDecimal(200, 999, problemMaxDecimals);
+      subtrahend = getRandomDecimal(50, minuend - 10, problemMaxDecimals);
+      break;
+
+    case "expert": // Restas de 3 dígitos con decimales (123.5 - 67.8, 456.7 - 123.4)
+      layout = 'vertical';
+      problemMaxDecimals = getRandomBool(0.75) ? 2 : 1;
+      minuend = getRandomDecimal(500, 9999, problemMaxDecimals);
+      subtrahend = getRandomDecimal(100, minuend - 50, problemMaxDecimals);
+      break;
+
+    default:
+      minuend = getRandomInt(5, 9);
+      subtrahend = getRandomInt(1, minuend - 1);
+      layout = 'horizontal';
+  }
+
+  const operands = [minuend, subtrahend];
+  const difference = minuend - subtrahend;
+
+  let effectiveMaxDecimalsInAnswer = 0;
+  if (problemMaxDecimals > 0) {
+    effectiveMaxDecimalsInAnswer = problemMaxDecimals;
+  } else {
+    effectiveMaxDecimalsInAnswer = Math.max(0, ...operands.map(op => {
+      const opStr = String(op);
+      return (opStr.split('.')[1] || '').length;
+    }));
+  }
+  
+  const correctAnswer = parseFloat(difference.toFixed(effectiveMaxDecimalsInAnswer));
+  const correctAnswerStr = correctAnswer.toFixed(effectiveMaxDecimalsInAnswer);
+  const [integerPartStr, decimalPartStr = ""] = correctAnswerStr.split('.');
+  const answerMaxDigits = integerPartStr.length + decimalPartStr.length;
+
+  let answerDecimalPosition: number | undefined = undefined;
+  if (effectiveMaxDecimalsInAnswer > 0 && decimalPartStr.length > 0) {
+    answerDecimalPosition = decimalPartStr.length;
+  }
+
+  return {
+    id,
+    num1: minuend,
+    num2: subtrahend,
+    operands,
+    correctAnswer,
+    layout,
+    answerMaxDigits,
+    answerDecimalPosition,
+  };
+}
+
+// --- Validación de la Respuesta ---
+export function checkAnswer(problem: SubtractionProblem, userAnswer: number): boolean {
+  if (isNaN(userAnswer)) return false;
+
+  const precisionForComparison = problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0
+    ? problem.answerDecimalPosition
+    : 0;
+
+  const factor = Math.pow(10, precisionForComparison);
+  const roundedCorrectAnswer = Math.round(problem.correctAnswer * factor) / factor;
+  const roundedUserAnswer = Math.round(userAnswer * factor) / factor;
+
+  return roundedUserAnswer === roundedCorrectAnswer;
+}
+
+// --- Funciones auxiliares para formatear números para la vista vertical ---
+export function getVerticalAlignmentInfo(
+    operands: number[],
+    problemOverallDecimalPrecision?: number
+): {
+    maxIntLength: number;
+    maxDecLength: number;
+    operandsFormatted: Array<{ original: number, intStr: string, decStr: string }>;
+    sumLineTotalCharWidth: number;
+} {
+    if (!operands || operands.length === 0) {
+        console.error('getVerticalAlignmentInfo: problema inválido', operands);
+        return {
+            maxIntLength: 1,
+            maxDecLength: 0,
+            operandsFormatted: [],
+            sumLineTotalCharWidth: 1
+        };
+    }
+
+    const effectiveDecimalPlacesToShow = problemOverallDecimalPrecision || 0;
+
+    const operandsDisplayInfo = operands.map(op => {
+        const s = op.toFixed(effectiveDecimalPlacesToShow);
+        const parts = s.split('.');
+        return {
+            original: op,
+            intStr: parts[0] || '0',
+            decStr: parts[1] || ''
+        };
+    });
+
+    const maxIntLength = Math.max(...operandsDisplayInfo.map(info => info.intStr.length));
+    const maxDecLength = effectiveDecimalPlacesToShow > 0 ? effectiveDecimalPlacesToShow : 0;
+
+    const sumLineTotalCharWidth = maxIntLength + (maxDecLength > 0 ? 1 + maxDecLength : 0);
+
+    return {
+        maxIntLength,
+        maxDecLength,
+        operandsFormatted: operandsDisplayInfo,
+        sumLineTotalCharWidth
+    };
+}
+
+// Función para formatear número con espaciado específico
+export function formatNumberWithSpacing(
+    value: number,
+    targetIntLength: number,
+    targetDecLength: number,
+    decimalPrecision: number = 0
+): string {
+    const formatted = value.toFixed(decimalPrecision);
+    const [intPart, decPart = ''] = formatted.split('.');
+    
+    const paddedIntPart = intPart.padStart(targetIntLength, ' ');
+    
+    if (targetDecLength > 0) {
+        const paddedDecPart = decPart.padEnd(targetDecLength, '0');
+        return `${paddedIntPart}.${paddedDecPart}`;
+    }
+    
+    return paddedIntPart;
+}
+
+// Función auxiliar para determinar si una resta requiere "prestar"
+export function requiresBorrowing(minuend: number, subtrahend: number): boolean {
+    const minuendStr = minuend.toString();
+    const subtrahendStr = subtrahend.toString();
+    
+    // Convertir a mismo número de dígitos para comparar
+    const maxLength = Math.max(minuendStr.length, subtrahendStr.length);
+    const paddedMinuend = minuendStr.padStart(maxLength, '0');
+    const paddedSubtrahend = subtrahendStr.padStart(maxLength, '0');
+    
+    // Verificar dígito por dígito de derecha a izquierda
+    for (let i = maxLength - 1; i >= 0; i--) {
+        const minuendDigit = parseInt(paddedMinuend[i]);
+        const subtrahendDigit = parseInt(paddedSubtrahend[i]);
+        
+        if (minuendDigit < subtrahendDigit) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+// Función para generar explicación paso a paso
+export function generateStepByStepExplanation(problem: SubtractionProblem): string[] {
+    const steps: string[] = [];
+    const minuend = problem.operands[0];
+    const subtrahend = problem.operands[1];
+    
+    steps.push(`Problema: ${minuend} - ${subtrahend}`);
+    
+    if (requiresBorrowing(minuend, subtrahend)) {
+        steps.push("Esta resta requiere 'prestar' de la columna siguiente.");
+    }
+    
+    steps.push(`Resultado: ${problem.correctAnswer}`);
+    
+    return steps;
+}

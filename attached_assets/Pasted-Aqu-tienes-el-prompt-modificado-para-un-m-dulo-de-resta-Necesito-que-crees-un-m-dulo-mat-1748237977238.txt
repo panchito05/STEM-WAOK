@@ -1,0 +1,93 @@
+Aquí tienes el prompt modificado para un módulo de resta:
+
+---
+
+Necesito que crees un módulo matemático completamente nuevo llamado "subtraction" basado en la estructura existente del módulo de adición. El módulo debe ser 100% funcional e independiente.
+
+ESTRUCTURA DE ARCHIVOS A CREAR:
+
+client/src/operations/subtraction/
+├── index.ts
+├── Exercise.tsx
+├── Settings.tsx
+├── types.ts
+└── utils.ts
+
+ESPECIFICACIONES DETALLADAS:
+
+1. OPERACIÓN MATEMÁTICA:
+
+Tipo de operación: Subtraction
+Estructura matemática: "a - b = c"
+Casos especiales: Resultados negativos, resta de cero, números iguales.
+2. NIVELES DE DIFICULTAD (5 niveles obligatorios):
+
+- Beginner: Restas de 1 dígito (5 - 3, 8 - 2)
+- Elementary: Restas de 2 dígitos sin prestar (25 - 12, 38 - 15)
+- Intermediate: Restas de 2 dígitos con prestar (53 - 28, 72 - 49)
+- Advanced: Restas de 3 dígitos (125 - 87, 234 - 156)
+- Expert: Restas de 3 dígitos con decimales (123.5 - 67.8, 456.7 - 123.4)
+3. FEATURES OBLIGATORIOS (COPIAR 100% del módulo de adición):
+
+✅ Sistema de dificultad adaptativa
+✅ Configuraciones personalizables (tiempo límite, intentos máximos, etc.)
+✅ Sistema de recompensas y puntos
+✅ Historial de respuestas del usuario
+✅ Temporizador por problema/ejercicio
+✅ Retroalimentación inmediata
+✅ Botón "Mostrar respuesta con explicación"
+✅ Sistema de compensación (problemas adicionales por errores)
+✅ Modo profesor (revisión de problemas)
+✅ Navegación entre problemas (anterior/siguiente)
+✅ Contador de intentos y racha
+✅ Integración con sistema de progreso global
+✅ Guardado automático de configuraciones
+✅ Soporte para teclado virtual y físico
+✅ Efectos visuales y sonoros
+✅ Sistema de validación de respuestas
+✅ Manejo de errores y estados de carga
+4. EXCEPCIONES PARA OPERACIONES NO NUMÉRICAS:
+No aplica para este módulo.
+
+5. CONFIGURACIÓN DEL SISTEMA:
+
+Registrar el módulo en operationComponents.ts
+Añadir a la lista de operationModules con color e icono únicos
+Crear tipos TypeScript específicos para la operación
+Implementar generador de problemas en utils.ts
+Configurar validaciones específicas para el tipo de problema
+6. COMPATIBILIDAD TOTAL:
+
+Mantener exactamente la misma interfaz de props para Exercise y Settings
+Usar los mismos hooks de contexto (SettingsContext, ProgressContext, etc.)
+Conservar toda la lógica de guardado/carga de datos
+Mantener compatibilidad con el sistema de perfiles de niños
+Preservar integración con sistema de autenticación
+7. PASOS DE IMPLEMENTACIÓN:
+
+Crear estructura de carpetas y archivos
+Definir tipos TypeScript específicos para la operación
+Implementar generador de problemas con 5 niveles de dificultad
+Copiar y adaptar Exercise.tsx manteniendo toda la funcionalidad
+Copiar y adaptar Settings.tsx con configuraciones específicas
+Registrar el módulo en el sistema de navegación
+Probar todos los features heredados del módulo de adición
+EJEMPLO DE USO:
+
+Quiero crear un módulo de "subtraction" donde:
+- Beginner: restas de 1 dígito (5 - 3, 8 - 2)
+- Elementary: restas de 2 dígitos sin prestar (25 - 12, 38 - 15)
+- Intermediate: restas de 2 dígitos con prestar (53 - 28, 72 - 49)
+- Advanced: restas de 3 dígitos (125 - 87, 234 - 156)
+- Expert: restas de 3 dígitos con decimales (123.5 - 67.8, 456.7 - 123.4)
+IMPORTANTE:
+
+NO uses datos ficticios o placeholders
+Copia EXACTAMENTE toda la funcionalidad del módulo de adición
+Adapta solo lo mínimo necesario para la nueva operación matemática
+Mantén 100% de compatibilidad con el sistema existente
+Asegúrate de que funcione con todos los features (recompensas, progreso, etc.)
+
+---
+
+Espero que esto te sea de ayuda. Si necesitas más ajustes, házmelo saber.

@@ -10,18 +10,22 @@ export const Settings = SubtractionSettings;
 
 // Export types
 export type { 
-  SubtractionProblem, 
-  SubtractionSettings as SubtractionSettingsType,
-  SubtractionExerciseState,
-  SubtractionStats 
+  SubtractionProblem,
+  DifficultyLevel,
+  ExerciseLayout,
+  Problem,
+  UserAnswer,
+  ExerciseResult
 } from './types';
 
 // Export utilities
 export {
   generateSubtractionProblem,
-  validateSubtractionAnswer,
-  formatNumberForDisplay,
+  checkAnswer,
   getVerticalAlignmentInfo,
-  generateSubtractionExplanation,
-  defaultSubtractionSettings
+  subtractionProblemToProblem,
+  problemToSubtractionProblem,
+  formatNumberWithSpacing,
+  requiresBorrowing,
+  generateStepByStepExplanation
 } from './utils';
