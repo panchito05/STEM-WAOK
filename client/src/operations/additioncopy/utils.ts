@@ -142,6 +142,7 @@ export function generateMultiplicationProblem(difficulty: DifficultyLevel): Mult
   const correctAnswerStr = correctAnswer.toFixed(effectiveMaxDecimalsInAnswer);
   const [integerPartOfProductStr, decimalPartOfProductStr = ""] = correctAnswerStr.split('.');
 
+  // Contar solo los dígitos (sin incluir el punto decimal)
   const answerMaxDigits = integerPartOfProductStr.length + decimalPartOfProductStr.length;
 
   let answerDecimalPosition: number | undefined = undefined;
