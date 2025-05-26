@@ -51,7 +51,7 @@ export const operationModules: Module[] = [
   {
     id: "subtraction",
     displayName: "Subtraction",
-    description: "Resta",
+    description: "Practice subtraction with various difficulty levels",
     difficulty: "beginner",
     color: "#f54242", // Rojo para diferenciarlo
     icon: "Minus",
