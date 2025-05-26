@@ -1,5 +1,6 @@
 import * as Addition from "../operations/addition";
 import * as Subtraction from "../operations/subtraction";
+import * as Empty from "../operations/empty";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -56,10 +57,19 @@ export const operationModules: Module[] = [
     color: "#e74c3c", // Rojo para diferenciarlo de addition
     icon: "Minus",
   },
+  {
+    id: "empty",
+    displayName: "Empty Module",
+    description: "Template module for creating new mathematical operations",
+    difficulty: "beginner",
+    color: "#9333ea", // Púrpura para el módulo plantilla
+    icon: "Square",
+  },
 ];
 
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
   subtraction: Subtraction, // El módulo de resta
+  empty: Empty, // El módulo plantilla vacío
 };

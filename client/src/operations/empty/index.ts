@@ -1,4 +1,5 @@
 // index.ts - Empty Module exports
-export { default as EmptyExercise } from './Exercise';
+export { default as Exercise } from './Exercise';
+export { default as Settings } from './Settings';
 export * from './types';
 export * from './utils';
