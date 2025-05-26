@@ -1,4 +1,5 @@
 import * as Addition from "../operations/addition";
+import * as Subtraction from "../operations/subtraction";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -47,20 +48,18 @@ export const operationModules: Module[] = [
     color: "#4287f5", // Azul vivo como en la imagen
     icon: "Plus",
   },
-  // Eliminamos la entrada de "Addition (New)" ya que ahora usamos el módulo estándar
-  // {
-  //   id: "unifiedAddition",
-  //   displayName: "Addition (New)",
-  //   description: "Practice addition with our improved unified module",
-  //   difficulty: "beginner",
-  //   color: "#3b82f6", // Un azul diferente
-  //   icon: "PlusCircle",
-  // },
-
-
+  {
+    id: "subtraction",
+    displayName: "Subtraction",
+    description: "Practice subtraction with various difficulty levels",
+    difficulty: "beginner",
+    color: "#e74c3c", // Rojo para diferenciarlo de addition
+    icon: "Minus",
+  },
 ];
 
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
+  subtraction: Subtraction, // El módulo de resta
 };
