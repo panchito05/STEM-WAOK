@@ -9,6 +9,7 @@
  */
 
 import { toast } from '@/hooks/use-toast';
+import { wrapWithIntegrity, unwrapWithIntegrity, VerifiedData } from './dataIntegrity';
 
 // Tipos base
 export interface SyncData {
@@ -329,12 +330,14 @@ export class DataSync {
   }
 
   /**
-   * Guardar en localStorage
+   * Guardar en localStorage con verificación de integridad
    */
   private async saveToLocal(key: string, data: SyncData): Promise<void> {
     try {
-      localStorage.setItem(`sync_${key}`, JSON.stringify(data));
-      console.log('🏠 Guardado en localStorage:', key);
+      // Envolver datos con verificación de integridad
+      const verifiedData = wrapWithIntegrity(data, key);
+      localStorage.setItem(`sync_${key}`, JSON.stringify(verifiedData));
+      console.log('🏠 Guardado en localStorage con integridad:', key);
     } catch (error) {
       console.error('❌ Error guardando en localStorage:', error);
       throw error;
@@ -342,13 +345,24 @@ export class DataSync {
   }
 
   /**
-   * Cargar desde localStorage
+   * Cargar desde localStorage con verificación de integridad
    */
   private async loadFromLocal(key: string): Promise<SyncData | null> {
     try {
       const stored = localStorage.getItem(`sync_${key}`);
       if (stored) {
-        return JSON.parse(stored) as SyncData;
+        const parsedData = JSON.parse(stored) as VerifiedData<SyncData>;
+        
+        // Verificar integridad y extraer datos
+        const verifiedData = unwrapWithIntegrity(parsedData, key);
+        if (verifiedData) {
+          console.log('✅ Datos verificados desde localStorage:', key);
+          return verifiedData;
+        } else {
+          console.warn('⚠️ Datos corruptos detectados en localStorage:', key);
+          // Intentar cargar datos legacy sin verificación
+          return JSON.parse(stored) as SyncData;
+        }
       }
       return null;
     } catch (error) {
