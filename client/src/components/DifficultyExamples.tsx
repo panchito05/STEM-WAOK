@@ -71,6 +71,13 @@ export default function DifficultyExamples({
       advanced: ["34 × 27 = ?", "45.6 × 23 = ?"],
       expert: ["125 × 34 = ?", "156.7 × 28 = ?"]
     },
+    division: {
+      beginner: ["8 ÷ 4 = ?", "15 ÷ 3 = ?"],
+      elementary: ["48 ÷ 6 = ?", "63 ÷ 9 = ?"],
+      intermediate: ["156 ÷ 12 = ?", "224 ÷ 16 = ?"],
+      advanced: ["1728 ÷ 24 = ?", "2835 ÷ 35 = ?"],
+      expert: ["15680 ÷ 56 = ?", "24192 ÷ 84 = ?"]
+    },
     counting: {
       beginner: ["Count to 5", "Count by 1s to 10"],
       elementary: ["Count by 2s to 20", "Count by 5s to 50"],

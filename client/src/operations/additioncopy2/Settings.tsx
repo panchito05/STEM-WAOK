@@ -195,7 +195,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   // Determinar textos según el idioma actual
   const isEnglish = localSettings.language === "english";
-  const headerTitle = isEnglish ? "Configuration - Addition Exercise" : "Configuración - Ejercicio de Suma";
+  const headerTitle = isEnglish ? "Configuration - Division Exercise" : "Configuración - Ejercicio de División";
   const subheaderText = isEnglish ? "Customize your exercise experience" : "Personaliza tu experiencia de ejercicio";
   const backButtonText = isEnglish ? "Back to Exercise" : "Volver al Ejercicio";
   const languageButtonText = isEnglish ? "Español" : "English";
@@ -239,7 +239,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           
           <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
             <DifficultyExamples 
-              operation="additioncopy2" 
+              operation="division" 
               activeDifficulty={localSettings.difficulty}
               onSelectDifficulty={(difficulty) => 
                 handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
