@@ -60,11 +60,11 @@ export const operationModules: Module[] = [
   },
   {
     id: "additioncopy",
-    displayName: "Division",
-    description: "Practice division with various difficulty levels",
+    displayName: "Multiplication",
+    description: "Practice multiplication with various difficulty levels",
     difficulty: "beginner",
     color: "#8b5cf6", // Violeta para distinguir de otros módulos
-    icon: "Divide",
+    icon: "X",
   },
   {
     id: "additioncopy2",

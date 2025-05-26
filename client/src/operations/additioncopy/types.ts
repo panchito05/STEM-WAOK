@@ -1,4 +1,4 @@
-// Definición de tipos para el módulo de división
+// Definición de tipos para el módulo de multiplicación
 
 // Niveles de dificultad estandarizados para todos los módulos
 export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
@@ -7,16 +7,7 @@ export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'adva
 export type ExerciseLayout = 'horizontal' | 'vertical';
 export type DisplayFormat = ExerciseLayout;
 
-// Definición de un problema de división específico
-export interface DivisionProblem {
-  id: string;
-  dividend: number;         // Dividendo (número que se divide)
-  divisor: number;          // Divisor (número entre el que se divide)
-  result: number;           // Resultado de la división
-  operator: string;         // Símbolo de división
-}
-
-// Definición de un problema de multiplicación específico (mantenido por compatibilidad)
+// Definición de un problema de multiplicación específico
 export interface MultiplicationProblem {
   id: string;
   operands: number[];       // Operandos de la multiplicación (normalmente 2 factores)
