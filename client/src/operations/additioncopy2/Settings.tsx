@@ -250,19 +250,19 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           
           <div className="mt-3 mb-2 space-y-1.5">
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Beginner:" : "Principiante:"}</span> {isEnglish ? "Simple digit additions (1+8, 7+5)" : "Sumas con dígitos simples (1+8, 7+5)"}
+              <span className="font-bold">{isEnglish ? "Beginner:" : "Principiante:"}</span> {isEnglish ? "Simple divisions (8÷4, 15÷3)" : "Divisiones simples (8÷4, 15÷3)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Elementary:" : "Elemental:"}</span> {isEnglish ? "Two-digit number additions (12+15, 24+13)" : "Sumas de números de dos dígitos (12+15, 24+13)"}
+              <span className="font-bold">{isEnglish ? "Elementary:" : "Elemental:"}</span> {isEnglish ? "Two-digit by one-digit divisions (48÷6, 63÷9)" : "Divisiones de dos dígitos entre uno (48÷6, 63÷9)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Additions with large numbers (65+309, 392+132)" : "Sumas con números grandes (65+309, 392+132)"}
+              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Three-digit by two-digit divisions (156÷12, 224÷16)" : "Divisiones de tres dígitos entre dos (156÷12, 224÷16)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Advanced:" : "Avanzado:"}</span> {isEnglish ? "4-digit number additions (1247+3568, 5934+8742)" : "Sumas de números de 4 dígitos (1247+3568, 5934+8742)"}
+              <span className="font-bold">{isEnglish ? "Advanced:" : "Avanzado:"}</span> {isEnglish ? "Four-digit by two-digit divisions (1728÷24, 2835÷35)" : "Divisiones de cuatro dígitos entre dos (1728÷24, 2835÷35)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Expert:" : "Experto:"}</span> {isEnglish ? "Very large number additions (70960+11650, 28730+59436)" : "Sumas con números muy grandes (70960+11650, 28730+59436)"}
+              <span className="font-bold">{isEnglish ? "Expert:" : "Experto:"}</span> {isEnglish ? "Very large number divisions (15680÷56, 24192÷84)" : "Divisiones con números muy grandes (15680÷56, 24192÷84)"}
             </p>
           </div>
         </div>
