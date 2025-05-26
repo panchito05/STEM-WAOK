@@ -168,6 +168,10 @@ export const enTranslations: TranslationKeys = {
       name: "Multiplication",
       description: "Practice multiplication with various difficulty levels"
     },
+    additioncopy2: {
+      name: "Division",
+      description: "Practice division with various difficulty levels"
+    },
 
   },
 };
@@ -255,6 +259,10 @@ export const esTranslations: TranslationKeys = {
     additioncopy: {
       name: "Multiplicación",
       description: "Practica multiplicaciones con varios niveles de dificultad"
+    },
+    additioncopy2: {
+      name: "División",
+      description: "Practica divisiones con varios niveles de dificultad"
     },
 
   },
