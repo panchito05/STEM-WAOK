@@ -1,5 +1,5 @@
 // utils.ts - Módulo de Resta (Subtraction)
-import { SubtractionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
+import { SubtractionProblem, DifficultyLevel, ExerciseLayout } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -8,212 +8,215 @@ const getRandomInt = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-const getRandomBool = (probability: number = 0.5): boolean => Math.random() < probability;
-
-function getRandomDecimal(min: number, max: number, maxDecimals: 0 | 1 | 2): number {
-  if (maxDecimals === 0) {
-    return getRandomInt(min, max);
-  }
-  const range = max - min;
-  let value = Math.random() * range + min;
-  const factor = Math.pow(10, maxDecimals);
-  value = Math.round(value * factor) / factor;
-  const fixedString = value.toFixed(maxDecimals); // Importante para mantener ceros finales para el conteo de dígitos
-  return parseFloat(fixedString);
-}
-
 function generateUniqueId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
-/**
- * Convierte un problema de tipo AdditionProblem al tipo genérico Problem
- * Este adaptador garantiza la compatibilidad entre los dos tipos
- */
-export function additionProblemToProblem(problem: AdditionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
-  // Convertir operandos simples a tipo Operand
-  const operands: Operand[] = problem.operands.map(value => ({ value }));
+// Función para detectar si una resta requiere préstamo
+function requiresBorrow(minuend: number, subtrahend: number): boolean {
+  const minuendStr = minuend.toString();
+  const subtrahendStr = subtrahend.toString();
+  const maxLength = Math.max(minuendStr.length, subtrahendStr.length);
   
-  return {
-    id: problem.id,
-    operands,
-    displayFormat: problem.layout, // El layout de AdditionProblem es el displayFormat de Problem
-    correctAnswer: problem.correctAnswer,
-    difficulty, // Usamos el parámetro de dificultad o el predeterminado
-    allowDecimals: problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0,
-    maxAttempts: 3 // Por defecto permitimos 3 intentos
-  };
-}
-
-/**
- * Convierte un problema de tipo Problem al tipo específico AdditionProblem
- * Este adaptador se usa cuando necesitamos utilizar funciones que requieren AdditionProblem
- */
-export function problemToAdditionProblem(problem: Problem): AdditionProblem {
-  const operands = problem.operands.map(op => op.value);
-  let answerDecimalPosition: number | undefined = undefined;
+  // Rellenar con ceros a la izquierda para comparar dígito por dígito
+  const paddedMinuend = minuendStr.padStart(maxLength, '0');
+  const paddedSubtrahend = subtrahendStr.padStart(maxLength, '0');
   
-  if (problem.allowDecimals) {
-    // Determinar el número de decimales a partir de los operandos
-    const decimals = Math.max(...operands.map(op => {
-      const strOp = op.toString();
-      const dotIndex = strOp.indexOf('.');
-      return dotIndex >= 0 ? strOp.length - dotIndex - 1 : 0;
-    }));
-    if (decimals > 0) {
-      answerDecimalPosition = decimals;
+  for (let i = maxLength - 1; i >= 0; i--) {
+    const digitMinuend = parseInt(paddedMinuend[i]);
+    const digitSubtrahend = parseInt(paddedSubtrahend[i]);
+    
+    if (digitMinuend < digitSubtrahend) {
+      return true;
     }
   }
-  
-  return {
-    id: problem.id,
-    num1: operands[0] || 0,
-    num2: operands[1] || 0,
-    operands,
-    correctAnswer: problem.correctAnswer,
-    layout: problem.displayFormat as ExerciseLayout, // Solo horizontal o vertical, no 'word'
-    answerMaxDigits: problem.correctAnswer.toString().replace('.', '').length,
-    answerDecimalPosition
-  };
+  return false;
 }
 
-// --- Generación del Problema ---
-export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionProblem {
-  const id = generateUniqueId();
-  let operands: number[] = [];
-  let layout: ExerciseLayout = 'horizontal';
-  let problemMaxDecimals: 0 | 1 | 2 = 0;
-
-  switch (difficulty) {
-    case "beginner": // Sumas simples, ej: 1+1 a 9+9 (del código original)
-      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
-      layout = 'horizontal';
-      break;
-    case "elementary": // Dos dígitos + un dígito, sin acarreo (adaptado) ej: 12+5, o dos dígitos simples
-      operands = [getRandomInt(10, 30), getRandomInt(1, 9)]; // ej: 23 + 7
-      if (getRandomBool(0.5)) { // 50% chance de dos dígitos + dos dígitos simples
-          operands = [getRandomInt(10, 20), getRandomInt(10, 20)]; // ej: 12 + 15
-      }
-      layout = 'horizontal';
-      break;
-    case "intermediate": // 2 líneas, aleatoriamente vertical, posible 1 decimal
-      layout = getRandomBool(0.75) ? 'vertical' : 'horizontal'; // 75% vertical
-      if (layout === 'vertical' && getRandomBool(0.4)) { // 40% de chance de 1 decimal si es vertical
-        problemMaxDecimals = 1;
-        operands = [
-          getRandomDecimal(10, 99, problemMaxDecimals),
-          getRandomDecimal(10, 99, problemMaxDecimals)
-        ];
-      } else { // Enteros o formato horizontal
-        operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
-      }
-      break;
-    case "advanced": // 3 líneas, siempre vertical, 1 o 2 decimales
-      layout = 'vertical';
-      problemMaxDecimals = getRandomBool(0.6) ? 2 : 1; // 60% chance de 2 decimales
-      for (let i = 0; i < 3; i++) {
-        operands.push(getRandomDecimal(10, getRandomInt(200, 999), problemMaxDecimals));
-      }
-      break;
-    case "expert": // 4 o 5 líneas, siempre vertical, 1 o 2 decimales
-      layout = 'vertical';
-      const numLines = getRandomBool() ? 4 : 5;
-      problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
-      for (let i = 0; i < numLines; i++) {
-        operands.push(getRandomDecimal(100, getRandomInt(2000, 9999), problemMaxDecimals));
-      }
-      break;
-    default: // Fallback a beginner si la dificultad no es reconocida
-      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
-      layout = 'horizontal';
+// Función para obtener las posiciones donde se produce el préstamo
+function getBorrowPositions(minuend: number, subtrahend: number): number[] {
+  const positions: number[] = [];
+  const minuendStr = minuend.toString();
+  const subtrahendStr = subtrahend.toString();
+  const maxLength = Math.max(minuendStr.length, subtrahendStr.length);
+  
+  const paddedMinuend = minuendStr.padStart(maxLength, '0');
+  const paddedSubtrahend = subtrahendStr.padStart(maxLength, '0');
+  
+  for (let i = maxLength - 1; i >= 0; i--) {
+    const digitMinuend = parseInt(paddedMinuend[i]);
+    const digitSubtrahend = parseInt(paddedSubtrahend[i]);
+    
+    if (digitMinuend < digitSubtrahend) {
+      positions.push(maxLength - 1 - i);
+    }
   }
+  return positions;
+}
 
-  if (operands.length === 0) { // Salvaguarda final
-    operands = [getRandomInt(1,5), getRandomInt(1,5)];
+/**
+ * Genera problemas de resta específicos según el nivel de dificultad
+ * Cada nivel tiene características específicas para operaciones de sustracción:
+ * 
+ * - Beginner: Restas simples de 1 dígito, sin préstamo (0-9)
+ * - Elementary: Restas de 2 dígitos, algunas con préstamo simple
+ * - Intermediate: Restas de 2-3 dígitos con préstamo múltiple
+ * - Advanced: Restas de 3-4 dígitos con préstamos complejos y ceros
+ * - Expert: Restas de números grandes con múltiples préstamos y decimales
+ */
+export function generateSubtractionProblem(
+  level: DifficultyLevel = 'beginner',
+  layout: ExerciseLayout = 'vertical'
+): SubtractionProblem {
+  let minuend: number;
+  let subtrahend: number;
+  let maxDigits: number;
+  
+  switch (level) {
+    case 'beginner':
+      // Nivel Principiante: Restas simples de 1 dígito sin préstamo
+      // Ejemplos: 9-3=6, 8-5=3, 7-2=5
+      minuend = getRandomInt(5, 9);
+      subtrahend = getRandomInt(1, minuend);
+      maxDigits = 1;
+      break;
+      
+    case 'elementary':
+      // Nivel Elemental: Restas de 2 dígitos, algunas con préstamo simple
+      // Ejemplos: 25-13=12, 42-18=24, 30-15=15
+      if (Math.random() < 0.6) {
+        // 60% con préstamo para practicar
+        minuend = getRandomInt(20, 99);
+        subtrahend = getRandomInt(10, minuend - 1);
+        // Asegurar que requiera préstamo
+        while (!requiresBorrow(minuend, subtrahend)) {
+          subtrahend = getRandomInt(10, minuend - 1);
+        }
+      } else {
+        // 40% sin préstamo
+        minuend = getRandomInt(20, 99);
+        subtrahend = getRandomInt(10, minuend - 1);
+        // Asegurar que NO requiera préstamo
+        while (requiresBorrow(minuend, subtrahend)) {
+          subtrahend = getRandomInt(10, minuend - 1);
+        }
+      }
+      maxDigits = 2;
+      break;
+      
+    case 'intermediate':
+      // Nivel Intermedio: Restas de 2-3 dígitos con préstamo múltiple
+      // Ejemplos: 203-157=46, 400-263=137, 125-89=36
+      if (Math.random() < 0.5) {
+        // Números de 3 dígitos
+        minuend = getRandomInt(100, 999);
+        subtrahend = getRandomInt(50, minuend - 1);
+      } else {
+        // Números de 2 dígitos con préstamo garantizado
+        minuend = getRandomInt(50, 99);
+        subtrahend = getRandomInt(25, minuend - 1);
+        while (!requiresBorrow(minuend, subtrahend)) {
+          subtrahend = getRandomInt(25, minuend - 1);
+        }
+      }
+      maxDigits = 3;
+      break;
+      
+    case 'advanced':
+      // Nivel Avanzado: Restas de 3-4 dígitos con préstamos complejos y ceros
+      // Ejemplos: 1000-567=433, 2003-1456=547, 5000-2847=2153
+      if (Math.random() < 0.4) {
+        // Números con ceros en el medio (más difícil)
+        const bases = [1000, 2000, 3000, 4000, 5000];
+        minuend = bases[Math.floor(Math.random() * bases.length)] + getRandomInt(0, 99);
+        subtrahend = getRandomInt(500, minuend - 100);
+      } else {
+        // Números de 4 dígitos normales
+        minuend = getRandomInt(1000, 9999);
+        subtrahend = getRandomInt(500, minuend - 100);
+      }
+      maxDigits = 4;
+      break;
+      
+    case 'expert':
+      // Nivel Experto: Restas de números grandes con múltiples préstamos y decimales
+      // Ejemplos: 10000-7834=2166, 15.75-8.92=6.83, 25000-18467=6533
+      if (Math.random() < 0.3) {
+        // Números decimales
+        minuend = parseFloat((getRandomInt(1000, 9999) / 100).toFixed(2));
+        subtrahend = parseFloat((getRandomInt(500, Math.floor(minuend * 100) - 100) / 100).toFixed(2));
+        maxDigits = 4;
+      } else {
+        // Números enteros grandes
+        minuend = getRandomInt(10000, 99999);
+        subtrahend = getRandomInt(5000, minuend - 1000);
+        maxDigits = 5;
+      }
+      break;
+      
+    default:
+      minuend = getRandomInt(5, 9);
+      subtrahend = getRandomInt(1, minuend);
+      maxDigits = 1;
   }
-
-  const sum = operands.reduce((acc, val) => acc + val, 0);
-
-  let effectiveMaxDecimalsInAnswer = 0;
-  if (problemMaxDecimals > 0) {
-      effectiveMaxDecimalsInAnswer = problemMaxDecimals;
-  } else {
-      effectiveMaxDecimalsInAnswer = Math.max(0, ...operands.map(op => {
-          const opStr = String(op);
-          return (opStr.split('.')[1] || '').length;
-      }));
-  }
-  const correctAnswer = parseFloat(sum.toFixed(effectiveMaxDecimalsInAnswer));
-
-  const correctAnswerStr = correctAnswer.toFixed(effectiveMaxDecimalsInAnswer);
-  const [integerPartOfSumStr, decimalPartOfSumStr = ""] = correctAnswerStr.split('.');
-
-  const answerMaxDigits = integerPartOfSumStr.length + decimalPartOfSumStr.length;
-
-  let answerDecimalPosition: number | undefined = undefined;
-  if (effectiveMaxDecimalsInAnswer > 0 && decimalPartOfSumStr.length > 0) {
-    answerDecimalPosition = decimalPartOfSumStr.length;
-  }
-
+  
+  const correctAnswer = minuend - subtrahend;
+  const hasBorrow = requiresBorrow(minuend, subtrahend);
+  const borrowPositions = hasBorrow ? getBorrowPositions(minuend, subtrahend) : [];
+  
+  // Calcular dígitos máximos de la respuesta
+  const answerMaxDigits = correctAnswer.toString().length;
+  
   return {
-    id,
-    num1: operands[0], // Mantener por compatibilidad o uso simple
-    num2: operands.length > 1 ? operands[1] : 0, // Mantener por compatibilidad
-    operands,
+    id: generateUniqueId(),
+    minuend,
+    subtrahend,
+    num1: minuend,    // Compatibilidad legacy
+    num2: subtrahend, // Compatibilidad legacy
     correctAnswer,
     layout,
     answerMaxDigits,
-    answerDecimalPosition,
+    hasBorrow,
+    borrowPositions,
+    answerDecimalPosition: (minuend % 1 !== 0 || subtrahend % 1 !== 0) ? 2 : undefined
   };
 }
 
-// --- Validación de la Respuesta ---
-export function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
-  if (isNaN(userAnswer)) return false;
-
-  const precisionForComparison = problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0
-    ? problem.answerDecimalPosition
-    : 0;
-
-  const factor = Math.pow(10, precisionForComparison);
-  const roundedCorrectAnswer = Math.round(problem.correctAnswer * factor) / factor;
-  const roundedUserAnswer = Math.round(userAnswer * factor) / factor;
-
-  return roundedUserAnswer === roundedCorrectAnswer;
+// Función para verificar si una respuesta es correcta
+export function checkAnswer(problem: SubtractionProblem, userAnswer: number): boolean {
+  return Math.abs(userAnswer - problem.correctAnswer) < 0.01; // Tolerancia para decimales
 }
 
-// --- Funciones auxiliares para formatear números para la vista vertical ---
-export function getVerticalAlignmentInfo(
-    operands: number[],
-    problemOverallDecimalPrecision?: number
-): {
-    maxIntLength: number;
-    maxDecLength: number;
-    operandsFormatted: Array<{ original: number, intStr: string, decStr: string }>;
-    sumLineTotalCharWidth: number;
-} {
-    const effectiveDecimalPlacesToShow = problemOverallDecimalPrecision || 0;
-
-    const operandsDisplayInfo = operands.map(op => {
-        const s = op.toFixed(effectiveDecimalPlacesToShow);
-        const parts = s.split('.');
-        return {
-            original: op,
-            intPart: parts[0],
-            decPart: parts[1] || ""
-        };
-    });
-
-    const maxIntLength = Math.max(1, ...operandsDisplayInfo.map(info => info.intPart.length));
-    const maxDecLength = effectiveDecimalPlacesToShow;
-
-    const operandsFormatted = operandsDisplayInfo.map(info => ({
-        original: info.original,
-        intStr: info.intPart.padStart(maxIntLength, ' '),
-        decStr: info.decPart.padEnd(maxDecLength, '0')
-    }));
-
-    const sumLineTotalCharWidth = maxIntLength + (maxDecLength > 0 ? 1 : 0) + maxDecLength;
-
-    return { maxIntLength, maxDecLength, operandsFormatted, sumLineTotalCharWidth };
+// Función para obtener información de alineación vertical (similar al módulo Addition)
+export function getVerticalAlignmentInfo(problem: SubtractionProblem) {
+  const minuendStr = problem.minuend.toString();
+  const subtrahendStr = problem.subtrahend.toString();
+  const answerStr = problem.correctAnswer.toString();
+  
+  const maxLength = Math.max(minuendStr.length, subtrahendStr.length, answerStr.length);
+  
+  return {
+    minuendPadding: maxLength - minuendStr.length,
+    subtrahendPadding: maxLength - subtrahendStr.length,
+    answerPadding: maxLength - answerStr.length,
+    maxDigits: maxLength,
+    digitPositions: Array.from({ length: maxLength }, (_, i) => i)
+  };
 }
+
+// Función de utilidad para formatear problemas de resta
+export function formatSubtractionProblem(problem: SubtractionProblem, layout: ExerciseLayout = 'horizontal'): string {
+  if (layout === 'horizontal') {
+    return `${problem.minuend} - ${problem.subtrahend} = ?`;
+  } else {
+    const alignInfo = getVerticalAlignmentInfo(problem);
+    const minuendPadded = problem.minuend.toString().padStart(alignInfo.maxDigits, ' ');
+    const subtrahendPadded = problem.subtrahend.toString().padStart(alignInfo.maxDigits, ' ');
+    
+    return `  ${minuendPadded}\n- ${subtrahendPadded}\n${'='.repeat(alignInfo.maxDigits + 2)}`;
+  }
+}
+
+// Alias para mantener compatibilidad con el sistema existente
+export const generateAdditionProblem = generateSubtractionProblem;
+export type AdditionProblem = SubtractionProblem;
