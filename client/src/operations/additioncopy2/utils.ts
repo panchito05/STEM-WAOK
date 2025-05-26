@@ -99,8 +99,8 @@ export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionPr
       dividend = divisor * quotient2; // Asegurar división exacta
       layout = 'horizontal';
       break;
-    case "intermediate": // Divisiones con posibles decimales, formato vertical aleatorio
-      layout = getRandomBool(0.75) ? 'vertical' : 'horizontal'; // 75% vertical
+    case "intermediate": // Divisiones con posibles decimales, formato horizontal
+      layout = 'horizontal';
       divisor = getRandomInt(2, 15);
       if (getRandomBool(0.4)) { // 40% de chance de división con decimales
         problemMaxDecimals = 1;
@@ -112,14 +112,14 @@ export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionPr
       }
       break;
     case "advanced": // Divisiones complejas con decimales
-      layout = 'vertical';
+      layout = 'horizontal';
       problemMaxDecimals = getRandomBool(0.6) ? 2 : 1; // 60% chance de 2 decimales
       divisor = getRandomInt(3, 25);
       const quotient4 = getRandomDecimal(5, 50, problemMaxDecimals);
       dividend = Math.round(divisor * quotient4 * Math.pow(10, problemMaxDecimals)) / Math.pow(10, problemMaxDecimals);
       break;
     case "expert": // Divisiones muy complejas con decimales
-      layout = 'vertical';
+      layout = 'horizontal';
       problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
       divisor = getRandomInt(5, 50);
       const quotient5 = getRandomDecimal(10, 100, problemMaxDecimals);
