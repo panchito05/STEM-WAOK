@@ -1,490 +1,386 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import { ModuleSettings } from "@/context/SettingsContext";
-import { useSettings } from "@/context/SettingsContext";
+// Settings.tsx para el módulo de subtraction
+// Adaptado del módulo addition-independent con configuraciones específicas para sustracción
+
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, RotateCcw } from "lucide-react";
-import { defaultModuleSettings } from "@/utils/operationComponents";
-import DifficultyExamples from "@/components/DifficultyExamples";
-import { debounce } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, Minus, Settings as SettingsIcon, Clock, Target, Volume2, Eye, Zap, Award } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 interface SettingsProps {
-  settings: ModuleSettings;
+  settings: any;
   onBack: () => void;
 }
 
-export default function Settings({ settings, onBack }: SettingsProps) {
-  const { updateModuleSettings, resetModuleSettings } = useSettings();
-  const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
-  
-  // Referencia a la función debounced para guardar la configuración
-  const debouncedSave = useMemo(
-    () =>
-      debounce((settings: ModuleSettings) => {
-        updateModuleSettings("addition", settings);
-        console.log(`[ADDITION] Guardando configuración (debounced):`, settings);
-      }, 500), // Reducir el tiempo de espera a 500ms para asegurar que se guarde pronto
-    [updateModuleSettings]
-  );
-  
-  // Guardar automáticamente cada vez que cambia un ajuste
-  const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
-    const updatedSettings = { ...localSettings, [key]: value };
-    setLocalSettings(updatedSettings);
-    
-    // Para cambios de dificultad, aplicar cambio inmediatamente
-    if (key === "difficulty") {
-      console.log("[ADDITION] Guardando configuración de dificultad inmediatamente:", value);
-      // Actualizamos directamente sin usar debounce para cambios de dificultad
-      updateModuleSettings("addition", updatedSettings);
-    } else {
-      // Para otros ajustes, usar debounce para evitar múltiples llamadas de guardado
-      debouncedSave(updatedSettings);
-    }
+const Settings: React.FC<SettingsProps> = ({ settings, onBack }) => {
+  const { updateSettings } = useSettings();
+
+  const handleSettingChange = (key: string, value: any) => {
+    updateSettings('subtraction', { [key]: value });
   };
-  
-  // Para poder navegar entre la configuración y el ejercicio sin perder cambios
-  // Agregamos un efecto para guardar al desmontar y asegurar persistencia
-  // Referencia para controlar si ya se ha guardado la configuración
-  const hasSavedRef = useRef(false);
-  
-  // Forzar el guardado de la configuración al componente cargarse
-  useEffect(() => {
-    // Guardar configuración inmediatamente al montar el componente para persistir valores actuales
-    updateModuleSettings("addition", localSettings);
-    console.log("[ADDITION] Guardando configuración al cargar:", localSettings);
-    
-    // Al desmontar, volver a guardar
-    return () => {
-      if (!hasSavedRef.current) {
-        hasSavedRef.current = true;
-        // Llamada directa sin debounce para asegurar que se ejecute
-        updateModuleSettings("addition", localSettings);
-        console.log("[ADDITION] Guardando configuración al desmontar:", localSettings);
-        
-        // Forzar localStorage para asegurar persistencia
-        try {
-          const profileId = localStorage.getItem('activeProfileId');
-          const suffix = profileId ? `-profile-${profileId}` : '';
-          const key = `moduleSettings${suffix}`;
-          
-          // Obtener y actualizar configuraciones actuales en localStorage
-          const currentSettings = localStorage.getItem(key);
-          if (currentSettings) {
-            const parsed = JSON.parse(currentSettings);
-            const updated = {
-              ...parsed,
-              addition: localSettings
-            };
-            localStorage.setItem(key, JSON.stringify(updated));
-            console.log("[ADDITION] Forzando actualización en localStorage:", updated);
-          }
-        } catch (e) {
-          console.error("Error al forzar guardado en localStorage:", e);
-        }
-      }
-    };
-  }, [localSettings, updateModuleSettings]);
-
-  const handleResetSettings = async () => {
-    if (showResetConfirm) {
-      await resetModuleSettings("addition");
-      setLocalSettings({ ...defaultModuleSettings });
-      setShowResetConfirm(false);
-    } else {
-      setShowResetConfirm(true);
-    }
-  };
-
-  // Obtener el color del tema basado en la dificultad seleccionada
-  const getDifficultyTheme = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner":
-        return {
-          bg: "bg-gradient-to-br from-blue-50 to-blue-100", 
-          border: "border-blue-200",
-          text: "text-blue-600",
-          textSecondary: "text-blue-500",
-          bgContainer: "bg-blue-50",
-          bgLight: "bg-blue-100",
-          bgMedium: "bg-blue-200",
-          accent: "text-blue-700",
-          emoji: "🔵",
-          name: "Principiante"
-        };
-      case "elementary":
-        return {
-          bg: "bg-gradient-to-br from-emerald-50 to-emerald-100",
-          border: "border-emerald-200",
-          text: "text-emerald-600",
-          textSecondary: "text-emerald-500",
-          bgContainer: "bg-emerald-50",
-          bgLight: "bg-emerald-100",
-          bgMedium: "bg-emerald-200",
-          accent: "text-emerald-700",
-          emoji: "🟢",
-          name: "Elemental"
-        };
-      case "intermediate":
-        return {
-          bg: "bg-gradient-to-br from-orange-50 to-orange-100",
-          border: "border-orange-200",
-          text: "text-orange-600",
-          textSecondary: "text-orange-500",
-          bgContainer: "bg-orange-50",
-          bgLight: "bg-orange-100",
-          bgMedium: "bg-orange-200",
-          accent: "text-orange-700",
-          emoji: "🟠",
-          name: "Intermedio"
-        };
-      case "advanced":
-        return {
-          bg: "bg-gradient-to-br from-purple-50 to-purple-100",
-          border: "border-purple-200",
-          text: "text-purple-600",
-          textSecondary: "text-purple-500",
-          bgContainer: "bg-purple-50",
-          bgLight: "bg-purple-100",
-          bgMedium: "bg-purple-200",
-          accent: "text-purple-700",
-          emoji: "🟣",
-          name: "Avanzado"
-        };
-      case "expert":
-        return {
-          bg: "bg-gradient-to-br from-rose-50 to-rose-100",
-          border: "border-rose-200",
-          text: "text-rose-600",
-          textSecondary: "text-rose-500",
-          bgContainer: "bg-rose-50",
-          bgLight: "bg-rose-100",
-          bgMedium: "bg-rose-200",
-          accent: "text-rose-700",
-          emoji: "⭐",
-          name: "Experto"
-        };
-      default:
-        return {
-          bg: "bg-gradient-to-br from-indigo-50 to-indigo-100",
-          border: "border-indigo-200",
-          text: "text-indigo-600",
-          textSecondary: "text-indigo-500",
-          bgContainer: "bg-indigo-50",
-          bgLight: "bg-indigo-100",
-          bgMedium: "bg-indigo-200",
-          accent: "text-indigo-700",
-          emoji: "⚡",
-          name: "General"
-        };
-    }
-  };
-
-  const theme = getDifficultyTheme(localSettings.difficulty || "beginner");
-
-  // Función para cambiar el idioma
-  const toggleLanguage = () => {
-    const newLanguage = localSettings.language === "english" ? "spanish" : "english";
-    handleUpdateSetting("language", newLanguage);
-  };
-
-  // Determinar textos según el idioma actual
-  const isEnglish = localSettings.language === "english";
-  const headerTitle = isEnglish ? "Configuration - Addition Exercise" : "Configuración - Ejercicio de Suma";
-  const subheaderText = isEnglish ? "Customize your exercise experience" : "Personaliza tu experiencia de ejercicio";
-  const backButtonText = isEnglish ? "Back to Exercise" : "Volver al Ejercicio";
-  const languageButtonText = isEnglish ? "Español" : "English";
 
   return (
-    <div className={`px-4 py-5 sm:p-6 rounded-xl shadow-md ${theme.bg} border-2 ${theme.border}`}>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
-        <div>
-          <h2 className={`text-2xl font-bold ${theme.text} flex items-center`}>
-            {theme.emoji} {headerTitle}
-          </h2>
-          <p className={`text-sm font-medium ${theme.textSecondary}`}>{subheaderText}</p>
-        </div>
-        <div className="flex mt-3 sm:mt-0 space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={toggleLanguage}
-            className={`border ${theme.border} hover:${theme.bgContainer}`}
-          >
-            <span className="mr-1">{localSettings.language === "english" ? "🇪🇸" : "🇺🇸"}</span>
-            {languageButtonText}
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onBack}
-            className={`border ${theme.border} hover:${theme.bgContainer}`}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {backButtonText}
-          </Button>
+    <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button onClick={onBack} variant="outline" size="sm">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver
+        </Button>
+        <div className="flex items-center gap-3">
+          <Minus className="w-8 h-8 text-red-600" />
+          <h1 className="text-3xl font-bold">Configuración de Sustracción</h1>
         </div>
       </div>
-      <div className="space-y-6">
-        <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
-          <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">🎯</span>{isEnglish ? "Difficulty Level" : "Nivel de Dificultad"}
-          </h3>
-          <p className={`text-sm ${theme.textSecondary} mb-2`}>{isEnglish ? "Click on an example to change the difficulty level:" : "Haz clic en un ejemplo para cambiar el nivel de dificultad:"}</p>
-          
-          <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
-            <DifficultyExamples 
-              operation="addition" 
-              activeDifficulty={localSettings.difficulty}
-              onSelectDifficulty={(difficulty) => 
-                handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
-              }
-              language={localSettings.language || "english"}
-            />
-          </div>
-          
-          <div className="mt-3 mb-2 space-y-1.5">
-            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Beginner:" : "Principiante:"}</span> {isEnglish ? "Simple digit additions (1+8, 7+5)" : "Sumas con dígitos simples (1+8, 7+5)"}
-            </p>
-            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Elementary:" : "Elemental:"}</span> {isEnglish ? "Two-digit number additions (12+15, 24+13)" : "Sumas de números de dos dígitos (12+15, 24+13)"}
-            </p>
-            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Additions with large numbers (65+309, 392+132)" : "Sumas con números grandes (65+309, 392+132)"}
-            </p>
-            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Advanced:" : "Avanzado:"}</span> {isEnglish ? "4-digit number additions (1247+3568, 5934+8742)" : "Sumas de números de 4 dígitos (1247+3568, 5934+8742)"}
-            </p>
-            <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Expert:" : "Experto:"}</span> {isEnglish ? "Very large number additions (70960+11650, 28730+59436)" : "Sumas con números muy grandes (70960+11650, 28730+59436)"}
-            </p>
-          </div>
-        </div>
 
-        <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
-          <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">🔢</span>{isEnglish ? "Number of Problems" : "Número de Problemas"}
-          </h3>
-          <div className="mt-3">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <Slider
-                  value={[localSettings.problemCount]}
-                  min={1}
-                  max={50}
-                  step={1}
-                  onValueChange={(value) => handleUpdateSetting("problemCount", value[0])}
-                  className={`w-full ${theme.bgLight}`}
-                />
-                <div className={`flex justify-between text-xs font-medium mt-1 ${theme.accent}`}>
-                  <span>1</span>
-                  <span>25</span>
-                  <span>50</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Configuración del Ejercicio */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="w-5 h-5" />
+              Configuración del Ejercicio
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Dificultad */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Nivel de Dificultad</Label>
+              <Select 
+                value={settings.difficulty} 
+                onValueChange={(value) => handleSettingChange('difficulty', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beginner">
+                    <div className="flex flex-col">
+                      <span>Principiante</span>
+                      <span className="text-xs text-gray-500">Restas simples (2-9)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="elementary">
+                    <div className="flex flex-col">
+                      <span>Elemental</span>
+                      <span className="text-xs text-gray-500">Dos dígitos menos uno o dos dígitos</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="intermediate">
+                    <div className="flex flex-col">
+                      <span>Intermedio</span>
+                      <span className="text-xs text-gray-500">Problemas verticales, posibles decimales</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="advanced">
+                    <div className="flex flex-col">
+                      <span>Avanzado</span>
+                      <span className="text-xs text-gray-500">Múltiples sustraendos, decimales</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="expert">
+                    <div className="flex flex-col">
+                      <span>Experto</span>
+                      <span className="text-xs text-gray-500">4-5 operandos, decimales complejos</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Número de Problemas */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label className="text-base font-medium">Número de Problemas</Label>
+                <Badge variant="outline">{settings.problemCount}</Badge>
+              </div>
+              <Slider
+                value={[settings.problemCount]}
+                onValueChange={(value) => handleSettingChange('problemCount', value[0])}
+                min={5}
+                max={50}
+                step={5}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>5</span>
+                <span>25</span>
+                <span>50</span>
+              </div>
+            </div>
+
+            {/* Intentos Máximos */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label className="text-base font-medium">Intentos Máximos por Problema</Label>
+                <Badge variant="outline">{settings.maxAttempts}</Badge>
+              </div>
+              <Slider
+                value={[settings.maxAttempts]}
+                onValueChange={(value) => handleSettingChange('maxAttempts', value[0])}
+                min={1}
+                max={5}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>1</span>
+                <span>3</span>
+                <span>5</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Configuración de Tiempo */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              Configuración de Tiempo
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Habilitar Temporizador */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base font-medium">Habilitar Temporizador</Label>
+                <p className="text-sm text-gray-500">Agregar presión de tiempo al ejercicio</p>
+              </div>
+              <Switch
+                checked={settings.hasTimerEnabled}
+                onCheckedChange={(value) => handleSettingChange('hasTimerEnabled', value)}
+              />
+            </div>
+
+            {settings.hasTimerEnabled && (
+              <>
+                {/* Tipo de Límite de Tiempo */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">Tipo de Límite</Label>
+                  <Select 
+                    value={settings.timeLimit} 
+                    onValueChange={(value) => handleSettingChange('timeLimit', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="total">Tiempo Total</SelectItem>
+                      <SelectItem value="per-problem">Por Problema</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </div>
-              <div className="w-20">
-                <Input
-                  type="number"
-                  value={localSettings.problemCount}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (!isNaN(value) && value >= 1 && value <= 50) {
-                      handleUpdateSetting("problemCount", value);
-                    }
-                  }}
-                  min={1}
-                  max={50}
-                  className={`w-full border ${theme.border}`}
-                />
-              </div>
-            </div>
-            <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
-              <span className="font-medium">{isEnglish ? "Specify how many problems you want to solve:" : "Especifica cuántos problemas quieres resolver:"}</span> <span className={`font-bold ${theme.text}`}>{localSettings.problemCount}</span>
-            </p>
-          </div>
-        </div>
 
-        <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
-          <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">⏱️</span>{isEnglish ? "Time Limit" : "Límite de Tiempo"}
-          </h3>
-          <div className="mt-3">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <Slider
-                  value={[localSettings.timeValue]}
-                  min={0}
-                  max={300}
-                  step={5}
-                  onValueChange={(value) => handleUpdateSetting("timeValue", value[0])}
-                  className={`w-full ${theme.bgLight}`}
-                />
-                <div className={`flex justify-between text-xs font-medium mt-1 ${theme.accent}`}>
-                  <span>0</span>
-                  <span>150</span>
-                  <span>300</span>
+                {/* Valor del Tiempo */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-base font-medium">
+                      {settings.timeLimit === 'total' ? 'Minutos Totales' : 'Segundos por Problema'}
+                    </Label>
+                    <Badge variant="outline">
+                      {settings.timeValue} {settings.timeLimit === 'total' ? 'min' : 'seg'}
+                    </Badge>
+                  </div>
+                  <Slider
+                    value={[settings.timeValue]}
+                    onValueChange={(value) => handleSettingChange('timeValue', value[0])}
+                    min={settings.timeLimit === 'total' ? 2 : 10}
+                    max={settings.timeLimit === 'total' ? 30 : 120}
+                    step={settings.timeLimit === 'total' ? 1 : 5}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>{settings.timeLimit === 'total' ? '2 min' : '10 seg'}</span>
+                    <span>{settings.timeLimit === 'total' ? '15 min' : '60 seg'}</span>
+                    <span>{settings.timeLimit === 'total' ? '30 min' : '120 seg'}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="w-20">
-                <Input
-                  type="number"
-                  value={localSettings.timeValue}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (!isNaN(value) && value >= 0 && value <= 300) {
-                      handleUpdateSetting("timeValue", value);
-                    }
-                  }}
-                  min={0}
-                  max={300}
-                  className={`w-full border ${theme.border}`}
-                />
-              </div>
-            </div>
-            <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
-              <span className="font-medium">{isEnglish ? "Time in seconds:" : "Tiempo en segundos:"}</span> <span className={`font-bold ${theme.text}`}>{localSettings.timeValue}</span> <span className="text-xs">{isEnglish ? "(0 for no limit)" : "(0 para sin límite)"}</span>
-            </p>
-          </div>
-        </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
-        <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
-          <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
-            <span className="mr-2">🔄</span>{isEnglish ? "Maximum Attempts per Problem" : "Máximo de Intentos por Problema"}
-          </h3>
-          <div className="mt-3">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1">
-                <Slider
-                  value={[localSettings.maxAttempts]}
-                  min={0}
-                  max={10}
-                  step={1}
-                  onValueChange={(value) => handleUpdateSetting("maxAttempts", value[0])}
-                  className={`w-full ${theme.bgLight}`}
-                />
-                <div className={`flex justify-between text-xs font-medium mt-1 ${theme.accent}`}>
-                  <span>0</span>
-                  <span>5</span>
-                  <span>10</span>
-                </div>
+        {/* Configuración de Retroalimentación */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Eye className="w-5 h-5" />
+              Retroalimentación
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Mostrar Retroalimentación Inmediata */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base font-medium">Retroalimentación Inmediata</Label>
+                <p className="text-sm text-gray-500">Mostrar si la respuesta es correcta al instante</p>
               </div>
-              <div className="w-20">
-                <Input
-                  type="number"
-                  value={localSettings.maxAttempts}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (!isNaN(value) && value >= 0 && value <= 10) {
-                      handleUpdateSetting("maxAttempts", value);
-                    }
-                  }}
-                  min={0}
-                  max={10}
-                  className={`w-full border ${theme.border}`}
-                />
-              </div>
-            </div>
-            <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
-              <span className="font-medium">{isEnglish ? "Maximum attempts:" : "Intentos máximos:"}</span> <span className={`font-bold ${theme.text}`}>{localSettings.maxAttempts}</span> <span className="text-xs">{isEnglish ? "(0 for unlimited attempts)" : "(0 para intentos ilimitados)"}</span>
-            </p>
-          </div>
-
-          <h3 className={`text-lg font-bold ${theme.text} flex items-center mt-6`}>
-            <span className="mr-2">⚙️</span>{isEnglish ? "Additional Settings" : "Configuración Adicional"}
-          </h3>
-          <div className="mt-3 space-y-3">
-            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="show-immediate-feedback" className={`cursor-pointer ${theme.accent} flex items-center flex-col items-start`}>
-                <span className="flex items-center"><span className="mr-2">📝</span>{isEnglish ? "Show Instant Results" : "Mostrar Resultado Inmediato"}</span>
-                <span className="text-xs ml-5 opacity-80">
-                  {isEnglish 
-                    ? "When enabled, you'll instantly see if your answer is correct or incorrect with colors and sounds." 
-                    : "Al activar esta opción verás inmediatamente si tu respuesta es correcta o incorrecta con colores y sonidos."}
-                </span>
-              </Label>
               <Switch
-                id="show-immediate-feedback"
-                checked={localSettings.showImmediateFeedback}
-                onCheckedChange={(checked) => handleUpdateSetting("showImmediateFeedback", checked)}
-                className={theme.bgLight}
+                checked={settings.showImmediateFeedback}
+                onCheckedChange={(value) => handleSettingChange('showImmediateFeedback', value)}
               />
             </div>
 
-            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="show-answer-explanation" className={`cursor-pointer ${theme.accent} flex items-center flex-col items-start`}>
-                <span className="flex items-center"><span className="mr-2">❓</span>{isEnglish ? "Show Answer" : "Mostrar Respuesta"}</span>
-                <span className="text-xs ml-5 opacity-80">
-                  {isEnglish 
-                    ? "When enabled, you can request the answer to an exercise using the 'Show Answer' button." 
-                    : "Al activar esta opción podrás solicitar la respuesta de un ejercicio en el botón Mostrar Respuesta."}
-                </span>
-              </Label>
+            {/* Mostrar Respuesta con Explicación */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base font-medium">Mostrar Explicación</Label>
+                <p className="text-sm text-gray-500">Incluir explicaciones en respuestas incorrectas</p>
+              </div>
               <Switch
-                id="show-answer-explanation"
-                checked={localSettings.showAnswerWithExplanation}
-                onCheckedChange={(checked) => handleUpdateSetting("showAnswerWithExplanation", checked)}
-                className={theme.bgLight}
-              />
-            </div>
-            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="enable-adaptive-difficulty" className={`cursor-pointer ${theme.accent} flex items-center flex-col items-start`}>
-                <span className="flex items-center"><span className="mr-2">📈</span>{isEnglish ? "Enable Adaptive Difficulty" : "Habilitar Dificultad Adaptativa"}</span>
-                <span className="text-xs ml-5 opacity-80">
-                  {isEnglish 
-                    ? "Will automatically increase difficulty after 10 consecutive correct exercises, even across different sessions." 
-                    : "Aumentará de nivel automáticamente al resolver 10 ejercicios correctos consecutivos, incluso si fueron entre diferentes sesiones."}
-                </span>
-              </Label>
-              <Switch
-                id="enable-adaptive-difficulty"
-                checked={localSettings.enableAdaptiveDifficulty}
-                onCheckedChange={(checked) => handleUpdateSetting("enableAdaptiveDifficulty", checked)}
-                className={theme.bgLight}
-              />
-            </div>
-            <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
-              <Label htmlFor="enable-compensation" className={`cursor-pointer ${theme.accent} flex items-center flex-col items-start`}>
-                <span className="flex items-center"><span className="mr-2">➕</span>{isEnglish ? "Enable Compensation" : "Habilitar Compensación"}</span>
-                <span className="text-xs ml-5 opacity-80">{isEnglish ? "(Add 1 problem for each incorrect/revealed answer)" : "(Añadir 1 problema por cada incorrecto/revelado)"}</span>
-              </Label>
-              <Switch
-                id="enable-compensation"
-                checked={localSettings.enableCompensation}
-                onCheckedChange={(checked) => handleUpdateSetting("enableCompensation", checked)}
-                className={theme.bgLight}
+                checked={settings.showAnswerWithExplanation}
+                onCheckedChange={(value) => handleSettingChange('showAnswerWithExplanation', value)}
               />
             </div>
 
-          </div>
-        </div>
+            {/* Efectos de Sonido */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base font-medium">Efectos de Sonido</Label>
+                <p className="text-sm text-gray-500">Reproducir sonidos para éxito y error</p>
+              </div>
+              <Switch
+                checked={settings.enableSoundEffects}
+                onCheckedChange={(value) => handleSettingChange('enableSoundEffects', value)}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="pt-4">
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant={showResetConfirm ? "destructive" : "outline"}
-              onClick={handleResetSettings}
-              className={`mr-3 ${showResetConfirm ? "" : `border ${theme.border} hover:${theme.bgContainer}`}`}
-            >
-              {showResetConfirm ? (
-                "Confirmar Restablecimiento"
-              ) : (
-                <>
-                  <RotateCcw className="mr-2 h-4 w-4" />
-                  Restablecer valores predeterminados
-                </>
-              )}
-            </Button>
-            {/* Botón de guardar eliminado - los cambios se guardan automáticamente */}
-          </div>
-        </div>
+        {/* Configuración Avanzada */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Configuración Avanzada
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Dificultad Adaptativa */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base font-medium">Dificultad Adaptativa</Label>
+                <p className="text-sm text-gray-500">Ajustar automáticamente según rendimiento</p>
+              </div>
+              <Switch
+                checked={settings.enableAdaptiveDifficulty}
+                onCheckedChange={(value) => handleSettingChange('enableAdaptiveDifficulty', value)}
+              />
+            </div>
+
+            {/* Sistema de Compensación */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base font-medium">Sistema de Compensación</Label>
+                <p className="text-sm text-gray-500">Ajustar problemas según errores frecuentes</p>
+              </div>
+              <Switch
+                checked={settings.enableCompensation}
+                onCheckedChange={(value) => handleSettingChange('enableCompensation', value)}
+              />
+            </div>
+
+            {/* Sistema de Recompensas */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-base font-medium">Sistema de Recompensas</Label>
+                <p className="text-sm text-gray-500">Activar logros y recompensas</p>
+              </div>
+              <Switch
+                checked={settings.enableRewards}
+                onCheckedChange={(value) => handleSettingChange('enableRewards', value)}
+              />
+            </div>
+
+            {settings.enableRewards && (
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Tipo de Recompensa</Label>
+                <Select 
+                  value={settings.rewardType} 
+                  onValueChange={(value) => handleSettingChange('rewardType', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="points">Puntos</SelectItem>
+                    <SelectItem value="badges">Insignias</SelectItem>
+                    <SelectItem value="both">Puntos e Insignias</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Idioma */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Idioma</Label>
+              <Select 
+                value={settings.language} 
+                onValueChange={(value) => handleSettingChange('language', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="fr">Français</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Resumen de Configuración */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            Resumen de Configuración
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <span className="font-medium text-gray-600">Dificultad:</span>
+              <Badge variant="outline" className="ml-2">
+                {settings.difficulty}
+              </Badge>
+            </div>
+            <div>
+              <span className="font-medium text-gray-600">Problemas:</span>
+              <Badge variant="outline" className="ml-2">
+                {settings.problemCount}
+              </Badge>
+            </div>
+            <div>
+              <span className="font-medium text-gray-600">Tiempo:</span>
+              <Badge variant="outline" className="ml-2">
+                {settings.hasTimerEnabled 
+                  ? `${settings.timeValue}${settings.timeLimit === 'total' ? ' min' : ' seg'}`
+                  : 'Sin límite'
+                }
+              </Badge>
+            </div>
+            <div>
+              <span className="font-medium text-gray-600">Intentos:</span>
+              <Badge variant="outline" className="ml-2">
+                {settings.maxAttempts}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default Settings;

@@ -115,19 +115,28 @@ export function generateSubtractionProblem(difficulty: DifficultyLevel): Subtrac
         operands = [minuend3b, subtrahend3b];
       }
       break;
-    case "advanced": // 3 líneas, siempre vertical, 1 o 2 decimales
+    case "advanced": // 3 operandos: minuendo - sustraendo1 - sustraendo2, vertical, decimales
       layout = 'vertical';
       problemMaxDecimals = getRandomBool(0.6) ? 2 : 1; // 60% chance de 2 decimales
-      for (let i = 0; i < 3; i++) {
-        operands.push(getRandomDecimal(10, getRandomInt(200, 999), problemMaxDecimals));
-      }
+      const minuend4 = getRandomDecimal(500, 999, problemMaxDecimals);
+      const subtrahend4a = getRandomDecimal(50, minuend4 * 0.3, problemMaxDecimals);
+      const subtrahend4b = getRandomDecimal(50, minuend4 * 0.3, problemMaxDecimals);
+      // Asegurar que minuendo > suma de sustraendos
+      const maxSubtrahend = (minuend4 - subtrahend4a) * 0.8;
+      operands = [minuend4, subtrahend4a, Math.min(subtrahend4b, maxSubtrahend)];
       break;
-    case "expert": // 4 o 5 líneas, siempre vertical, 1 o 2 decimales
+    case "expert": // 4 o 5 operandos: múltiples sustraendos, vertical, decimales
       layout = 'vertical';
       const numLines = getRandomBool() ? 4 : 5;
       problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
-      for (let i = 0; i < numLines; i++) {
-        operands.push(getRandomDecimal(100, getRandomInt(2000, 9999), problemMaxDecimals));
+      const minuend5 = getRandomDecimal(2000, 9999, problemMaxDecimals);
+      operands = [minuend5];
+      let remainingValue = minuend5 * 0.8; // Reservar 20% para evitar negativos
+      for (let i = 1; i < numLines; i++) {
+        const maxSubtrahend = remainingValue / (numLines - i); // Distribuir equitativamente
+        const subtrahend = getRandomDecimal(100, maxSubtrahend * 0.8, problemMaxDecimals);
+        operands.push(subtrahend);
+        remainingValue -= subtrahend;
       }
       break;
     default: // Fallback a beginner si la dificultad no es reconocida
