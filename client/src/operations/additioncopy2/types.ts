@@ -1,40 +1,37 @@
-// Definición de tipos para el módulo de suma
+// Definición de tipos para el módulo de división
 
 // Niveles de dificultad estandarizados para todos los módulos
 export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
 
-// Formatos de visualización para los problemas
-export type ExerciseLayout = 'horizontal' | 'vertical';
+// Formatos de visualización para los problemas de división
+export type DivisionDisplayFormat = 'slash' | 'obelus' | 'long';
 
-// Definición de un problema de suma específico
-export interface AdditionProblem {
+// Definición de un problema de división específico
+export interface DivisionProblem {
   id: string;
-  operands: number[];       // Operandos de la suma (puede ser más de 2 en niveles avanzados)
-  num1?: number;            // Campo legacy para compatibilidad
-  num2?: number;            // Campo legacy para compatibilidad
-  correctAnswer: number;    // Respuesta correcta
-  layout: ExerciseLayout;   // Formato de visualización
-  answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
-  answerDecimalPosition?: number; // Posición del decimal en la respuesta (si aplica)
-  index?: number;           // Índice del problema en la secuencia (para mostrar Problema X de Y)
-  total?: number;           // Total de problemas en el ejercicio
+  num1: number;              // Dividendo
+  num2: number;              // Divisor
+  operator: string;          // Siempre ÷
+  correctAnswer: number;     // Respuesta correcta
+  displayFormat: DivisionDisplayFormat; // Formato de visualización
+  index?: number;            // Índice del problema en la secuencia
+  total?: number;            // Total de problemas en el ejercicio
 }
 
 // Tipo genérico para un operando
 export interface Operand {
   value: number;
-  // Podríamos añadir más propiedades en el futuro como:
-  // label?: string;
-  // displayType?: string;
+  label?: string;
+  displayType?: string;
 }
 
 // Tipo genérico para cualquier problema matemático
 export interface Problem {
   id: string;
   operands: Operand[];
-  operator?: string;       // El operador matemático (no usado en suma, pero útil para otros módulos)
+  operator?: string;
   correctAnswer: number;
-  displayFormat: string;   // Cómo mostrar el problema (horizontal, vertical, word)
+  displayFormat: string;
   difficulty: DifficultyLevel;
   allowDecimals: boolean;
   maxAttempts: number;
@@ -46,11 +43,11 @@ export interface UserAnswer {
   problem: Problem;
   userAnswer: number;
   isCorrect: boolean;
-  status: string;          // 'correct', 'incorrect', 'skipped', etc.
+  status: string;
   attempts: number;
   timestamp: number;
-  timeTaken?: number;      // Tiempo que le tomó al usuario responder
-  mistakes?: number[];     // Lista de respuestas incorrectas
+  timeTaken?: number;
+  mistakes?: number[];
 }
 
 // Resultado de un ejercicio completo
