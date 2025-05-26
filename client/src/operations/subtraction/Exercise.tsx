@@ -492,7 +492,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Traducciones para elementos específicos de la interfaz
   const translations = {
     english: {
-      addition: "Addition",
+      subtraction: "Subtraction",
       attempts: "Attempts",
       level: "Level",
       settings: "Settings",
@@ -1495,7 +1495,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
     // Create screenshot-like data structure that matches our template
     const screenshotData = {
-      title: "Addition Exercise Complete!",
+      title: "Subtraction Exercise Complete!",
       scoreData: {
         totalTime: formatTime(timer),
         score: {
@@ -1546,7 +1546,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (!problem) return null;
 
         // Este es el formato EXACTO que se muestra en la pantalla final
-        const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+        const problemText = `${problem.operands[0]} - ${problem.operands[1]} = ${problem.correctAnswer}`;
 
         // Objeto con la información completa del problema tal como se muestra en la UI
         return {
@@ -1604,7 +1604,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         const respuesta = userAnswersHistory[i];
         const problema = problemsList[i];
         console.log(`   Problema #${i+1}: ${problema.id}`);
-        console.log(`   - Operación: ${problema.operands?.[0]} + ${problema.operands?.[1]} = ${problema.correctAnswer}`);
+        console.log(`   - Operación: ${problema.operands?.[0]} - ${problema.operands?.[1]} = ${problema.correctAnswer}`);
         console.log(`   - Tiene respuesta: ${respuesta ? "SÍ" : "NO"}`);
         if (respuesta) {
           console.log(`   - Respuesta dada: ${respuesta.userAnswer}`);
@@ -2207,7 +2207,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return (
       <div className="px-4 py-5 sm:p-6">
         <h2 className="text-2xl font-bold text-gray-900 text-center mb-4">
-          {t('Addition Exercise Complete!')}
+          {t('Subtraction Exercise Complete!')}
         </h2>
 
         {/* Tiempo total */}
