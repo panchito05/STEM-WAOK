@@ -133,11 +133,20 @@ export function ChildProfilesProvider({ children }: { children: ReactNode }) {
       console.error("💥 [PROFILES] Stack trace:", err instanceof Error ? err.stack : 'No stack trace');
       
       setError(err instanceof Error ? err : new Error("Failed to fetch profiles"));
-      toast({
-        title: "Error al cargar perfiles",
-        description: "No se pudieron cargar los perfiles de niños",
-        variant: "destructive",
-      });
+      
+      // SOLUCIÓN: Solo mostrar toast de error si es un error real del servidor, no de sesión
+      const isServerError = err instanceof Error && !err.message.includes("401") && !err.message.includes("Unauthorized");
+      
+      if (isServerError) {
+        console.log("⚠️ [PROFILES] Mostrando toast de error por error real del servidor");
+        toast({
+          title: "Error al cargar perfiles",
+          description: "No se pudieron cargar los perfiles de niños",
+          variant: "destructive",
+        });
+      } else {
+        console.log("ℹ️ [PROFILES] Error de sesión detectado, no mostrando toast (los datos se cargarán después)");
+      }
     } finally {
       setIsLoading(false);
       console.log("🏁 [PROFILES] fetchProfiles terminado (finally)");
