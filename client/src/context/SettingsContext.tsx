@@ -8,6 +8,7 @@ import {
   TimestampedData
 } from "@/lib/localStorage";
 import { debouncePromise } from "@/lib/debounce";
+import { dataManager, migrateUserData } from "@/lib/dataAdapters";
 
 // Interfaces de datos
 export interface ModuleSettings {
@@ -123,6 +124,18 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         if (wasAuthenticated !== nowAuthenticated) {
           console.log(`🔐 Estado de autenticación cambiado: ${wasAuthenticated} -> ${nowAuthenticated}`);
           setIsAuthenticated(nowAuthenticated);
+          
+          // Si el usuario se acaba de loguear, migrar datos locales al servidor
+          if (!wasAuthenticated && nowAuthenticated && activeProfile?.id) {
+            console.log('🚀 Usuario se logueó: iniciando migración de datos locales...');
+            try {
+              await migrateUserData(activeProfile.id);
+              console.log('✅ Migración de datos completada exitosamente');
+            } catch (error) {
+              console.warn('⚠️ Error durante migración de datos:', error);
+              // El sistema continuará funcionando con datos locales como fallback
+            }
+          }
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
