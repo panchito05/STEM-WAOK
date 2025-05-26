@@ -37,7 +37,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
-      <Route path="/operation/:operation" component={OperationPage} />
+      <Route path="/operations/:operation" component={OperationPage} />
       <Route path="/progress" component={ProtectedRoute(ProgressPage)} />
       <Route path="/settings" component={ProtectedRoute(SettingsPage)} />
       <Route path="/profile" component={ProtectedRoute(ProfilePage)} />

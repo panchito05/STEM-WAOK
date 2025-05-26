@@ -1172,12 +1172,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
     const newProblemsArray: SubtractionProblem[] = [];
     for (let i = 0; i < settings.problemCount; i++) {
-      const problem = generateSubtractionProblem(difficultyToUse);
+      const problem = generateSubtractionProblem(difficultyToUse, 'vertical');
+      console.log('[SUBTRACTION] Generated problem:', problem);
       // Agregar información de índice y total a cada problema
       problem.index = i;
       problem.total = settings.problemCount;
       newProblemsArray.push(problem);
     }
+    console.log('[SUBTRACTION] Setting problems list:', newProblemsArray);
+    console.log('[SUBTRACTION] Setting current problem to:', newProblemsArray[0]);
     setProblemsList(newProblemsArray);
     setCurrentProblemIndex(0);
     setActualActiveProblemIndexBeforeViewingPrevious(0);
