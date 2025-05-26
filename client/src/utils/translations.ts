@@ -76,6 +76,10 @@ type TranslationKeys = {
       name: string;
       description: string;
     };
+    subtraction: {
+      name: string;
+      description: string;
+    };
 
   };
 };
@@ -156,6 +160,10 @@ export const enTranslations: TranslationKeys = {
       name: "Addition",
       description: "Practice addition with various difficulty levels"
     },
+    subtraction: {
+      name: "Subtraction",
+      description: "Practice subtraction with various difficulty levels"
+    },
 
   },
 };
@@ -235,6 +243,10 @@ export const esTranslations: TranslationKeys = {
     addition: {
       name: "Suma",
       description: "Practica sumas con varios niveles de dificultad"
+    },
+    subtraction: {
+      name: "Resta",
+      description: "Practica restas con varios niveles de dificultad"
     },
 
   },
