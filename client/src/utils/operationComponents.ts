@@ -57,10 +57,19 @@ export const operationModules: Module[] = [
     color: "#ef4444", // Rojo para distinguir de suma
     icon: "Minus",
   },
+  {
+    id: "additioncopy",
+    displayName: "Addition Copy",
+    description: "Practice addition with various difficulty levels (Copy module)",
+    difficulty: "beginner",
+    color: "#10b981", // Verde para distinguir del módulo original
+    icon: "Plus",
+  },
 ];
 
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
   subtraction: Subtraction, // El módulo de resta
+  additioncopy: AdditionCopy, // El módulo copia de adición
 };
