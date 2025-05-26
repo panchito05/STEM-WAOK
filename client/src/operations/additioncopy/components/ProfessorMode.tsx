@@ -63,7 +63,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     try {
       // Crear los problemas capturados exactamente como el modo normal
       const problemasCapturados = history.map((item, index) => ({
-        problem: `${item.problem.operands.join(' + ')} = ${calculateCorrectAnswer(item.problem)}`,
+        problem: `${item.problem.operands.join(' × ')} = ${calculateCorrectAnswer(item.problem)}`,
         userAnswer: item.userAnswer.toString(),
         correctAnswer: calculateCorrectAnswer(item.problem).toString(),
         isCorrect: item.isCorrect,
@@ -148,10 +148,10 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
   // Calcular respuesta correcta
   const calculateCorrectAnswer = useCallback((prob: AdditionProblem): number => {
-    return prob.operands.reduce((sum, operand) => {
+    return prob.operands.reduce((product, operand) => {
       const num = typeof operand === 'number' ? operand : parseFloat(operand.toString());
-      return sum + (isNaN(num) ? 0 : num);
-    }, 0);
+      return product * (isNaN(num) ? 1 : num);
+    }, 1);
   }, []);
 
   // Función de verificación mejorada con tracking de estadísticas
@@ -494,7 +494,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
                         (#{index + 1})
                       </span>
                       <span className="text-gray-900">
-                        {item.problem.operands.join(' + ')} = {calculateCorrectAnswer(item.problem)}
+                        {item.problem.operands.join(' × ')} = {calculateCorrectAnswer(item.problem)}
                       </span>
                     </div>
                     <div className="flex items-center">
@@ -605,7 +605,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
                   <span key={index}>
                     <span className="mx-1">{typeof op === 'number' ? op : parseFloat(op.toString())}</span>
                     {index < problem.operands.length - 1 && (
-                      <span className="mx-2 text-blue-600 font-bold">+</span>
+                      <span className="mx-2 text-blue-600 font-bold">×</span>
                     )}
                   </span>
                 ))}
