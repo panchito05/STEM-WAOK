@@ -4,10 +4,16 @@
  * basándose en el primer dígito que presiona
  */
 
+type CursorDirection = 'left' | 'right' | 'default';
+
 /**
  * Detecta la intención del usuario basándose en el primer dígito presionado
  */
-export function detectIntentionalDirection(firstDigit, correctAnswer, totalFields = 1) {
+export function detectIntentionalDirection(
+  firstDigit: string, 
+  correctAnswer: string | number, 
+  totalFields: number = 1
+): CursorDirection {
   // Solo aplicar para sumas complejas con múltiples campos (5 o más)
   if (totalFields < 5) {
     return 'default';
@@ -53,11 +59,8 @@ export function detectIntentionalDirection(firstDigit, correctAnswer, totalField
 
 /**
  * Verifica si un problema es elegible para la detección inteligente
- * @param {Object} problem - El objeto del problema
- * @param {number} fieldCount - Número de campos de respuesta
- * @returns {boolean}
  */
-export function isEligibleForSmartCursor(problem, fieldCount) {
+export function isEligibleForSmartCursor(problem: any, fieldCount: number): boolean {
   // Solo para sumas verticales complejas
   const isVertical = problem?.layout === 'vertical' || fieldCount >= 5;
   const isComplex = fieldCount >= 5;
@@ -67,9 +70,8 @@ export function isEligibleForSmartCursor(problem, fieldCount) {
 
 /**
  * Obtiene la configuración del cursor inteligente desde localStorage
- * @returns {boolean}
  */
-export function isSmartCursorEnabled() {
+export function isSmartCursorEnabled(): boolean {
   try {
     const settings = localStorage.getItem('addition_settings');
     if (settings) {
@@ -85,12 +87,11 @@ export function isSmartCursorEnabled() {
 
 /**
  * Guarda la configuración del cursor inteligente
- * @param {boolean} enabled 
  */
-export function setSmartCursorEnabled(enabled) {
+export function setSmartCursorEnabled(enabled: boolean): void {
   try {
     const settings = localStorage.getItem('addition_settings');
-    let parsed = {};
+    let parsed: any = {};
     
     if (settings) {
       parsed = JSON.parse(settings);

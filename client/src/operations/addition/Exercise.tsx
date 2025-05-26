@@ -1975,7 +1975,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const maxDigits = currentProblem.answerMaxDigits;
 
     if (/[0-9]/.test(value)) {
+      // Integración de detección inteligente de cursor
+      if (settings.enableSmartCursor && 
+          isEligibleForSmartCursor(currentProblem, maxDigits) && 
+          digitAnswers.every(digit => digit === "")) {
+        
+        // Es el primer dígito en un problema elegible para detección inteligente
+        const detectedDirection = detectIntentionalDirection(
+          value, 
+          currentProblem.correctAnswer.toString(), 
+          maxDigits
+        );
+        
+        if (detectedDirection === 'left') {
+          // Usuario quiere empezar por la izquierda (memoria)
+          currentFocus = 0;
+          setFocusedDigitIndex(0);
+          setInputDirection('ltr');
+        } else if (detectedDirection === 'right') {
+          // Usuario quiere empezar por la derecha (paso a paso)
+          currentFocus = maxDigits - 1;
+          setFocusedDigitIndex(maxDigits - 1);
+          setInputDirection('rtl');
+        }
+        // Si detectedDirection === 'default', mantiene el comportamiento actual
+      }
+
       newAnswers[currentFocus] = value;
+      
+      // Mover el cursor según la dirección actual
       if (inputDirection === 'rtl') {
         if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
       } else {

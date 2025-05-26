@@ -78,6 +78,7 @@ const defaultModuleSettings: ModuleSettings = {
   showAnswerWithExplanation: true,
   enableAdaptiveDifficulty: true,
   enableCompensation: true,
+  enableSmartCursor: true,
   enableRewards: true,
   rewardType: "stars",
   language: "english"
