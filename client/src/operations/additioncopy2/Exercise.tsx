@@ -2326,10 +2326,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }
   if (!currentProblem) return <div className="p-8 text-center">{t('common.errorLoadingProblem')}</div>;
 
-  const { maxIntLength = 0, maxDecLength = 0, operandsFormatted = [], sumLineTotalCharWidth = 0 } =
+  const { maxIntLength = 0, maxDecLength = 0, dividendFormatted = {original: 0, intStr: "", decStr: ""}, divisorFormatted = {original: 0, intStr: "", decStr: ""}, divisionLineTotalCharWidth = 0 } =
     currentProblem.layout === 'vertical'
-    ? getVerticalAlignmentInfo(currentProblem.operands, currentProblem.answerDecimalPosition)
-    : { operandsFormatted: currentProblem.operands.map(op => ({original: op, intStr: String(op), decStr: ""})), maxIntLength:0, maxDecLength:0, sumLineTotalCharWidth:0 };
+    ? getVerticalAlignmentInfo(currentProblem.dividend, currentProblem.divisor, currentProblem.answerDecimalPosition)
+    : { dividendFormatted: {original: currentProblem.dividend, intStr: String(currentProblem.dividend), decStr: ""}, divisorFormatted: {original: currentProblem.divisor, intStr: String(currentProblem.divisor), decStr: ""}, maxIntLength:0, maxDecLength:0, divisionLineTotalCharWidth:0 };
 
   const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
   const progressValue = problemsList.length > 0 ? (attemptedProblemsCount / problemsList.length) * 100 : 0;
