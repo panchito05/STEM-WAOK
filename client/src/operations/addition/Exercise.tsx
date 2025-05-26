@@ -1974,7 +1974,47 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const maxDigits = currentProblem.answerMaxDigits;
 
     if (/[0-9]/.test(value)) {
+      // 🧠 DETECCIÓN INTELIGENTE: Verificar si es el primer dígito ingresado
+      const isFirstDigit = digitAnswers.every(digit => digit === "");
+      
+      if (isFirstDigit && currentProblem.correctAnswer !== undefined) {
+        // Obtener el primer y último dígito de la respuesta correcta
+        const correctAnswerStr = currentProblem.correctAnswer.toString().replace('.', '');
+        const firstDigitCorrect = correctAnswerStr[0];
+        const lastDigitCorrect = correctAnswerStr[correctAnswerStr.length - 1];
+        
+        console.log(`🧠 [SMART-INPUT] Detectando primer dígito: ${value}`);
+        console.log(`🧠 [SMART-INPUT] Respuesta correcta: ${currentProblem.correctAnswer} (${correctAnswerStr})`);
+        console.log(`🧠 [SMART-INPUT] Primer dígito correcto: ${firstDigitCorrect}, Último dígito correcto: ${lastDigitCorrect}`);
+        
+        // Casos especiales: si primer y último dígito son iguales, usar lógica de clic
+        if (firstDigitCorrect === lastDigitCorrect) {
+          console.log(`🧠 [SMART-INPUT] Primer y último dígito iguales - usando lógica de clic actual`);
+          // Mantener la dirección actual basada en el clic
+        }
+        // Si coincide con el primer dígito -> LTR (izquierda a derecha)
+        else if (value === firstDigitCorrect) {
+          console.log(`🧠 [SMART-INPUT] ✅ Coincide con primer dígito -> LTR (respuesta de memoria)`);
+          setInputDirection('ltr');
+          setFocusedDigitIndex(0);
+          currentFocus = 0;
+        }
+        // Si coincide con el último dígito -> RTL (derecha a izquierda)
+        else if (value === lastDigitCorrect) {
+          console.log(`🧠 [SMART-INPUT] ✅ Coincide con último dígito -> RTL (cálculo paso a paso)`);
+          setInputDirection('rtl');
+          setFocusedDigitIndex(maxDigits - 1);
+          currentFocus = maxDigits - 1;
+        }
+        // Si no coincide con ningún extremo, mantener lógica actual
+        else {
+          console.log(`🧠 [SMART-INPUT] No coincide con extremos - manteniendo dirección actual: ${inputDirection}`);
+        }
+      }
+      
       newAnswers[currentFocus] = value;
+      
+      // Mover el foco según la dirección
       if (inputDirection === 'rtl') {
         if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
       } else {
@@ -1991,13 +2031,54 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
       const key = event.key;
       if (key >= '0' && key <= '9') {
+          // 🧠 DETECCIÓN INTELIGENTE: Verificar si es el primer dígito ingresado
+          const isFirstDigit = digitAnswers.every(digit => digit === "");
+          let currentFocus = focusedDigitIndex;
+          
+          if (isFirstDigit && currentProblem.correctAnswer !== undefined) {
+            // Obtener el primer y último dígito de la respuesta correcta
+            const correctAnswerStr = currentProblem.correctAnswer.toString().replace('.', '');
+            const firstDigitCorrect = correctAnswerStr[0];
+            const lastDigitCorrect = correctAnswerStr[correctAnswerStr.length - 1];
+            
+            console.log(`🧠 [SMART-KEYBOARD] Detectando primer dígito: ${key}`);
+            console.log(`🧠 [SMART-KEYBOARD] Respuesta correcta: ${currentProblem.correctAnswer} (${correctAnswerStr})`);
+            console.log(`🧠 [SMART-KEYBOARD] Primer dígito correcto: ${firstDigitCorrect}, Último dígito correcto: ${lastDigitCorrect}`);
+            
+            // Casos especiales: si primer y último dígito son iguales, usar lógica de clic
+            if (firstDigitCorrect === lastDigitCorrect) {
+              console.log(`🧠 [SMART-KEYBOARD] Primer y último dígito iguales - usando lógica de clic actual`);
+              // Mantener la dirección actual basada en el clic
+            }
+            // Si coincide con el primer dígito -> LTR (izquierda a derecha)
+            else if (key === firstDigitCorrect) {
+              console.log(`🧠 [SMART-KEYBOARD] ✅ Coincide con primer dígito -> LTR (respuesta de memoria)`);
+              setInputDirection('ltr');
+              setFocusedDigitIndex(0);
+              currentFocus = 0;
+            }
+            // Si coincide con el último dígito -> RTL (derecha a izquierda)
+            else if (key === lastDigitCorrect) {
+              console.log(`🧠 [SMART-KEYBOARD] ✅ Coincide con último dígito -> RTL (cálculo paso a paso)`);
+              setInputDirection('rtl');
+              setFocusedDigitIndex(currentProblem.answerMaxDigits - 1);
+              currentFocus = currentProblem.answerMaxDigits - 1;
+            }
+            // Si no coincide con ningún extremo, mantener lógica actual
+            else {
+              console.log(`🧠 [SMART-KEYBOARD] No coincide con extremos - manteniendo dirección actual: ${inputDirection}`);
+            }
+          }
+          
           let newAnswers = [...digitAnswers];
-          newAnswers[focusedDigitIndex] = key;
+          newAnswers[currentFocus] = key;
           setDigitAnswers(newAnswers);
+          
+          // Mover el foco según la dirección
           if (inputDirection === 'rtl') {
-              if (focusedDigitIndex > 0) setFocusedDigitIndex(focusedDigitIndex - 1);
+              if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
           } else {
-              if (focusedDigitIndex < currentProblem.answerMaxDigits - 1) setFocusedDigitIndex(focusedDigitIndex + 1);
+              if (currentFocus < currentProblem.answerMaxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
           }
           event.preventDefault();
       } else if (key === 'Backspace') {
