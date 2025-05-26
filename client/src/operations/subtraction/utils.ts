@@ -1,5 +1,5 @@
-// utils.ts
-import { AdditionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
+// utils.ts - Módulo de Resta (Subtraction)
+import { SubtractionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
