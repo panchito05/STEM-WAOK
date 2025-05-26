@@ -1,5 +1,4 @@
 import * as Addition from "../operations/addition";
-import * as AdditionIndependent from "../operations/addition-independent";
 import * as Subtraction from "../operations/subtraction";
 import { ModuleSettings } from "@/context/SettingsContext";
 
@@ -50,20 +49,12 @@ export const operationModules: Module[] = [
     icon: "Plus",
   },
   {
-    id: "addition-independent",
-    displayName: "Addition (Independent)",
-    description: "Independent copy of addition module with full functionality",
-    difficulty: "beginner",
-    color: "#2563eb", // Un azul diferente
-    icon: "PlusCircle",
-  },
-  {
     id: "subtraction",
     displayName: "Subtraction",
     description: "Practice subtraction with various difficulty levels",
     difficulty: "beginner",
-    color: "#dc2626", // Rojo para subtraction
-    icon: "Minus",
+    color: "#f54242", // Rojo para diferenciarlo
+    icon: "PlusCircle",
   },
 
 
@@ -72,6 +63,5 @@ export const operationModules: Module[] = [
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
-  "addition-independent": AdditionIndependent, // El módulo independiente
-  subtraction: Subtraction, // El módulo de substracción de adición
+  subtraction: Subtraction, // El módulo de Subtraction
 };

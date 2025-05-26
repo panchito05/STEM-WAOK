@@ -1,5 +1,5 @@
 // utils.ts
-import { SubtractionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand } from "./types";
+import { AdditionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -27,10 +27,10 @@ function generateUniqueId(): string {
 }
 
 /**
- * Convierte un problema de tipo SubtractionProblem al tipo genérico Problem
+ * Convierte un problema de tipo AdditionProblem al tipo genérico Problem
  * Este adaptador garantiza la compatibilidad entre los dos tipos
  */
-export function subtractionProblemToProblem(problem: SubtractionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
+export function additionProblemToProblem(problem: AdditionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
   // Convertir operandos simples a tipo Operand
   const operands: Operand[] = problem.operands.map(value => ({ value }));
   
@@ -46,10 +46,10 @@ export function subtractionProblemToProblem(problem: SubtractionProblem, difficu
 }
 
 /**
- * Convierte un problema de tipo Problem al tipo específico SubtractionProblem
- * Este adaptador se usa cuando necesitamos utilizar funciones que requieren SubtractionProblem
+ * Convierte un problema de tipo Problem al tipo específico AdditionProblem
+ * Este adaptador se usa cuando necesitamos utilizar funciones que requieren AdditionProblem
  */
-export function problemToSubtractionProblem(problem: Problem): SubtractionProblem {
+export function problemToAdditionProblem(problem: Problem): AdditionProblem {
   const operands = problem.operands.map(op => op.value);
   let answerDecimalPosition: number | undefined = undefined;
   
@@ -78,27 +78,21 @@ export function problemToSubtractionProblem(problem: Problem): SubtractionProble
 }
 
 // --- Generación del Problema ---
-export function generateSubtractionProblem(difficulty: DifficultyLevel): SubtractionProblem {
+export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionProblem {
   const id = generateUniqueId();
   let operands: number[] = [];
   let layout: ExerciseLayout = 'horizontal';
   let problemMaxDecimals: 0 | 1 | 2 = 0;
 
   switch (difficulty) {
-    case "beginner": // Restas simples, ej: 9-1 a 9-9 (minuendo >= sustraendo)
-      const minuend1 = getRandomInt(2, 9);
-      const subtrahend1 = getRandomInt(1, minuend1);
-      operands = [minuend1, subtrahend1];
+    case "beginner": // Sumas simples, ej: 1+1 a 9+9 (del código original)
+      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
       layout = 'horizontal';
       break;
-    case "elementary": // Dos dígitos menos un dígito o dos dígitos
-      const minuend2 = getRandomInt(10, 30);
-      const subtrahend2 = getRandomInt(1, Math.min(9, minuend2));
-      operands = [minuend2, subtrahend2];
-      if (getRandomBool(0.5)) { // 50% chance de dos dígitos - dos dígitos
-          const minuend2b = getRandomInt(15, 30);
-          const subtrahend2b = getRandomInt(10, minuend2b);
-          operands = [minuend2b, subtrahend2b];
+    case "elementary": // Dos dígitos + un dígito, sin acarreo (adaptado) ej: 12+5, o dos dígitos simples
+      operands = [getRandomInt(10, 30), getRandomInt(1, 9)]; // ej: 23 + 7
+      if (getRandomBool(0.5)) { // 50% chance de dos dígitos + dos dígitos simples
+          operands = [getRandomInt(10, 20), getRandomInt(10, 20)]; // ej: 12 + 15
       }
       layout = 'horizontal';
       break;
@@ -106,37 +100,27 @@ export function generateSubtractionProblem(difficulty: DifficultyLevel): Subtrac
       layout = getRandomBool(0.75) ? 'vertical' : 'horizontal'; // 75% vertical
       if (layout === 'vertical' && getRandomBool(0.4)) { // 40% de chance de 1 decimal si es vertical
         problemMaxDecimals = 1;
-        const minuend3 = getRandomDecimal(50, 99, problemMaxDecimals);
-        const subtrahend3 = getRandomDecimal(10, minuend3 - 5, problemMaxDecimals);
-        operands = [minuend3, subtrahend3];
+        operands = [
+          getRandomDecimal(10, 99, problemMaxDecimals),
+          getRandomDecimal(10, 99, problemMaxDecimals)
+        ];
       } else { // Enteros o formato horizontal
-        const minuend3b = getRandomInt(50, 99);
-        const subtrahend3b = getRandomInt(10, minuend3b - 5);
-        operands = [minuend3b, subtrahend3b];
+        operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
       }
       break;
-    case "advanced": // 3 operandos: minuendo - sustraendo1 - sustraendo2, vertical, decimales
+    case "advanced": // 3 líneas, siempre vertical, 1 o 2 decimales
       layout = 'vertical';
       problemMaxDecimals = getRandomBool(0.6) ? 2 : 1; // 60% chance de 2 decimales
-      const minuend4 = getRandomDecimal(500, 999, problemMaxDecimals);
-      const subtrahend4a = getRandomDecimal(50, minuend4 * 0.3, problemMaxDecimals);
-      const subtrahend4b = getRandomDecimal(50, minuend4 * 0.3, problemMaxDecimals);
-      // Asegurar que minuendo > suma de sustraendos
-      const maxSubtrahend = (minuend4 - subtrahend4a) * 0.8;
-      operands = [minuend4, subtrahend4a, Math.min(subtrahend4b, maxSubtrahend)];
+      for (let i = 0; i < 3; i++) {
+        operands.push(getRandomDecimal(10, getRandomInt(200, 999), problemMaxDecimals));
+      }
       break;
-    case "expert": // 4 o 5 operandos: múltiples sustraendos, vertical, decimales
+    case "expert": // 4 o 5 líneas, siempre vertical, 1 o 2 decimales
       layout = 'vertical';
       const numLines = getRandomBool() ? 4 : 5;
       problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
-      const minuend5 = getRandomDecimal(2000, 9999, problemMaxDecimals);
-      operands = [minuend5];
-      let remainingValue = minuend5 * 0.8; // Reservar 20% para evitar negativos
-      for (let i = 1; i < numLines; i++) {
-        const maxSubtrahend = remainingValue / (numLines - i); // Distribuir equitativamente
-        const subtrahend = getRandomDecimal(100, maxSubtrahend * 0.8, problemMaxDecimals);
-        operands.push(subtrahend);
-        remainingValue -= subtrahend;
+      for (let i = 0; i < numLines; i++) {
+        operands.push(getRandomDecimal(100, getRandomInt(2000, 9999), problemMaxDecimals));
       }
       break;
     default: // Fallback a beginner si la dificultad no es reconocida
@@ -148,10 +132,7 @@ export function generateSubtractionProblem(difficulty: DifficultyLevel): Subtrac
     operands = [getRandomInt(1,5), getRandomInt(1,5)];
   }
 
-  // Para resta: el primer operando (minuendo) menos la suma de los demás (sustraendos)
-  const difference = operands.length > 1 
-    ? operands[0] - operands.slice(1).reduce((acc, val) => acc + val, 0)
-    : operands[0];
+  const sum = operands.reduce((acc, val) => acc + val, 0);
 
   let effectiveMaxDecimalsInAnswer = 0;
   if (problemMaxDecimals > 0) {
@@ -162,7 +143,7 @@ export function generateSubtractionProblem(difficulty: DifficultyLevel): Subtrac
           return (opStr.split('.')[1] || '').length;
       }));
   }
-  const correctAnswer = parseFloat(difference.toFixed(effectiveMaxDecimalsInAnswer));
+  const correctAnswer = parseFloat(sum.toFixed(effectiveMaxDecimalsInAnswer));
 
   const correctAnswerStr = correctAnswer.toFixed(effectiveMaxDecimalsInAnswer);
   const [integerPartOfSumStr, decimalPartOfSumStr = ""] = correctAnswerStr.split('.');
@@ -187,7 +168,7 @@ export function generateSubtractionProblem(difficulty: DifficultyLevel): Subtrac
 }
 
 // --- Validación de la Respuesta ---
-export function checkAnswer(problem: SubtractionProblem, userAnswer: number): boolean {
+export function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
   if (isNaN(userAnswer)) return false;
 
   const precisionForComparison = problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0
