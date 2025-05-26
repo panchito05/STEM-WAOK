@@ -24,7 +24,7 @@ export default function ExerciseHistoryDialog({ moduleId, exerciseHistory, trigg
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(null);
   const { t, language } = useTranslations();
 
-  const moduleExercises = (exerciseHistory || []).filter(item => item.operationId === moduleId);
+  const moduleExercises = exerciseHistory.filter(item => item.operationId === moduleId);
 
   const sortedHistory = moduleExercises
     .filter(item => item.extra_data?.screenshot)
