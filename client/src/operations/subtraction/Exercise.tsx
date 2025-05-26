@@ -1618,7 +1618,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         console.log(`🔴 PROBLEMA ACTUAL (posiblemente el último):
           - Índice: ${currentProblemIndex}
           - ID: ${currentProblem.id}
-          - Operación: ${currentProblem.operands?.[0]} + ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}
+          - Operación: ${currentProblem.operands?.[0]} - ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}
           - Respuesta en teclado: ${digitAnswers.join("")}
           - Tiene respuesta registrada: ${userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"}
         `);
@@ -1630,7 +1630,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         console.log(`🔴 VERIFICACIÓN CRÍTICA - ÚLTIMO PROBLEMA #${currentProblemIndex+1}:`, {
           id: currentProblem.id,
-          operación: `${currentProblem.operands?.[0]} + ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}`,
+          operación: `${currentProblem.operands?.[0]} - ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}`,
           enTeclado: digitAnswers.join(""),
           tieneDigitos: digitAnswers.length > 0 ? "SÍ" : "NO",
           respuestaRegistrada: userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"
@@ -1710,7 +1710,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }
         
         // Usar la respuesta correcta del problema o calcularla
-        const respuestaCorrecta = problema.correctAnswer || (operandoA + operandoB);
+        const respuestaCorrecta = problema.correctAnswer || (operandoA - operandoB);
         
         // Crear un objeto que incluya TODOS los datos necesarios para este tipo de problema
         const problemaCompleto = {
@@ -2606,11 +2606,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl font-bold flex items-center justify-center gap-2">
               <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600">+</span>
+              <span className="text-gray-600">-</span>
               <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
               {currentProblem.operands.length > 2 && (
                 <>
-                  <span className="text-gray-600">+</span>
+                  <span className="text-gray-600">-</span>
                   <span>{currentProblem.operands[2]}</span>
                 </>
               )}
