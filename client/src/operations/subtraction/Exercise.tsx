@@ -627,6 +627,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
   }, [focusedDigitIndex, viewingPrevious]);
 
+  // Efecto para inicializar el primer problema de resta
+  useEffect(() => {
+    if (!currentProblem && !exerciseStarted) {
+      const firstProblem = generateSubtractionProblem(settings.difficulty);
+      firstProblem.index = 1;
+      firstProblem.total = settings.problemCount;
+      setCurrentProblem(firstProblem);
+      setDigitAnswers(Array(firstProblem.answerMaxDigits).fill(""));
+      console.log("[SUBTRACTION] Primer problema generado:", firstProblem);
+    }
+  }, [currentProblem, exerciseStarted, settings.difficulty, settings.problemCount]);
+
   useEffect(() => {
     if (exerciseStarted && !exerciseCompleted) {
       generalTimerRef.current = window.setInterval(() => setTimer(prev => prev + 1), 1000);
