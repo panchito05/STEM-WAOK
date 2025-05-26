@@ -375,7 +375,7 @@ const YoutubeVideoDialog = ({
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Acceder a la información de historial mediante el contexto de progreso
   const { exerciseHistory } = useProgress();
-  const moduleId = "addition"; // ID del módulo de suma
+  const moduleId = "additioncopy2"; // ID del módulo de suma
 
   const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
@@ -405,7 +405,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [blockAutoAdvance, setBlockAutoAdvance] = useState(false);
   const [autoContinue, setAutoContinue] = useState(() => {
     try {
-      const stored = localStorage.getItem('addition_autoContinue');
+      const stored = localStorage.getItem('additioncopy2_autoContinue');
       return stored === 'true';
     } catch (e) { return false; }
   });
@@ -415,14 +415,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const storedSettings = localStorage.getItem('moduleSettings');
       if (storedSettings) {
         const parsedSettings = JSON.parse(storedSettings);
-        if (parsedSettings.addition && parsedSettings.addition.difficulty) return parsedSettings.addition.difficulty;
+        if (parsedSettings.additioncopy2 && parsedSettings.additioncopy2.difficulty) return parsedSettings.additioncopy2.difficulty;
       }
     } catch (e) { console.error('Error loading adaptive difficulty from localStorage:', e); }
     return settings.difficulty as DifficultyLevel;
   });
-  const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveCorrectAnswers') || '0', 10));
-  const [maxConsecutiveStreak, setMaxConsecutiveStreak] = useState(() => parseInt(localStorage.getItem('addition_maxConsecutiveStreak') || '0', 10));
-  const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveIncorrectAnswers') || '0', 10));
+  const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(() => parseInt(localStorage.getItem('additioncopy2_consecutiveCorrectAnswers') || '0', 10));
+  const [maxConsecutiveStreak, setMaxConsecutiveStreak] = useState(() => parseInt(localStorage.getItem('additioncopy2_maxConsecutiveStreak') || '0', 10));
+  const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => parseInt(localStorage.getItem('additioncopy2_consecutiveIncorrectAnswers') || '0', 10));
   const [currentAttempts, setCurrentAttempts] = useState(0);
   const [showLevelUpReward, setShowLevelUpReward] = useState(false);
 
@@ -438,7 +438,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [showVideoDialog, setShowVideoDialog] = useState(false);
   const [youtubeVideos, setYoutubeVideos] = useState<string[]>(() => {
     try {
-      const storedVideos = localStorage.getItem('addition_youtubeVideos');
+      const storedVideos = localStorage.getItem('additioncopy2_youtubeVideos');
       return storedVideos ? JSON.parse(storedVideos) : [];
     } catch (e) {
       console.error('Error loading YouTube videos from localStorage:', e);
@@ -460,7 +460,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // 🎯 Sistema de Recompensas Simplificado (sin hooks problemáticos)
   const [rewardStats, setRewardStats] = useState(() => {
     // Cargar datos guardados al inicializar
-    const saved = localStorage.getItem('addition_rewards');
+    const saved = localStorage.getItem('additioncopy2_rewards');
     const defaultStats = {
       totalProblems: 0,
       currentStreak: 0,
@@ -492,7 +492,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Traducciones para elementos específicos de la interfaz
   const translations = {
     english: {
-      addition: "Addition",
+      additioncopy2: "Addition Copy 2",
       attempts: "Attempts",
       level: "Level",
       settings: "Settings",
