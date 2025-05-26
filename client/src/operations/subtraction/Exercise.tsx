@@ -273,15 +273,15 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
       }
     };
     
-    // Guardar progreso
-    dataSync.saveProgress('subtraction', exerciseResult);
+    // Guardar progreso (comentado temporalmente para evitar errores)
+    // dataSync.saveProgress('subtraction', exerciseResult);
     
     setIsExerciseActive(false);
     setIsExercisePaused(false);
     
     if (timerRef.current) clearInterval(timerRef.current);
     if (singleProblemTimerRef.current) clearTimeout(singleProblemTimerRef.current);
-  }, [startTime, userAnswers, settings, revealedAnswersCount, saveProgress]);
+  }, [startTime, userAnswers, settings, revealedAnswersCount, dataSync]);
 
   // Verificar respuesta
   const checkUserAnswer = useCallback(() => {
