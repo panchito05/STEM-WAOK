@@ -5,6 +5,9 @@ export type { EmptyModuleSettings } from './Settings';
 export type { EmptyProblem, DifficultyLevel, ExerciseLayout } from './types';
 export * from './utils';
 
+// Adaptadores para compatibilidad con el sistema
+export { EmptyExerciseAdapter as Exercise, EmptySettingsAdapter as Settings } from './EmptyModuleAdapter';
+
 // Información del módulo para el sistema
 export const emptyModuleInfo = {
   id: 'empty',
