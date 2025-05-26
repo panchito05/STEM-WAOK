@@ -526,7 +526,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setDigitInput([]);
       setCurrentDigitIndex(0);
     }
-  }, [currentProblem, userInput, attempts, problemStartTime, settings, consecutiveCorrect, checkAdaptiveDifficulty, addReward]);
+  }, [currentProblem, userInput, attempts, problemStartTime, settings, consecutiveCorrect, checkAdaptiveDifficulty, addToQueue]);
 
   // Función para ir al siguiente problema
   const nextProblem = () => {
