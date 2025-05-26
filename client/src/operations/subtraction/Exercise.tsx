@@ -4,8 +4,12 @@ import { useProgress } from "@/context/ProgressContext";
 import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
-import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
-import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
+import { generateSubtractionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
+import { Problem, UserAnswer as UserAnswerType, SubtractionProblem, DifficultyLevel } from "./types";
+
+// Alias para compatibilidad
+const generateAdditionProblem = generateSubtractionProblem;
+type AdditionProblem = SubtractionProblem;
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
@@ -1480,7 +1484,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       return {
         problemId: problem.id || index,
         problem: {
-          operands: problem.operands,
+          operands: [problem.minuend, problem.subtrahend],
           correctAnswer: problem.correctAnswer,
           layout: problem.layout
         },
@@ -1546,7 +1550,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (!problem) return null;
 
         // Este es el formato EXACTO que se muestra en la pantalla final
-        const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+        const problemText = `${problem.minuend} - ${problem.subtrahend} = ${problem.correctAnswer}`;
 
         // Objeto con la información completa del problema tal como se muestra en la UI
         return {

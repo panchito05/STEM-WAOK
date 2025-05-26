@@ -189,6 +189,17 @@ export function checkAnswer(problem: SubtractionProblem, userAnswer: number): bo
 
 // Función para obtener información de alineación vertical (similar al módulo Addition)
 export function getVerticalAlignmentInfo(problem: SubtractionProblem) {
+  // Verificar que el problema tenga las propiedades necesarias
+  if (!problem || typeof problem.minuend === 'undefined' || typeof problem.subtrahend === 'undefined') {
+    console.error('getVerticalAlignmentInfo: problema inválido', problem);
+    return {
+      minuendPadding: 0,
+      subtrahendPadding: 0,
+      answerPadding: 0,
+      maxLength: 1
+    };
+  }
+  
   const minuendStr = problem.minuend.toString();
   const subtrahendStr = problem.subtrahend.toString();
   const answerStr = problem.correctAnswer.toString();
