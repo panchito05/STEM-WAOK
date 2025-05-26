@@ -379,7 +379,7 @@ const YoutubeVideoDialog = ({
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Acceder a la información de historial mediante el contexto de progreso
   const { exerciseHistory } = useProgress();
-  const moduleId = "addition"; // ID del módulo de suma
+  const moduleId = "subtraction"; // ID del módulo de resta
 
   const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
