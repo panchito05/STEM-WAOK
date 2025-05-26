@@ -61,4 +61,5 @@ export const operationModules: Module[] = [
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
+  additioncopy: AdditionCopy, // El módulo copiado de adición para pruebas
 };
