@@ -525,7 +525,7 @@ export function DrawingCanvas({
     const signXPosition = centerX - (maxIntLength * charWidth) - charWidth;
     
     // Detectar si es un problema avanzado (más de 2 operandos)
-    const isAdvancedProblem = operands.length > 2;
+    const isAdvancedProblem = formattedOperands.length > 2;
     
     // Calcular la altura total necesaria para todos los números
     const totalOperandsHeight = lineHeight * (parts.length + 0.5); // +0.5 para la línea final
