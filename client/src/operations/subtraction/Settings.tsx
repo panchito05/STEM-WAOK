@@ -195,7 +195,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   // Determinar textos según el idioma actual
   const isEnglish = localSettings.language === "english";
-  const headerTitle = isEnglish ? "Configuration - Addition Exercise" : "Configuración - Ejercicio de Suma";
+  const headerTitle = isEnglish ? "Configuration - Subtraction Exercise" : "Configuración - Ejercicio de Resta";
   const subheaderText = isEnglish ? "Customize your exercise experience" : "Personaliza tu experiencia de ejercicio";
   const backButtonText = isEnglish ? "Back to Exercise" : "Volver al Ejercicio";
   const languageButtonText = isEnglish ? "Español" : "English";
