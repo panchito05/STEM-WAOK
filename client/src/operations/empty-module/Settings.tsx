@@ -172,10 +172,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
         </RadioGroup>
         
         {/* Ejemplos de dificultad */}
-        <DifficultyExamples 
-          difficulty={localSettings.difficulty} 
-          operationType="empty-module"
-        />
+        <div className="text-sm text-gray-500 mt-2">
+          Selecciona el nivel apropiado para comenzar tu práctica
+        </div>
       </div>
 
       {/* Cantidad de problemas */}

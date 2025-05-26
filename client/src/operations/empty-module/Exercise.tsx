@@ -371,7 +371,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       accuracy,
       avgTimePerProblem: totalTime / problems.length,
       avgAttempts: userAnswers.reduce((sum, answer) => sum + answer.attempts, 0) / userAnswers.length,
-      revealedAnswers: revealedAnswers.size
+      revealedAnswers: Array.from(revealedAnswers).length
     });
     
     toast({
