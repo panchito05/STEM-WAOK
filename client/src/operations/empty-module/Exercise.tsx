@@ -34,7 +34,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useChildProfiles } from "@/context/ChildProfilesContext";
 import { useSettings } from "@/context/SettingsContext";
-import { incrementConsecutiveCorrect, incrementConsecutiveIncorrect, updateLongestStreak } from "@/lib/progressCounters";
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Estados principales
@@ -198,8 +197,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       moveToNextProblem();
     }
     
-    // Incrementar contador de incorrectas
-    incrementConsecutiveIncorrect();
+    // TODO: Incrementar contador de incorrectas cuando se implemente
+    // incrementConsecutiveIncorrect();
     
     toast({
       title: "⏱️ Tiempo agotado",
@@ -247,13 +246,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     setUserAnswers(prev => [...prev, newAnswer]);
     
-    // Actualizar contadores de progreso
-    if (isCorrect) {
-      incrementConsecutiveCorrect();
-      updateLongestStreak();
-    } else {
-      incrementConsecutiveIncorrect();
-    }
+    // TODO: Actualizar contadores de progreso cuando se implemente
+    // if (isCorrect) {
+    //   incrementConsecutiveCorrect();
+    //   updateLongestStreak();
+    // } else {
+    //   incrementConsecutiveIncorrect();
+    // }
     
     // Mostrar feedback inmediato si está habilitado
     if (settings.showImmediateFeedback) {

@@ -1,4 +1,5 @@
 import * as Addition from "../operations/addition";
+import * as EmptyModule from "../operations/empty-module";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -47,15 +48,14 @@ export const operationModules: Module[] = [
     color: "#4287f5", // Azul vivo como en la imagen
     icon: "Plus",
   },
-  // Eliminamos la entrada de "Addition (New)" ya que ahora usamos el módulo estándar
-  // {
-  //   id: "unifiedAddition",
-  //   displayName: "Addition (New)",
-  //   description: "Practice addition with our improved unified module",
-  //   difficulty: "beginner",
-  //   color: "#3b82f6", // Un azul diferente
-  //   icon: "PlusCircle",
-  // },
+  {
+    id: "empty-module",
+    displayName: "Empty Module",
+    description: "Template module for creating new mathematical operations",
+    difficulty: "beginner",
+    color: "#8B5CF6", // Púrpura para diferenciarlo
+    icon: "FileText",
+  },
 
 
 ];
@@ -63,4 +63,5 @@ export const operationModules: Module[] = [
 // Map operation IDs to their React components
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
+  "empty-module": EmptyModule, // El módulo genérico de plantilla
 };

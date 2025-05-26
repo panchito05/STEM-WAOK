@@ -77,13 +77,12 @@ export interface ExerciseResult {
   };
 }
 
-// Props para el componente Exercise
+// Props para el componente Exercise (compatible con ModuleSettings)
 export interface ExerciseProps {
   settings: {
     difficulty: string;
     problemCount: number;
     timeValue: number;
-    hasTimerEnabled: boolean;
     timeLimit?: string;
     maxAttempts: number;
     showImmediateFeedback: boolean;
@@ -93,7 +92,7 @@ export interface ExerciseProps {
     enableCompensation: boolean;
     enableRewards: boolean;
     rewardType: string;
-    language: string;
+    language?: string;
   };
   onOpenSettings: () => void;
 }
