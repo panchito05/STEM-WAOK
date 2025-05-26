@@ -19,13 +19,23 @@ app.use(session({
   }),
   secret: process.env.SESSION_SECRET || 'math-waok-session-secret',
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true, // Cambiar a true para crear sesiones automáticamente
+  name: 'math-waok-session', // Nombre específico para la cookie
   cookie: {
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 días
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production'
+    httpOnly: false, // Permitir acceso desde JavaScript para debugging
+    secure: false, // Deshabilitado para desarrollo en Replit
+    sameSite: 'lax' // Permitir cookies en subdominios de Replit
   }
 }));
+
+// Middleware de debugging para sesiones
+app.use((req: any, res, next) => {
+  if (req.path.startsWith('/api')) {
+    console.log(`🔍 [${req.method}] ${req.path} - Session ID: ${req.sessionID || 'NO SESSION'} - User ID: ${req.session?.userId || 'NO USER'}`);
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
