@@ -34,7 +34,7 @@ const digitBoxFocusStyle = "border-blue-500 ring-2 ring-blue-300 shadow-lg";
 const digitBoxBlurStyle = "border-gray-300";
 const digitBoxDisabledStyle = "bg-gray-100 text-gray-500 border-gray-200 cursor-default";
 const verticalOperandStyle = "font-mono text-2xl sm:text-3xl text-right tracking-wider";
-const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
+const minusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
 // Interface para los metadatos de videos de YouTube
@@ -438,7 +438,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [showVideoDialog, setShowVideoDialog] = useState(false);
   const [youtubeVideos, setYoutubeVideos] = useState<string[]>(() => {
     try {
-      const storedVideos = localStorage.getItem('addition_youtubeVideos');
+      const storedVideos = localStorage.getItem('subtraction_youtubeVideos');
       return storedVideos ? JSON.parse(storedVideos) : [];
     } catch (e) {
       console.error('Error loading YouTube videos from localStorage:', e);
@@ -966,16 +966,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         // Añadir problema de compensación cuando se agota el número de intentos (respuesta incorrecta)
         if (settings.enableCompensation) {
-          console.log("[ADDITION] Agregando problema de compensación por respuesta incorrecta");
+          console.log("[SUBTRACTION] Agregando problema de compensación por respuesta incorrecta");
           const difficultyForCompensation = settings.enableAdaptiveDifficulty
             ? adaptiveDifficulty
             : (settings.difficulty as DifficultyLevel);
 
-          const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+          const compensationProblem = generateSubtractionProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
           // Agregamos null al historial para que coincida con el nuevo problema añadido
           setUserAnswersHistory(prev => [...prev, null]);
-          console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+          console.log("[SUBTRACTION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
         }
 
         setWaitingForContinue(true); // Pone waitingRef.current = true via useEffect
@@ -1036,16 +1036,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
           // Añadir problema de compensación cuando se agota el tiempo con respuesta incorrecta
           if (settings.enableCompensation) {
-            console.log("[ADDITION] Agregando problema de compensación por tiempo agotado (con respuesta incorrecta)");
+            console.log("[SUBTRACTION] Agregando problema de compensación por tiempo agotado (con respuesta incorrecta)");
             const difficultyForCompensation = settings.enableAdaptiveDifficulty
               ? adaptiveDifficulty
               : (settings.difficulty as DifficultyLevel);
 
-            const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+            const compensationProblem = generateSubtractionProblem(difficultyForCompensation);
             setProblemsList(prev => [...prev, compensationProblem]);
             // Agregamos null al historial para que coincida con el nuevo problema añadido
             setUserAnswersHistory(prev => [...prev, null]);
-            console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+            console.log("[SUBTRACTION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
           }
 
           setWaitingForContinue(true);
@@ -1089,16 +1089,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         // Añadir problema de compensación cuando se agota el tiempo y se revelan las respuestas
         if (settings.enableCompensation) {
-          console.log("[ADDITION] Agregando problema de compensación por tiempo agotado (sin respuesta)");
+          console.log("[SUBTRACTION] Agregando problema de compensación por tiempo agotado (sin respuesta)");
           const difficultyForCompensation = settings.enableAdaptiveDifficulty
             ? adaptiveDifficulty
             : (settings.difficulty as DifficultyLevel);
 
-          const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+          const compensationProblem = generateSubtractionProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
           // Agregamos null al historial para que coincida con el nuevo problema añadido
           setUserAnswersHistory(prev => [...prev, null]);
-          console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+          console.log("[SUBTRACTION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
         }
 
         setWaitingForContinue(true);
@@ -1168,7 +1168,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
     const newProblemsArray: AdditionProblem[] = [];
     for (let i = 0; i < settings.problemCount; i++) {
-      const problem = generateAdditionProblem(difficultyToUse);
+      const problem = generateSubtractionProblem(difficultyToUse);
       // Agregar información de índice y total a cada problema
       problem.index = i;
       problem.total = settings.problemCount;
@@ -2137,7 +2137,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (showLevelUpReward) {
       setShowLevelUpReward(false);
       setBlockAutoAdvance(false);
-      const newProblemForLevelUp = generateAdditionProblem(adaptiveDifficulty);
+      const newProblemForLevelUp = generateSubtractionProblem(adaptiveDifficulty);
       const updatedProblemsList = [...problemsList];
       updatedProblemsList[actualActiveProblemIndexBeforeViewingPrevious] = newProblemForLevelUp;
       setProblemsList(updatedProblemsList);
@@ -2338,7 +2338,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Función para manejar los videos explicativos de YouTube
   const handleSaveYoutubeVideos = (newVideos: string[]) => {
     setYoutubeVideos(newVideos);
-    localStorage.setItem('addition_youtubeVideos', JSON.stringify(newVideos));
+    localStorage.setItem('subtraction_youtubeVideos', JSON.stringify(newVideos));
   };
 
   // Función para mostrar un video de YouTube en una nueva pestaña
@@ -2753,7 +2753,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                               
                               // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
                               setConsecutiveCorrectAnswers(0);
-                              console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
+                              console.log("[SUBTRACTION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
                               
                               // Usamos la respuesta correcta del problema directamente
                               setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
@@ -2776,16 +2776,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
                                   // Añadir problema de compensación cuando se revela la respuesta
                                   if (settings.enableCompensation) {
-                                      console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
+                                      console.log("[SUBTRACTION] Agregando problema de compensación por respuesta revelada");
                                       const difficultyForCompensation = settings.enableAdaptiveDifficulty
                                           ? adaptiveDifficulty
                                           : (settings.difficulty as DifficultyLevel);
 
-                                      const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                                      const compensationProblem = generateSubtractionProblem(difficultyForCompensation);
                                       setProblemsList(prev => [...prev, compensationProblem]);
                                       // Agregamos null al historial para que coincida con el nuevo problema añadido
                                       setUserAnswersHistory(prev => [...prev, null]);
-                                      console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+                                      console.log("[SUBTRACTION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
                                   }
                               }
                               if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
@@ -2879,7 +2879,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
                             setConsecutiveCorrectAnswers(0);
                             localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
-                            console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
+                            console.log("[SUBTRACTION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
                             
                             // Usamos la respuesta correcta del problema directamente
                             setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
@@ -2902,16 +2902,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
                                 // Añadir problema de compensación cuando se revela la respuesta
                                 if (settings.enableCompensation) {
-                                    console.log("[ADDITION] Agregando problema de compensación por respuesta revelada");
+                                    console.log("[SUBTRACTION] Agregando problema de compensación por respuesta revelada");
                                     const difficultyForCompensation = settings.enableAdaptiveDifficulty
                                         ? adaptiveDifficulty
                                         : (settings.difficulty as DifficultyLevel);
 
-                                    const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                                    const compensationProblem = generateSubtractionProblem(difficultyForCompensation);
                                     setProblemsList(prev => [...prev, compensationProblem]);
                                     // Agregamos null al historial para que coincida con el nuevo problema añadido
                                     setUserAnswersHistory(prev => [...prev, null]);
-                                    console.log("[ADDITION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
+                                    console.log("[SUBTRACTION] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
                                 }
                             }
                             if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
@@ -2962,19 +2962,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               }
             } else if (settings.enableCompensation) {
               // Agregar problema de compensación cuando se falla
-              console.log("[ADDITION] Agregando problema de compensación por respuesta incorrecta en modo profesor");
+              console.log("[SUBTRACTION] Agregando problema de compensación por respuesta incorrecta en modo profesor");
               const difficultyForCompensation = settings.enableAdaptiveDifficulty
                 ? adaptiveDifficulty
                 : (settings.difficulty as DifficultyLevel);
                 
-              const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+              const compensationProblem = generateSubtractionProblem(difficultyForCompensation);
               setProblemsList(prev => [...prev, compensationProblem]);
               // Agregamos null al historial para que coincida con el nuevo problema añadido
               setUserAnswersHistory(prev => [...prev, null]);
             }
             
             // Generar un nuevo problema
-            const newProblem = generateAdditionProblem(settings.difficulty);
+            const newProblem = generateSubtractionProblem(settings.difficulty);
             // Agregar información sobre la posición y total de problemas
             newProblem.index = currentProblemIndex;
             newProblem.total = settings.problemCount;
