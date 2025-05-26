@@ -1,5 +1,5 @@
 // utils.ts
-import { AdditionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
+import { DivisionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -27,17 +27,21 @@ function generateUniqueId(): string {
 }
 
 /**
- * Convierte un problema de tipo AdditionProblem al tipo genérico Problem
+ * Convierte un problema de tipo DivisionProblem al tipo genérico Problem
  * Este adaptador garantiza la compatibilidad entre los dos tipos
  */
-export function additionProblemToProblem(problem: AdditionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
-  // Convertir operandos simples a tipo Operand
-  const operands: Operand[] = problem.operands.map(value => ({ value }));
+export function divisionProblemToProblem(problem: DivisionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
+  // Convertir dividendo y divisor a tipo Operand
+  const operands: Operand[] = [
+    { value: problem.dividend },
+    { value: problem.divisor }
+  ];
   
   return {
     id: problem.id,
     operands,
-    displayFormat: problem.layout, // El layout de AdditionProblem es el displayFormat de Problem
+    operator: '÷',
+    displayFormat: problem.layout, // El layout de DivisionProblem es el displayFormat de Problem
     correctAnswer: problem.correctAnswer,
     difficulty, // Usamos el parámetro de dificultad o el predeterminado
     allowDecimals: problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0,
@@ -46,31 +50,28 @@ export function additionProblemToProblem(problem: AdditionProblem, difficulty: D
 }
 
 /**
- * Convierte un problema de tipo Problem al tipo específico AdditionProblem
- * Este adaptador se usa cuando necesitamos utilizar funciones que requieren AdditionProblem
+ * Convierte un problema de tipo Problem al tipo específico DivisionProblem
+ * Este adaptador se usa cuando necesitamos utilizar funciones que requieren DivisionProblem
  */
-export function problemToAdditionProblem(problem: Problem): AdditionProblem {
+export function problemToDivisionProblem(problem: Problem): DivisionProblem {
   const operands = problem.operands.map(op => op.value);
   let answerDecimalPosition: number | undefined = undefined;
   
   if (problem.allowDecimals) {
-    // Determinar el número de decimales a partir de los operandos
-    const decimals = Math.max(...operands.map(op => {
-      const strOp = op.toString();
-      const dotIndex = strOp.indexOf('.');
-      return dotIndex >= 0 ? strOp.length - dotIndex - 1 : 0;
-    }));
-    if (decimals > 0) {
-      answerDecimalPosition = decimals;
+    // Determinar el número de decimales a partir de la respuesta
+    const answerStr = problem.correctAnswer.toString();
+    const dotIndex = answerStr.indexOf('.');
+    if (dotIndex >= 0) {
+      answerDecimalPosition = answerStr.length - dotIndex - 1;
     }
   }
   
   return {
     id: problem.id,
-    num1: operands[0] || 0,
-    num2: operands[1] || 0,
-    operands,
+    dividend: operands[0] || 0,
+    divisor: operands[1] || 0,
     correctAnswer: problem.correctAnswer,
+    remainder: problem.correctAnswer % 1 === 0 ? (operands[0] || 0) % (operands[1] || 1) : undefined,
     layout: problem.displayFormat as ExerciseLayout, // Solo horizontal o vertical, no 'word'
     answerMaxDigits: problem.correctAnswer.toString().replace('.', '').length,
     answerDecimalPosition
@@ -78,72 +79,75 @@ export function problemToAdditionProblem(problem: Problem): AdditionProblem {
 }
 
 // --- Generación del Problema ---
-export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionProblem {
+export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionProblem {
   const id = generateUniqueId();
-  let operands: number[] = [];
+  let dividend: number;
+  let divisor: number;
   let layout: ExerciseLayout = 'horizontal';
   let problemMaxDecimals: 0 | 1 | 2 = 0;
 
   switch (difficulty) {
-    case "beginner": // Sumas simples, ej: 1+1 a 9+9 (del código original)
-      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
+    case "beginner": // Divisiones simples, ej: 8÷2, 9÷3
+      divisor = getRandomInt(2, 9);
+      const quotient = getRandomInt(2, 9);
+      dividend = divisor * quotient; // Asegurar división exacta
       layout = 'horizontal';
       break;
-    case "elementary": // Dos dígitos + un dígito, sin acarreo (adaptado) ej: 12+5, o dos dígitos simples
-      operands = [getRandomInt(10, 30), getRandomInt(1, 9)]; // ej: 23 + 7
-      if (getRandomBool(0.5)) { // 50% chance de dos dígitos + dos dígitos simples
-          operands = [getRandomInt(10, 20), getRandomInt(10, 20)]; // ej: 12 + 15
-      }
+    case "elementary": // Dos dígitos entre un dígito, ej: 24÷3, 48÷6
+      divisor = getRandomInt(2, 9);
+      const quotient2 = getRandomInt(3, 12);
+      dividend = divisor * quotient2; // Asegurar división exacta
       layout = 'horizontal';
       break;
-    case "intermediate": // 2 líneas, aleatoriamente vertical, posible 1 decimal
+    case "intermediate": // Divisiones con posibles decimales, formato vertical aleatorio
       layout = getRandomBool(0.75) ? 'vertical' : 'horizontal'; // 75% vertical
-      if (layout === 'vertical' && getRandomBool(0.4)) { // 40% de chance de 1 decimal si es vertical
+      divisor = getRandomInt(2, 15);
+      if (getRandomBool(0.4)) { // 40% de chance de división con decimales
         problemMaxDecimals = 1;
-        operands = [
-          getRandomDecimal(10, 99, problemMaxDecimals),
-          getRandomDecimal(10, 99, problemMaxDecimals)
-        ];
-      } else { // Enteros o formato horizontal
-        operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
+        const quotient3 = getRandomDecimal(2, 20, problemMaxDecimals);
+        dividend = Math.round(divisor * quotient3 * 10) / 10;
+      } else { // División exacta
+        const quotient3 = getRandomInt(3, 25);
+        dividend = divisor * quotient3;
       }
       break;
-    case "advanced": // 3 líneas, siempre vertical, 1 o 2 decimales
+    case "advanced": // Divisiones complejas con decimales
       layout = 'vertical';
       problemMaxDecimals = getRandomBool(0.6) ? 2 : 1; // 60% chance de 2 decimales
-      for (let i = 0; i < 3; i++) {
-        operands.push(getRandomDecimal(10, getRandomInt(200, 999), problemMaxDecimals));
-      }
+      divisor = getRandomInt(3, 25);
+      const quotient4 = getRandomDecimal(5, 50, problemMaxDecimals);
+      dividend = Math.round(divisor * quotient4 * Math.pow(10, problemMaxDecimals)) / Math.pow(10, problemMaxDecimals);
       break;
-    case "expert": // 4 o 5 líneas, siempre vertical, 1 o 2 decimales
+    case "expert": // Divisiones muy complejas con decimales
       layout = 'vertical';
-      const numLines = getRandomBool() ? 4 : 5;
       problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
-      for (let i = 0; i < numLines; i++) {
-        operands.push(getRandomDecimal(100, getRandomInt(2000, 9999), problemMaxDecimals));
-      }
+      divisor = getRandomInt(5, 50);
+      const quotient5 = getRandomDecimal(10, 100, problemMaxDecimals);
+      dividend = Math.round(divisor * quotient5 * Math.pow(10, problemMaxDecimals)) / Math.pow(10, problemMaxDecimals);
       break;
     default: // Fallback a beginner si la dificultad no es reconocida
-      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
+      divisor = getRandomInt(2, 5);
+      const quotientDefault = getRandomInt(2, 5);
+      dividend = divisor * quotientDefault;
       layout = 'horizontal';
   }
 
-  if (operands.length === 0) { // Salvaguarda final
-    operands = [getRandomInt(1,5), getRandomInt(1,5)];
+  // Salvaguarda para evitar división por cero
+  if (divisor === 0) {
+    divisor = 2;
+    dividend = 4;
   }
 
-  const sum = operands.reduce((acc, val) => acc + val, 0);
+  const quotientResult = dividend / divisor;
 
   let effectiveMaxDecimalsInAnswer = 0;
   if (problemMaxDecimals > 0) {
       effectiveMaxDecimalsInAnswer = problemMaxDecimals;
   } else {
-      effectiveMaxDecimalsInAnswer = Math.max(0, ...operands.map(op => {
-          const opStr = String(op);
-          return (opStr.split('.')[1] || '').length;
-      }));
+      const quotientStr = String(quotientResult);
+      effectiveMaxDecimalsInAnswer = (quotientStr.split('.')[1] || '').length;
   }
-  const correctAnswer = parseFloat(sum.toFixed(effectiveMaxDecimalsInAnswer));
+  const correctAnswer = parseFloat(quotientResult.toFixed(effectiveMaxDecimalsInAnswer));
 
   const correctAnswerStr = correctAnswer.toFixed(effectiveMaxDecimalsInAnswer);
   const [integerPartOfSumStr, decimalPartOfSumStr = ""] = correctAnswerStr.split('.');
@@ -155,12 +159,14 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
     answerDecimalPosition = decimalPartOfSumStr.length;
   }
 
+  const remainder = correctAnswer % 1 === 0 ? dividend % divisor : undefined;
+
   return {
     id,
-    num1: operands[0], // Mantener por compatibilidad o uso simple
-    num2: operands.length > 1 ? operands[1] : 0, // Mantener por compatibilidad
-    operands,
+    dividend,
+    divisor,
     correctAnswer,
+    remainder,
     layout,
     answerMaxDigits,
     answerDecimalPosition,
@@ -168,7 +174,7 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
 }
 
 // --- Validación de la Respuesta ---
-export function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
+export function checkAnswer(problem: DivisionProblem, userAnswer: number): boolean {
   if (isNaN(userAnswer)) return false;
 
   const precisionForComparison = problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0
@@ -182,38 +188,60 @@ export function checkAnswer(problem: AdditionProblem, userAnswer: number): boole
   return roundedUserAnswer === roundedCorrectAnswer;
 }
 
-// --- Funciones auxiliares para formatear números para la vista vertical ---
+// --- Funciones auxiliares para formatear números para la vista vertical de división ---
 export function getVerticalAlignmentInfo(
-    operands: number[],
+    dividend: number,
+    divisor: number,
     problemOverallDecimalPrecision?: number
 ): {
     maxIntLength: number;
     maxDecLength: number;
-    operandsFormatted: Array<{ original: number, intStr: string, decStr: string }>;
-    sumLineTotalCharWidth: number;
+    dividendFormatted: { original: number, intStr: string, decStr: string };
+    divisorFormatted: { original: number, intStr: string, decStr: string };
+    divisionLineTotalCharWidth: number;
 } {
     const effectiveDecimalPlacesToShow = problemOverallDecimalPrecision || 0;
 
-    const operandsDisplayInfo = operands.map(op => {
-        const s = op.toFixed(effectiveDecimalPlacesToShow);
-        const parts = s.split('.');
-        return {
-            original: op,
-            intPart: parts[0],
-            decPart: parts[1] || ""
-        };
-    });
+    const dividendDisplayInfo = {
+        original: dividend,
+        ...(() => {
+            const s = dividend.toFixed(effectiveDecimalPlacesToShow);
+            const parts = s.split('.');
+            return {
+                intPart: parts[0],
+                decPart: parts[1] || ""
+            };
+        })()
+    };
 
-    const maxIntLength = Math.max(1, ...operandsDisplayInfo.map(info => info.intPart.length));
+    const divisorDisplayInfo = {
+        original: divisor,
+        ...(() => {
+            const s = divisor.toFixed(effectiveDecimalPlacesToShow);
+            const parts = s.split('.');
+            return {
+                intPart: parts[0],
+                decPart: parts[1] || ""
+            };
+        })()
+    };
+
+    const maxIntLength = Math.max(1, dividendDisplayInfo.intPart.length, divisorDisplayInfo.intPart.length);
     const maxDecLength = effectiveDecimalPlacesToShow;
 
-    const operandsFormatted = operandsDisplayInfo.map(info => ({
-        original: info.original,
-        intStr: info.intPart.padStart(maxIntLength, ' '),
-        decStr: info.decPart.padEnd(maxDecLength, '0')
-    }));
+    const dividendFormatted = {
+        original: dividendDisplayInfo.original,
+        intStr: dividendDisplayInfo.intPart.padStart(maxIntLength, ' '),
+        decStr: dividendDisplayInfo.decPart.padEnd(maxDecLength, '0')
+    };
 
-    const sumLineTotalCharWidth = maxIntLength + (maxDecLength > 0 ? 1 : 0) + maxDecLength;
+    const divisorFormatted = {
+        original: divisorDisplayInfo.original,
+        intStr: divisorDisplayInfo.intPart.padStart(maxIntLength, ' '),
+        decStr: divisorDisplayInfo.decPart.padEnd(maxDecLength, '0')
+    };
 
-    return { maxIntLength, maxDecLength, operandsFormatted, sumLineTotalCharWidth };
+    const divisionLineTotalCharWidth = maxIntLength + (maxDecLength > 0 ? 1 : 0) + maxDecLength;
+
+    return { maxIntLength, maxDecLength, dividendFormatted, divisorFormatted, divisionLineTotalCharWidth };
 }
