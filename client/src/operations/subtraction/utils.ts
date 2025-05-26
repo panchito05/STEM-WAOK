@@ -49,7 +49,7 @@ export function subtractionProblemToProblem(problem: SubtractionProblem, difficu
  * Convierte un problema de tipo Problem al tipo específico SubtractionProblem
  * Este adaptador se usa cuando necesitamos utilizar funciones que requieren SubtractionProblem
  */
-export function problemToAdditionProblem(problem: Problem): AdditionProblem {
+export function problemToSubtractionProblem(problem: Problem): SubtractionProblem {
   const operands = problem.operands.map(op => op.value);
   let answerDecimalPosition: number | undefined = undefined;
   
@@ -78,21 +78,27 @@ export function problemToAdditionProblem(problem: Problem): AdditionProblem {
 }
 
 // --- Generación del Problema ---
-export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionProblem {
+export function generateSubtractionProblem(difficulty: DifficultyLevel): SubtractionProblem {
   const id = generateUniqueId();
   let operands: number[] = [];
   let layout: ExerciseLayout = 'horizontal';
   let problemMaxDecimals: 0 | 1 | 2 = 0;
 
   switch (difficulty) {
-    case "beginner": // Sumas simples, ej: 1+1 a 9+9 (del código original)
-      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
+    case "beginner": // Restas simples, ej: 9-1 a 9-9 (minuendo >= sustraendo)
+      const minuend1 = getRandomInt(2, 9);
+      const subtrahend1 = getRandomInt(1, minuend1);
+      operands = [minuend1, subtrahend1];
       layout = 'horizontal';
       break;
-    case "elementary": // Dos dígitos + un dígito, sin acarreo (adaptado) ej: 12+5, o dos dígitos simples
-      operands = [getRandomInt(10, 30), getRandomInt(1, 9)]; // ej: 23 + 7
-      if (getRandomBool(0.5)) { // 50% chance de dos dígitos + dos dígitos simples
-          operands = [getRandomInt(10, 20), getRandomInt(10, 20)]; // ej: 12 + 15
+    case "elementary": // Dos dígitos menos un dígito o dos dígitos
+      const minuend2 = getRandomInt(10, 30);
+      const subtrahend2 = getRandomInt(1, Math.min(9, minuend2));
+      operands = [minuend2, subtrahend2];
+      if (getRandomBool(0.5)) { // 50% chance de dos dígitos - dos dígitos
+          const minuend2b = getRandomInt(15, 30);
+          const subtrahend2b = getRandomInt(10, minuend2b);
+          operands = [minuend2b, subtrahend2b];
       }
       layout = 'horizontal';
       break;
@@ -100,12 +106,13 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
       layout = getRandomBool(0.75) ? 'vertical' : 'horizontal'; // 75% vertical
       if (layout === 'vertical' && getRandomBool(0.4)) { // 40% de chance de 1 decimal si es vertical
         problemMaxDecimals = 1;
-        operands = [
-          getRandomDecimal(10, 99, problemMaxDecimals),
-          getRandomDecimal(10, 99, problemMaxDecimals)
-        ];
+        const minuend3 = getRandomDecimal(50, 99, problemMaxDecimals);
+        const subtrahend3 = getRandomDecimal(10, minuend3 - 5, problemMaxDecimals);
+        operands = [minuend3, subtrahend3];
       } else { // Enteros o formato horizontal
-        operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
+        const minuend3b = getRandomInt(50, 99);
+        const subtrahend3b = getRandomInt(10, minuend3b - 5);
+        operands = [minuend3b, subtrahend3b];
       }
       break;
     case "advanced": // 3 líneas, siempre vertical, 1 o 2 decimales
@@ -132,7 +139,10 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
     operands = [getRandomInt(1,5), getRandomInt(1,5)];
   }
 
-  const sum = operands.reduce((acc, val) => acc + val, 0);
+  // Para resta: el primer operando (minuendo) menos la suma de los demás (sustraendos)
+  const difference = operands.length > 1 
+    ? operands[0] - operands.slice(1).reduce((acc, val) => acc + val, 0)
+    : operands[0];
 
   let effectiveMaxDecimalsInAnswer = 0;
   if (problemMaxDecimals > 0) {
@@ -143,7 +153,7 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
           return (opStr.split('.')[1] || '').length;
       }));
   }
-  const correctAnswer = parseFloat(sum.toFixed(effectiveMaxDecimalsInAnswer));
+  const correctAnswer = parseFloat(difference.toFixed(effectiveMaxDecimalsInAnswer));
 
   const correctAnswerStr = correctAnswer.toFixed(effectiveMaxDecimalsInAnswer);
   const [integerPartOfSumStr, decimalPartOfSumStr = ""] = correctAnswerStr.split('.');
@@ -168,7 +178,7 @@ export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionPr
 }
 
 // --- Validación de la Respuesta ---
-export function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
+export function checkAnswer(problem: SubtractionProblem, userAnswer: number): boolean {
   if (isNaN(userAnswer)) return false;
 
   const precisionForComparison = problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0
