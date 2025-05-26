@@ -1,5 +1,6 @@
 import * as Addition from "../operations/addition";
 import * as Subtraction from "../operations/subtraction";
+import * as AdditionCopy from "../operations/additioncopy";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {

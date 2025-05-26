@@ -82,7 +82,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               additioncopy: localSettings
             };
             localStorage.setItem(key, JSON.stringify(updated));
-            console.log("[ADDITION] Forzando actualización en localStorage:", updated);
+            console.log("[ADDITIONCOPY] Forzando actualización en localStorage:", updated);
           }
         } catch (e) {
           console.error("Error al forzar guardado en localStorage:", e);
@@ -195,7 +195,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   // Determinar textos según el idioma actual
   const isEnglish = localSettings.language === "english";
-  const headerTitle = isEnglish ? "Configuration - Addition Exercise" : "Configuración - Ejercicio de Suma";
+  const headerTitle = isEnglish ? "Configuration - Addition Copy Exercise" : "Configuración - Ejercicio de Suma Copia";
   const subheaderText = isEnglish ? "Customize your exercise experience" : "Personaliza tu experiencia de ejercicio";
   const backButtonText = isEnglish ? "Back to Exercise" : "Volver al Ejercicio";
   const languageButtonText = isEnglish ? "Español" : "English";
