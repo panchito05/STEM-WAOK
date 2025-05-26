@@ -1,1 +1,0 @@
-// Este es un respaldo temporal para hacer la corrección rápida
