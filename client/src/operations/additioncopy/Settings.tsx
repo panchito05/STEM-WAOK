@@ -27,7 +27,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     () =>
       debounce((settings: ModuleSettings) => {
         updateModuleSettings("additioncopy", settings);
-        console.log(`[ADDITIONCOPY] Guardando configuración (debounced):`, settings);
+        console.log(`[MULTIPLICATION] Guardando configuración (debounced):`, settings);
       }, 500), // Reducir el tiempo de espera a 500ms para asegurar que se guarde pronto
     [updateModuleSettings]
   );

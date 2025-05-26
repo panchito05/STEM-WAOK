@@ -59,11 +59,11 @@ export const operationModules: Module[] = [
   },
   {
     id: "additioncopy",
-    displayName: "Addition Copy",
-    description: "Practice addition with various difficulty levels (Copy module)",
+    displayName: "Multiplication",
+    description: "Practice multiplication with various difficulty levels",
     difficulty: "beginner",
-    color: "#10b981", // Verde para distinguir del módulo original
-    icon: "Plus",
+    color: "#8b5cf6", // Violeta para distinguir de otros módulos
+    icon: "X",
   },
 ];
 
