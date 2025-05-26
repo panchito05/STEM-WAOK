@@ -1716,16 +1716,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         const problemaCompleto = {
           // Metadatos para identificación
           id: problema.id || `problema-${i}`,
-          tipo: "suma",
+          tipo: "resta",
           
           // Datos específicos del problema de suma
           operands: [operandoA, operandoB],
-          operacion: "+",
+          operacion: "-",
           correctAnswer: respuestaCorrecta.toString(),
           
           // Formato visual del problema (para mostrar exactamente como se vio)
-          displayText: `${operandoA} + ${operandoB} = ${respuestaCorrecta}`,
-          problem: `${operandoA} + ${operandoB} = ${respuestaCorrecta}`, // Para compatibilidad
+          displayText: `${operandoA} - ${operandoB} = ${respuestaCorrecta}`,
+          problem: `${operandoA} - ${operandoB} = ${respuestaCorrecta}`, // Para compatibilidad
           
           // Información sobre la respuesta del usuario
           // Si no hay respuesta (null), creamos información "no contestado"
@@ -2621,7 +2621,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               <div className="inline-block text-right my-1 sm:my-2">
                 {operandsFormatted.map((op, index) => (
                   <div key={`op-${index}-${currentProblem.id}`} className={verticalOperandStyle}>
-                    {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={plusSignVerticalStyle}>+</span>}
+                    {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className={minusSignVerticalStyle}>+</span>}
                     <span>{op.intStr}</span>
                     {maxDecLength > 0 && (
                       <>
