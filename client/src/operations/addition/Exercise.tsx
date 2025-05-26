@@ -385,6 +385,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [digitAnswers, setDigitAnswers] = useState<string[]>([]);
   const [focusedDigitIndex, setFocusedDigitIndex] = useState<number | null>(null);
   const [inputDirection, setInputDirection] = useState<'ltr' | 'rtl'>('rtl');
+  const [isFirstDigitOfProblem, setIsFirstDigitOfProblem] = useState<boolean>(true);
   // Cambiar el tipo a HTMLDivElement, que es lo que realmente estamos usando
   const digitBoxRefs = useRef<HTMLDivElement[]>([]);
   // Referencia para mantener el arreglo de referencias actualizadas
@@ -1205,6 +1206,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setActualActiveProblemIndexBeforeViewingPrevious(nextActiveIdx);
       setFeedbackMessage(null);
       setDigitAnswers(Array(problemsList[nextActiveIdx].answerMaxDigits).fill("")); // Limpiar cajones para nuevo problema
+      setIsFirstDigitOfProblem(true); // Resetear estado para detección inteligente
       setCurrentAttempts(0); // Resetear intentos para el nuevo problema
       setProblemTimerValue(settings.timeValue); // Resetear timer para el nuevo problema
       setWaitingForContinue(false); // Permitir que el nuevo problema inicie su timer
@@ -1341,6 +1343,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (activeProblemHistory) {
         // Restaurar digitAnswers si se guardaron (idealmente) o limpiar. Por ahora limpiamos.
         setDigitAnswers(Array(activeProblem.answerMaxDigits).fill("")); // O restaurar desde historial si se guardó
+        setIsFirstDigitOfProblem(true); // Resetear estado para detección inteligente
 
         if(activeProblemHistory.isCorrect || activeProblemHistory.status === 'revealed' || (activeProblemHistory.status === 'incorrect' && settings.maxAttempts > 0 && currentAttempts >= settings.maxAttempts)){
             // Si fue correcta, o revelada, o incorrecta y sin intentos, estamos esperando continuar.
@@ -1364,6 +1367,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     } else {
         // Problema activo aún no intentado
         setDigitAnswers(Array(activeProblem.answerMaxDigits).fill(""));
+        setIsFirstDigitOfProblem(true); // Resetear estado para detección inteligente
         setFeedbackMessage(null);
         setWaitingForContinue(false);
         setProblemTimerValue(settings.timeValue);
@@ -1978,7 +1982,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Integración de detección inteligente de cursor
       if (settings.enableSmartCursor && 
           isEligibleForSmartCursor(currentProblem, maxDigits) && 
-          digitAnswers.every(digit => digit === "")) {
+          isFirstDigitOfProblem) {
         
         // Es el primer dígito en un problema elegible para detección inteligente
         const detectedDirection = detectIntentionalDirection(
@@ -1989,16 +1993,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         if (detectedDirection === 'left') {
           // Usuario quiere empezar por la izquierda (memoria)
+          console.log('[SMART-CURSOR] Aplicando dirección IZQUIERDA - Usuario usa memoria');
           currentFocus = 0;
           setFocusedDigitIndex(0);
           setInputDirection('ltr');
         } else if (detectedDirection === 'right') {
           // Usuario quiere empezar por la derecha (paso a paso)
+          console.log('[SMART-CURSOR] Aplicando dirección DERECHA - Usuario resuelve paso a paso');
           currentFocus = maxDigits - 1;
           setFocusedDigitIndex(maxDigits - 1);
           setInputDirection('rtl');
         }
         // Si detectedDirection === 'default', mantiene el comportamiento actual
+        
+        // Marcar que ya no es el primer dígito
+        setIsFirstDigitOfProblem(false);
+      } else if (isFirstDigitOfProblem) {
+        // Si no está habilitada la detección inteligente, simplemente marca que ya no es el primer dígito
+        setIsFirstDigitOfProblem(false);
       }
 
       newAnswers[currentFocus] = value;
@@ -2065,6 +2077,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setProblemsList(updatedProblemsList);
       setCurrentProblem(newProblemForLevelUp);
       setDigitAnswers(Array(newProblemForLevelUp.answerMaxDigits).fill(""));
+      setIsFirstDigitOfProblem(true); // Resetear estado para detección inteligente
       setCurrentAttempts(0);
       setProblemTimerValue(settings.timeValue);
       setWaitingForContinue(false); // Crucial para reiniciar el flujo para el nuevo problema
