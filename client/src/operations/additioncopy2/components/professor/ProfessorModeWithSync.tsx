@@ -1,11 +1,11 @@
 import React from 'react';
-import { AdditionProblem } from '../../types';
+import { DivisionProblem } from '../../types';
 import { SynchronizedLayoutProvider, useSynchronizedLayout } from './context/SynchronizedLayoutContext';
 import { CloseButton } from './CloseButton';
 import { DrawingArea } from './DrawingArea';
 
 interface ProfessorModeProps {
-  problem: AdditionProblem;
+  problem: DivisionProblem;
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
@@ -29,7 +29,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [exerciseStartTime, setExerciseStartTime] = React.useState<number>(0);
   const [problemHistory, setProblemHistory] = React.useState<Array<{
-    problem: AdditionProblem;
+    problem: DivisionProblem;
     userAnswer: number;
     isCorrect: boolean;
     attempts: number;
@@ -66,7 +66,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
 
     setIsProcessing(true);
     const userNum = parseFloat(userAnswer.trim());
-    const correctAnswer = problem.operands.reduce((sum, operand) => sum + parseFloat(operand.toString()), 0);
+    const correctAnswer = problem.correctAnswer;
     const isAnswerCorrect = Math.abs(userNum - correctAnswer) < 0.001;
     const currentAttempts = attempts + 1;
     const problemTimeSpent = Math.floor((Date.now() - exerciseStartTime) / 1000);
@@ -254,19 +254,34 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
               </div>
             </div>
             
-            {/* Problema matemático - Formato vertical para división */}
+            {/* Problema matemático - Formato según el símbolo de división */}
             <div className="bg-gray-50 p-3 rounded border-2 border-dashed border-gray-200">
               <div className="font-mono text-2xl font-bold select-none text-center">
                 <div className="mb-2">
                   <span className="text-gray-400 italic">?</span>
                 </div>
-                <div className="flex items-center justify-center mb-2">
-                  <span className="text-blue-600 font-bold mr-2">√</span>
-                  <span>{typeof problem.dividend === 'number' ? problem.dividend : parseFloat(problem.dividend.toString())}</span>
-                </div>
-                <div className="text-lg">
-                  <span>÷ {typeof problem.divisor === 'number' ? problem.divisor : parseFloat(problem.divisor.toString())}</span>
-                </div>
+                
+                {problem.displaySymbol === 'long' ? (
+                  // Formato de casita de división larga
+                  <div className="flex justify-center items-end">
+                    <span className="mr-2 mb-1">{problem.divisor}</span>
+                    <div className="relative">
+                      <div className="border-l-2 border-t-2 border-gray-800 h-8 w-16 flex items-start justify-end pr-1 pt-1">
+                        <span>{problem.dividend}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Formato horizontal para ÷ y /
+                  <div className="flex items-center justify-center space-x-2">
+                    <span>{problem.dividend}</span>
+                    <span className="text-gray-600">
+                      {problem.displaySymbol === 'obelus' ? '÷' : 
+                       problem.displaySymbol === 'slash' ? '/' : '÷'}
+                    </span>
+                    <span>{problem.divisor}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
