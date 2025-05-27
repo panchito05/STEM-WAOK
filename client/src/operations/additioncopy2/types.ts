@@ -6,6 +6,9 @@ export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'adva
 // Formatos de visualización para los problemas
 export type ExerciseLayout = 'horizontal' | 'vertical';
 
+// Tipos de símbolos de división
+export type DivisionSymbol = 'obelus' | 'slash' | 'long';
+
 // Definición de un problema de división específico
 export interface DivisionProblem {
   id: string;
@@ -14,6 +17,7 @@ export interface DivisionProblem {
   correctAnswer: number;    // Respuesta correcta (cociente)
   remainder?: number;       // Resto de la división (si aplica)
   layout: ExerciseLayout;   // Formato de visualización
+  displaySymbol: DivisionSymbol; // Tipo de símbolo de división a mostrar
   answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
   answerDecimalPosition?: number; // Posición del decimal en la respuesta (si aplica)
   index?: number;           // Índice del problema en la secuencia (para mostrar Problema X de Y)

@@ -1,5 +1,5 @@
 // utils.ts
-import { DivisionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand } from "./types";
+import { DivisionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DivisionSymbol } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -25,6 +25,19 @@ function getRandomDecimal(min: number, max: number, maxDecimals: 0 | 1 | 2): num
 function generateUniqueId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
+
+// Función para seleccionar símbolo de división según la dificultad
+const getDivisionSymbol = (difficulty: DifficultyLevel): DivisionSymbol => {
+  // Niveles principiante y elemental usan solo el símbolo estándar
+  if (difficulty === 'beginner' || difficulty === 'elementary') {
+    return 'obelus'; // ÷
+  }
+  
+  // Niveles superiores usan símbolos aleatorios
+  const symbols: DivisionSymbol[] = ['obelus', 'slash', 'long'];
+  const randomIndex = Math.floor(Math.random() * symbols.length);
+  return symbols[randomIndex];
+};
 
 /**
  * Convierte un problema de tipo DivisionProblem al tipo genérico Problem
@@ -73,6 +86,7 @@ export function problemToDivisionProblem(problem: Problem): DivisionProblem {
     correctAnswer: problem.correctAnswer,
     remainder: problem.correctAnswer % 1 === 0 ? (operands[0] || 0) % (operands[1] || 1) : undefined,
     layout: problem.displayFormat as ExerciseLayout, // Solo horizontal o vertical, no 'word'
+    displaySymbol: 'obelus' as DivisionSymbol, // Por defecto símbolo estándar para conversiones
     answerMaxDigits: problem.correctAnswer.toString().replace('.', '').length,
     answerDecimalPosition
   };
