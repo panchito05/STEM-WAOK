@@ -186,6 +186,20 @@ export default function ProgressPage() {
     .sort((a, b) => new Date(b.date || b.extraData?.date || b.createdAt || 0).getTime() - new Date(a.date || a.extraData?.date || a.createdAt || 0).getTime())
     .slice(0, 10);
 
+  // 🔍 LOGS DE DIAGNÓSTICO PARA LOS DATOS DE EJERCICIOS
+  console.log('🔍 [DEBUG] exerciseHistory completo:', exerciseHistory);
+  console.log('🔍 [DEBUG] localExerciseHistory:', localExerciseHistory);
+  console.log('🔍 [DEBUG] recentExercises (primeros 3):', recentExercises.slice(0, 3));
+  recentExercises.forEach((exercise, index) => {
+    console.log(`🔍 [DEBUG] Exercise ${index}:`, {
+      operationId: exercise.operationId,
+      id: exercise.id,
+      date: exercise.date,
+      createdAt: exercise.createdAt,
+      keys: Object.keys(exercise)
+    });
+  });
+
   const getDifficultyBadgeClass = (difficulty: string) => {
     switch (difficulty) {
       case "beginner": return "bg-green-100 text-green-800";
@@ -196,6 +210,10 @@ export default function ProgressPage() {
   };
 
   const getModuleName = (id: string) => {
+    // 🔍 LOGS DE DIAGNÓSTICO
+    console.log('🔍 [DEBUG] getModuleName llamado con id:', id);
+    console.log('🔍 [DEBUG] Tipo de id:', typeof id);
+    
     // Mapeo directo para asegurar que todos los operationId muestren el nombre correcto
     const operationNameMap: { [key: string]: string } = {
       'addition': 'Addition',
@@ -207,14 +225,25 @@ export default function ProgressPage() {
       // Agregar más mapeos según sea necesario
     };
 
+    console.log('🔍 [DEBUG] operationNameMap disponible:', operationNameMap);
+    console.log('🔍 [DEBUG] ¿id existe en operationNameMap?', id in operationNameMap);
+    console.log('🔍 [DEBUG] operationNameMap[id]:', operationNameMap[id]);
+
     // Intentar obtener el nombre del mapeo directo primero
     if (operationNameMap[id]) {
+      console.log('✅ [DEBUG] Usando mapeo directo:', operationNameMap[id]);
       return operationNameMap[id];
     }
 
     // Si no está en el mapeo directo, buscar en operationModules
     const module = operationModules.find(m => m.id === id);
-    return module?.displayName || id;
+    console.log('🔍 [DEBUG] operationModules.find resultado:', module);
+    console.log('🔍 [DEBUG] module?.displayName:', module?.displayName);
+    
+    const result = module?.displayName || id;
+    console.log('🔍 [DEBUG] Resultado final:', result);
+    
+    return result;
   };
 
   return (
