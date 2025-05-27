@@ -2618,7 +2618,23 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         {/* Problem Display Area - Compact Design */}
         <div className="p-4 rounded-lg mb-4 shadow-sm bg-gray-50 border">
-          {currentProblem.layout === 'horizontal' ? (
+          {currentProblem.displaySymbol === 'long' ? (
+            // Formato de división larga (casita)
+            <div className="flex justify-center">
+              <div className="text-2xl font-bold font-mono">
+                <div className="flex items-center">
+                  {/* Divisor */}
+                  <span className="mr-1">{currentProblem.divisor}</span>
+                  {/* Línea vertical y horizontal de la casita */}
+                  <div className="relative">
+                    <div className="border-l-2 border-t-2 border-gray-800 h-8 w-16 flex items-start justify-end pr-1 pt-1">
+                      <span>{currentProblem.dividend}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl font-bold flex items-center justify-center gap-2">
               <span>{currentProblem.dividend}</span>
               <span className="text-gray-600">{renderDivisionSymbol(currentProblem.displaySymbol)}</span>

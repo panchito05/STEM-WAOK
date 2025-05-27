@@ -35,8 +35,11 @@ const getDivisionSymbol = (difficulty: DifficultyLevel): DivisionSymbol => {
   
   // Niveles superiores usan símbolos aleatorios
   const symbols: DivisionSymbol[] = ['obelus', 'slash', 'long'];
-  const randomIndex = Math.floor(Math.random() * symbols.length);
-  return symbols[randomIndex];
+  const randomValue = Math.random();
+  const randomIndex = Math.floor(randomValue * symbols.length);
+  const selectedSymbol = symbols[randomIndex];
+  console.log(`🎲 Random: ${randomValue.toFixed(3)} -> índice ${randomIndex} -> símbolo: ${selectedSymbol}`);
+  return selectedSymbol;
 };
 
 /**
