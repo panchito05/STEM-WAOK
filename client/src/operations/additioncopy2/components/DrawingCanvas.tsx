@@ -573,11 +573,14 @@ export function DrawingCanvas({
       // Verificar si hay decimales en los números originales
       const hasDecimals = currentProblem.dividend % 1 !== 0 || currentProblem.divisor % 1 !== 0;
       
-      // Formatear los números según si tienen decimales o no
-      const dividendText = hasDecimals 
+      // Formatear los números según si tienen decimales o no (sin .00)
+      const dividendHasDecimals = currentProblem.dividend % 1 !== 0;
+      const divisorHasDecimals = currentProblem.divisor % 1 !== 0;
+      
+      const dividendText = dividendHasDecimals 
         ? parts[0].intPart + '.' + parts[0].decPart
         : parts[0].intPart;
-      const divisorText = hasDecimals 
+      const divisorText = divisorHasDecimals 
         ? parts[1].intPart + '.' + parts[1].decPart  
         : parts[1].intPart;
       
