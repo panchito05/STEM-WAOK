@@ -1,12 +1,12 @@
 import React from 'react';
-import { AdditionProblem } from '../types';
+import { DivisionProblem } from '../types';
 
 interface ProblemViewerProps {
-  problem: AdditionProblem;
+  problem: DivisionProblem;
   onClose: () => void;
 }
 
-// Componente para mostrar los números del problema de suma en grande y centrado
+// Componente para mostrar los números del problema de división en grande y centrado
 export const ProblemViewer: React.FC<ProblemViewerProps> = ({ problem, onClose }) => {
   // Extraer los operandos del problema
   const { operands } = problem;
