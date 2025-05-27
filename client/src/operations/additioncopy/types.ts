@@ -16,17 +16,18 @@ export interface DivisionProblem {
   operator: string;         // Símbolo de división
 }
 
-// Definición de un problema de división específico con layout compatible
-export interface DivisionProblemExtended {
+// Definición de un problema de multiplicación específico (mantenido por compatibilidad)
+export interface MultiplicationProblem {
   id: string;
-  dividend: number;         // Dividendo (número que se divide)
-  divisor: number;          // Divisor (número entre el que se divide)
-  correctAnswer: number;    // Resultado de la división
+  operands: number[];       // Operandos de la multiplicación (normalmente 2 factores)
+  num1?: number;            // Campo legacy para compatibilidad
+  num2?: number;            // Campo legacy para compatibilidad
+  correctAnswer: number;    // Respuesta correcta
   layout: ExerciseLayout;   // Formato de visualización
   answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
   answerDecimalPosition?: number; // Posición del decimal en la respuesta (si aplica)
   index?: number;           // Índice del problema en la secuencia (para mostrar Problema X de Y)
-  total?: number;           // Total de problemaslemas en el ejercicio
+  total?: number;           // Total de problemas en el ejercicio
 }
 
 // Tipo genérico para un operando
