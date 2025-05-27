@@ -84,7 +84,7 @@ export default function SubtractionModuleCard({ module, index }: SubtractionModu
       </div>
 
       {/* Contenido específico de Subtraction con estructura DOM única */}
-      <div className="subtraction-body-unique subtraction-main-content p-2 sm:p-3 bg-gradient-to-b from-white to-red-50">
+      <div className="subtraction-body-unique subtraction-main-content p-2 sm:p-4 bg-gradient-to-b from-white to-red-50 pt-[13px] pb-[13px] pl-[12px] pr-[12px] mt-[0px] mb-[0px] ml-[0px] mr-[0px]">
         <p className="subtraction-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
           Practica restas con varios niveles de dificultad
         </p>

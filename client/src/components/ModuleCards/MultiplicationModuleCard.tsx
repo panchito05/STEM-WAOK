@@ -84,7 +84,7 @@ export default function MultiplicationModuleCard({ module, index }: Multiplicati
       </div>
 
       {/* Contenido específico de Multiplication con estructura DOM única */}
-      <div className="multiplication-body-unique multiplication-main-content p-2 sm:p-3 bg-gradient-to-b from-white to-green-50">
+      <div className="multiplication-body-unique multiplication-main-content p-2 sm:p-4 bg-gradient-to-b from-white to-green-50 pt-[13px] pb-[13px] pl-[12px] pr-[12px] mt-[0px] mb-[0px] ml-[0px] mr-[0px]">
         <p className="multiplication-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
           Practica multiplicación con varios niveles de dificultad
         </p>
