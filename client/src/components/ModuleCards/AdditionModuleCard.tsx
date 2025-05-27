@@ -72,7 +72,7 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
               {difficultyLabels[module.difficulty as keyof typeof difficultyLabels] || 'Principiante'}
             </span>
           </div>
-          <Link href={`/operations/${module.id}`}>
+          <Link href={`/operation/${module.id}`}>
             <Button 
               variant="default" 
               className="addition-start-btn addition-cta-button text-white bg-blue-600 hover:bg-blue-700 rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"

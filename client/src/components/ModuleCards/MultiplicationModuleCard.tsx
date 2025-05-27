@@ -72,7 +72,7 @@ export default function MultiplicationModuleCard({ module, index }: Multiplicati
               {difficultyLabels[module.difficulty as keyof typeof difficultyLabels] || 'Principiante'}
             </span>
           </div>
-          <Link href={`/operations/${module.id}`}>
+          <Link href={`/operation/${module.id}`}>
             <Button 
               variant="default" 
               className="multiplication-start-btn multiplication-cta-button text-white bg-green-600 hover:bg-green-700 rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"
