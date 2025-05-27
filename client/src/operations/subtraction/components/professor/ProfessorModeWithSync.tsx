@@ -1,11 +1,11 @@
 import React from 'react';
-import { AdditionProblem } from '../../types';
+import { SubtractionProblem } from '../../types';
 import { SynchronizedLayoutProvider, useSynchronizedLayout } from './context/SynchronizedLayoutContext';
 import { CloseButton } from './CloseButton';
 import { DrawingArea } from './DrawingArea';
 
 interface ProfessorModeProps {
-  problem: AdditionProblem;
+  problem: SubtractionProblem;
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
@@ -29,7 +29,7 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [exerciseStartTime, setExerciseStartTime] = React.useState<number>(0);
   const [problemHistory, setProblemHistory] = React.useState<Array<{
-    problem: AdditionProblem;
+    problem: SubtractionProblem;
     userAnswer: number;
     isCorrect: boolean;
     attempts: number;
@@ -66,7 +66,10 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
 
     setIsProcessing(true);
     const userNum = parseFloat(userAnswer.trim());
-    const correctAnswer = problem.operands.reduce((sum, operand) => sum + parseFloat(operand.toString()), 0);
+    const correctAnswer = problem.operands.reduce((result, operand, index) => {
+      if (index === 0) return parseFloat(operand.toString());
+      return result - parseFloat(operand.toString());
+    }, 0);
     const isAnswerCorrect = Math.abs(userNum - correctAnswer) < 0.001;
     const currentAttempts = attempts + 1;
     const problemTimeSpent = Math.floor((Date.now() - exerciseStartTime) / 1000);

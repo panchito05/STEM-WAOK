@@ -92,7 +92,10 @@ export function generateProblems(config: ProblemGeneratorConfig): Problem[] {
     }
     
     // Calcular la respuesta correcta
-    const correctAnswer = operands.reduce((sum, op) => sum + op.value, 0);
+    const correctAnswer = operands.reduce((result, op, index) => {
+      if (index === 0) return op.value;
+      return result - op.value;
+    }, 0);
     
     // Determinar el formato de visualización
     const displayFormat = getDisplayFormat(preferredDisplayFormat);
