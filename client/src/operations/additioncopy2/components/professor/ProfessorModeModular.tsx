@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AdditionProblem } from '../../types';
+import { DivisionProblem } from '../../types';
 import { CloseButton } from './CloseButton';
 import { DrawingArea } from './DrawingArea';
 import { ControlPanel } from './ControlPanel';
@@ -7,7 +7,7 @@ import { ControlPanel } from './ControlPanel';
 type Position = 'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft';
 
 interface ProfessorModeModularProps {
-  problem: AdditionProblem;
+  problem: DivisionProblem;
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
@@ -56,7 +56,7 @@ export const ProfessorModeModular: React.FC<ProfessorModeModularProps> = ({
     setAttempts(newAttempts);
     
     const numAnswer = Number(userAnswer);
-    const correctAnswer = problem.operands.reduce((a, b) => a + b, 0);
+    const correctAnswer = problem.dividend / problem.divisor;
     const result = numAnswer === correctAnswer;
     
     setIsCorrect(result);

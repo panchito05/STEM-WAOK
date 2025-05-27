@@ -1,10 +1,10 @@
 /**
- * Sistema de validación para el módulo de suma
+ * Sistema de validación para el módulo de división
  * 
  * Este middleware se encarga de validar todos los datos de entrada
  * y garantizar que sean correctos antes de ser procesados.
  */
-import { AdditionProblem, DifficultyLevel, Problem, UserAnswer } from '../types';
+import { DivisionProblem, DifficultyLevel, Problem, UserAnswer } from '../types';
 
 // Constantes para validación
 const MAX_SAFE_VALUE = 9999999; // Valor máximo que se puede manejar con seguridad

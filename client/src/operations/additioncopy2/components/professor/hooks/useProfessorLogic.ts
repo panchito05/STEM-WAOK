@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AdditionProblem } from '../../../types';
+import { DivisionProblem } from '../../../types';
 
 interface ProfessorSettings {
   maxAttempts: number;
@@ -20,7 +20,7 @@ interface UseProfessorLogicReturn {
 }
 
 export const useProfessorLogic = (
-  problem: AdditionProblem,
+  problem: DivisionProblem,
   settings: ProfessorSettings,
   onComplete: (wasCorrect: boolean) => void
 ): UseProfessorLogicReturn => {
@@ -40,12 +40,9 @@ export const useProfessorLogic = (
   }, []);
 
   // Calcular respuesta correcta de forma segura
-  const getCorrectAnswer = useCallback((prob: AdditionProblem): number => {
+  const getCorrectAnswer = useCallback((prob: DivisionProblem): number => {
     try {
-      return prob.operands.reduce((sum, operand) => {
-        const num = typeof operand === 'number' ? operand : parseFloat(operand.toString());
-        return sum + (isNaN(num) ? 0 : num);
-      }, 0);
+      return prob.dividend / prob.divisor;
     } catch (error) {
       console.error('Error calculando respuesta correcta:', error);
       return 0;
