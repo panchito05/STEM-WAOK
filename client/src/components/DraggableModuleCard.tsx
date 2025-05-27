@@ -291,6 +291,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
         hover:border-blue-200
       `}
       data-handler-id={drop_props?.handlerId || ""}
+      data-module-id={module.id}
     >
       {isModuleFavorite && (
         <div className="absolute -top-2 -right-2 bg-yellow-400 rounded-full p-1.5 shadow-md z-20">

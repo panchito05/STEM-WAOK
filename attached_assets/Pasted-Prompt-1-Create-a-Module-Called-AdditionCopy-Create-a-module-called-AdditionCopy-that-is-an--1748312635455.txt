@@ -1,0 +1,65 @@
+Prompt 1: Create a Module Called "AdditionCopy"
+
+Create a module called "AdditionCopy" that is an exact copy of the existing "Addition" module. Copy all files and the structure of the original module to the new module and change only the name in all references and files.
+
+IMPORTANT - Automatic Reference Replacement Process:
+
+After physically copying the files, you must automatically search and replace ALL hardcoded references of the original module name with the new name in these critical files:
+
+Settings.tsx:
+
+updateModuleSettings("[original]", ...) → updateModuleSettings("[nuevo]", ...)
+resetModuleSettings("[original]") → resetModuleSettings("[nuevo]")
+Logs [ORIGINAL] → [NUEVO]
+References in localStorage [original]: localSettings → [nuevo]: localSettings
+Exercise.tsx:
+
+Any reference to the module name in progress saving
+References in contexts and configurations
+Verify other files in the copied module to ensure no references to the original name remain.
+
+Integrate into navigation: Automatically add to operationComponents.ts and routes.
+
+Objective: Ensure the new module functions completely independently of the original, with its own separate configurations and data, without naming conflicts or cross-references.
+
+Prompt 1: Complete Automatic Conversion to New Mathematical Operation
+
+Convert the "AdditionCopy" module from addition to one of multiplication. Perform a complete conversion while maintaining exactly the same structure, design, and interface.
+
+Specific Changes Required:
+
+Mathematical Logic:
+
+Problem generation: Change exercise creation functions for the new operation.
+Answer validation: Modify the logic for verifying correct answers.
+Difficulty examples: Update all examples in the DifficultyExamples component.
+Hardcoded References (CRITICAL):
+
+Settings.tsx: Change updateModuleSettings("[original]", ...) → updateModuleSettings("[nuevo]", ...)
+Settings.tsx: Change resetModuleSettings("[original]") → resetModuleSettings("[nuevo]")
+Settings.tsx: Update references in localStorage from [original] → [nuevo]
+Settings.tsx: Change operation="[original]" → operation="[nuevo]" in DifficultyExamples
+Settings.tsx: Update descriptive texts of operations in difficulty descriptions.
+Exercise.tsx: Verify and correct any hardcoded references to the original module.
+All console logs: [ORIGINAL] → [NUEVO]
+Components and UI:
+
+Titles and texts: Change all texts mentioning the previous operation.
+Mathematical symbols: Update operators (+, -, ×, ÷) throughout the interface.
+DifficultyExamples: Add specific examples for the new operation.
+Difficulty descriptions: Change explanatory texts (e.g., "sums" → "subtractions").
+Names and Types:
+
+Update function names, types, and variables to reflect the new operation.
+Change file names if necessary.
+Update corresponding imports and exports.
+Keep Intact:
+
+Entire UI, navigation, configurations, progress saving.
+Reward system, adaptability, timers.
+Folder structure and general architecture.
+Verify Especially:
+
+That configurations are saved correctly when navigating between exercise and settings.
+That no references to the original module remain in API calls or localStorage.
+That all difficulty examples show the correct operation.
