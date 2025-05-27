@@ -209,6 +209,41 @@ export default function ProgressPage() {
     }
   };
 
+  // 🔧 FUNCIÓN PARA DETECTAR EL TIPO REAL DEL EJERCICIO
+  const getRealExerciseType = (exercise: any) => {
+    // Verificar si hay problemDetails con información del tipo real
+    if (exercise.extraData?.problemDetails && exercise.extraData.problemDetails.length > 0) {
+      const firstProblem = exercise.extraData.problemDetails[0];
+      
+      // Detectar el tipo desde la operación o tipo
+      if (firstProblem.tipo) {
+        const tipoMap: { [key: string]: string } = {
+          'suma': 'Addition',
+          'resta': 'Subtraction',
+          'multiplicacion': 'Multiplication',
+          'division': 'Division'
+        };
+        return tipoMap[firstProblem.tipo] || 'Addition';
+      }
+      
+      // Detectar desde la operación si está disponible
+      if (firstProblem.operacion) {
+        const operationMap: { [key: string]: string } = {
+          '+': 'Addition',
+          '-': 'Subtraction',
+          '×': 'Multiplication',
+          '*': 'Multiplication',
+          '÷': 'Division',
+          '/': 'Division'
+        };
+        return operationMap[firstProblem.operacion] || 'Addition';
+      }
+    }
+    
+    // Fallback al operationId original
+    return getModuleName(exercise.operationId);
+  };
+
   const getModuleName = (id: string) => {
     // Mapeo directo para asegurar que todos los operationId muestren el nombre correcto
     const operationNameMap: { [key: string]: string } = {
@@ -225,7 +260,6 @@ export default function ProgressPage() {
     // Si el ID es un nivel de dificultad corrupto, asumir que es Addition
     const corruptedLevels = ['elementary', 'beginner', 'intermediate', 'advanced', 'expert'];
     if (corruptedLevels.includes(id)) {
-      console.warn('🚨 [INTEGRIDAD] operationId corrupto detectado:', id, '- Corrigiendo a Addition');
       return 'Addition';
     }
 
@@ -239,7 +273,6 @@ export default function ProgressPage() {
     
     // Si no se encuentra el módulo, asumir Addition como fallback seguro
     if (!module) {
-      console.warn('🚨 [INTEGRIDAD] operationId desconocido:', id, '- Usando Addition como fallback');
       return 'Addition';
     }
     
@@ -1139,7 +1172,7 @@ export default function ProgressPage() {
                             <td className="py-3 px-4">
                               {format(new Date(exercise.date || exercise.createdAt || exercise.extraData?.date || new Date()), "MMMM dd, yyyy h:mm a")}
                             </td>
-                            <td className="py-3 px-4">{getModuleName(exercise.operationId)}</td>
+                            <td className="py-3 px-4">{getRealExerciseType(exercise)}</td>
                             <td className="py-3 px-4">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyBadgeClass(exercise.difficulty || 'beginner')}`}>
                                 {(exercise.difficulty || 'beginner').charAt(0).toUpperCase() + (exercise.difficulty || 'beginner').slice(1)}
@@ -1187,7 +1220,7 @@ export default function ProgressPage() {
                                 <DialogContent className="sm:max-w-md">
                                   <DialogHeader>
                                     <DialogTitle className="text-center text-xl font-bold">
-                                      {getModuleName(exercise.operationId)} Exercise Complete!
+                                      {getRealExerciseType(exercise)} Exercise Complete!
                                     </DialogTitle>
                                   </DialogHeader>
                                     <div className="bg-gray-50 p-4 rounded-md mb-4">
