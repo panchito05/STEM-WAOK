@@ -513,8 +513,8 @@ export function DrawingCanvas({
     
     // Encontrar la longitud máxima para alineación
     const parts = formattedOperands.map((num: string) => {
-      const [intPart, decPart] = num.split('.');
-      return { intPart, decPart };
+      const [intPart, decPart] = num.includes('.') ? num.split('.') : [num, ''];
+      return { intPart, decPart: decPart || '' };
     });
     
     const maxIntLength = Math.max(...parts.map((p: {intPart: string, decPart: string}) => p.intPart.length));
