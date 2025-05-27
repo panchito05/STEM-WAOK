@@ -2622,12 +2622,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             // Formato de división larga (casita)
             <div className="flex justify-center">
               <div className="text-2xl font-bold font-mono">
-                <div className="flex items-center">
+                <div className="flex items-end">
                   {/* Divisor */}
-                  <span className="mr-1">{currentProblem.divisor}</span>
+                  <span className="mr-2 mb-2">{currentProblem.divisor}</span>
                   {/* Línea vertical y horizontal de la casita */}
                   <div className="relative">
-                    <div className="border-l-2 border-t-2 border-gray-800 h-8 w-16 flex items-start justify-end pr-1 pt-1">
+                    <div className="border-l-2 border-t-2 border-gray-800 h-10 w-20 flex items-start justify-end pr-2 pt-1">
                       <span>{currentProblem.dividend}</span>
                     </div>
                   </div>
