@@ -507,11 +507,19 @@ export function DrawingCanvas({
     
     // Formatear los números para división
     const { dividend, divisor } = currentProblem;
-    const formattedOperands = [dividend, divisor].map((num: number) => num.toFixed(2));
+    // Formatear sin ceros innecesarios
+    const formattedOperands = [dividend, divisor].map((num: number) => {
+      // Si es entero, no agregar decimales
+      if (num % 1 === 0) {
+        return num.toString();
+      }
+      // Si tiene decimales, mantener solo los necesarios
+      return num.toString();
+    });
     
     // Encontrar la longitud máxima para alineación
     const parts = formattedOperands.map((num: string) => {
-      const [intPart, decPart] = num.split('.');
+      const [intPart, decPart = ''] = num.split('.');
       return { intPart, decPart };
     });
     
@@ -536,13 +544,7 @@ export function DrawingCanvas({
       const dividendHasDecimals = currentProblem.dividend % 1 !== 0;
       const divisorHasDecimals = currentProblem.divisor % 1 !== 0;
       
-      console.log('🔍 Casita Debug:', {
-        dividend: currentProblem.dividend,
-        divisor: currentProblem.divisor,
-        dividendHasDecimals,
-        divisorHasDecimals,
-        parts
-      });
+
       
       // Formatear los números según si tienen decimales o no
       const divisorText = divisorHasDecimals 
