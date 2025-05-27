@@ -7,7 +7,7 @@ import DivisionModuleCard from "./ModuleCards/DivisionModuleCard";
 import DraggableModuleCard from "./DraggableModuleCard";
 import FilterBar from "./FilterBar";
 import { operationModules } from "@/utils/operationComponents";
-import { Module } from "../types/module";
+import { Module } from "@/utils/operationComponents";
 
 // Función para seleccionar el componente correcto según el tipo de módulo
 const getModuleComponent = (module: Module, index: number) => {
