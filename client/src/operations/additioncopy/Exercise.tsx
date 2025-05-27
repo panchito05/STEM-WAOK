@@ -2328,8 +2328,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const { maxIntLength = 0, maxDecLength = 0, operandsFormatted = [], productLineTotalCharWidth = 0 } =
     currentProblem.layout === 'vertical'
-    ? getVerticalAlignmentInfo(currentProblem.operands, currentProblem.answerDecimalPosition)
-    : { operandsFormatted: currentProblem.operands.map(op => ({original: op, intStr: String(op), decStr: ""})), maxIntLength:0, maxDecLength:0, productLineTotalCharWidth:0 };
+    ? getVerticalAlignmentInfo(currentProblem)
+    : { operandsFormatted: [currentProblem.factor1, currentProblem.factor2].map(op => ({original: op, intStr: String(op), decStr: ""})), maxIntLength:0, maxDecLength:0, productLineTotalCharWidth:0 };
 
   const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
   const progressValue = problemsList.length > 0 ? (attemptedProblemsCount / problemsList.length) * 100 : 0;

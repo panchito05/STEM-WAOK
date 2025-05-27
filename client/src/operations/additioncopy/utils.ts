@@ -1,93 +1,77 @@
-// utils.ts - Multiplication Logic
-import React from "react";
-import { MultiplicationProblem, DifficultyLevel } from "./types";
+// Multiplication module utils - completely clean implementation
+import { MultiplicationProblem, MultiplicationDisplayFormat } from '../../../shared/types/problemTypes';
 
-// Constants for multiplication logic
-const MAX_DIFFICULTY = 5;
-
-export type MultiplicationDisplayFormat = 'horizontal' | 'vertical';
+// Display formats for multiplication
 export const DISPLAY_FORMATS: MultiplicationDisplayFormat[] = ['horizontal', 'vertical'];
 
-// Utility function to generate random integers
-export function getRandomInt(min: number, max: number): number {
-  const minNum = Math.ceil(min);
-  const maxNum = Math.floor(max);
-  if (maxNum < minNum) return minNum;
-  return Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+export interface MultiplicationSettings {
+  difficulty: 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
+  displayFormat: MultiplicationDisplayFormat;
+  includeDecimals: boolean;
+  maxDigits: number;
+  timeLimit: number;
+  problemCount: number;
 }
 
-// Function to convert difficulty level to numeric
-function difficultyToNumeric(difficulty: DifficultyLevel): number {
-  switch (difficulty) {
-    case 'beginner': return 1;
-    case 'elementary': return 2;
-    case 'intermediate': return 3;
-    case 'advanced': return 4;
-    case 'expert': return 5;
-    default: return 1;
-  }
-}
-
-// Function to generate multiplication problems
-export function generateMultiplicationProblem(difficulty: DifficultyLevel): MultiplicationProblem {
-  const validDifficulty = Math.max(1, Math.min(MAX_DIFFICULTY, difficultyToNumeric(difficulty)));
+// Generate a multiplication problem based on difficulty
+export function generateMultiplicationProblem(
+  difficulty: 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert',
+  displayFormat: MultiplicationDisplayFormat = 'horizontal'
+): MultiplicationProblem {
   let factor1: number, factor2: number;
-  const operator = '\u00D7'; // Multiplication symbol (×)
-
-  switch (validDifficulty) {
-    case 1: // Beginner: 1-digit × 1-digit
-      factor1 = getRandomInt(1, 9);
-      factor2 = getRandomInt(1, 9);
+  
+  switch (difficulty) {
+    case 'beginner':
+      factor1 = Math.floor(Math.random() * 5) + 1; // 1-5
+      factor2 = Math.floor(Math.random() * 5) + 1; // 1-5
       break;
-    case 2: // Elementary: 1-digit × 2-digit or 2-digit × 1-digit
-      if (Math.random() < 0.5) {
-        factor1 = getRandomInt(1, 9);
-        factor2 = getRandomInt(10, 99);
-      } else {
-        factor1 = getRandomInt(10, 99);
-        factor2 = getRandomInt(1, 9);
-      }
+    case 'elementary':
+      factor1 = Math.floor(Math.random() * 9) + 1; // 1-9
+      factor2 = Math.floor(Math.random() * 9) + 1; // 1-9
       break;
-    case 3: // Intermediate: 2-digit × 2-digit
-      factor1 = getRandomInt(10, 99);
-      factor2 = getRandomInt(10, 99);
+    case 'intermediate':
+      factor1 = Math.floor(Math.random() * 12) + 1; // 1-12
+      factor2 = Math.floor(Math.random() * 12) + 1; // 1-12
       break;
-    case 4: // Advanced: 3-digit × 2-digit or 2-digit × 3-digit
-      if (Math.random() < 0.5) {
-        factor1 = getRandomInt(100, 999);
-        factor2 = getRandomInt(10, 99);
-      } else {
-        factor1 = getRandomInt(10, 99);
-        factor2 = getRandomInt(100, 999);
-      }
+    case 'advanced':
+      factor1 = Math.floor(Math.random() * 50) + 10; // 10-59
+      factor2 = Math.floor(Math.random() * 20) + 1;  // 1-20
       break;
-    case 5: // Expert: 3-digit × 3-digit or larger
-      factor1 = getRandomInt(100, 999);
-      factor2 = getRandomInt(10, 99);
+    case 'expert':
+      factor1 = Math.floor(Math.random() * 100) + 10; // 10-109
+      factor2 = Math.floor(Math.random() * 50) + 10;  // 10-59
       break;
     default:
-      factor1 = getRandomInt(1, 9);
-      factor2 = getRandomInt(1, 9);
-      break;
+      factor1 = Math.floor(Math.random() * 9) + 1;
+      factor2 = Math.floor(Math.random() * 9) + 1;
   }
 
   const result = factor1 * factor2;
 
   return {
-    id: Date.now().toString(36) + Math.random().toString(36).substring(2),
-    factor1: factor1,
-    factor2: factor2,
-    result: result,
-    operator: operator
+    id: `mult_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    factor1,
+    factor2,
+    result,
+    operator: '×',
+    layout: displayFormat,
+    difficulty,
+    maxAttempts: 3,
+    allowDecimals: false
   };
 }
 
-export function checkAnswer(problem: MultiplicationProblem, userAnswer: number): boolean {
-  if (userAnswer === null || userAnswer === undefined || isNaN(userAnswer)) return false;
-  return userAnswer === problem.result;
+// Check if answer is correct for multiplication
+export function checkMultiplicationAnswer(problem: MultiplicationProblem, userAnswer: number): boolean {
+  return Math.abs(userAnswer - problem.result) < 0.01; // Allow small floating point errors
 }
 
-// Helper function to choose random display format
+// Alias for compatibility with Exercise.tsx
+export function checkAnswer(problem: MultiplicationProblem, userAnswer: number): boolean {
+  return checkMultiplicationAnswer(problem, userAnswer);
+}
+
+// Choose a random display format
 export function chooseRandomFormat(): MultiplicationDisplayFormat {
   return DISPLAY_FORMATS[Math.floor(Math.random() * DISPLAY_FORMATS.length)];
 }
@@ -114,6 +98,23 @@ export function getVerticalAlignmentInfo(problem: MultiplicationProblem) {
     maxDigits: Math.max(factor1String.length, factor2String.length, resultString.length),
     factor1Digits: factor1String.length,
     factor2Digits: factor2String.length,
-    resultDigits: resultString.length
+    resultDigits: resultString.length,
+    maxIntLength: Math.max(factor1String.length, factor2String.length, resultString.length),
+    maxDecLength: 0,
+    operandsFormatted: [
+      { original: problem.factor1, intStr: factor1String, decStr: "" },
+      { original: problem.factor2, intStr: factor2String, decStr: "" }
+    ],
+    productLineTotalCharWidth: Math.max(factor1String.length, factor2String.length, resultString.length) + 2
   };
 }
+
+// Export default settings
+export const DEFAULT_MULTIPLICATION_SETTINGS: MultiplicationSettings = {
+  difficulty: 'elementary',
+  displayFormat: 'horizontal',
+  includeDecimals: false,
+  maxDigits: 2,
+  timeLimit: 30,
+  problemCount: 10
+};
