@@ -102,6 +102,7 @@ export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionPr
   
   // Seleccionar símbolo de división según la dificultad
   const displaySymbol = getDivisionSymbol(difficulty);
+  console.log(`🔤 Generando problema ${difficulty}: símbolo seleccionado = ${displaySymbol}`);
 
   switch (difficulty) {
     case "beginner": // Divisiones simples, ej: 8÷2, 9÷3

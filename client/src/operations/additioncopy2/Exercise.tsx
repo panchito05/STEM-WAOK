@@ -39,6 +39,7 @@ const sumLineStyle = "border-t-2 border-gray-700 my-1";
 
 // Función para renderizar el símbolo de división apropiado
 const renderDivisionSymbol = (displaySymbol: DivisionSymbol): string => {
+  console.log(`🎯 Renderizando símbolo: ${displaySymbol}`);
   switch (displaySymbol) {
     case 'obelus':
       return '÷';
