@@ -46,28 +46,28 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
               Suma
             </h3>
           </div>
-        </div>
-        <div className="addition-actions-bar flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10 mt-2">
-          <button 
-            className={`addition-favorite-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
-              isModuleFavorite 
-                ? "text-yellow-400 hover:text-white bg-white/20 hover:bg-white/10" 
-                : "text-white hover:text-yellow-400 hover:bg-white/20"
-            }`}
-            onClick={handleToggleFavorite}
-          >
-            <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
-          </button>
-          <button 
-            className="addition-preview-button text-white hover:text-blue-200 hover:bg-white/20 focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // Aquí iría la lógica de vista previa
-            }}
-          >
-            <Eye className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
-          </button>
+          <div className="addition-actions-bar flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10">
+            <button 
+              className={`addition-favorite-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
+                isModuleFavorite 
+                  ? "text-yellow-400 hover:text-white bg-white/20 hover:bg-white/10" 
+                  : "text-white hover:text-yellow-400 hover:bg-white/20"
+              }`}
+              onClick={handleToggleFavorite}
+            >
+              <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+            </button>
+            <button 
+              className="addition-preview-button text-white hover:text-blue-200 hover:bg-white/20 focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // Aquí iría la lógica de vista previa
+              }}
+            >
+              <Eye className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
+            </button>
+          </div>
         </div>
       </div>
 
