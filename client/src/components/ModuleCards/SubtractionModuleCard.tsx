@@ -82,12 +82,9 @@ export default function SubtractionModuleCard({ module, index }: SubtractionModu
           </div>
         </div>
       </div>
-
       {/* Contenido específico de Subtraction con estructura DOM única */}
       <div className="subtraction-body-unique subtraction-main-content p-2 sm:p-2 bg-gradient-to-b from-white to-blue-50 pt-[13px] pb-[13px] pl-[12px] pr-[12px] mt-[0px] mb-[0px] ml-[0px] mr-[0px]">
-        <p className="subtraction-description-text text-xs sm:text-sm mb-2 line-clamp-2 text-gray-600">
-          Practica restas con varios niveles de dificultad
-        </p>
+        <p className="subtraction-description-text text-xs sm:text-sm mb-2 line-clamp-2 text-gray-600">Practica restas desafiantes con varios niveles de dificultad</p>
         <div className="subtraction-footer-unique subtraction-bottom-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div className="subtraction-difficulty-wrapper flex items-center w-full sm:w-auto">
             <span className={`subtraction-difficulty-label px-1.5 min-[400px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] min-[400px]:text-xs sm:text-sm font-medium border ${difficultyColors[module.difficulty as keyof typeof difficultyColors] || difficultyColors.beginner} flex-shrink-0`}>
