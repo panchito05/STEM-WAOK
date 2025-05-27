@@ -41,7 +41,7 @@ export default function MultiplicationModuleCard({ module, index }: Multiplicati
   };
 
   return (
-    <div className="multiplication-module-unique-card multiplication-specific-container h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-green-300 group">
+    <div className="multiplication-module-unique-card multiplication-specific-container h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-blue-300 group">
       {/* Header específico de Multiplication con clases únicas */}
       <div className="multiplication-header-unique bg-gradient-to-br from-green-500 via-green-600 to-green-700 text-white p-2 sm:p-3 lg:p-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>

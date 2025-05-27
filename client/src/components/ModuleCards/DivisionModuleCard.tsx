@@ -41,7 +41,7 @@ export default function DivisionModuleCard({ module, index }: DivisionModuleCard
   };
 
   return (
-    <div className="division-module-unique-card division-specific-container h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-purple-300 group">
+    <div className="division-module-unique-card division-specific-container h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-blue-300 group">
       {/* Header específico de Division con clases únicas */}
       <div className="division-header-unique bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 text-white p-2 sm:p-3 lg:p-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
@@ -97,7 +97,7 @@ export default function DivisionModuleCard({ module, index }: DivisionModuleCard
           <Link href={`/operation/${module.id}`}>
             <Button 
               variant="default" 
-              className="division-start-btn division-cta-button text-white bg-purple-600 hover:bg-purple-700 rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"
+              className="division-start-btn division-cta-button text-white bg-blue-600 hover:bg-blue-700 rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"
             >
               Comenzar
             </Button>

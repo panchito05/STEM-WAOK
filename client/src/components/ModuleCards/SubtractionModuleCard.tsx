@@ -41,7 +41,7 @@ export default function SubtractionModuleCard({ module, index }: SubtractionModu
   };
 
   return (
-    <div className="subtraction-module-unique-card subtraction-specific-container h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-red-300 group">
+    <div className="subtraction-module-unique-card subtraction-specific-container h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-blue-300 group">
       {/* Header específico de Subtraction con clases únicas */}
       <div className="subtraction-header-unique bg-gradient-to-br from-red-500 via-red-600 to-red-700 text-white p-2 sm:p-3 lg:p-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
