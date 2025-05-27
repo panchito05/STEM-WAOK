@@ -2223,7 +2223,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return (
       <div className="px-4 py-5 sm:p-6">
         <h2 className="text-2xl font-bold text-gray-900 text-center mb-4">
-          {t('Addition Exercise Complete!')}
+          {t('Multiplication Exercise Complete!')}
         </h2>
 
         {/* Tiempo total */}
@@ -2289,7 +2289,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               let problemDisplay = '';
               if (problem.operands && problem.operands.length > 0) {
                 if (problem.operands.length === 2) {
-                  problemDisplay = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+                  problemDisplay = `${problem.operands[0]} × ${problem.operands[1]} = ${problem.correctAnswer}`;
                   if (answer.userAnswer !== problem.correctAnswer && !isNaN(answer.userAnswer)) {
                     problemDisplay += ` (${answer.userAnswer})`;
                   }
