@@ -615,33 +615,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🔍 [SERVER-DEBUG] module recibido:', req.body.module);
       console.log('🔍 [SERVER-DEBUG] exercise recibido:', req.body.exercise);
       
-      // Extraer operationId del objeto correcto
+      // 🔧 SOLUCION: Extraer operationId correctamente desde URL o contexto
+      // La URL contiene el operationId del módulo que está ejecutando el ejercicio
+      const currentUrl = req.headers.referer || req.headers.referrer || '';
+      console.log('🔍 [SERVER-DEBUG] URL de referencia:', currentUrl);
+      
       let operationId = req.body.operationId;
+      
+      // Intentar extraer operationId de la URL de referencia
+      if (!operationId && currentUrl) {
+        const urlParts = currentUrl.split('/');
+        const operationIndex = urlParts.findIndex(part => 
+          ['addition', 'subtraction', 'multiplication', 'division', 'additioncopy', 'additioncopy2'].includes(part)
+        );
+        if (operationIndex !== -1) {
+          operationId = urlParts[operationIndex];
+          console.log('🔍 [SERVER-DEBUG] Extrayendo operationId de URL:', operationId);
+        }
+      }
+      
+      // Intentar extraer desde el objeto exercise
       if (!operationId && req.body.exercise?.module) {
         operationId = req.body.exercise.module;
         console.log('🔍 [SERVER-DEBUG] Extrayendo operationId de exercise.module:', operationId);
       }
+      
+      // Intentar extraer desde module
       if (!operationId && req.body.module) {
         operationId = req.body.module;
         console.log('🔍 [SERVER-DEBUG] Extrayendo operationId de module:', operationId);
       }
       
-      // Si todavía no tenemos operationId, usar "addition" como fallback
+      // Solo usar fallback si realmente no se puede determinar
       if (!operationId) {
         operationId = "addition";
         console.log('🔍 [SERVER-DEBUG] Usando fallback operationId:', operationId);
       }
       
       // Crear objeto con el operationId correcto
-      const progressData = {
+      const correctedProgressData = {
         ...req.body,
         operationId: operationId
       };
       
-      console.log('🔍 [SERVER-DEBUG] progressData con operationId corregido:', JSON.stringify(progressData, null, 2));
+      console.log('🔍 [SERVER-DEBUG] progressData con operationId corregido:', JSON.stringify(correctedProgressData, null, 2));
       
       // Validar datos de progreso
-      const validatedProgress = exerciseProgressSchema.parse(progressData);
+      const validatedProgress = exerciseProgressSchema.parse(correctedProgressData);
       
       // MEJORA: Asegurar que los problemas se guarden correctamente
       // Preservar la estructura completa de extra_data si existe
@@ -659,7 +679,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newProgress = await storage.insertProgressForChildProfile(profileId, validatedProgress);
       
       // Devolver progreso completo actualizado
-      const progressData = await storage.getProgressForChildProfile(profileId);
+      const updatedProgressData = await storage.getProgressForChildProfile(profileId);
       
       return res.status(201).json({
         success: true,
