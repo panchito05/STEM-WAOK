@@ -23,6 +23,7 @@ import { Link } from "wouter";
 
 import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
 import { useRewards, RewardModal, useRewardQueue, RewardUtils } from '@/rewards';
+import { useMultiOperationsSession } from '@/hooks/useMultiOperationsSession';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -376,6 +377,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Acceder a la información de historial mediante el contexto de progreso
   const { exerciseHistory } = useProgress();
   const moduleId = "addition"; // ID del módulo de suma
+  
+  // Hook para manejar sesiones multi-operaciones
+  const { isMultiMode, completeCurrentModule } = useMultiOperationsSession();
 
   const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);

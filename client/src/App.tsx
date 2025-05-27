@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Layout from "@/components/Layout/Layout";
 import HomePage from "@/pages/HomePage";
 import MultiOperationsPage from "@/pages/MultiOperationsPage";
+import MultiOperationsSummaryPage from "@/pages/MultiOperationsSummaryPage";
 import OperationPage from "@/pages/OperationPage";
 import ProgressPage from "@/pages/ProgressPage";
 import SettingsPage from "@/pages/SettingsPage";
@@ -39,6 +40,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/multi-operations" component={MultiOperationsPage} />
+      <Route path="/multi-operations/summary" component={MultiOperationsSummaryPage} />
       <Route path="/operation/:operation" component={OperationPage} />
       <Route path="/progress" component={ProtectedRoute(ProgressPage)} />
       <Route path="/settings" component={ProtectedRoute(SettingsPage)} />
