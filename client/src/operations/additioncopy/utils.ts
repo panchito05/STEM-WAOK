@@ -31,7 +31,7 @@ function difficultyToNumeric(difficulty: DifficultyLevel): number {
 }
 
 // Function to generate division problems
-export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionProblem {
+export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionProblemExtended {
   const validDifficulty = Math.max(1, Math.min(MAX_DIFFICULTY, difficultyToNumeric(difficulty)));
   let num1: number, num2: number, correctAnswer: number;
   const operator = '\u00F7'; // Division symbol
@@ -106,18 +106,26 @@ export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionPr
     }
   }
 
+  // Calculate layout and answer properties
+  const layout = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+  const answerString = correctAnswer.toString();
+  const answerMaxDigits = answerString.replace('.', '').length;
+  const answerDecimalPosition = answerString.includes('.') ? answerString.indexOf('.') : undefined;
+
   return {
     id: Date.now().toString(36) + Math.random().toString(36).substring(2),
     dividend: num1,
     divisor: num2,
-    result: correctAnswer,
-    operator: operator
+    correctAnswer: correctAnswer,
+    layout: layout,
+    answerMaxDigits: answerMaxDigits,
+    answerDecimalPosition: answerDecimalPosition
   };
 }
 
-export function checkAnswer(problem: DivisionProblem, userAnswer: number): boolean {
+export function checkAnswer(problem: DivisionProblemExtended, userAnswer: number): boolean {
   if (userAnswer === null || userAnswer === undefined || isNaN(userAnswer)) return false;
-  return Math.abs(userAnswer - problem.result) < EPSILON;
+  return Math.abs(userAnswer - problem.correctAnswer) < EPSILON;
 }
 
 // Helper function to choose random display format
@@ -126,8 +134,8 @@ export function chooseRandomFormat(): DivisionDisplayFormat {
 }
 
 // Helper function to get display format for examples (returns string instead of JSX)
-export function renderDivisionExample(problem: DivisionProblem, format: DivisionDisplayFormat): string {
-  const operatorSymbol = problem.operator;
+export function renderDivisionExample(problem: DivisionProblemExtended, format: DivisionDisplayFormat): string {
+  const operatorSymbol = '÷'; // Division symbol
   switch (format) {
     case 'long':
       return `${problem.dividend} ÷ ${problem.divisor} = ?`;
@@ -145,8 +153,10 @@ export function generateMultiplicationProblem(difficulty: DifficultyLevel): any 
   return {
     id: divProblem.id,
     operands: [divProblem.dividend, divProblem.divisor],
-    correctAnswer: divProblem.result,
-    layout: 'horizontal'
+    correctAnswer: divProblem.correctAnswer,
+    layout: divProblem.layout,
+    answerMaxDigits: divProblem.answerMaxDigits,
+    answerDecimalPosition: divProblem.answerDecimalPosition
   };
 }
 
