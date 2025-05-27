@@ -982,7 +982,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             ? adaptiveDifficulty
             : (settings.difficulty as DifficultyLevel);
 
-          const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+          const compensationProblem = generateSingleMultiplicationProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
           // Agregamos null al historial para que coincida con el nuevo problema añadido
           setUserAnswersHistory(prev => [...prev, null]);
@@ -1052,7 +1052,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               ? adaptiveDifficulty
               : (settings.difficulty as DifficultyLevel);
 
-            const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+            const compensationProblem = generateSingleMultiplicationProblem(difficultyForCompensation);
             setProblemsList(prev => [...prev, compensationProblem]);
             // Agregamos null al historial para que coincida con el nuevo problema añadido
             setUserAnswersHistory(prev => [...prev, null]);
@@ -1105,7 +1105,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             ? adaptiveDifficulty
             : (settings.difficulty as DifficultyLevel);
 
-          const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+          const compensationProblem = generateSingleMultiplicationProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
           // Agregamos null al historial para que coincida con el nuevo problema añadido
           setUserAnswersHistory(prev => [...prev, null]);
@@ -2153,7 +2153,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (showLevelUpReward) {
       setShowLevelUpReward(false);
       setBlockAutoAdvance(false);
-      const newProblemForLevelUp = generateMultiplicationProblem(adaptiveDifficulty);
+      const newProblemForLevelUp = generateSingleMultiplicationProblem(adaptiveDifficulty);
       const updatedProblemsList = [...problemsList];
       updatedProblemsList[actualActiveProblemIndexBeforeViewingPrevious] = newProblemForLevelUp;
       setProblemsList(updatedProblemsList);
@@ -2796,7 +2796,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                           ? adaptiveDifficulty
                                           : (settings.difficulty as DifficultyLevel);
 
-                                      const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+                                      const compensationProblem = generateSingleMultiplicationProblem(difficultyForCompensation);
                                       setProblemsList(prev => [...prev, compensationProblem]);
                                       // Agregamos null al historial para que coincida con el nuevo problema añadido
                                       setUserAnswersHistory(prev => [...prev, null]);
@@ -2922,7 +2922,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                         ? adaptiveDifficulty
                                         : (settings.difficulty as DifficultyLevel);
 
-                                    const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+                                    const compensationProblem = generateSingleMultiplicationProblem(difficultyForCompensation);
                                     setProblemsList(prev => [...prev, compensationProblem]);
                                     // Agregamos null al historial para que coincida con el nuevo problema añadido
                                     setUserAnswersHistory(prev => [...prev, null]);
@@ -2982,14 +2982,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 ? adaptiveDifficulty
                 : (settings.difficulty as DifficultyLevel);
                 
-              const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+              const compensationProblem = generateSingleMultiplicationProblem(difficultyForCompensation);
               setProblemsList(prev => [...prev, compensationProblem]);
               // Agregamos null al historial para que coincida con el nuevo problema añadido
               setUserAnswersHistory(prev => [...prev, null]);
             }
             
             // Generar un nuevo problema
-            const newProblem = generateMultiplicationProblem(settings.difficulty);
+            const newProblem = generateSingleMultiplicationProblem(settings.difficulty);
             // Agregar información sobre la posición y total de problemas
             newProblem.index = currentProblemIndex;
             newProblem.total = settings.problemCount;
