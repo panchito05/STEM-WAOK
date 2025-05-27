@@ -544,19 +544,22 @@ export function DrawingCanvas({
         yPosition
       );
       
-      // Dibujar el punto decimal
-      context.fillText(
-        '.', 
-        centerX + decimalOffset, 
-        yPosition
-      );
-      
-      // Dibujar la parte decimal
-      context.fillText(
-        parts[i].decPart, 
-        centerX + decimalOffset + decimalPartOffset, 
-        yPosition
-      );
+      // Solo dibujar punto decimal y parte decimal si realmente existe
+      if (parts[i].decPart && parts[i].decPart.length > 0) {
+        // Dibujar el punto decimal
+        context.fillText(
+          '.', 
+          centerX + decimalOffset, 
+          yPosition
+        );
+        
+        // Dibujar la parte decimal
+        context.fillText(
+          parts[i].decPart, 
+          centerX + decimalOffset + decimalPartOffset, 
+          yPosition
+        );
+      }
       
       // Avanzar a la siguiente posición vertical
       yPosition += lineHeight;
@@ -576,17 +579,20 @@ export function DrawingCanvas({
       yPosition
     );
     
-    context.fillText(
-      '.', 
-      centerX + decimalOffset, 
-      yPosition
-    );
-    
-    context.fillText(
-      parts[parts.length - 1].decPart, 
-      centerX + decimalOffset + decimalPartOffset, 
-      yPosition
-    );
+    // Solo dibujar punto decimal y parte decimal si realmente existe
+    if (parts[parts.length - 1].decPart && parts[parts.length - 1].decPart.length > 0) {
+      context.fillText(
+        '.', 
+        centerX + decimalOffset, 
+        yPosition
+      );
+      
+      context.fillText(
+        parts[parts.length - 1].decPart, 
+        centerX + decimalOffset + decimalPartOffset, 
+        yPosition
+      );
+    }
     
     // Dibujar línea debajo
     yPosition += lineHeight * 0.6;
