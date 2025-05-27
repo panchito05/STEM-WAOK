@@ -23,7 +23,6 @@ import { Link } from "wouter";
 
 import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
 import { useRewards, RewardModal, useRewardQueue, RewardUtils } from '@/rewards';
-import { useMultiOperationsSession } from '@/hooks/useMultiOperationsSession';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -377,9 +376,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Acceder a la información de historial mediante el contexto de progreso
   const { exerciseHistory } = useProgress();
   const moduleId = "subtraction"; // ID del módulo de resta
-  
-  // Hook para manejar sesiones multi-operaciones
-  const { isMultiMode, completeCurrentModule } = useMultiOperationsSession();
 
   const [problemsList, setProblemsList] = useState<SubtractionProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<SubtractionProblem | null>(null);
@@ -1867,7 +1863,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         // Incluir resumen para facilitar acceso rápido
         summary: {
-          operation: "subtraction",
+          operation: "addition",
           level: finalLevel,
           score: {
             correct: scoreFinal,
@@ -1877,37 +1873,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }
       }
     });
-
-    // 🔄 INTEGRACIÓN MULTI-OPERACIONES: Detectar y manejar transición automática
-    console.log('🔄 Verificando modo multi-operaciones:', { isMultiMode });
-    
-    if (isMultiMode) {
-      console.log('🔄 Estamos en modo multi-operaciones, completando módulo subtraction...');
-      
-      // Preparar datos del módulo para la sesión multi-operaciones
-      const moduleResults = {
-        moduleId: 'subtraction',
-        completed: true,
-        correctAnswers: scoreFinal,
-        totalAnswers: problemsList.length,
-        timeSpent: timer,
-        userAnswers: userAnswersHistory.filter(a => a !== null).map(answer => ({
-          problem: answer?.problem,
-          userAnswer: answer?.userAnswer,
-          isCorrect: answer?.isCorrect,
-          timeSpent: Math.round(timer / problemsList.length),
-          attempts: answer?.attempts || 1
-        }))
-      };
-      
-      console.log('🔄 Datos del módulo subtraction preparados:', moduleResults);
-      
-      // Llamar al hook para completar el módulo actual y continuar
-      completeCurrentModule(moduleResults);
-      
-      // Importante: Retornar aquí para evitar mostrar la pantalla de resumen individual
-      return;
-    }
   };
 
   const handleDigitBoxClick = (index: number) => {
