@@ -5,7 +5,7 @@ import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateDivisionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
-import { Problem, UserAnswer as UserAnswerType, DivisionProblem, DifficultyLevel } from "./types";
+import { Problem, UserAnswer as UserAnswerType, DivisionProblem, DifficultyLevel, DivisionSymbol } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
@@ -36,6 +36,20 @@ const digitBoxDisabledStyle = "bg-gray-100 text-gray-500 border-gray-200 cursor-
 const verticalOperandStyle = "font-mono text-2xl sm:text-3xl text-right tracking-wider";
 const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
 const sumLineStyle = "border-t-2 border-gray-700 my-1";
+
+// Función para renderizar el símbolo de división apropiado
+const renderDivisionSymbol = (displaySymbol: DivisionSymbol): string => {
+  switch (displaySymbol) {
+    case 'obelus':
+      return '÷';
+    case 'slash':
+      return '/';
+    case 'long':
+      return '÷'; // Para división larga usaremos el símbolo estándar en formato horizontal
+    default:
+      return '÷';
+  }
+};
 
 // Interface para los metadatos de videos de YouTube
 interface YoutubeVideoMetadata {
@@ -2606,7 +2620,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl font-bold flex items-center justify-center gap-2">
               <span>{currentProblem.dividend}</span>
-              <span className="text-gray-600">÷</span>
+              <span className="text-gray-600">{renderDivisionSymbol(currentProblem.displaySymbol)}</span>
               <span>{currentProblem.divisor}</span>
               <span className="text-gray-600">=</span>
             </div>

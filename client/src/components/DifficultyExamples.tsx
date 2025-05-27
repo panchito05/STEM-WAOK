@@ -74,9 +74,9 @@ export default function DifficultyExamples({
     division: {
       beginner: ["8 ÷ 4 = ?", "15 ÷ 3 = ?"],
       elementary: ["48 ÷ 6 = ?", "63 ÷ 9 = ?"],
-      intermediate: ["156 ÷ 12 = ?", "224 ÷ 16 = ?"],
-      advanced: ["1728 ÷ 24 = ?", "2835 ÷ 35 = ?"],
-      expert: ["15680 ÷ 56 = ?", "24192 ÷ 84 = ?"]
+      intermediate: ["156 / 12 = ?", "224 ÷ 16 = ?"],
+      advanced: ["1728 / 24 = ?", "2835 ÷ 35 = ?"],
+      expert: ["15680 / 56 = ?", "24192 ÷ 84 = ?"]
     },
     counting: {
       beginner: ["Count to 5", "Count by 1s to 10"],

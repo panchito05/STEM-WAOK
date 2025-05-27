@@ -99,6 +99,9 @@ export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionPr
   let divisor: number;
   let layout: ExerciseLayout = 'horizontal';
   let problemMaxDecimals: 0 | 1 | 2 = 0;
+  
+  // Seleccionar símbolo de división según la dificultad
+  const displaySymbol = getDivisionSymbol(difficulty);
 
   switch (difficulty) {
     case "beginner": // Divisiones simples, ej: 8÷2, 9÷3
@@ -182,6 +185,7 @@ export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionPr
     correctAnswer,
     remainder,
     layout,
+    displaySymbol,
     answerMaxDigits,
     answerDecimalPosition,
   };
