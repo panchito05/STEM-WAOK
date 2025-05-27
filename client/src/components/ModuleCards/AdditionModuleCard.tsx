@@ -84,7 +84,7 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
       </div>
 
       {/* Contenido específico de Addition con estructura DOM única */}
-      <div className="addition-body-unique addition-main-content p-2 sm:p-3 bg-gradient-to-b from-white to-blue-50">
+      <div className="addition-body-unique addition-main-content p-2 sm:p-3 pb-2 bg-gradient-to-b from-white to-blue-50">
         <p className="addition-description-text text-xs sm:text-sm mb-2 line-clamp-2 text-gray-600">
           Practica sumas con varios niveles de dificultad
         </p>
