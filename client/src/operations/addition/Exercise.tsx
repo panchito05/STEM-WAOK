@@ -1877,6 +1877,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }
       }
     });
+
+    // 🔄 INTEGRACIÓN MULTI-OPERACIONES: Detectar y manejar transición automática
+    console.log('🔄 Verificando modo multi-operaciones:', { isMultiMode });
+    
+    if (isMultiMode) {
+      console.log('🔄 Estamos en modo multi-operaciones, completando módulo addition...');
+      
+      // Preparar datos del módulo para la sesión multi-operaciones
+      const moduleResults = {
+        moduleId: 'addition',
+        completed: true,
+        correctAnswers: scoreFinal,
+        totalAnswers: problemsList.length,
+        timeSpent: timer,
+        userAnswers: userAnswersHistory.filter(a => a !== null).map(answer => ({
+          problem: answer?.problem,
+          userAnswer: answer?.userAnswer,
+          isCorrect: answer?.isCorrect,
+          timeSpent: Math.round(timer / problemsList.length),
+          attempts: answer?.attempts || 1
+        }))
+      };
+      
+      console.log('🔄 Datos del módulo addition preparados:', moduleResults);
+      
+      // Llamar al hook para completar el módulo actual y continuar
+      completeCurrentModule(moduleResults);
+      
+      // Importante: Retornar aquí para evitar mostrar la pantalla de resumen individual
+      return;
+    }
   };
 
   const handleDigitBoxClick = (index: number) => {
