@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { useModuleFavorites } from "@/store/moduleStore";
 import { Button } from "@/components/ui/button";
-import { Star, Plus } from "lucide-react";
+import { Star, Plus, Eye } from "lucide-react";
 import { Module } from "@/utils/operationComponents";
 
 interface AdditionModuleCardProps {
@@ -57,6 +57,16 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
             onClick={handleToggleFavorite}
           >
             <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+          </button>
+          <button 
+            className="addition-preview-button text-white hover:text-blue-200 hover:bg-white/20 focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // Aquí iría la lógica de vista previa
+            }}
+          >
+            <Eye className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
       </div>
