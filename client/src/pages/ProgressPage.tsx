@@ -221,7 +221,9 @@ export default function ProgressPage() {
           'suma': 'Addition',
           'resta': 'Subtraction',
           'multiplicacion': 'Multiplication',
-          'division': 'Division'
+          'multiplicación': 'Multiplication',
+          'division': 'Division',
+          'división': 'Division'
         };
         return tipoMap[firstProblem.tipo] || 'Addition';
       }
@@ -237,6 +239,23 @@ export default function ProgressPage() {
           '/': 'Division'
         };
         return operationMap[firstProblem.operacion] || 'Addition';
+      }
+      
+      // Detectar desde el texto del problema si contiene operadores
+      if (firstProblem.problem || firstProblem.displayText) {
+        const problemText = firstProblem.problem || firstProblem.displayText || '';
+        if (problemText.includes('×') || problemText.includes('*')) {
+          return 'Multiplication';
+        }
+        if (problemText.includes('÷') || problemText.includes('/')) {
+          return 'Division';
+        }
+        if (problemText.includes('-')) {
+          return 'Subtraction';
+        }
+        if (problemText.includes('+')) {
+          return 'Addition';
+        }
       }
     }
     
