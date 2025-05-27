@@ -210,12 +210,13 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             <h3 
               className="text-xs min-[350px]:text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white text-shadow line-clamp-2 leading-tight"
               title={t(`modules.${module.id}.name`)}
+              data-module-title={module.id}
             >
               {t(`modules.${module.id}.name`)}
             </h3>
           </div>
         </div>
-        <div className="flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10">
+        <div className="flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10" data-module-actions={module.id}>
           <button 
             className={`focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
               module.comingSoon 
@@ -227,6 +228,7 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
             onClick={(e) => !module.comingSoon && handleToggleFavorite(e)}
             disabled={module.comingSoon}
             aria-label={isModuleFavorite ? t('favorites.remove') : t('favorites.add')}
+            data-favorite-button={module.id}
           >
             <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
@@ -249,12 +251,15 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
           )}
         </div>
       </div>
-      <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50">
-        <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}>
+      <div className="p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50" data-module-content={module.id}>
+        <p 
+          className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 ${module.comingSoon ? "text-gray-400" : "text-gray-600"}`}
+          data-module-description={module.id}
+        >
           {t(`modules.${module.id}.description`)}
         </p>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div className="flex items-center w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2" data-module-footer={module.id}>
+          <div className="flex items-center w-full sm:w-auto" data-module-difficulty={module.id}>
             {getDifficultyBadge(module.difficulty)}
           </div>
           {module.comingSoon ? (
@@ -262,10 +267,11 @@ export default function DraggableModuleCard({ module, index }: DraggableModuleCa
               {t('common.comingSoon')}
             </Button>
           ) : (
-            <Link href={`/operation/${module.id}`} className="w-full sm:w-auto">
+            <Link href={`/operation/${module.id}`} className="w-full sm:w-auto" data-module-link={module.id}>
               <Button 
                 variant="default" 
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto"
+                data-start-button={module.id}
               >
                 {t('common.start')}
               </Button>
