@@ -263,24 +263,24 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                 
                 {problem.displaySymbol === 'long' ? (
                   // Formato de casita de división larga
-                  <div className="flex justify-center items-end">
-                    <span className="mr-2 mb-1">{problem.divisor}</span>
+                  (<div className="flex justify-center items-end">
+                    <span className="mr-2 mt-[-5px] mb-[-5px]">{problem.divisor}</span>
                     <div className="relative">
                       <div className="border-l-2 border-t-2 border-gray-800 h-8 w-16 flex items-start justify-end pr-1 pt-1">
-                        <span>{problem.dividend}</span>
+                        <span className="ml-[-28px] mr-[-28px]">{problem.dividend}</span>
                       </div>
                     </div>
-                  </div>
+                  </div>)
                 ) : (
                   // Formato horizontal para ÷ y /
-                  <div className="flex items-center justify-center space-x-2">
+                  (<div className="flex items-center justify-center space-x-2">
                     <span>{problem.dividend}</span>
                     <span className="text-gray-600">
                       {problem.displaySymbol === 'obelus' ? '÷' : 
                        problem.displaySymbol === 'slash' ? '/' : '÷'}
                     </span>
                     <span>{problem.divisor}</span>
-                  </div>
+                  </div>)
                 )}
               </div>
             </div>

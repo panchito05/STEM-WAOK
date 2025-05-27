@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { AdditionProblem } from '../types';
+import { DivisionProblem } from '../types';
 
 // Definir los diferentes modos de herramientas
 type ToolMode = 'pen' | 'eraser';
@@ -17,7 +17,7 @@ interface DrawingCanvasProps {
   strokeWidth?: number;
   className?: string;
   onClear?: () => void;
-  currentProblem?: AdditionProblem | null; // Problema actual para estampar en el canvas
+  currentProblem?: DivisionProblem | null; // Problema actual para estampar en el canvas
 }
 
 export function DrawingCanvas({
@@ -530,73 +530,102 @@ export function DrawingCanvas({
     // Calcular la altura total necesaria para todos los números
     const totalOperandsHeight = lineHeight * (parts.length + 0.5); // +0.5 para la línea final
     
-    // Posición inicial vertical (centrada)
-    let yPosition = centerY - (totalOperandsHeight / 2);
-    
-    // Dibujar todos los operandos, tanto para problemas básicos como avanzados
-    for (let i = 0; i < parts.length - 1; i++) {
-      // Dibujar la parte entera alineada a la derecha
+    // Verificar si es formato de división larga (casita)
+    if (currentProblem.displaySymbol === 'long') {
+      // Dibujar formato de casita de división larga
+      const divisorText = parts[1].intPart + '.' + parts[1].decPart;
+      const dividendText = parts[0].intPart + '.' + parts[0].decPart;
+      
+      // Calcular posiciones para la casita
+      const casitaWidth = Math.max(dividendText.length * charWidth, 120);
+      const casitaHeight = lineHeight;
+      
+      // Posición del divisor
+      const divisorX = centerX - casitaWidth/2 - charWidth * 2;
+      const divisorY = centerY;
+      
+      // Dibujar divisor
+      context.textAlign = 'right';
+      context.fillText(divisorText, divisorX, divisorY);
+      
+      // Dibujar las líneas de la casita
+      context.beginPath();
+      // Línea horizontal superior
+      context.moveTo(centerX - casitaWidth/2, centerY - casitaHeight/2);
+      context.lineTo(centerX + casitaWidth/2, centerY - casitaHeight/2);
+      // Línea vertical izquierda
+      context.moveTo(centerX - casitaWidth/2, centerY - casitaHeight/2);
+      context.lineTo(centerX - casitaWidth/2, centerY + casitaHeight/2);
+      context.stroke();
+      
+      // Dibujar dividendo dentro de la casita
+      context.textAlign = 'right';
+      context.fillText(dividendText, centerX + casitaWidth/2 - charWidth, centerY);
+      
+    } else {
+      // Formato tradicional horizontal para ÷ y /
+      let yPosition = centerY - (totalOperandsHeight / 2);
+      
+      // Dibujar el dividendo (primer operando)
       context.fillText(
-        parts[i].intPart.padStart(maxIntLength, ' '), 
+        parts[0].intPart.padStart(maxIntLength, ' '), 
         centerX, 
         yPosition
       );
       
-      // Dibujar el punto decimal
       context.fillText(
         '.', 
         centerX + decimalOffset, 
         yPosition
       );
       
-      // Dibujar la parte decimal
       context.fillText(
-        parts[i].decPart, 
+        parts[0].decPart, 
         centerX + decimalOffset + decimalPartOffset, 
         yPosition
       );
       
-      // Avanzar a la siguiente posición vertical
+      // Avanzar posición vertical
       yPosition += lineHeight;
+      
+      // Dibujar el símbolo de división apropiado
+      const divisionSymbol = currentProblem.displaySymbol === 'obelus' ? '÷' : '/';
+      context.fillText(
+        divisionSymbol, 
+        signXPosition, 
+        yPosition
+      );
+      
+      // Dibujar el divisor (segundo operando)
+      context.fillText(
+        parts[1].intPart.padStart(maxIntLength, ' '), 
+        centerX, 
+        yPosition
+      );
+      
+      context.fillText(
+        '.', 
+        centerX + decimalOffset, 
+        yPosition
+      );
+      
+      context.fillText(
+        parts[1].decPart, 
+        centerX + decimalOffset + decimalPartOffset, 
+        yPosition
+      );
+      
+      // Dibujar línea debajo
+      yPosition += lineHeight * 0.6;
+      
+      context.beginPath();
+      const lineStartX = signXPosition - charWidth;
+      const lineEndX = centerX + decimalOffset + decimalPartOffset + charWidth * 2;
+      
+      context.moveTo(lineStartX, yPosition);
+      context.lineTo(lineEndX, yPosition);
+      context.stroke();
     }
-    
-    // Dibujar el signo + para el último operando
-    context.fillText(
-      '+', 
-      signXPosition, 
-      yPosition
-    );
-    
-    // Dibujar el último operando
-    context.fillText(
-      parts[parts.length - 1].intPart.padStart(maxIntLength, ' '), 
-      centerX, 
-      yPosition
-    );
-    
-    context.fillText(
-      '.', 
-      centerX + decimalOffset, 
-      yPosition
-    );
-    
-    context.fillText(
-      parts[parts.length - 1].decPart, 
-      centerX + decimalOffset + decimalPartOffset, 
-      yPosition
-    );
-    
-    // Dibujar línea debajo
-    yPosition += lineHeight * 0.6;
-    
-    context.beginPath();
-    // La línea se extiende desde antes del signo + hasta después de la parte decimal
-    const lineStartX = signXPosition - charWidth;
-    const lineEndX = centerX + decimalOffset + decimalPartOffset + charWidth * 2;
-    
-    context.moveTo(lineStartX, yPosition);
-    context.lineTo(lineEndX, yPosition);
-    context.stroke();
     
     // Restaurar configuraciones originales
     context.strokeStyle = originalStrokeStyle;
