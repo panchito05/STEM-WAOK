@@ -7,7 +7,5 @@ export { CheckButton } from './CheckButton';
 export { KeypadContainer } from './KeypadContainer';
 export { ControlPanel } from './ControlPanel';
 export { DrawingArea } from './DrawingArea';
-export { ProfessorModeModular } from './ProfessorModeModular';
-
 // Exportar el componente principal como default
-export { ProfessorModeModular as default } from './ProfessorModeModular';
+export { ProfessorModeWithSync as default } from './ProfessorModeWithSync';
