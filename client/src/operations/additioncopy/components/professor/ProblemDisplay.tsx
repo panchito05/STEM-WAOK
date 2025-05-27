@@ -38,7 +38,9 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
     
     return problem.operands.map(op => {
       const num = typeof op === 'number' ? op : parseFloat(op.toString());
-      return isNaN(num) ? '0' : InputValidator.formatNumber(num);
+      if (isNaN(num)) return '0';
+      // Mostrar números enteros sin decimales
+      return Number.isInteger(num) ? num.toString() : InputValidator.formatNumber(num);
     });
   }, [problem.operands, problemData.isValid]);
 
