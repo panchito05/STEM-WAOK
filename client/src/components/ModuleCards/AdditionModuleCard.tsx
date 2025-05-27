@@ -1,7 +1,7 @@
 import { Link } from "wouter";
-import { useModuleFavorites, useModuleStore } from "@/store/moduleStore";
+import { useModuleFavorites } from "@/store/moduleStore";
 import { Button } from "@/components/ui/button";
-import { Star, Plus, Eye, EyeOff } from "lucide-react";
+import { Star, Plus } from "lucide-react";
 import { Module } from "@/utils/operationComponents";
 
 interface AdditionModuleCardProps {
@@ -11,19 +11,11 @@ interface AdditionModuleCardProps {
 
 export default function AdditionModuleCard({ module, index }: AdditionModuleCardProps) {
   const { toggleFavorite, favoriteModules } = useModuleFavorites();
-  const { hiddenModules, toggleHidden } = useModuleStore();
   const isModuleFavorite = favoriteModules.includes(module.id);
-  const isModuleVisible = !hiddenModules.includes(module.id);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleFavorite(module.id);
-  };
-
-  const handleToggleVisibility = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleHidden(module.id);
   };
 
   const difficultyLabels = {
@@ -54,38 +46,24 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
               Suma
             </h3>
           </div>
-          
-          {/* Iconos en la esquina superior derecha */}
-          <div className="addition-top-actions flex items-center gap-1 min-[400px]:gap-2 flex-shrink-0">
-            <button 
-              className={`addition-favorite-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
-                isModuleFavorite 
-                  ? "text-yellow-400 hover:text-white bg-white/20 hover:bg-white/10" 
-                  : "text-white hover:text-yellow-400 hover:bg-white/20"
-              }`}
-              onClick={handleToggleFavorite}
-            >
-              <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
-            </button>
-            
-            <button 
-              className="addition-visibility-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all text-white hover:text-gray-200 hover:bg-white/20"
-              onClick={handleToggleVisibility}
-              title={isModuleVisible ? "Ocultar módulo" : "Mostrar módulo"}
-            >
-              {isModuleVisible ? (
-                <Eye className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
-              ) : (
-                <EyeOff className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
-              )}
-            </button>
-          </div>
+        </div>
+        <div className="addition-actions-bar flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10 mt-2">
+          <button 
+            className={`addition-favorite-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
+              isModuleFavorite 
+                ? "text-yellow-400 hover:text-white bg-white/20 hover:bg-white/10" 
+                : "text-white hover:text-yellow-400 hover:bg-white/20"
+            }`}
+            onClick={handleToggleFavorite}
+          >
+            <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+          </button>
         </div>
       </div>
 
       {/* Contenido específico de Addition con estructura DOM única */}
-      <div className="addition-body-unique addition-main-content p-2 sm:p-3 pb-2 bg-gradient-to-b from-white to-blue-50">
-        <p className="addition-description-text text-xs sm:text-sm mb-2 line-clamp-2 text-gray-600">
+      <div className="addition-body-unique addition-main-content p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50">
+        <p className="addition-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
           Practica sumas con varios niveles de dificultad
         </p>
         <div className="addition-footer-unique addition-bottom-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">

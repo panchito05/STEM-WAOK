@@ -1,7 +1,7 @@
 import { Link } from "wouter";
-import { useModuleFavorites, useModuleStore } from "@/store/moduleStore";
+import { useModuleFavorites } from "@/store/moduleStore";
 import { Button } from "@/components/ui/button";
-import { Star, Eye, EyeOff } from "lucide-react";
+import { Star } from "lucide-react";
 import { Module } from "@/utils/operationComponents";
 
 interface DivisionModuleCardProps {
@@ -11,19 +11,11 @@ interface DivisionModuleCardProps {
 
 export default function DivisionModuleCard({ module, index }: DivisionModuleCardProps) {
   const { toggleFavorite, favoriteModules } = useModuleFavorites();
-  const { hiddenModules, toggleHidden } = useModuleStore();
   const isModuleFavorite = favoriteModules.includes(module.id);
-  const isModuleVisible = !hiddenModules.includes(module.id);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleFavorite(module.id);
-  };
-
-  const handleToggleVisibility = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggleHidden(module.id);
   };
 
   const difficultyLabels = {
@@ -66,23 +58,11 @@ export default function DivisionModuleCard({ module, index }: DivisionModuleCard
           >
             <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
           </button>
-          
-          <button 
-            className="division-visibility-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all text-white hover:text-gray-200 hover:bg-white/20"
-            onClick={handleToggleVisibility}
-            title={isModuleVisible ? "Ocultar módulo" : "Mostrar módulo"}
-          >
-            {isModuleVisible ? (
-              <Eye className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
-            ) : (
-              <EyeOff className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
-            )}
-          </button>
         </div>
       </div>
 
       {/* Contenido específico de Division con estructura DOM única */}
-      <div className="division-body-unique division-main-content p-2 sm:p-3 bg-gradient-to-b from-white to-purple-50">
+      <div className="division-body-unique division-main-content p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-purple-50">
         <p className="division-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
           Practica división con varios niveles de dificultad
         </p>
