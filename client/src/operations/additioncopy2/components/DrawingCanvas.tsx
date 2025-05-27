@@ -570,68 +570,95 @@ export function DrawingCanvas({
       context.fillText(dividendText, centerX + casitaWidth/2 - charWidth * 0.3, centerY);
       
     } else {
-      // Formato tradicional horizontal para ÷ y /
-      let yPosition = centerY - (totalOperandsHeight / 2);
+      // Verificar si hay decimales en los números originales
+      const hasDecimals = currentProblem.dividend % 1 !== 0 || currentProblem.divisor % 1 !== 0;
       
-      // Dibujar el dividendo (primer operando)
-      context.fillText(
-        parts[0].intPart.padStart(maxIntLength, ' '), 
-        centerX, 
-        yPosition
-      );
+      // Formatear los números según si tienen decimales o no
+      const dividendText = hasDecimals 
+        ? parts[0].intPart + '.' + parts[0].decPart
+        : parts[0].intPart;
+      const divisorText = hasDecimals 
+        ? parts[1].intPart + '.' + parts[1].decPart  
+        : parts[1].intPart;
       
-      context.fillText(
-        '.', 
-        centerX + decimalOffset, 
-        yPosition
-      );
-      
-      context.fillText(
-        parts[0].decPart, 
-        centerX + decimalOffset + decimalPartOffset, 
-        yPosition
-      );
-      
-      // Avanzar posición vertical
-      yPosition += lineHeight;
-      
-      // Dibujar el símbolo de división apropiado
-      const divisionSymbol = currentProblem.displaySymbol === 'obelus' ? '÷' : '/';
-      context.fillText(
-        divisionSymbol, 
-        signXPosition, 
-        yPosition
-      );
-      
-      // Dibujar el divisor (segundo operando)
-      context.fillText(
-        parts[1].intPart.padStart(maxIntLength, ' '), 
-        centerX, 
-        yPosition
-      );
-      
-      context.fillText(
-        '.', 
-        centerX + decimalOffset, 
-        yPosition
-      );
-      
-      context.fillText(
-        parts[1].decPart, 
-        centerX + decimalOffset + decimalPartOffset, 
-        yPosition
-      );
-      
-      // Dibujar línea debajo
-      yPosition += lineHeight * 0.6;
-      
-      context.beginPath();
-      const lineStartX = signXPosition - charWidth;
-      const lineEndX = centerX + decimalOffset + decimalPartOffset + charWidth * 2;
-      
-      context.moveTo(lineStartX, yPosition);
-      context.lineTo(lineEndX, yPosition);
-      context.stroke();
+      if (currentProblem.displaySymbol === 'slash') {
+        // Formato horizontal para slash: "162.8 / 8"
+        context.textAlign = 'center';
+        
+        // Calcular el ancho total de la expresión
+        const divisionSymbol = ' / ';
+        const expression = dividendText + divisionSymbol + divisorText;
+        
+        // Dibujar toda la expresión en una línea
+        context.fillText(expression, centerX, centerY);
+        
+      } else {
+        // Formato vertical tradicional para ÷
+        let yPosition = centerY - (totalOperandsHeight / 2);
+        
+        // Dibujar el dividendo (primer operando)
+        context.fillText(
+          parts[0].intPart.padStart(maxIntLength, ' '), 
+          centerX, 
+          yPosition
+        );
+        
+        if (hasDecimals) {
+          context.fillText(
+            '.', 
+            centerX + decimalOffset, 
+            yPosition
+          );
+          
+          context.fillText(
+            parts[0].decPart, 
+            centerX + decimalOffset + decimalPartOffset, 
+            yPosition
+          );
+        }
+        
+        // Avanzar posición vertical
+        yPosition += lineHeight;
+        
+        // Dibujar el símbolo ÷
+        context.fillText(
+          '÷', 
+          signXPosition, 
+          yPosition
+        );
+        
+        // Dibujar el divisor (segundo operando)
+        context.fillText(
+          parts[1].intPart.padStart(maxIntLength, ' '), 
+          centerX, 
+          yPosition
+        );
+        
+        if (hasDecimals) {
+          context.fillText(
+            '.', 
+            centerX + decimalOffset, 
+            yPosition
+          );
+          
+          context.fillText(
+            parts[1].decPart, 
+            centerX + decimalOffset + decimalPartOffset, 
+            yPosition
+          );
+        }
+        
+        // Dibujar línea debajo
+        yPosition += lineHeight * 0.6;
+        
+        context.beginPath();
+        const lineStartX = signXPosition - charWidth;
+        const lineEndX = centerX + decimalOffset + decimalPartOffset + charWidth * 2;
+        
+        context.moveTo(lineStartX, yPosition);
+        context.lineTo(lineEndX, yPosition);
+        context.stroke();
+      }
     }
     
     // Restaurar configuraciones originales
