@@ -9,7 +9,7 @@ export default function HomePage() {
         <title>Math W+A+O+K - Interactive Math Learning</title>
         <meta name="description" content="Improve your math skills with interactive exercises in addition, subtraction, multiplication, division, and fractions." />
       </Helmet>
-      <div className="max-w-7xl ml-auto mr-auto py-2 md:py-6 px-2 sm:px-4 lg:px-6" style={{ marginLeft: 'calc(50% - 50% - 3px)', marginRight: 'auto' }}>
+      <div className="max-w-7xl mx-auto py-2 md:py-6 px-2 sm:px-4 lg:px-6">
         <div className="py-2 md:py-6">
           <div className="mb-4 md:mb-8 text-center">
             <h1 className="text-4xl font-bold gradient-text-blue mb-2">STEM Modules</h1>
