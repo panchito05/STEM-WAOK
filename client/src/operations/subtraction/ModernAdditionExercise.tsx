@@ -220,9 +220,9 @@ const Exercise: React.FC = () => {
 };
 
 // Componente principal que proporciona el contexto
-const ModernAdditionExercise: React.FC = () => {
+const ModernSubtractionExercise: React.FC = () => {
   const settings = useStore(state => 
-    state.currentProfile?.moduleSettings?.addition || 
+    state.currentProfile?.moduleSettings?.subtraction || 
     { 
       difficulty: 'easy', 
       problemCount: 5,
@@ -246,4 +246,4 @@ const ModernAdditionExercise: React.FC = () => {
   );
 };
 
-export default ModernAdditionExercise;
+export default ModernSubtractionExercise;

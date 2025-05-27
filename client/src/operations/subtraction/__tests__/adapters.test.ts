@@ -1,12 +1,12 @@
-// Tests para los adaptadores de tipos entre AdditionProblem y Problem
+// Tests para los adaptadores de tipos entre SubtractionProblem y Problem
 import { 
-  AdditionProblem, 
+  SubtractionProblem, 
   Problem, 
   DifficultyLevel 
 } from '../types';
 import { 
-  additionProblemToProblem, 
-  problemToAdditionProblem 
+  subtractionProblemToProblem, 
+  problemToSubtractionProblem 
 } from '../utils';
 
 describe('Adaptadores de tipos', () => {
