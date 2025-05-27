@@ -608,8 +608,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Forbidden" });
       }
       
+      // 🔍 LOGS DE DIAGNÓSTICO PARA EL SERVIDOR
+      console.log('🔍 [SERVER-DEBUG] ===== DATOS RECIBIDOS EN SERVIDOR =====');
+      console.log('🔍 [SERVER-DEBUG] req.body completo:', JSON.stringify(req.body, null, 2));
+      console.log('🔍 [SERVER-DEBUG] operationId recibido:', req.body.operationId);
+      console.log('🔍 [SERVER-DEBUG] module recibido:', req.body.module);
+      console.log('🔍 [SERVER-DEBUG] exercise recibido:', req.body.exercise);
+      
+      // Extraer operationId del objeto correcto
+      let operationId = req.body.operationId;
+      if (!operationId && req.body.exercise?.module) {
+        operationId = req.body.exercise.module;
+        console.log('🔍 [SERVER-DEBUG] Extrayendo operationId de exercise.module:', operationId);
+      }
+      if (!operationId && req.body.module) {
+        operationId = req.body.module;
+        console.log('🔍 [SERVER-DEBUG] Extrayendo operationId de module:', operationId);
+      }
+      
+      // Si todavía no tenemos operationId, usar "addition" como fallback
+      if (!operationId) {
+        operationId = "addition";
+        console.log('🔍 [SERVER-DEBUG] Usando fallback operationId:', operationId);
+      }
+      
+      // Crear objeto con el operationId correcto
+      const progressData = {
+        ...req.body,
+        operationId: operationId
+      };
+      
+      console.log('🔍 [SERVER-DEBUG] progressData con operationId corregido:', JSON.stringify(progressData, null, 2));
+      
       // Validar datos de progreso
-      const validatedProgress = exerciseProgressSchema.parse(req.body);
+      const validatedProgress = exerciseProgressSchema.parse(progressData);
       
       // MEJORA: Asegurar que los problemas se guarden correctamente
       // Preservar la estructura completa de extra_data si existe
