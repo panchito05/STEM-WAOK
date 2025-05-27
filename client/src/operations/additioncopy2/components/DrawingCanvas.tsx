@@ -584,12 +584,12 @@ export function DrawingCanvas({
         ? parts[1].intPart + '.' + parts[1].decPart  
         : parts[1].intPart;
       
-      if (currentProblem.displaySymbol === 'slash') {
-        // Formato horizontal para slash: "162.8 / 8"
+      if (currentProblem.displaySymbol === 'slash' || currentProblem.displaySymbol === 'obelus') {
+        // Formato horizontal para slash y obelus: "162.8 / 8" o "2322.88 ÷ 32"
         context.textAlign = 'center';
         
         // Calcular el ancho total de la expresión
-        const divisionSymbol = ' / ';
+        const divisionSymbol = currentProblem.displaySymbol === 'slash' ? ' / ' : ' ÷ ';
         const expression = dividendText + divisionSymbol + divisorText;
         
         // Dibujar toda la expresión en una línea
