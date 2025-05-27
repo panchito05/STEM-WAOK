@@ -1,7 +1,7 @@
 import * as Addition from "../operations/addition";
 import * as Subtraction from "../operations/subtraction";
-import * as AdditionCopy from "../operations/additioncopy";
-import * as AdditionCopy2 from "../operations/additioncopy2";
+import * as Multiplication from "../operations/additioncopy";
+import * as Division from "../operations/additioncopy2";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -81,6 +81,6 @@ export const operationModules: Module[] = [
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
   subtraction: Subtraction, // El módulo de resta
-  additioncopy: AdditionCopy, // El módulo copia de adición
-  additioncopy2: AdditionCopy2, // El segundo módulo copia de adición
+  additioncopy: Multiplication, // El módulo de multiplicación
+  additioncopy2: Division, // El módulo de división
 };
