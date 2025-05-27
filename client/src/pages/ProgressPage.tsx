@@ -196,8 +196,29 @@ export default function ProgressPage() {
   };
 
   const getModuleName = (id: string) => {
+    // Mapeo directo para casos comunes
+    const operationMap: { [key: string]: string } = {
+      'addition': 'Addition',
+      'subtraction': 'Subtraction', 
+      'multiplication': 'Multiplication',
+      'division': 'Division',
+      'additioncopy': 'Multiplication',
+      'additioncopy2': 'Division'
+    };
+
+    // Primero intentar mapeo directo
+    if (operationMap[id]) {
+      return operationMap[id];
+    }
+
+    // Luego buscar en los módulos configurados
     const module = operationModules.find(m => m.id === id);
-    return module?.displayName || id;
+    if (module?.displayName) {
+      return module.displayName;
+    }
+
+    // Formatear el ID como último recurso
+    return id.charAt(0).toUpperCase() + id.slice(1);
   };
 
   return (
