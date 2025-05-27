@@ -1,7 +1,7 @@
 import { Link } from "wouter";
-import { useModuleFavorites } from "@/store/moduleStore";
+import { useModuleFavorites, useModuleStore } from "@/store/moduleStore";
 import { Button } from "@/components/ui/button";
-import { Star, X } from "lucide-react";
+import { Star, X, Eye, EyeOff } from "lucide-react";
 import { Module } from "@/utils/operationComponents";
 
 interface MultiplicationModuleCardProps {
@@ -11,11 +11,19 @@ interface MultiplicationModuleCardProps {
 
 export default function MultiplicationModuleCard({ module, index }: MultiplicationModuleCardProps) {
   const { toggleFavorite, favoriteModules } = useModuleFavorites();
+  const { hiddenModules, toggleHidden } = useModuleStore();
   const isModuleFavorite = favoriteModules.includes(module.id);
+  const isModuleVisible = !hiddenModules.includes(module.id);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleFavorite(module.id);
+  };
+
+  const handleToggleVisibility = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleHidden(module.id);
   };
 
   const difficultyLabels = {
@@ -57,6 +65,18 @@ export default function MultiplicationModuleCard({ module, index }: Multiplicati
             onClick={handleToggleFavorite}
           >
             <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+          </button>
+          
+          <button 
+            className="multiplication-visibility-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all text-white hover:text-gray-200 hover:bg-white/20"
+            onClick={handleToggleVisibility}
+            title={isModuleVisible ? "Ocultar módulo" : "Mostrar módulo"}
+          >
+            {isModuleVisible ? (
+              <Eye className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
+            ) : (
+              <EyeOff className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
+            )}
           </button>
         </div>
       </div>
