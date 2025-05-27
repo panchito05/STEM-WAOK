@@ -196,6 +196,23 @@ export default function ProgressPage() {
   };
 
   const getModuleName = (id: string) => {
+    // Mapeo directo para asegurar que todos los operationId muestren el nombre correcto
+    const operationNameMap: { [key: string]: string } = {
+      'addition': 'Addition',
+      'subtraction': 'Subtraction', 
+      'multiplication': 'Multiplication',
+      'division': 'Division',
+      'additioncopy': 'Addition Copy',
+      'additioncopy2': 'Addition Copy 2',
+      // Agregar más mapeos según sea necesario
+    };
+
+    // Intentar obtener el nombre del mapeo directo primero
+    if (operationNameMap[id]) {
+      return operationNameMap[id];
+    }
+
+    // Si no está en el mapeo directo, buscar en operationModules
     const module = operationModules.find(m => m.id === id);
     return module?.displayName || id;
   };
