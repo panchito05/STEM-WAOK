@@ -84,7 +84,7 @@ export default function DivisionModuleCard({ module, index }: DivisionModuleCard
       </div>
 
       {/* Contenido específico de Division con estructura DOM única */}
-      <div className="division-body-unique division-main-content p-2 sm:p-4 bg-gradient-to-b from-white to-purple-50 pt-[13px] pb-[13px] pl-[12px] pr-[12px] mt-[0px] mb-[0px] ml-[0px] mr-[0px]">
+      <div className="division-body-unique division-main-content p-2 sm:p-2 bg-gradient-to-b from-white to-purple-50 pt-[13px] pb-[13px] pl-[12px] pr-[12px] mt-[0px] mb-[0px] ml-[0px] mr-[0px]">
         <p className="division-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
           Practica división con varios niveles de dificultad
         </p>
