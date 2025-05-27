@@ -1,15 +1,12 @@
-// utils.ts - Division Logic
+// utils.ts - Multiplication Logic
 import React from "react";
-import { DivisionProblem, DifficultyLevel } from "./types";
+import { MultiplicationProblem, DifficultyLevel } from "./types";
 
-// Constants for division logic
+// Constants for multiplication logic
 const MAX_DIFFICULTY = 5;
-const SAME_RANGE_DIVISOR_PROBABILITY = 0.6;
-const DECIMAL_PRECISION = 2;
-const EPSILON = 1 / (10 ** (DECIMAL_PRECISION + 1));
 
-export type DivisionDisplayFormat = 'slash' | 'obelus' | 'long';
-export const DISPLAY_FORMATS: DivisionDisplayFormat[] = ['slash', 'obelus', 'long'];
+export type MultiplicationDisplayFormat = 'horizontal' | 'vertical';
+export const DISPLAY_FORMATS: MultiplicationDisplayFormat[] = ['horizontal', 'vertical'];
 
 // Utility function to generate random integers
 export function getRandomInt(min: number, max: number): number {
@@ -30,8 +27,8 @@ function difficultyToNumeric(difficulty: DifficultyLevel): number {
   }
 }
 
-// Function to generate division problems
-export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionProblem {
+// Function to generate multiplication problems
+export function generateMultiplicationProblem(difficulty: DifficultyLevel): MultiplicationProblem {
   const validDifficulty = Math.max(1, Math.min(MAX_DIFFICULTY, difficultyToNumeric(difficulty)));
   let num1: number, num2: number, correctAnswer: number;
   const operator = '\u00F7'; // Division symbol
