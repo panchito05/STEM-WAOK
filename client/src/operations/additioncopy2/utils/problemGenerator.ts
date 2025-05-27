@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { 
   Problem, 
   DifficultyLevel, 
-  DisplayFormat, 
+  ExerciseLayout,
   Operand
 } from '../types';
 
@@ -16,11 +16,11 @@ export interface ProblemGeneratorConfig {
   allowNegatives?: boolean;
   allowDecimals?: boolean;
   decimalPlaces?: number;
-  preferredDisplayFormat?: DisplayFormat | DisplayFormat[];
+  preferredDisplayFormat?: ExerciseLayout | ExerciseLayout[];
 }
 
 /**
- * Genera un conjunto de problemas de suma basado en la configuración proporcionada
+ * Genera un conjunto de problemas de división basado en la configuración proporcionada
  * @param config Configuración para generar problemas
  * @returns Array de problemas generados
  */
@@ -91,8 +91,8 @@ export function generateProblems(config: ProblemGeneratorConfig): Problem[] {
       operands.push({ value });
     }
     
-    // Calcular la respuesta correcta
-    const correctAnswer = operands.reduce((sum, op) => sum + op.value, 0);
+    // Calcular la respuesta correcta (división: dividendo ÷ divisor)
+    const correctAnswer = operands.length >= 2 ? operands[0].value / operands[1].value : 0;
     
     // Determinar el formato de visualización
     const displayFormat = getDisplayFormat(preferredDisplayFormat);
