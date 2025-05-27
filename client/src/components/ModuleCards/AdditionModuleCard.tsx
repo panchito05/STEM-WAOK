@@ -35,7 +35,7 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
   return (
     <div className="addition-module-unique-card addition-specific-container h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-blue-300 group">
       {/* Header específico de Addition con clases únicas */}
-      <div className="addition-header-unique bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white p-2 sm:p-3 lg:p-4 relative overflow-hidden">
+      <div className="addition-header-unique bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white p-2 sm:p-2.5 lg:p-3 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="addition-title-section relative flex items-center justify-between">
           <div className="addition-content-wrapper flex items-center min-w-0 flex-1">
