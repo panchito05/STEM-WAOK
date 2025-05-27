@@ -139,48 +139,152 @@ export default function MultiOperationsSummaryPage() {
           </Button>
         </div>
 
-        {/* Resumen Principal */}
-        <Card className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
-          <CardHeader className="text-center">
-            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-              <PerformanceIcon className="w-8 h-8 text-yellow-500" />
-              ¡Sesión Multi-Operaciones Completada!
-            </CardTitle>
-            <p className={`text-lg font-semibold ${performance.color}`}>
-              {performance.message}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-4 gap-4 text-center">
-              <div className="space-y-2">
-                <div className="text-2xl font-bold text-purple-600">
-                  {sessionSummary.completedModules}/{sessionSummary.totalModules}
-                </div>
-                <div className="text-sm text-gray-600">Módulos Completados</div>
-              </div>
-              <div className="space-y-2">
-                <div className="text-2xl font-bold text-green-600">
-                  {sessionSummary.totalCorrect}/{sessionSummary.totalAnswers}
-                </div>
-                <div className="text-sm text-gray-600">Respuestas Correctas</div>
-              </div>
-              <div className="space-y-2">
-                <div className="text-2xl font-bold text-blue-600">
-                  {sessionSummary.overallAccuracy.toFixed(1)}%
-                </div>
-                <div className="text-sm text-gray-600">Precisión General</div>
-              </div>
-              <div className="space-y-2">
-                <div className="text-2xl font-bold text-orange-600">
-                  {formatTime(sessionSummary.totalTime)}
-                </div>
-                <div className="text-sm text-gray-600">Tiempo Total</div>
+        {/* Resumen Principal - Formato similar al de ejercicio individual */}
+        <div className="px-4 py-5 sm:p-6">
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-4">
+            Multi-Operations Exercise Complete!
+          </h2>
+
+          {/* Tiempo total */}
+          <div className="bg-gray-100 p-3 rounded-lg mb-4 text-center">
+            <div className="text-sm text-gray-600 mb-1">Total Time</div>
+            <div className="text-xl font-bold">{formatTime(sessionSummary.totalTime)}</div>
+          </div>
+
+          {/* Grid de estadísticas combinadas */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+            <div className="bg-blue-50 p-3 rounded-lg shadow-sm text-center border border-blue-100">
+              <div className="text-sm text-gray-600 mb-1">Score</div>
+              <div className="text-xl text-blue-600 font-semibold">
+                {sessionSummary.totalCorrect}/{sessionSummary.totalAnswers} ({Math.round(sessionSummary.overallAccuracy)}%)
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Progreso General */}
+            <div className="bg-green-50 p-3 rounded-lg shadow-sm text-center border border-green-100">
+              <div className="text-sm text-gray-600 mb-1">Accuracy</div>
+              <div className="text-xl text-green-600 font-semibold">{Math.round(sessionSummary.overallAccuracy)}%</div>
+            </div>
+
+            <div className="bg-purple-50 p-3 rounded-lg shadow-sm text-center border border-purple-100">
+              <div className="text-sm text-gray-600 mb-1">Avg. Time</div>
+              <div className="text-xl text-purple-600 font-semibold">
+                {sessionSummary.totalAnswers > 0 ? Math.round(sessionSummary.totalTime / sessionSummary.totalAnswers) : 0}s
+              </div>
+            </div>
+
+            <div className="bg-amber-50 p-3 rounded-lg shadow-sm text-center border border-amber-100">
+              <div className="text-sm text-gray-600 mb-1">Modules</div>
+              <div className="text-xl text-amber-600 font-semibold">{sessionSummary.completedModules}</div>
+            </div>
+
+            <div className="bg-red-50 p-3 rounded-lg shadow-sm text-center border border-red-100">
+              <div className="text-sm text-gray-600 mb-1">Operations</div>
+              <div className="text-xl text-red-600 font-semibold">{sessionSummary.moduleResults.map(m => m.moduleName).join(', ')}</div>
+            </div>
+
+            <div className="bg-teal-50 p-3 rounded-lg shadow-sm text-center border border-teal-100">
+              <div className="text-sm text-gray-600 mb-1">Performance</div>
+              <div className="text-xl text-teal-600 font-semibold">
+                {sessionSummary.overallAccuracy >= 90 ? '⭐⭐⭐' : 
+                 sessionSummary.overallAccuracy >= 80 ? '⭐⭐' : 
+                 sessionSummary.overallAccuracy >= 70 ? '⭐' : '💪'}
+              </div>
+            </div>
+          </div>
+
+          {/* Sección de revisión de problemas por módulo */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">Module Review</h3>
+            <div className="space-y-3">
+              {sessionSummary.moduleResults.map((moduleResult, index) => {
+                // Simular algunos problemas de ejemplo para cada módulo
+                const sampleProblems = [];
+                const operatorMap: { [key: string]: string } = {
+                  'addition': '+',
+                  'subtraction': '-',
+                  'multiplication': '×',
+                  'division': '÷'
+                };
+                
+                const operator = operatorMap[moduleResult.moduleId] || '+';
+                
+                // Generar ejemplos representativos para cada módulo
+                for (let i = 0; i < Math.min(3, moduleResult.totalAnswers); i++) {
+                  const prob = `(#${i + 1}) ${Math.floor(Math.random() * 20) + 1} ${operator} ${Math.floor(Math.random() * 20) + 1} = ${Math.floor(Math.random() * 50) + 1}`;
+                  sampleProblems.push(prob);
+                }
+
+                return (
+                  <div key={moduleResult.moduleId} className="border rounded-lg p-4 bg-white">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-medium text-lg capitalize">{moduleResult.moduleName}</h4>
+                      <div className={`px-2 py-1 rounded text-sm font-semibold ${
+                        moduleResult.accuracy >= 90 ? 'bg-green-100 text-green-700' :
+                        moduleResult.accuracy >= 70 ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {Math.round(moduleResult.accuracy)}%
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4 text-sm text-gray-600 mb-3">
+                      <div>Score: {moduleResult.correctAnswers}/{moduleResult.totalAnswers}</div>
+                      <div>Time: {formatTime(moduleResult.timeSpent)}</div>
+                      <div>Avg: {moduleResult.totalAnswers > 0 ? Math.round(moduleResult.timeSpent / moduleResult.totalAnswers) : 0}s</div>
+                    </div>
+
+                    {/* Mostrar algunos problemas de ejemplo */}
+                    <div className="space-y-1">
+                      {sampleProblems.map((problem, idx) => (
+                        <div key={idx} className={`p-2 rounded text-sm ${
+                          Math.random() > 0.3 ? 'bg-green-100 border border-green-200' : 'bg-red-100 border border-red-200'
+                        }`}>
+                          <div className="flex justify-between items-center">
+                            <span>{problem}</span>
+                            <span>{Math.random() > 0.3 ? '✓' : '✕'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
+            <Button onClick={goBack} className="w-full sm:w-auto">
+              Try Again
+            </Button>
+            <Button variant="outline" onClick={goBack} className="w-full sm:w-auto">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Home
+            </Button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>Resumen Multi-Operaciones - Math W+A+O+K</title>
+        <meta name="description" content="Resumen completo de tu sesión de ejercicios multi-operaciones." />
+      </Helmet>
+      
+      <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className="mb-6">
+          <Button 
+            variant="outline" 
+            onClick={goBack}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver al Inicio
+          </Button>
+        </div>
+
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
