@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import { AdditionProblem } from '../../types';
+import { DivisionProblem } from '../../types';
 import { InputValidator } from './utils/ValidationUtils';
 import { Calculator, AlertTriangle } from 'lucide-react';
 
 interface ProblemDisplayProps {
-  problem: AdditionProblem;
+  problem: DivisionProblem;
   showVerticalFormat?: boolean;
   attempts: number;
   maxAttempts: number;
@@ -22,7 +22,7 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   const problemData = useMemo(() => {
     const isValid = InputValidator.validateProblem(problem);
     const correctAnswer = isValid 
-      ? problem.operands.reduce((sum, op) => sum + (typeof op === 'number' ? op : parseFloat(op.toString())), 0)
+      ? problem.dividend / problem.divisor
       : 0;
     
     return {

@@ -10,7 +10,7 @@ export interface ProblemDisplayProps {
 }
 
 /**
- * Componente para mostrar un problema de suma
+ * Componente para mostrar un problema de división
  */
 const ProblemDisplay: React.FC<ProblemDisplayProps> = ({ 
   problem, 
