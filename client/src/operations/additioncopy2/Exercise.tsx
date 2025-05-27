@@ -1510,7 +1510,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
     // Create screenshot-like data structure that matches our template
     const screenshotData = {
-      title: "Addition Exercise Complete!",
+      title: "Division Exercise Complete!",
       scoreData: {
         totalTime: formatTime(timer),
         score: {
@@ -1561,7 +1561,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (!problem) return null;
 
         // Este es el formato EXACTO que se muestra en la pantalla final
-        const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+        const problemText = problem.operands && problem.operands.length >= 2 
+          ? `${problem.operands[0]} ÷ ${problem.operands[1]} = ${problem.correctAnswer}`
+          : `División = ${problem.correctAnswer}`;
 
         // Objeto con la información completa del problema tal como se muestra en la UI
         return {
@@ -1731,15 +1733,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         const problemaCompleto = {
           // Metadatos para identificación
           id: problema.id || `problema-${i}`,
-          tipo: "suma",
+          tipo: "division",
           
-          // Datos específicos del problema de suma
+          // Datos específicos del problema de división
           operands: [operandoA, operandoB],
-          operacion: "+",
+          operacion: "÷",
           correctAnswer: respuestaCorrecta.toString(),
           
           // Formato visual del problema (para mostrar exactamente como se vio)
-          displayText: `${operandoA} + ${operandoB} = ${respuestaCorrecta}`,
+          displayText: `${operandoA} ÷ ${operandoB} = ${respuestaCorrecta}`,
           problem: `${operandoA} + ${operandoB} = ${respuestaCorrecta}`, // Para compatibilidad
           
           // Información sobre la respuesta del usuario
@@ -2222,7 +2224,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return (
       <div className="px-4 py-5 sm:p-6">
         <h2 className="text-2xl font-bold text-gray-900 text-center mb-4">
-          {t('Addition Exercise Complete!')}
+          {t('Division Exercise Complete!')}
         </h2>
 
         {/* Tiempo total */}
