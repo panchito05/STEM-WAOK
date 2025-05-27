@@ -2,6 +2,89 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Estilos únicos para cada módulo de operación matemática */
+
+/* Addition Module - Azul */
+.addition-module-unique-card {
+  --module-primary: #3b82f6;
+  --module-secondary: #dbeafe;
+  --module-accent: #1d4ed8;
+}
+
+.addition-specific-container {
+  border-left: 4px solid var(--module-primary);
+}
+
+.addition-header-unique {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8, #1e40af);
+}
+
+/* Subtraction Module - Rojo */
+.subtraction-module-unique-card {
+  --module-primary: #ef4444;
+  --module-secondary: #fecaca;
+  --module-accent: #dc2626;
+}
+
+.subtraction-specific-container {
+  border-left: 4px solid var(--module-primary);
+}
+
+.subtraction-header-unique {
+  background: linear-gradient(135deg, #ef4444, #dc2626, #b91c1c);
+}
+
+/* Multiplication Module - Verde */
+.multiplication-module-unique-card {
+  --module-primary: #10b981;
+  --module-secondary: #d1fae5;
+  --module-accent: #059669;
+}
+
+.multiplication-specific-container {
+  border-left: 4px solid var(--module-primary);
+}
+
+.multiplication-header-unique {
+  background: linear-gradient(135deg, #10b981, #059669, #047857);
+}
+
+/* Division Module - Púrpura */
+.division-module-unique-card {
+  --module-primary: #8b5cf6;
+  --module-secondary: #ede9fe;
+  --module-accent: #7c3aed;
+}
+
+.division-specific-container {
+  border-left: 4px solid var(--module-primary);
+}
+
+.division-header-unique {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed, #6d28d9);
+}
+
+/* Animaciones específicas por módulo */
+.addition-module-unique-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+}
+
+.subtraction-module-unique-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(239, 68, 68, 0.15);
+}
+
+.multiplication-module-unique-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+}
+
+.division-module-unique-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.15);
+}
+
 /* Ocultar barras de scroll en dispositivos táctiles (móviles y tablets) */
 @media (max-width: 1023px) {
   /* Ocultar scrollbars en todos los elementos en móviles/tablets */
