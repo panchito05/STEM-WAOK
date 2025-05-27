@@ -1,7 +1,7 @@
 import { Link } from "wouter";
-import { useModuleFavorites } from "@/store/moduleStore";
+import { useModuleFavorites, useModuleStore } from "@/store/moduleStore";
 import { Button } from "@/components/ui/button";
-import { Star, Minus } from "lucide-react";
+import { Star, Minus, Eye, EyeOff } from "lucide-react";
 import { Module } from "@/utils/operationComponents";
 
 interface SubtractionModuleCardProps {
@@ -11,11 +11,19 @@ interface SubtractionModuleCardProps {
 
 export default function SubtractionModuleCard({ module, index }: SubtractionModuleCardProps) {
   const { toggleFavorite, favoriteModules } = useModuleFavorites();
+  const { hiddenModules, toggleHidden } = useModuleStore();
   const isModuleFavorite = favoriteModules.includes(module.id);
+  const isModuleVisible = !hiddenModules.includes(module.id);
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleFavorite(module.id);
+  };
+
+  const handleToggleVisibility = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleHidden(module.id);
   };
 
   const difficultyLabels = {
