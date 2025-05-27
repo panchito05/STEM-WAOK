@@ -1,0 +1,27 @@
+Crea un  botón llamado "Start Multi-Operations Exercises" es una característica poderosa que te permite practicar varios tipos de operaciones matemáticas en una sola sesión. Esto es especialmente útil para reforzar diferentes habilidades matemáticas al mismo tiempo respetando la configuración que tiene caa modulo si suma esta en eperto con 2 jercericio y el temporizador activado así mismo continuara y cuando finalice y presente el otro modulo también respetara la configuración que tiene en sus setting 
+ Vamos a explicar detalladamente las opciones disponibles:
+"Start Just All Favorites Operations"
+Propósito principal: Esta opción te permite practicar únicamente las operaciones que has marcado como favoritas, creando una experiencia personalizada basada en tus preferencias.
+Paso a paso:
+1.	Cuando seleccionas esta opción, el sistema busca todas las operaciones que has marcado previamente como favoritas (usando el ícono de estrella en cada módulo).
+2.	Si no has marcado ninguna operación como favorita, recibirás un mensaje indicándote que debes marcar algunas operaciones como favoritas primero.
+3.	Si tienes favoritos, se creará una sesión de práctica que incluye exclusivamente esas operaciones.
+4.	El sistema distribuirá la cantidad de problemas entre estas operaciones y las presentará en orden aleatorio.
+Operaciones incluidas:
+•	Solo las operaciones que has marcado explícitamente como favoritas usando el ícono de estrella.
+•	Por ejemplo, si has marcado como favoritas "Suma" y "Resta", solo esas dos operaciones aparecerán en tu práctica.
+"Start All Active Visible Operations"
+Propósito principal: Esta opción te permite practicar todas las operaciones que están actualmente visibles en tu pantalla de inicio, excluyendo aquellas que hayas ocultado.
+Paso a paso:
+1.	Al seleccionar esta opción, el sistema identifica todas las operaciones que son visibles actualmente en tu página de inicio.
+2.	Se excluyen automáticamente las operaciones que has decidido ocultar anteriormente (usando el interruptor en cada módulo).
+3.	Si todas las operaciones están ocultas, recibirás un mensaje pidiéndote que hagas visible al menos una operación.
+4.	El sistema crea una sesión que incluye todas estas operaciones visibles.
+Operaciones incluidas:
+•	Todas las operaciones que no están ocultas (aquellas que tienen el interruptor de visibilidad activado).
+•	Por ejemplo, si has ocultado "Multiplicación" pero mantienes visibles "Suma", "Resta" y "División", la práctica incluirá estas tres últimas.
+Diferencias principales entre ambas opciones:
+1.	Criterio de selección:
+•	Favoritas: Solo incluye las operaciones que has marcado explícitamente como favoritas.
+•	Visibles: Incluye todas las operaciones que no has ocultado, independientemente de si son favoritas o no.
+

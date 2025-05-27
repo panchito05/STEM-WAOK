@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet";
 import ModuleList from "@/components/ModuleList";
+import MultiOperationsButtons from "@/components/MultiOperationsButtons";
 import { AccessibleDndContextProvider } from "@/components/AccessibleDndContext";
 
 export default function HomePage() {
@@ -18,6 +19,9 @@ export default function HomePage() {
               <span className="ml-2 animate-float inline-block">✏️ 🔢 🧩</span>
             </p>
           </div>
+          
+          {/* Botones Multi-Operaciones */}
+          <MultiOperationsButtons />
           
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-3 sm:p-4 md:p-6 rounded-xl shadow-md border border-blue-100">
             <div className="relative">

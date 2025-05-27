@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Layout from "@/components/Layout/Layout";
 import HomePage from "@/pages/HomePage";
+import MultiOperationsPage from "@/pages/MultiOperationsPage";
 import OperationPage from "@/pages/OperationPage";
 import ProgressPage from "@/pages/ProgressPage";
 import SettingsPage from "@/pages/SettingsPage";
@@ -37,6 +38,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
+      <Route path="/multi-operations" component={MultiOperationsPage} />
       <Route path="/operation/:operation" component={OperationPage} />
       <Route path="/progress" component={ProtectedRoute(ProgressPage)} />
       <Route path="/settings" component={ProtectedRoute(SettingsPage)} />
