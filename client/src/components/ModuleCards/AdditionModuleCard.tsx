@@ -85,7 +85,7 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
 
       {/* Contenido específico de Addition con estructura DOM única */}
       <div className="addition-body-unique addition-main-content p-2 sm:p-3 bg-gradient-to-b from-white to-blue-50">
-        <p className="addition-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
+        <p className="addition-description-text text-xs sm:text-sm mb-2 line-clamp-2 text-gray-600">
           Practica sumas con varios niveles de dificultad
         </p>
         <div className="addition-footer-unique addition-bottom-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
