@@ -505,11 +505,15 @@ export function DrawingCanvas({
     const charWidth = baseFontSize * 0.6; // Ancho aproximado de un carácter
     const lineHeight = baseFontSize * 1.5; // Altura de línea proporcional al tamaño de fuente
     
-    // Formatear los números
+    // Formatear los números (eliminar ceros innecesarios)
     const { operands } = currentProblem;
-    const formattedOperands = operands.map((num: number) => 
-      Number.isInteger(num) ? num.toString() : num.toFixed(2)
-    );
+    const formattedOperands = operands.map((num: number) => {
+      if (Number.isInteger(num)) {
+        return num.toString();
+      }
+      // Eliminar ceros innecesarios al final
+      return num.toString();
+    });
     
     // Encontrar la longitud máxima para alineación
     const parts = formattedOperands.map((num: string) => {
