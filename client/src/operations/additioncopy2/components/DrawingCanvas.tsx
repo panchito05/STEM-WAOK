@@ -532,12 +532,19 @@ export function DrawingCanvas({
     
     // Verificar si es formato de división larga (casita)
     if (currentProblem.displaySymbol === 'long') {
-      // Dibujar formato de casita de división larga
-      const divisorText = parts[1].intPart + '.' + parts[1].decPart;
-      const dividendText = parts[0].intPart + '.' + parts[0].decPart;
+      // Verificar si hay decimales en los números originales
+      const hasDecimals = currentProblem.dividend % 1 !== 0 || currentProblem.divisor % 1 !== 0;
+      
+      // Formatear los números según si tienen decimales o no
+      const divisorText = hasDecimals 
+        ? parts[1].intPart + '.' + parts[1].decPart
+        : parts[1].intPart;
+      const dividendText = hasDecimals 
+        ? parts[0].intPart + '.' + parts[0].decPart  
+        : parts[0].intPart;
       
       // Calcular posiciones para la casita
-      const casitaWidth = Math.max(dividendText.length * charWidth, 120);
+      const casitaWidth = Math.max(dividendText.length * charWidth * 1.2, 120);
       const casitaHeight = lineHeight;
       
       // Posición del divisor
@@ -558,9 +565,9 @@ export function DrawingCanvas({
       context.lineTo(centerX - casitaWidth/2, centerY + casitaHeight/2);
       context.stroke();
       
-      // Dibujar dividendo dentro de la casita
+      // Dibujar dividendo dentro de la casita (más alineado a la derecha)
       context.textAlign = 'right';
-      context.fillText(dividendText, centerX + casitaWidth/2 - charWidth, centerY);
+      context.fillText(dividendText, centerX + casitaWidth/2 - charWidth * 0.3, centerY);
       
     } else {
       // Formato tradicional horizontal para ÷ y /
