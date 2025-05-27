@@ -1742,7 +1742,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           
           // Formato visual del problema (para mostrar exactamente como se vio)
           displayText: `${operandoA} ÷ ${operandoB} = ${respuestaCorrecta}`,
-          problem: `${operandoA} + ${operandoB} = ${respuestaCorrecta}`, // Para compatibilidad
+          problem: `${operandoA} ÷ ${operandoB} = ${respuestaCorrecta}`, // Para compatibilidad
           
           // Información sobre la respuesta del usuario
           // Si no hay respuesta (null), creamos información "no contestado"
