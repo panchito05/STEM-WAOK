@@ -35,7 +35,7 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
   return (
     <div className="addition-module-unique-card addition-specific-container h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-blue-300 group">
       {/* Header específico de Addition con clases únicas */}
-      <div className="addition-header-unique bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white p-2 sm:p-2.5 lg:p-3 relative overflow-hidden">
+      <div className="addition-header-unique bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white p-2 sm:p-3 lg:p-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="addition-title-section relative flex items-center justify-between">
           <div className="addition-content-wrapper flex items-center min-w-0 flex-1">
@@ -46,34 +46,34 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
               Suma
             </h3>
           </div>
-          <div className="addition-actions-bar flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10">
-            <button 
-              className={`addition-favorite-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
-                isModuleFavorite 
-                  ? "text-yellow-400 hover:text-white bg-white/20 hover:bg-white/10" 
-                  : "text-white hover:text-yellow-400 hover:bg-white/20"
-              }`}
-              onClick={handleToggleFavorite}
-            >
-              <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
-            </button>
-            <button 
-              className="addition-preview-button text-white hover:text-blue-200 hover:bg-white/20 focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Aquí iría la lógica de vista previa
-              }}
-            >
-              <Eye className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
-            </button>
-          </div>
+        </div>
+        <div className="addition-actions-bar flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10 mt-2">
+          <button 
+            className={`addition-favorite-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
+              isModuleFavorite 
+                ? "text-yellow-400 hover:text-white bg-white/20 hover:bg-white/10" 
+                : "text-white hover:text-yellow-400 hover:bg-white/20"
+            }`}
+            onClick={handleToggleFavorite}
+          >
+            <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+          </button>
+          <button 
+            className="addition-preview-button text-white hover:text-blue-200 hover:bg-white/20 focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // Aquí iría la lógica de vista previa
+            }}
+          >
+            <Eye className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
+          </button>
         </div>
       </div>
 
       {/* Contenido específico de Addition con estructura DOM única */}
-      <div className="addition-body-unique addition-main-content p-2 sm:p-2.5 lg:p-3 bg-gradient-to-b from-white to-blue-50">
-        <p className="addition-description-text text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2 text-gray-600">
+      <div className="addition-body-unique addition-main-content p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50">
+        <p className="addition-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
           Practica sumas con varios niveles de dificultad
         </p>
         <div className="addition-footer-unique addition-bottom-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
