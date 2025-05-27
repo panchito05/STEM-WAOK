@@ -294,7 +294,7 @@ export function applyDifficultyRules(problem: AdditionProblem, difficulty: Diffi
           Math.floor(Math.random() * 50) + 1
         ];
         modifiedProblem.operands = [...modifiedProblem.operands, ...newOperands];
-        modifiedProblem.correctAnswer += newOperands.reduce((sum, val) => sum + val, 0);
+        modifiedProblem.correctAnswer *= newOperands.reduce((product, val) => product * val, 1);
       }
       break;
   }
