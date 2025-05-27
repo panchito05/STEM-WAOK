@@ -14,6 +14,7 @@ export interface DivisionProblem {
   id: string;
   dividend: number;         // Dividendo (número a dividir)
   divisor: number;          // Divisor (número por el que se divide)
+  operands: number[];       // Array con [dividend, divisor] para compatibilidad
   correctAnswer: number;    // Respuesta correcta (cociente)
   remainder?: number;       // Resto de la división (si aplica)
   layout: ExerciseLayout;   // Formato de visualización

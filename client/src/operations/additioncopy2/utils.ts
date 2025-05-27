@@ -186,6 +186,7 @@ export function generateDivisionProblem(difficulty: DifficultyLevel): DivisionPr
     id,
     dividend,
     divisor,
+    operands: [dividend, divisor], // Array con [dividend, divisor] para compatibilidad
     correctAnswer,
     remainder,
     layout,
