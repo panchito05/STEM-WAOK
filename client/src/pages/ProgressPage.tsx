@@ -228,6 +228,19 @@ export default function ProgressPage() {
         return tipoMap[firstProblem.tipo] || 'Addition';
       }
       
+      // Detectar desde el operador si está disponible
+      if (firstProblem.operator) {
+        const operatorMap: { [key: string]: string } = {
+          '+': 'Addition',
+          '-': 'Subtraction',
+          '×': 'Multiplication',
+          '*': 'Multiplication',
+          '÷': 'Division',
+          '/': 'Division'
+        };
+        return operatorMap[firstProblem.operator] || 'Addition';
+      }
+      
       // Detectar desde la operación si está disponible
       if (firstProblem.operacion) {
         const operationMap: { [key: string]: string } = {
@@ -255,6 +268,33 @@ export default function ProgressPage() {
         }
         if (problemText.includes('+')) {
           return 'Addition';
+        }
+      }
+      
+      // 🔧 DETECTAR DESDE LA ESTRUCTURA DE OPERANDOS
+      // Los módulos de multiplicación y división usan estructura diferente
+      if (firstProblem.operands && Array.isArray(firstProblem.operands)) {
+        // Si hay exactamente 2 operandos, detectar por el contexto del ejercicio
+        if (firstProblem.operands.length === 2) {
+          const [op1, op2] = firstProblem.operands;
+          const result = firstProblem.correctAnswer || firstProblem.result;
+          
+          // Heurística: si op1 * op2 = result, es multiplicación
+          if (Math.abs(op1 * op2 - result) < 0.01) {
+            return 'Multiplication';
+          }
+          // Heurística: si op1 / op2 = result, es división
+          if (op2 !== 0 && Math.abs(op1 / op2 - result) < 0.01) {
+            return 'Division';
+          }
+          // Heurística: si op1 - op2 = result, es resta
+          if (Math.abs(op1 - op2 - result) < 0.01) {
+            return 'Subtraction';
+          }
+          // Heurística: si op1 + op2 = result, es suma
+          if (Math.abs(op1 + op2 - result) < 0.01) {
+            return 'Addition';
+          }
         }
       }
     }
