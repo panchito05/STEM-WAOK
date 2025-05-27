@@ -52,8 +52,10 @@ const difficultyConfigs: Record<DifficultyLevel, DifficultyConfig> = {
     decimalProbabilities: { bothDecimals: 25, firstOnly: 25, secondOnly: 25, bothIntegers: 25 }
   },
   expert: {
-    firstOperandRange: [1, 99],
-    secondOperandRange: [1, 99],
+    firstOperandRange: [1, 99], // Para decimales
+    secondOperandRange: [1, 99], // Para decimales
+    firstOperandRangeIntegers: [100, 99999], // Para enteros: 3-5 dígitos
+    secondOperandRangeIntegers: [10, 999], // Para enteros: 2-3 dígitos
     allowDecimals: true,
     decimalProbabilities: { bothDecimals: 30, firstOnly: 20, secondOnly: 20, bothIntegers: 30 }
   }
@@ -83,9 +85,17 @@ function generateSingleMultiplicationProblem(
   // Determinar qué tipo de decimales usar
   const decimalType = determineDecimalType(config.decimalProbabilities);
   
+  // Para nivel expert, usar rangos diferentes según si son enteros o decimales
+  const isExpert = 'firstOperandRangeIntegers' in config && 'secondOperandRangeIntegers' in config;
+  const useIntegerRanges = isExpert && decimalType === 'none';
+  
+  // Seleccionar rangos apropiados
+  const firstRange = useIntegerRanges ? (config as any).firstOperandRangeIntegers : config.firstOperandRange;
+  const secondRange = useIntegerRanges ? (config as any).secondOperandRangeIntegers : config.secondOperandRange;
+  
   // Generar operandos
-  const operand1 = generateOperand(config.firstOperandRange, decimalType === 'first' || decimalType === 'both');
-  const operand2 = generateOperand(config.secondOperandRange, decimalType === 'second' || decimalType === 'both');
+  const operand1 = generateOperand(firstRange, decimalType === 'first' || decimalType === 'both');
+  const operand2 = generateOperand(secondRange, decimalType === 'second' || decimalType === 'both');
   
   // Calcular resultado
   const result = operand1 * operand2;
