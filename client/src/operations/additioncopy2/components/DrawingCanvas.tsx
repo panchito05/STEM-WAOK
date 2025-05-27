@@ -536,6 +536,14 @@ export function DrawingCanvas({
       const dividendHasDecimals = currentProblem.dividend % 1 !== 0;
       const divisorHasDecimals = currentProblem.divisor % 1 !== 0;
       
+      console.log('🔍 Casita Debug:', {
+        dividend: currentProblem.dividend,
+        divisor: currentProblem.divisor,
+        dividendHasDecimals,
+        divisorHasDecimals,
+        parts
+      });
+      
       // Formatear los números según si tienen decimales o no
       const divisorText = divisorHasDecimals 
         ? parts[1].intPart + '.' + parts[1].decPart
