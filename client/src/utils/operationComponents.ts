@@ -68,29 +68,13 @@ export const operationModules: Module[] = [
   },
   {
     id: "additioncopy2",
-    displayName: "Division",
+    displayName: "División",
     description: "Practice division with various difficulty levels",
     difficulty: "beginner",
     color: "#8b5cf6", // Violeta para distinguir de otros módulos
     icon: "DivideIcon",
   },
-  // Agregar entradas adicionales para posibles IDs alternativos
-  {
-    id: "multiplication",
-    displayName: "Multiplication",
-    description: "Practice multiplication with various difficulty levels",
-    difficulty: "beginner",
-    color: "#10b981",
-    icon: "X",
-  },
-  {
-    id: "division",
-    displayName: "Division",
-    description: "Practice division with various difficulty levels",
-    difficulty: "beginner",
-    color: "#8b5cf6",
-    icon: "DivideIcon",
-  },
+
 ];
 
 // Map operation IDs to their React components
