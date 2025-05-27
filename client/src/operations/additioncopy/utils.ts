@@ -1,6 +1,6 @@
 // utils.ts - Division Logic
 import React from "react";
-import { DivisionProblem, DifficultyLevel } from "./types";
+import { DivisionProblem, DivisionProblemExtended, DifficultyLevel } from "./types";
 
 // Constants for division logic
 const MAX_DIFFICULTY = 5;

@@ -4,8 +4,8 @@ import { useProgress } from "@/context/ProgressContext";
 import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
-import { generateMultiplicationProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
-import { Problem, UserAnswer as UserAnswerType, MultiplicationProblem, DifficultyLevel } from "./types";
+import { generateDivisionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
+import { Problem, UserAnswer as UserAnswerType, DivisionProblemExtended, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
@@ -377,8 +377,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { exerciseHistory } = useProgress();
   const moduleId = "additioncopy"; // ID del módulo de suma
 
-  const [problemsList, setProblemsList] = useState<MultiplicationProblem[]>([]);
-  const [currentProblem, setCurrentProblem] = useState<MultiplicationProblem | null>(null);
+  const [problemsList, setProblemsList] = useState<DivisionProblemExtended[]>([]);
+  const [currentProblem, setCurrentProblem] = useState<DivisionProblemExtended | null>(null);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
 
   const [digitAnswers, setDigitAnswers] = useState<string[]>([]);
@@ -971,7 +971,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             ? adaptiveDifficulty
             : (settings.difficulty as DifficultyLevel);
 
-          const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+          const compensationProblem = generateDivisionProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
           // Agregamos null al historial para que coincida con el nuevo problema añadido
           setUserAnswersHistory(prev => [...prev, null]);
@@ -1041,7 +1041,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               ? adaptiveDifficulty
               : (settings.difficulty as DifficultyLevel);
 
-            const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+            const compensationProblem = generateDivisionProblem(difficultyForCompensation);
             setProblemsList(prev => [...prev, compensationProblem]);
             // Agregamos null al historial para que coincida con el nuevo problema añadido
             setUserAnswersHistory(prev => [...prev, null]);
@@ -1094,7 +1094,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             ? adaptiveDifficulty
             : (settings.difficulty as DifficultyLevel);
 
-          const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+          const compensationProblem = generateDivisionProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
           // Agregamos null al historial para que coincida con el nuevo problema añadido
           setUserAnswersHistory(prev => [...prev, null]);
@@ -1168,7 +1168,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
     const newProblemsArray: MultiplicationProblem[] = [];
     for (let i = 0; i < settings.problemCount; i++) {
-      const problem = generateMultiplicationProblem(difficultyToUse);
+      const problem = generateDivisionProblem(difficultyToUse);
       // Agregar información de índice y total a cada problema
       problem.index = i;
       problem.total = settings.problemCount;
@@ -2137,7 +2137,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (showLevelUpReward) {
       setShowLevelUpReward(false);
       setBlockAutoAdvance(false);
-      const newProblemForLevelUp = generateMultiplicationProblem(adaptiveDifficulty);
+      const newProblemForLevelUp = generateDivisionProblem(adaptiveDifficulty);
       const updatedProblemsList = [...problemsList];
       updatedProblemsList[actualActiveProblemIndexBeforeViewingPrevious] = newProblemForLevelUp;
       setProblemsList(updatedProblemsList);
@@ -2384,7 +2384,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div className="flex flex-row justify-between items-center sm:flex-col sm:items-start">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800">{isEnglish ? "Multiplication" : "Multiplicación"}</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800">{isEnglish ? "Division" : "División"}</h2>
               <span className="sm:hidden font-medium text-sm bg-[#3b82f6] text-[#f9fafb]">
                 Problem {currentProblemIndex + 1} de {settings.problemCount}
               </span>
@@ -2780,7 +2780,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                           ? adaptiveDifficulty
                                           : (settings.difficulty as DifficultyLevel);
 
-                                      const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+                                      const compensationProblem = generateDivisionProblem(difficultyForCompensation);
                                       setProblemsList(prev => [...prev, compensationProblem]);
                                       // Agregamos null al historial para que coincida con el nuevo problema añadido
                                       setUserAnswersHistory(prev => [...prev, null]);
@@ -2906,7 +2906,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                         ? adaptiveDifficulty
                                         : (settings.difficulty as DifficultyLevel);
 
-                                    const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+                                    const compensationProblem = generateDivisionProblem(difficultyForCompensation);
                                     setProblemsList(prev => [...prev, compensationProblem]);
                                     // Agregamos null al historial para que coincida con el nuevo problema añadido
                                     setUserAnswersHistory(prev => [...prev, null]);
@@ -2966,14 +2966,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 ? adaptiveDifficulty
                 : (settings.difficulty as DifficultyLevel);
                 
-              const compensationProblem = generateMultiplicationProblem(difficultyForCompensation);
+              const compensationProblem = generateDivisionProblem(difficultyForCompensation);
               setProblemsList(prev => [...prev, compensationProblem]);
               // Agregamos null al historial para que coincida con el nuevo problema añadido
               setUserAnswersHistory(prev => [...prev, null]);
             }
             
             // Generar un nuevo problema
-            const newProblem = generateMultiplicationProblem(settings.difficulty);
+            const newProblem = generateDivisionProblem(settings.difficulty);
             // Agregar información sobre la posición y total de problemas
             newProblem.index = currentProblemIndex;
             newProblem.total = settings.problemCount;
