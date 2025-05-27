@@ -9,6 +9,23 @@ import FilterBar from "./FilterBar";
 import { operationModules } from "@/utils/operationComponents";
 import { Module } from "../types/module";
 
+// Función para seleccionar el componente correcto según el tipo de módulo
+const getModuleComponent = (module: Module, index: number) => {
+  switch (module.id) {
+    case 'addition':
+      return <AdditionModuleCard key={module.id} module={module} index={index} />;
+    case 'subtraction':
+      return <SubtractionModuleCard key={module.id} module={module} index={index} />;
+    case 'additioncopy': // Módulo de multiplicación
+      return <MultiplicationModuleCard key={module.id} module={module} index={index} />;
+    case 'additioncopy2': // Módulo de división
+      return <DivisionModuleCard key={module.id} module={module} index={index} />;
+    default:
+      // Para cualquier módulo futuro, usar el componente genérico
+      return <DraggableModuleCard key={module.id} module={module} index={index} />;
+  }
+};
+
 export default function ModuleList() {
   const [searchQuery, setSearchQuery] = useState("");
   const { 
@@ -147,13 +164,9 @@ export default function ModuleList() {
                      xl:grid-cols-3 
                      2xl:grid-cols-4 
                      w-full">
-        {filteredModules.map((module, index) => (
-          <DraggableModuleCard
-            key={module.id}
-            module={module}
-            index={index}
-          />
-        ))}
+        {filteredModules.map((module, index) => 
+          getModuleComponent(module, index)
+        )}
       </div>
       
       {filteredModules.length === 0 && (
