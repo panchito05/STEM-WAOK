@@ -210,10 +210,6 @@ export default function ProgressPage() {
   };
 
   const getModuleName = (id: string) => {
-    // 🔍 LOGS DE DIAGNÓSTICO
-    console.log('🔍 [DEBUG] getModuleName llamado con id:', id);
-    console.log('🔍 [DEBUG] Tipo de id:', typeof id);
-    
     // Mapeo directo para asegurar que todos los operationId muestren el nombre correcto
     const operationNameMap: { [key: string]: string } = {
       'addition': 'Addition',
@@ -225,25 +221,29 @@ export default function ProgressPage() {
       // Agregar más mapeos según sea necesario
     };
 
-    console.log('🔍 [DEBUG] operationNameMap disponible:', operationNameMap);
-    console.log('🔍 [DEBUG] ¿id existe en operationNameMap?', id in operationNameMap);
-    console.log('🔍 [DEBUG] operationNameMap[id]:', operationNameMap[id]);
+    // 🔧 CORRECCIÓN DE DATOS CORRUPTOS
+    // Si el ID es un nivel de dificultad corrupto, asumir que es Addition
+    const corruptedLevels = ['elementary', 'beginner', 'intermediate', 'advanced', 'expert'];
+    if (corruptedLevels.includes(id)) {
+      console.warn('🚨 [INTEGRIDAD] operationId corrupto detectado:', id, '- Corrigiendo a Addition');
+      return 'Addition';
+    }
 
     // Intentar obtener el nombre del mapeo directo primero
     if (operationNameMap[id]) {
-      console.log('✅ [DEBUG] Usando mapeo directo:', operationNameMap[id]);
       return operationNameMap[id];
     }
 
     // Si no está en el mapeo directo, buscar en operationModules
     const module = operationModules.find(m => m.id === id);
-    console.log('🔍 [DEBUG] operationModules.find resultado:', module);
-    console.log('🔍 [DEBUG] module?.displayName:', module?.displayName);
     
-    const result = module?.displayName || id;
-    console.log('🔍 [DEBUG] Resultado final:', result);
+    // Si no se encuentra el módulo, asumir Addition como fallback seguro
+    if (!module) {
+      console.warn('🚨 [INTEGRIDAD] operationId desconocido:', id, '- Usando Addition como fallback');
+      return 'Addition';
+    }
     
-    return result;
+    return module.displayName || 'Addition';
   };
 
   return (
