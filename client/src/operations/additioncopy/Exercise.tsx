@@ -4,7 +4,18 @@ import { useProgress } from "@/context/ProgressContext";
 import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
-import { generateMultiplicationProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
+import { checkAnswer, getVerticalAlignmentInfo } from "./utils";
+import { generateMultiplicationProblems } from "./utils/problemGenerator";
+
+// Función auxiliar para generar un solo problema usando el nuevo generador
+const generateSingleMultiplicationProblem = (difficulty: DifficultyLevel) => {
+  const problems = generateMultiplicationProblems({
+    difficulty,
+    problemCount: 1,
+    preferredDisplayFormat: 'vertical'
+  });
+  return problems[0];
+};
 import { Problem, UserAnswer as UserAnswerType, MultiplicationProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
@@ -1166,14 +1177,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const generateNewProblemSet = () => {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
-    const newProblemsArray: MultiplicationProblem[] = [];
-    for (let i = 0; i < settings.problemCount; i++) {
-      const problem = generateMultiplicationProblem(difficultyToUse);
-      // Agregar información de índice y total a cada problema
+    
+    // Usar el nuevo generador de multiplicaciones
+    const newProblemsArray = generateMultiplicationProblems({
+      difficulty: difficultyToUse,
+      problemCount: settings.problemCount,
+      preferredDisplayFormat: 'vertical'
+    });
+    
+    // Agregar información de índice y total a cada problema
+    newProblemsArray.forEach((problem, i) => {
       problem.index = i;
       problem.total = settings.problemCount;
-      newProblemsArray.push(problem);
-    }
+    });
     setProblemsList(newProblemsArray);
     setCurrentProblemIndex(0);
     setActualActiveProblemIndexBeforeViewingPrevious(0);
