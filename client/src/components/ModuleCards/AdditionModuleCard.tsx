@@ -71,8 +71,8 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
       </div>
 
       {/* Contenido - DIAGNÓSTICO */}
-      <div className="px-3 py-2 bg-gradient-to-b from-white to-blue-50 border-2 border-teal-400">
-        <p className="text-sm mb-3 text-gray-600 border-2 border-rose-400">
+      <div className="px-3 pt-2 pb-3 bg-gradient-to-b from-white to-blue-50 border-2 border-teal-400">
+        <p className="text-sm mb-2 text-gray-600 border-2 border-rose-400">
           Practica sumas con varios niveles de dificultad
         </p>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-2 border-amber-400">
