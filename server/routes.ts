@@ -615,42 +615,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🔍 [SERVER-DEBUG] module recibido:', req.body.module);
       console.log('🔍 [SERVER-DEBUG] exercise recibido:', req.body.exercise);
       
-      // 🔧 SOLUCION: Extraer operationId correctamente desde URL o contexto
-      // La URL contiene el operationId del módulo que está ejecutando el ejercicio
-      const currentUrl = req.headers.referer || req.headers.referrer || '';
-      console.log('🔍 [SERVER-DEBUG] URL de referencia:', currentUrl);
+      // 🔧 SOLUCIÓN ROBUSTA Y DEFINITIVA
+      // Detectar el tipo de operación desde múltiples fuentes de forma garantizada
       
-      let operationId = req.body.operationId;
-      
-      // Intentar extraer operationId de la URL de referencia
-      if (!operationId && currentUrl) {
-        const urlParts = currentUrl.split('/');
-        const operationIndex = urlParts.findIndex(part => 
-          ['addition', 'subtraction', 'multiplication', 'division', 'additioncopy', 'additioncopy2'].includes(part)
-        );
-        if (operationIndex !== -1) {
-          operationId = urlParts[operationIndex];
-          console.log('🔍 [SERVER-DEBUG] Extrayendo operationId de URL:', operationId);
+      function detectOperationType(body: any, headers: any): string {
+        // 1. Buscar en URL de referencia (más confiable)
+        const referer = headers.referer || headers.referrer || '';
+        if (referer) {
+          const operationFromUrl = referer.match(/\/(addition|subtraction|multiplication|division|additioncopy|additioncopy2)(?:\/|$|\?)/);
+          if (operationFromUrl) {
+            console.log('✅ [DETECTION] Operación detectada desde URL:', operationFromUrl[1]);
+            return operationFromUrl[1];
+          }
         }
+        
+        // 2. Buscar en datos del ejercicio
+        if (body.exercise?.module) {
+          console.log('✅ [DETECTION] Operación detectada desde exercise.module:', body.exercise.module);
+          return body.exercise.module;
+        }
+        
+        // 3. Buscar en campo module directo
+        if (body.module) {
+          console.log('✅ [DETECTION] Operación detectada desde module:', body.module);
+          return body.module;
+        }
+        
+        // 4. Buscar en operationId directo
+        if (body.operationId && body.operationId !== 'addition') {
+          console.log('✅ [DETECTION] Operación detectada desde operationId:', body.operationId);
+          return body.operationId;
+        }
+        
+        // 5. Analizar user-agent o headers adicionales
+        const userAgent = headers['user-agent'] || '';
+        if (userAgent.includes('subtraction') || referer.includes('subtraction')) {
+          console.log('✅ [DETECTION] Operación detectada desde análisis contextual: subtraction');
+          return 'subtraction';
+        }
+        
+        // 6. Analizar problemas matemáticos para determinar el tipo
+        if (body.extra_data?.problems && Array.isArray(body.extra_data.problems)) {
+          const firstProblem = body.extra_data.problems[0];
+          if (firstProblem?.problem) {
+            const problemText = firstProblem.problem.toString();
+            if (problemText.includes('-') && !problemText.includes('+') && !problemText.includes('×') && !problemText.includes('÷')) {
+              console.log('✅ [DETECTION] Operación detectada desde análisis de problemas: subtraction');
+              return 'subtraction';
+            } else if (problemText.includes('×') || problemText.includes('*')) {
+              console.log('✅ [DETECTION] Operación detectada desde análisis de problemas: multiplication');
+              return 'multiplication';
+            } else if (problemText.includes('÷') || problemText.includes('/')) {
+              console.log('✅ [DETECTION] Operación detectada desde análisis de problemas: division');
+              return 'division';
+            } else if (problemText.includes('+')) {
+              console.log('✅ [DETECTION] Operación detectada desde análisis de problemas: addition');
+              return 'addition';
+            }
+          }
+        }
+        
+        console.log('⚠️ [DETECTION] No se pudo detectar operación, usando fallback: addition');
+        return 'addition';
       }
       
-      // Intentar extraer desde el objeto exercise
-      if (!operationId && req.body.exercise?.module) {
-        operationId = req.body.exercise.module;
-        console.log('🔍 [SERVER-DEBUG] Extrayendo operationId de exercise.module:', operationId);
-      }
-      
-      // Intentar extraer desde module
-      if (!operationId && req.body.module) {
-        operationId = req.body.module;
-        console.log('🔍 [SERVER-DEBUG] Extrayendo operationId de module:', operationId);
-      }
-      
-      // Solo usar fallback si realmente no se puede determinar
-      if (!operationId) {
-        operationId = "addition";
-        console.log('🔍 [SERVER-DEBUG] Usando fallback operationId:', operationId);
-      }
+      const operationId = detectOperationType(req.body, req.headers);
       
       // Crear objeto con el operationId correcto
       const correctedProgressData = {
