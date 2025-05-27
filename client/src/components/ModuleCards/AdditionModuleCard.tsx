@@ -71,8 +71,8 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
       </div>
 
       {/* Contenido - DIAGNÓSTICO */}
-      <div className="px-2 py-2 bg-gradient-to-b from-white to-blue-50 border-2 border-teal-400">
-        <p className="text-xs mb-2 text-gray-600 border-2 border-rose-400">
+      <div className="px-2 pt-1 pb-2 bg-gradient-to-b from-white to-blue-50 border-2 border-teal-400">
+        <p className="text-xs mb-1 text-gray-600 border-2 border-rose-400">
           Practica sumas con varios niveles de dificultad
         </p>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 border-2 border-amber-400">
@@ -82,7 +82,7 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
           <Link href={`/operation/${module.id}`}>
             <Button 
               variant="default" 
-              className="text-white bg-blue-600 hover:bg-blue-700 rounded-full px-3 text-xs h-7 w-full sm:w-auto shadow-md hover:shadow-lg transition-all border-2 border-violet-400"
+              className="text-white bg-blue-600 hover:bg-blue-700 rounded-full px-3 text-xs h-6 w-full sm:w-auto shadow-md hover:shadow-lg transition-all border-2 border-violet-400"
             >
               Comenzar
             </Button>
