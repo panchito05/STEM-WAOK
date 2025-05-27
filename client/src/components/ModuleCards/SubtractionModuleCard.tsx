@@ -2,9 +2,8 @@ import React from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Star, Eye, EyeOff, Minus } from 'lucide-react';
-import { useModuleFavorites } from '@/hooks/useModuleFavorites';
-import { useModuleStore } from '@/stores/moduleStore';
-import type { Module } from '@shared/schema';
+import { useModuleFavorites, useModuleStore } from '@/store/moduleStore';
+import { Module } from '@/utils/operationComponents';
 
 interface SubtractionModuleCardProps {
   module: Module;
