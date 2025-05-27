@@ -84,8 +84,8 @@ export default function MultiplicationModuleCard({ module, index }: Multiplicati
       </div>
 
       {/* Contenido específico de Multiplication con estructura DOM única */}
-      <div className="multiplication-body-unique multiplication-main-content p-2 sm:p-2 bg-gradient-to-b from-white to-green-50 pt-[13px] pb-[13px] pl-[12px] pr-[12px] mt-[0px] mb-[0px] ml-[0px] mr-[0px]">
-        <p className="multiplication-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
+      <div className="multiplication-body-unique multiplication-main-content p-2 sm:p-2 bg-gradient-to-b from-white to-blue-50 pt-[13px] pb-[13px] pl-[12px] pr-[12px] mt-[0px] mb-[0px] ml-[0px] mr-[0px]">
+        <p className="multiplication-description-text text-xs sm:text-sm mb-2 line-clamp-2 text-gray-600">
           Practica multiplicación con varios niveles de dificultad
         </p>
         <div className="multiplication-footer-unique multiplication-bottom-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -97,7 +97,7 @@ export default function MultiplicationModuleCard({ module, index }: Multiplicati
           <Link href={`/operation/${module.id}`}>
             <Button 
               variant="default" 
-              className="multiplication-start-btn multiplication-cta-button text-white bg-green-600 hover:bg-green-700 rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"
+              className="multiplication-start-btn multiplication-cta-button text-white bg-blue-600 hover:bg-blue-700 rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"
             >
               Comenzar
             </Button>

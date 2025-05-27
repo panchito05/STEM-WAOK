@@ -84,8 +84,8 @@ export default function SubtractionModuleCard({ module, index }: SubtractionModu
       </div>
 
       {/* Contenido específico de Subtraction con estructura DOM única */}
-      <div className="subtraction-body-unique subtraction-main-content p-2 sm:p-2 bg-gradient-to-b from-white to-red-50 pt-[13px] pb-[13px] pl-[12px] pr-[12px] mt-[0px] mb-[0px] ml-[0px] mr-[0px]">
-        <p className="subtraction-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
+      <div className="subtraction-body-unique subtraction-main-content p-2 sm:p-2 bg-gradient-to-b from-white to-blue-50 pt-[13px] pb-[13px] pl-[12px] pr-[12px] mt-[0px] mb-[0px] ml-[0px] mr-[0px]">
+        <p className="subtraction-description-text text-xs sm:text-sm mb-2 line-clamp-2 text-gray-600">
           Practica restas con varios niveles de dificultad
         </p>
         <div className="subtraction-footer-unique subtraction-bottom-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -97,7 +97,7 @@ export default function SubtractionModuleCard({ module, index }: SubtractionModu
           <Link href={`/operation/${module.id}`}>
             <Button 
               variant="default" 
-              className="subtraction-start-btn subtraction-cta-button text-white bg-red-600 hover:bg-red-700 rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"
+              className="subtraction-start-btn subtraction-cta-button text-white bg-blue-600 hover:bg-blue-700 rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"
             >
               Comenzar
             </Button>
