@@ -1,0 +1,58 @@
+"Realiza una auditoría completa de integridad del módulo [RESTA]:
+**VERIFICACIONES DE NOMENCLATURA:**
+- Buscar imports de del módulos AdditionProblem pues ese fue el modulo que utilizamos como base cuando creamos este nuevo modulo y por lo tanto podria aun conservar informacion del modulo de suma
+- Detectar nombres de archivos duplicados o nombre de alrchivos con este nombre : "AdditionCopy"
+- Identificar variables con nombres incorrectos
+**VERIFICACIONES DE LÓGICA MATEMÁTICA:**
+- Analizar funciones reduce() que usen + cuando deberían usar el signo del modulo en revision
+- Verificar operadores matemáticos en displayText y cálculos
+- Comprobar que correctAnswer use la operación correcta
+**VERIFICACIONES DE TIPOS Y INTERFACES:**
+- Revisar interfaces importadas j: AdditionProblem vs el modulo en revision)
+- Verificar consistencia en nombres de tipos y props
+**VERIFICACIONES DE CONTENIDO:**
+- Buscar texto/comentarios que mencionen operación incorrecta
+- Verificar símbolos de operaciones en UI (+ vs - vs × vs ÷ que sea el correcto para el modulo en revision si es que usa algun signo)
+**ARCHIVOS A VERIFICAR:**
+- Exercise.tsx (componente principal)
+- utils/ (funciones de cálculo)
+- types/ (definiciones de tipos)
+- components/professor/ (modo explicativo)
+- context/ (contextos y estados)
+**REPORTAR:**
+1. Archivos con problemas funcionales críticos (que afecten cálculos)
+2. Archivos con solo problemas de nomenclatura
+3. Archivos no utilizados que pueden eliminarse
+4. Dependencias cruzadas incorrectas"
+
+PRESENTAME LOS HALLAZGOS ANTES DE HACER CUALQUIER CAMBIO
+
+
+"Realiza una auditoría completa de integridad del módulo [RESTA]:
+**VERIFICACIONES DE NOMENCLATURA:**
+- Buscar imports de del módulos AdditionProblem pues ese fue el modulo que utilizamos como base cuando creamos este nuevo modulo y por lo tanto podria aun conservar informacion del modulo de suma
+- Detectar nombres de archivos duplicados o nombre de alrchivos con este nombre : "AdditionCopy"
+- Identificar variables con nombres incorrectos
+**VERIFICACIONES DE LÓGICA MATEMÁTICA:**
+- Analizar funciones reduce() que usen + cuando deberían usar el signo del modulo en revision
+- Verificar operadores matemáticos en displayText y cálculos
+- Comprobar que correctAnswer use la operación correcta
+**VERIFICACIONES DE TIPOS Y INTERFACES:**
+- Revisar interfaces importadas j: AdditionProblem vs el modulo en revision)
+- Verificar consistencia en nombres de tipos y props
+**VERIFICACIONES DE CONTENIDO:**
+- Buscar texto/comentarios que mencionen operación incorrecta
+- Verificar símbolos de operaciones en UI (+ vs - vs × vs ÷ que sea el correcto para el modulo en revision si es que usa algun signo)
+**ARCHIVOS A VERIFICAR:**
+- Exercise.tsx (componente principal)
+- utils/ (funciones de cálculo)
+- types/ (definiciones de tipos)
+- components/professor/ (modo explicativo)
+- context/ (contextos y estados)
+**REPORTAR:**
+1. Archivos con problemas funcionales críticos (que afecten cálculos)
+2. Archivos con solo problemas de nomenclatura
+3. Archivos no utilizados que pueden eliminarse
+4. Dependencias cruzadas incorrectas"
+
+PRESENTAME LOS HALLAZGOS ANTES DE HACER CUALQUIER CAMBIO
