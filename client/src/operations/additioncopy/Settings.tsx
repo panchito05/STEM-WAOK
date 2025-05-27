@@ -250,19 +250,19 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           
           <div className="mt-3 mb-2 space-y-1.5">
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Beginner:" : "Principiante:"}</span> {isEnglish ? "Single digit divisions (12÷3, 28÷4)" : "Divisiones con dígitos simples (12÷3, 28÷4)"}
+              <span className="font-bold">{isEnglish ? "Beginner:" : "Principiante:"}</span> {isEnglish ? "Single digit multiplications (3×4, 7×6)" : "Multiplicaciones con dígitos simples (3×4, 7×6)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Elementary:" : "Elemental:"}</span> {isEnglish ? "Two-digit by single digit (84÷6, 96÷8)" : "Dos dígitos entre un dígito (84÷6, 96÷8)"}
+              <span className="font-bold">{isEnglish ? "Elementary:" : "Elemental:"}</span> {isEnglish ? "Two-digit by single digit (12×8, 15×7)" : "Dos dígitos por un dígito (12×8, 15×7)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Three-digit by single digit (138÷6, 224÷8)" : "Tres dígitos entre un dígito (138÷6, 224÷8)"}
+              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Multi-digit multiplications (23×6, 18×9)" : "Multiplicaciones de múltiples dígitos (23×6, 18×9)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Advanced:" : "Avanzado:"}</span> {isEnglish ? "Multi-digit divisions (918÷27, 1456÷43)" : "Divisiones de múltiples dígitos (918÷27, 1456÷43)"}
+              <span className="font-bold">{isEnglish ? "Advanced:" : "Avanzado:"}</span> {isEnglish ? "Large number multiplications (34×27, 45×23)" : "Multiplicaciones de números grandes (34×27, 45×23)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Expert:" : "Experto:"}</span> {isEnglish ? "Decimal divisions (18.5÷2.5, 47.6÷3.2)" : "Divisiones decimales (18.5÷2.5, 47.6÷3.2)"}
+              <span className="font-bold">{isEnglish ? "Expert:" : "Experto:"}</span> {isEnglish ? "Complex multiplications (125×34, 156×28)" : "Multiplicaciones complejas (125×34, 156×28)"}
             </p>
           </div>
         </div>
