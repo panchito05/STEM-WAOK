@@ -52,8 +52,8 @@ const difficultyConfigs: Record<DifficultyLevel, DifficultyConfig> = {
     decimalProbabilities: { bothDecimals: 25, firstOnly: 25, secondOnly: 25, bothIntegers: 25 }
   },
   expert: {
-    firstOperandRange: [100, 9999],
-    secondOperandRange: [10, 999],
+    firstOperandRange: [1, 99],
+    secondOperandRange: [1, 99],
     allowDecimals: true,
     decimalProbabilities: { bothDecimals: 30, firstOnly: 20, secondOnly: 20, bothIntegers: 30 }
   }
