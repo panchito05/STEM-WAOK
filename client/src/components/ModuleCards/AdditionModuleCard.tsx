@@ -33,59 +33,56 @@ export default function AdditionModuleCard({ module, index }: AdditionModuleCard
   };
 
   return (
-    <div className="addition-module-unique-card addition-specific-container h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-blue-300 group">
-      {/* Header específico de Addition con clases únicas */}
-      <div className="addition-header-unique bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white p-2 sm:p-2.5 lg:p-3 relative overflow-hidden">
+    <div className="addition-module-card h-full bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-200 hover:border-blue-300">
+      {/* Header compacto */}
+      <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 text-white p-3 relative">
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="addition-title-section relative flex items-center justify-between">
-          <div className="addition-content-wrapper flex items-center min-w-0 flex-1">
-            <div className="addition-icon-wrapper mr-2 sm:mr-3 bg-white/25 p-1 sm:p-2 rounded-lg shadow-inner flex-shrink-0">
-              <Plus className="h-4 w-4 min-[400px]:h-5 min-[400px]:w-5 sm:h-6 sm:w-6 text-white" />
+        <div className="relative flex items-center justify-between">
+          {/* Lado izquierdo: ícono + título */}
+          <div className="flex items-center flex-1">
+            <div className="mr-3 bg-white/25 p-2 rounded-lg shadow-inner">
+              <Plus className="h-5 w-5 text-white" />
             </div>
-            <h3 className="addition-title-text text-xs min-[350px]:text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white line-clamp-2 leading-tight">
-              Suma
-            </h3>
+            <h3 className="text-base font-bold text-white">Suma</h3>
           </div>
-          <div className="addition-actions-bar flex space-x-1 min-[400px]:space-x-1.5 sm:space-x-2 relative z-10">
+          {/* Lado derecho: íconos de acción */}
+          <div className="flex space-x-2">
             <button 
-              className={`addition-favorite-button focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all ${
+              className={`p-1.5 rounded-full transition-all ${
                 isModuleFavorite 
-                  ? "text-yellow-400 hover:text-white bg-white/20 hover:bg-white/10" 
+                  ? "text-yellow-400 bg-white/20" 
                   : "text-white hover:text-yellow-400 hover:bg-white/20"
               }`}
               onClick={handleToggleFavorite}
             >
-              <Star className={`h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5 ${isModuleFavorite ? "fill-current" : ""}`} />
+              <Star className={`h-4 w-4 ${isModuleFavorite ? "fill-current" : ""}`} />
             </button>
             <button 
-              className="addition-preview-button text-white hover:text-blue-200 hover:bg-white/20 focus:outline-none p-1 min-[400px]:p-1.5 sm:p-1.5 rounded-full transition-all"
+              className="text-white hover:text-blue-200 hover:bg-white/20 p-1.5 rounded-full transition-all"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // Aquí iría la lógica de vista previa
               }}
             >
-              <Eye className="h-3.5 w-3.5 min-[400px]:h-4 min-[400px]:w-4 sm:h-5 sm:w-5" />
+              <Eye className="h-4 w-4" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Contenido específico de Addition con estructura DOM única */}
-      <div className="addition-body-unique addition-main-content p-2 sm:p-3 lg:p-4 bg-gradient-to-b from-white to-blue-50">
-        <p className="addition-description-text text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-2 text-gray-600">
+      {/* Contenido */}
+      <div className="p-3 bg-gradient-to-b from-white to-blue-50">
+        <p className="text-sm mb-4 text-gray-600">
           Practica sumas con varios niveles de dificultad
         </p>
-        <div className="addition-footer-unique addition-bottom-section flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div className="addition-difficulty-wrapper flex items-center w-full sm:w-auto">
-            <span className={`addition-difficulty-label px-1.5 min-[400px]:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] min-[400px]:text-xs sm:text-sm font-medium border ${difficultyColors[module.difficulty as keyof typeof difficultyColors] || difficultyColors.beginner} flex-shrink-0`}>
-              {difficultyLabels[module.difficulty as keyof typeof difficultyLabels] || 'Principiante'}
-            </span>
-          </div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <span className={`px-3 py-1 rounded-full text-sm font-medium border ${difficultyColors[module.difficulty as keyof typeof difficultyColors] || difficultyColors.beginner}`}>
+            {difficultyLabels[module.difficulty as keyof typeof difficultyLabels] || 'Principiante'}
+          </span>
           <Link href={`/operation/${module.id}`}>
             <Button 
               variant="default" 
-              className="addition-start-btn addition-cta-button text-white bg-blue-600 hover:bg-blue-700 rounded-full px-2 min-[400px]:px-3 sm:px-4 text-[10px] min-[400px]:text-xs sm:text-sm h-7 min-[400px]:h-8 sm:h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"
+              className="text-white bg-blue-600 hover:bg-blue-700 rounded-full px-4 text-sm h-9 w-full sm:w-auto shadow-md hover:shadow-lg transition-all"
             >
               Comenzar
             </Button>
