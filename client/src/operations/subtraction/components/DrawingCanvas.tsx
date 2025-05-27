@@ -507,11 +507,14 @@ export function DrawingCanvas({
     
     // Formatear los números
     const { operands } = currentProblem;
-    const formattedOperands = operands.map((num: number) => num.toFixed(2));
+    const formattedOperands = operands.map((num: number) => {
+      // Solo mostrar decimales si realmente los tiene
+      return num % 1 === 0 ? num.toString() : num.toFixed(2);
+    });
     
     // Encontrar la longitud máxima para alineación
     const parts = formattedOperands.map((num: string) => {
-      const [intPart, decPart] = num.split('.');
+      const [intPart, decPart = ''] = num.split('.');
       return { intPart, decPart };
     });
     
@@ -542,19 +545,22 @@ export function DrawingCanvas({
         yPosition
       );
       
-      // Dibujar el punto decimal
-      context.fillText(
-        '.', 
-        centerX + decimalOffset, 
-        yPosition
-      );
-      
-      // Dibujar la parte decimal
-      context.fillText(
-        parts[i].decPart, 
-        centerX + decimalOffset + decimalPartOffset, 
-        yPosition
-      );
+      // Solo dibujar punto decimal y parte decimal si hay decimales
+      if (parts[i].decPart) {
+        // Dibujar el punto decimal
+        context.fillText(
+          '.', 
+          centerX + decimalOffset, 
+          yPosition
+        );
+        
+        // Dibujar la parte decimal
+        context.fillText(
+          parts[i].decPart, 
+          centerX + decimalOffset + decimalPartOffset, 
+          yPosition
+        );
+      }
       
       // Avanzar a la siguiente posición vertical
       yPosition += lineHeight;
@@ -574,17 +580,20 @@ export function DrawingCanvas({
       yPosition
     );
     
-    context.fillText(
-      '.', 
-      centerX + decimalOffset, 
-      yPosition
-    );
-    
-    context.fillText(
-      parts[parts.length - 1].decPart, 
-      centerX + decimalOffset + decimalPartOffset, 
-      yPosition
-    );
+    // Solo dibujar punto decimal y parte decimal si hay decimales
+    if (parts[parts.length - 1].decPart) {
+      context.fillText(
+        '.', 
+        centerX + decimalOffset, 
+        yPosition
+      );
+      
+      context.fillText(
+        parts[parts.length - 1].decPart, 
+        centerX + decimalOffset + decimalPartOffset, 
+        yPosition
+      );
+    }
     
     // Dibujar línea debajo
     yPosition += lineHeight * 0.6;
