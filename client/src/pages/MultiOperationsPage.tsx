@@ -64,12 +64,32 @@ export default function MultiOperationsPage() {
 
     // Configurar la sesión
     const config: SessionConfig = {
-      modules: availableModules.map(module => ({
-        id: module.id,
-        name: module.displayName,
-        color: module.color || '#4287f5',
-        icon: module.icon || 'Calculator'
-      })),
+      modules: availableModules.map(module => {
+        let iconComponent;
+        switch (module.icon) {
+          case 'Plus':
+            iconComponent = <Plus className="w-4 h-4" />;
+            break;
+          case 'Minus':
+            iconComponent = <Minus className="w-4 h-4" />;
+            break;
+          case 'X':
+            iconComponent = <X className="w-4 h-4" />;
+            break;
+          case 'DivideIcon':
+            iconComponent = <Calculator className="w-4 h-4" />;
+            break;
+          default:
+            iconComponent = <Calculator className="w-4 h-4" />;
+        }
+        
+        return {
+          id: module.id,
+          name: module.displayName,
+          color: module.color || '#4287f5',
+          icon: iconComponent
+        };
+      }),
       totalProblems: availableModules.length * 5, // 5 problemas por módulo por defecto
       currentProblem: 1,
       currentModule: availableModules[0].id
