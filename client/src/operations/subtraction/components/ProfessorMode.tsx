@@ -63,7 +63,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     try {
       // Crear los problemas capturados exactamente como el modo normal
       const problemasCapturados = history.map((item, index) => ({
-        problem: `${item.problem.operands.join(' + ')} = ${calculateCorrectAnswer(item.problem)}`,
+        problem: `${item.problem.operands.join(' - ')} = ${calculateCorrectAnswer(item.problem)}`,
         userAnswer: item.userAnswer.toString(),
         correctAnswer: calculateCorrectAnswer(item.problem).toString(),
         isCorrect: item.isCorrect,
