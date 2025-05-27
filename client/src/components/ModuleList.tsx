@@ -1,8 +1,13 @@
 import { useState, useMemo } from "react";
 import { useModuleStore, useModuleFavorites } from "@/store/moduleStore";
+import AdditionModuleCard from "./ModuleCards/AdditionModuleCard";
+import SubtractionModuleCard from "./ModuleCards/SubtractionModuleCard";
+import MultiplicationModuleCard from "./ModuleCards/MultiplicationModuleCard";
+import DivisionModuleCard from "./ModuleCards/DivisionModuleCard";
 import DraggableModuleCard from "./DraggableModuleCard";
 import FilterBar from "./FilterBar";
 import { operationModules } from "@/utils/operationComponents";
+import { Module } from "../types/module";
 
 export default function ModuleList() {
   const [searchQuery, setSearchQuery] = useState("");
