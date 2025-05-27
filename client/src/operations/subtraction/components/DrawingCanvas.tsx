@@ -508,8 +508,8 @@ export function DrawingCanvas({
     // Formatear los números
     const { operands } = currentProblem;
     const formattedOperands = operands.map((num: number) => {
-      // Solo mostrar decimales si realmente los tiene
-      return num % 1 === 0 ? num.toString() : num.toFixed(2);
+      // Mantener exactamente el formato original sin ceros adicionales
+      return num.toString();
     });
     
     // Encontrar la longitud máxima para alineación
