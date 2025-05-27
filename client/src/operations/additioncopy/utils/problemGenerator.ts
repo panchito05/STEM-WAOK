@@ -93,9 +93,12 @@ function generateSingleMultiplicationProblem(
   return {
     id: uuidv4(),
     operands: [operand1, operand2],
+    num1: operand1,
+    num2: operand2,
     correctAnswer: parseFloat(result.toFixed(4)), // Limitar decimales para evitar errores de precisión
-    displayFormat: getDisplayFormat(preferredDisplayFormat),
+    layout: getDisplayFormat(preferredDisplayFormat),
     operation: 'multiplication' as const,
+    answerMaxDigits: result.toString().replace('.', '').length,
     createdAt: new Date()
   };
 }
