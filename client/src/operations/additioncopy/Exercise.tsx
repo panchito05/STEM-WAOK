@@ -1511,7 +1511,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
     // Create screenshot-like data structure that matches our template
     const screenshotData = {
-      title: "Addition Exercise Complete!",
+      title: "Multiplication Exercise Complete!",
       scoreData: {
         totalTime: formatTime(timer),
         score: {
@@ -1562,7 +1562,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (!problem) return null;
 
         // Este es el formato EXACTO que se muestra en la pantalla final
-        const problemText = `${problem.operands[0]} + ${problem.operands[1]} = ${problem.correctAnswer}`;
+        const problemText = `${problem.operands[0]} × ${problem.operands[1]} = ${problem.correctAnswer}`;
 
         // Objeto con la información completa del problema tal como se muestra en la UI
         return {
@@ -1620,7 +1620,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         const respuesta = userAnswersHistory[i];
         const problema = problemsList[i];
         console.log(`   Problema #${i+1}: ${problema.id}`);
-        console.log(`   - Operación: ${problema.operands?.[0]} + ${problema.operands?.[1]} = ${problema.correctAnswer}`);
+        console.log(`   - Operación: ${problema.operands?.[0]} × ${problema.operands?.[1]} = ${problema.correctAnswer}`);
         console.log(`   - Tiene respuesta: ${respuesta ? "SÍ" : "NO"}`);
         if (respuesta) {
           console.log(`   - Respuesta dada: ${respuesta.userAnswer}`);
@@ -1634,7 +1634,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         console.log(`🔴 PROBLEMA ACTUAL (posiblemente el último):
           - Índice: ${currentProblemIndex}
           - ID: ${currentProblem.id}
-          - Operación: ${currentProblem.operands?.[0]} + ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}
+          - Operación: ${currentProblem.operands?.[0]} × ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}
           - Respuesta en teclado: ${digitAnswers.join("")}
           - Tiene respuesta registrada: ${userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"}
         `);
@@ -1646,7 +1646,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         
         console.log(`🔴 VERIFICACIÓN CRÍTICA - ÚLTIMO PROBLEMA #${currentProblemIndex+1}:`, {
           id: currentProblem.id,
-          operación: `${currentProblem.operands?.[0]} + ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}`,
+          operación: `${currentProblem.operands?.[0]} × ${currentProblem.operands?.[1]} = ${currentProblem.correctAnswer}`,
           enTeclado: digitAnswers.join(""),
           tieneDigitos: digitAnswers.length > 0 ? "SÍ" : "NO",
           respuestaRegistrada: userAnswersHistory[currentProblemIndex] ? "SÍ" : "NO"
@@ -1726,13 +1726,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }
         
         // Usar la respuesta correcta del problema o calcularla
-        const respuestaCorrecta = problema.correctAnswer || (operandoA + operandoB);
+        const respuestaCorrecta = problema.correctAnswer || (operandoA * operandoB);
         
         // Crear un objeto que incluya TODOS los datos necesarios para este tipo de problema
         const problemaCompleto = {
           // Metadatos para identificación
           id: problema.id || `problema-${i}`,
-          tipo: "suma",
+          tipo: "multiplicacion",
           
           // Datos específicos del problema de suma
           operands: [operandoA, operandoB],
