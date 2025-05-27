@@ -532,14 +532,15 @@ export function DrawingCanvas({
     
     // Verificar si es formato de división larga (casita)
     if (currentProblem.displaySymbol === 'long') {
-      // Verificar si hay decimales en los números originales
-      const hasDecimals = currentProblem.dividend % 1 !== 0 || currentProblem.divisor % 1 !== 0;
+      // Verificar si hay decimales en los números originales (sin .00)
+      const dividendHasDecimals = currentProblem.dividend % 1 !== 0;
+      const divisorHasDecimals = currentProblem.divisor % 1 !== 0;
       
       // Formatear los números según si tienen decimales o no
-      const divisorText = hasDecimals 
+      const divisorText = divisorHasDecimals 
         ? parts[1].intPart + '.' + parts[1].decPart
         : parts[1].intPart;
-      const dividendText = hasDecimals 
+      const dividendText = dividendHasDecimals 
         ? parts[0].intPart + '.' + parts[0].decPart  
         : parts[0].intPart;
       
