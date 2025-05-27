@@ -115,27 +115,19 @@ export function generateSubtractionProblem(difficulty: DifficultyLevel): Subtrac
         operands = [minuend3b, subtrahend3b];
       }
       break;
-    case "advanced": // Resta de 3 números (minuendo - subtrahendo1 - subtrahendo2), siempre vertical, 1 o 2 decimales
+    case "advanced": // Resta de 2 números, siempre vertical, 1 o 2 decimales
       layout = 'vertical';
       problemMaxDecimals = getRandomBool(0.6) ? 2 : 1; // 60% chance de 2 decimales
       const minuend4 = getRandomDecimal(500, 999, problemMaxDecimals);
-      const subtrahend4a = getRandomDecimal(50, 200, problemMaxDecimals);
-      const subtrahend4b = getRandomDecimal(50, Math.min(200, minuend4 - subtrahend4a - 50), problemMaxDecimals);
-      operands = [minuend4, subtrahend4a, subtrahend4b];
+      const subtrahend4 = getRandomDecimal(50, minuend4 - 50, problemMaxDecimals);
+      operands = [minuend4, subtrahend4];
       break;
-    case "expert": // Resta de 4 o 5 números, siempre vertical, 1 o 2 decimales
+    case "expert": // Resta de 2 números, siempre vertical, 1 o 2 decimales
       layout = 'vertical';
-      const numLines = getRandomBool() ? 4 : 5;
       problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
       const minuend5 = getRandomDecimal(2000, 9999, problemMaxDecimals);
-      operands = [minuend5];
-      let remainingAmount = minuend5;
-      for (let i = 1; i < numLines; i++) {
-        const maxSubtract = Math.min(500, remainingAmount - (numLines - i) * 50);
-        const subtrahend = getRandomDecimal(50, maxSubtract, problemMaxDecimals);
-        operands.push(subtrahend);
-        remainingAmount -= subtrahend;
-      }
+      const subtrahend5 = getRandomDecimal(100, minuend5 - 100, problemMaxDecimals);
+      operands = [minuend5, subtrahend5];
       break;
     default: // Fallback a beginner si la dificultad no es reconocida
       const minuendDefault = getRandomInt(5, 9);
