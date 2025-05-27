@@ -46,10 +46,10 @@ const difficultyConfigs: Record<DifficultyLevel, DifficultyConfig> = {
     decimalProbabilities: { bothDecimals: 0, firstOnly: 0, secondOnly: 0, bothIntegers: 100 }
   },
   advanced: {
-    firstOperandRange: [100, 9999],
-    secondOperandRange: [10, 999],
-    allowDecimals: false,
-    decimalProbabilities: { bothDecimals: 0, firstOnly: 0, secondOnly: 0, bothIntegers: 100 }
+    firstOperandRange: [1, 99],
+    secondOperandRange: [1, 99],
+    allowDecimals: true,
+    decimalProbabilities: { bothDecimals: 25, firstOnly: 25, secondOnly: 25, bothIntegers: 25 }
   },
   expert: {
     firstOperandRange: [100, 9999],
@@ -126,9 +126,17 @@ function generateOperand(range: [number, number], useDecimals: boolean): number 
     return baseNumber;
   }
   
-  // Agregar 1-2 decimales aleatorios
+  // Para nivel avanzado: generar 1-2 decimales aleatorios (0.1 a 0.99)
   const decimalPlaces = Math.random() < 0.5 ? 1 : 2;
-  const decimalPart = Math.floor(Math.random() * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);
+  let decimalPart: number;
+  
+  if (decimalPlaces === 1) {
+    // Generar decimal de 1 dígito: 0.1 a 0.9
+    decimalPart = (Math.floor(Math.random() * 9) + 1) / 10;
+  } else {
+    // Generar decimal de 2 dígitos: 0.01 a 0.99
+    decimalPart = (Math.floor(Math.random() * 99) + 1) / 100;
+  }
   
   return parseFloat((baseNumber + decimalPart).toFixed(decimalPlaces));
 }
