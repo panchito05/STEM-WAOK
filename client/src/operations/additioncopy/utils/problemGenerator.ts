@@ -90,15 +90,19 @@ function generateSingleMultiplicationProblem(
   // Calcular resultado
   const result = operand1 * operand2;
   
+  const finalResult = parseFloat(result.toFixed(4)); // Limitar decimales para evitar errores de precisión
+  const resultString = finalResult.toString();
+  // Contar solo los dígitos necesarios para la respuesta (incluyendo punto decimal si existe)
+  const answerDigits = resultString.length;
+  
   return {
     id: uuidv4(),
     operands: [operand1, operand2],
     num1: operand1,
     num2: operand2,
-    correctAnswer: parseFloat(result.toFixed(4)), // Limitar decimales para evitar errores de precisión
+    correctAnswer: finalResult,
     layout: getDisplayFormat(preferredDisplayFormat),
-    operation: 'multiplication' as const,
-    answerMaxDigits: result.toString().replace('.', '').length,
+    answerMaxDigits: answerDigits,
     createdAt: new Date()
   };
 }
