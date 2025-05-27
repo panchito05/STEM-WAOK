@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import { AdditionProblem } from '../../types';
+import { SubtractionProblem } from '../../types';
 import { InputValidator } from './utils/ValidationUtils';
 import { Calculator, AlertTriangle } from 'lucide-react';
 
 interface ProblemDisplayProps {
-  problem: AdditionProblem;
+  problem: SubtractionProblem;
   showVerticalFormat?: boolean;
   attempts: number;
   maxAttempts: number;
@@ -22,7 +22,10 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   const problemData = useMemo(() => {
     const isValid = InputValidator.validateProblem(problem);
     const correctAnswer = isValid 
-      ? problem.operands.reduce((sum, op) => sum + (typeof op === 'number' ? op : parseFloat(op.toString())), 0)
+      ? problem.operands.reduce((result, op, index) => {
+          const num = typeof op === 'number' ? op : parseFloat(op.toString());
+          return index === 0 ? num : result - num;
+        }, 0)
       : 0;
     
     return {
@@ -77,9 +80,9 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
           </div>
         ))}
         
-        {/* Último operando con signo + */}
+        {/* Último operando con signo - */}
         <div className="flex items-center justify-end leading-relaxed">
-          <span className="mr-2 text-blue-600 font-bold">+</span>
+          <span className="mr-2 text-blue-600 font-bold">-</span>
           <span className="inline-block text-right" style={{ minWidth: `${maxIntWidth + 1}ch` }}>
             {parts[parts.length - 1].intPart}
           </span>
@@ -116,7 +119,7 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
           <React.Fragment key={index}>
             <span className="mx-1">{op}</span>
             {index < formattedOperands.length - 1 && (
-              <span className="mx-2 text-blue-600 font-bold">+</span>
+              <span className="mx-2 text-blue-600 font-bold">-</span>
             )}
           </React.Fragment>
         ))}

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { AdditionProblem } from '../types';
+import { SubtractionProblem } from '../types';
 
 // Definir los diferentes modos de herramientas
 type ToolMode = 'pen' | 'eraser';
@@ -17,7 +17,7 @@ interface DrawingCanvasProps {
   strokeWidth?: number;
   className?: string;
   onClear?: () => void;
-  currentProblem?: AdditionProblem | null; // Problema actual para estampar en el canvas
+  currentProblem?: SubtractionProblem | null; // Problema actual para estampar en el canvas
 }
 
 export function DrawingCanvas({
@@ -560,9 +560,9 @@ export function DrawingCanvas({
       yPosition += lineHeight;
     }
     
-    // Dibujar el signo + para el último operando
+    // Dibujar el signo - para el último operando
     context.fillText(
-      '+', 
+      '-', 
       signXPosition, 
       yPosition
     );
