@@ -16,9 +16,9 @@ const getModuleComponent = (module: Module, index: number) => {
       return <AdditionModuleCard key={module.id} module={module} index={index} />;
     case 'subtraction':
       return <SubtractionModuleCard key={module.id} module={module} index={index} />;
-    case 'additioncopy': // Módulo de multiplicación
+    case 'multiplication': // Módulo de multiplicación
       return <MultiplicationModuleCard key={module.id} module={module} index={index} />;
-    case 'additioncopy2': // Módulo de división
+    case 'division': // Módulo de división
       return <DivisionModuleCard key={module.id} module={module} index={index} />;
     default:
       // Para cualquier módulo futuro, usar el componente genérico

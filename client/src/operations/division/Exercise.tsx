@@ -518,7 +518,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       of: "of"
     },
     spanish: {
-      additioncopy2: "División",
+      division: "División",
       attempts: "Intentos",
       level: "Nivel",
       settings: "Ajustes",
@@ -1767,7 +1767,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Respaldo simple en localStorage (solo para depuración)
       try {
         const timestamp = Date.now();
-        const claveRespaldo = `math_additioncopy2_${timestamp}`;
+        const claveRespaldo = `math_division_${timestamp}`;
         localStorage.setItem(claveRespaldo, JSON.stringify(problemasCapturados));
       } catch (error) {
         console.error("Error al guardar respaldo local:", error);

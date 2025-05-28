@@ -56,8 +56,8 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   // Forzar el guardado de la configuración al componente cargarse
   useEffect(() => {
     // Guardar configuración inmediatamente al montar el componente para persistir valores actuales
-    updateModuleSettings("additioncopy", localSettings);
-    console.log("[ADDITIONCOPY] Guardando configuración al cargar:", localSettings);
+    updateModuleSettings("multiplication", localSettings);
+    console.log("[MULTIPLICATION] Guardando configuración al cargar:", localSettings);
     
     // Al desmontar, volver a guardar
     return () => {
@@ -93,7 +93,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {
-      await resetModuleSettings("additioncopy");
+      await resetModuleSettings("multiplication");
       setLocalSettings({ ...defaultModuleSettings });
       setShowResetConfirm(false);
     } else {
