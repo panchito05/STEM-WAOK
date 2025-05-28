@@ -626,7 +626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!operationId && currentUrl) {
         const urlParts = currentUrl.split('/');
         const operationIndex = urlParts.findIndex(part => 
-          ['addition', 'subtraction', 'multiplication', 'division', 'additioncopy', 'additioncopy2'].includes(part)
+          ['addition', 'subtraction', 'multiplication', 'division'].includes(part)
         );
         if (operationIndex !== -1) {
           operationId = urlParts[operationIndex];

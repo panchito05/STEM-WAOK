@@ -1,7 +1,7 @@
 import * as Addition from "../operations/addition";
 import * as Subtraction from "../operations/subtraction";
-import * as Multiplication from "../operations/additioncopy";
-import * as Division from "../operations/additioncopy2";
+import * as Multiplication from "../operations/multiplication";
+import * as Division from "../operations/division";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -59,7 +59,7 @@ export const operationModules: Module[] = [
     icon: "Minus",
   },
   {
-    id: "additioncopy",
+    id: "multiplication",
     displayName: "Multiplication",
     description: "Practice multiplication with various difficulty levels",
     difficulty: "beginner",
@@ -67,7 +67,7 @@ export const operationModules: Module[] = [
     icon: "X",
   },
   {
-    id: "additioncopy2",
+    id: "division",
     displayName: "División",
     description: "Practice division with various difficulty levels",
     difficulty: "beginner",
@@ -81,6 +81,6 @@ export const operationModules: Module[] = [
 export const operationComponents: Record<string, ModuleComponent> = {
   addition: Addition, // El módulo principal de adición
   subtraction: Subtraction, // El módulo de resta
-  additioncopy: Multiplication, // El módulo de multiplicación
-  additioncopy2: Division, // El módulo de división
+  multiplication: Multiplication, // El módulo de multiplicación
+  division: Division, // El módulo de división
 };
