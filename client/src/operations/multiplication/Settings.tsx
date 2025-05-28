@@ -64,8 +64,8 @@ export default function Settings({ settings, onBack }: SettingsProps) {
       if (!hasSavedRef.current) {
         hasSavedRef.current = true;
         // Llamada directa sin debounce para asegurar que se ejecute
-        updateModuleSettings("additioncopy", localSettings);
-        console.log("[ADDITIONCOPY] Guardando configuración al desmontar:", localSettings);
+        updateModuleSettings("multiplication", localSettings);
+        console.log("[MULTIPLICATION] Guardando configuración al desmontar:", localSettings);
         
         // Forzar localStorage para asegurar persistencia
         try {
@@ -79,10 +79,10 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             const parsed = JSON.parse(currentSettings);
             const updated = {
               ...parsed,
-              additioncopy: localSettings
+              multiplication: localSettings
             };
             localStorage.setItem(key, JSON.stringify(updated));
-            console.log("[ADDITIONCOPY] Forzando actualización en localStorage:", updated);
+            console.log("[MULTIPLICATION] Forzando actualización en localStorage:", updated);
           }
         } catch (e) {
           console.error("Error al forzar guardado en localStorage:", e);
