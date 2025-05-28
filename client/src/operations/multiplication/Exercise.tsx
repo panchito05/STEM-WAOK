@@ -872,8 +872,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   console.log(`[NIVEL] ✅ Progreso guardado exitosamente antes del avance de nivel`);
                   
                   // Actualizar localStorage con el nuevo nivel
-                  localStorage.setItem('addition_adaptiveDifficulty', newLevel);
-                  localStorage.setItem('addition_currentLevel', newLevel);
+                  localStorage.setItem('multiplication_adaptiveDifficulty', newLevel);
+                  localStorage.setItem('multiplication_currentLevel', newLevel);
                   
                   // Actualizar los estados para la UI
                   setAdaptiveDifficulty(newLevel);
