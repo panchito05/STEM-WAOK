@@ -310,8 +310,6 @@ export default function ProgressPage() {
       'subtraction': 'Subtraction', 
       'multiplication': 'Multiplication',
       'division': 'Division',
-      'additioncopy': 'Addition Copy',
-      'additioncopy2': 'Addition Copy 2',
       // Agregar más mapeos según sea necesario
     };
 

@@ -80,6 +80,14 @@ type TranslationKeys = {
       name: string;
       description: string;
     };
+    multiplication: {
+      name: string;
+      description: string;
+    };
+    division: {
+      name: string;
+      description: string;
+    };
 
   };
 };
