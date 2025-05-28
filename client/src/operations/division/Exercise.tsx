@@ -430,7 +430,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const storedSettings = localStorage.getItem('moduleSettings');
       if (storedSettings) {
         const parsedSettings = JSON.parse(storedSettings);
-        if (parsedSettings.additioncopy2 && parsedSettings.additioncopy2.difficulty) return parsedSettings.additioncopy2.difficulty;
+        if (parsedSettings.division && parsedSettings.division.difficulty) return parsedSettings.division.difficulty;
       }
     } catch (e) { console.error('Error loading adaptive difficulty from localStorage:', e); }
     return settings.difficulty as DifficultyLevel;
@@ -1866,7 +1866,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Metadatos para trazabilidad
         version: "4.0",
         timestamp: Date.now(),
-        exerciseId: `additioncopy2_${Date.now()}`,
+        exerciseId: `division_${Date.now()}`,
         
         // Almacenar los problemas en una ubicación consistente
         problemDetails: problemasCapturados,

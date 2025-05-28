@@ -26,8 +26,8 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   const debouncedSave = useMemo(
     () =>
       debounce((settings: ModuleSettings) => {
-        updateModuleSettings("additioncopy2", settings);
-        console.log(`[ADDITIONCOPY2] Guardando configuración (debounced):`, settings);
+        updateModuleSettings("division", settings);
+        console.log(`[DIVISION] Guardando configuración (debounced):`, settings);
       }, 500), // Reducir el tiempo de espera a 500ms para asegurar que se guarde pronto
     [updateModuleSettings]
   );
@@ -39,9 +39,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     
     // Para cambios de dificultad, aplicar cambio inmediatamente
     if (key === "difficulty") {
-      console.log("[ADDITIONCOPY2] Guardando configuración de dificultad inmediatamente:", value);
+      console.log("[DIVISION] Guardando configuración de dificultad inmediatamente:", value);
       // Actualizamos directamente sin usar debounce para cambios de dificultad
-      updateModuleSettings("additioncopy2", updatedSettings);
+      updateModuleSettings("division", updatedSettings);
     } else {
       // Para otros ajustes, usar debounce para evitar múltiples llamadas de guardado
       debouncedSave(updatedSettings);
