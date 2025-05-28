@@ -386,7 +386,7 @@ const YoutubeVideoDialog = ({
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Acceder a la información de historial mediante el contexto de progreso
   const { exerciseHistory } = useProgress();
-  const moduleId = "additioncopy"; // ID del módulo de suma
+  const moduleId = "multiplication"; // ID del módulo de multiplicación
 
   const [problemsList, setProblemsList] = useState<MultiplicationProblem[]>([]);
   const [currentProblem, setCurrentProblem] = useState<MultiplicationProblem | null>(null);
@@ -840,7 +840,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   
                   // CRÍTICO: Guardar progreso de los 10 problemas correctos antes de avanzar de nivel
                   const progressDataForLevelUp = {
-                    operationId: "additioncopy",
+                    operationId: "multiplication",
                     date: new Date().toISOString(),
                     score: CORRECT_ANSWERS_FOR_LEVEL_UP, // Los 10 problemas fueron correctos
                     totalProblems: CORRECT_ANSWERS_FOR_LEVEL_UP,
@@ -877,7 +877,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   
                   // Actualizar los estados para la UI
                   setAdaptiveDifficulty(newLevel);
-                  updateModuleSettings("additioncopy", { 
+                  updateModuleSettings("multiplication", { 
                       difficulty: newLevel, 
                       enableAdaptiveDifficulty: true 
                   });
@@ -958,7 +958,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           if (currentLevelIdx > 0) {
               const newLevel = difficultiesOrder[currentLevelIdx - 1];
               setAdaptiveDifficulty(newLevel);
-              updateModuleSettings("additioncopy", { difficulty: newLevel });
+              updateModuleSettings("multiplication", { difficulty: newLevel });
               setConsecutiveIncorrectAnswers(0);
               setFeedbackMessage(`${t('adaptiveDifficulty.levelDecreased')} ${t(newLevel)}. ${t('exercises.incorrect')}`);
           }
@@ -1847,7 +1847,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // VERSIÓN 6.0 INTERCEPTOR ANTIFRAGIL: Usando valores interceptados y validados
     saveExerciseResult({
-      operationId: "additioncopy",
+      operationId: "multiplication",
       date: new Date().toISOString(),
       score: scoreFinal, // ✅ Score interceptado y validado
       totalProblems: problemsList.length,
@@ -1875,11 +1875,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         capturedProblems: problemasCapturados,
         
         // Incluir información específica del tipo de ejercicio
-        exerciseType: "additioncopy",
+        exerciseType: "multiplication",
         
         // Incluir resumen para facilitar acceso rápido
         summary: {
-          operation: "additioncopy",
+          operation: "multiplication",
           level: finalLevel,
           score: {
             correct: scoreFinal,
