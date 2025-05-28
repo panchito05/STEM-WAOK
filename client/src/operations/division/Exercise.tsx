@@ -2401,7 +2401,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
             <div className="flex flex-row justify-between items-center sm:flex-col sm:items-start">
-              <h2 className="text-lg sm:text-xl font-bold text-gray-800">{t('modules.additioncopy2.name')}</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800">{t('modules.division.name')}</h2>
               <span className="sm:hidden font-medium text-sm bg-[#3b82f6] text-[#f9fafb]">
                 Problem {currentProblemIndex + 1} de {settings.problemCount}
               </span>

@@ -56,16 +56,16 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   // Forzar el guardado de la configuración al componente cargarse
   useEffect(() => {
     // Guardar configuración inmediatamente al montar el componente para persistir valores actuales
-    updateModuleSettings("additioncopy2", localSettings);
-    console.log("[ADDITIONCOPY2] Guardando configuración al cargar:", localSettings);
+    updateModuleSettings("division", localSettings);
+    console.log("[DIVISION] Guardando configuración al cargar:", localSettings);
     
     // Al desmontar, volver a guardar
     return () => {
       if (!hasSavedRef.current) {
         hasSavedRef.current = true;
         // Llamada directa sin debounce para asegurar que se ejecute
-        updateModuleSettings("additioncopy2", localSettings);
-        console.log("[ADDITIONCOPY2] Guardando configuración al desmontar:", localSettings);
+        updateModuleSettings("division", localSettings);
+        console.log("[DIVISION] Guardando configuración al desmontar:", localSettings);
         
         // Forzar localStorage para asegurar persistencia
         try {
@@ -79,10 +79,10 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             const parsed = JSON.parse(currentSettings);
             const updated = {
               ...parsed,
-              additioncopy2: localSettings
+              division: localSettings
             };
             localStorage.setItem(key, JSON.stringify(updated));
-            console.log("[ADDITIONCOPY2] Forzando actualización en localStorage:", updated);
+            console.log("[DIVISION] Forzando actualización en localStorage:", updated);
           }
         } catch (e) {
           console.error("Error al forzar guardado en localStorage:", e);
@@ -93,7 +93,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {
-      await resetModuleSettings("additioncopy2");
+      await resetModuleSettings("division");
       setLocalSettings({ ...defaultModuleSettings });
       setShowResetConfirm(false);
     } else {
