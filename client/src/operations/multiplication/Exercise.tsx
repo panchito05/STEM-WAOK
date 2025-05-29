@@ -2836,7 +2836,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               onClick={returnToActiveProblem} 
               className="w-full sm:w-auto px-4 sm:px-5 text-sm sm:text-base md:text-lg bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 order-2 sm:order-2"
             >
-                <RotateCcw className="mr-1 h-4 w-4" /> Return to Active / Volver al Activo
+                <RotateCcw className="mr-1 h-4 w-4" /> {settings.language === 'spa' ? 'Volver al Activo' : 'Return to Active'}
             </Button>
           ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
             (<Button
