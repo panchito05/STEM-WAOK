@@ -2055,37 +2055,20 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Si no hay foco establecido, usar posición por defecto
         currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
         setFocusedDigitIndex(currentFocus);
-      } else {
-        // SI YA HAY UN FOCO ESTABLECIDO, USARLO (esto es lo que faltaba)
-        currentFocus = focusedDigitIndex;
       }
       
       // Verificar que currentFocus no sea null antes de usar
       if (currentFocus !== null) {
         newAnswers[currentFocus] = value;
-        
-        // Mover el foco según la dirección INMEDIATAMENTE después de insertar el dígito
-        let nextFocus = null;
+      }
+      
+      // Mover el foco según la dirección (solo si currentFocus no es null)
+      if (currentFocus !== null) {
         if (inputDirection === 'rtl') {
-          if (currentFocus > 0) {
-            nextFocus = currentFocus - 1;
-            console.log(`🔄 [RTL-AUTO-MOVE] Moviendo foco de ${currentFocus} a ${nextFocus}`);
-          }
+          if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
         } else {
-          if (currentFocus < maxDigits - 1) {
-            nextFocus = currentFocus + 1;
-            console.log(`🔄 [LTR-AUTO-MOVE] Moviendo foco de ${currentFocus} a ${nextFocus}`);
-          }
+          if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
         }
-        
-        // Actualizar respuestas primero, luego mover foco
-        setDigitAnswers(newAnswers);
-        
-        if (nextFocus !== null) {
-          setFocusedDigitIndex(nextFocus);
-        }
-        
-        return; // Salir temprano para evitar duplicate setDigitAnswers
       }
     }
     setDigitAnswers(newAnswers);
@@ -2151,17 +2134,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newAnswers[currentFocus] = key;
             setDigitAnswers(newAnswers);
             
-            // Mover el foco según la dirección INMEDIATAMENTE después de insertar el dígito
+            // Mover el foco según la dirección
             if (inputDirection === 'rtl') {
-                if (currentFocus > 0) {
-                  console.log(`🔄 [RTL-KEYBOARD-FIX] Moviendo foco de ${currentFocus} a ${currentFocus - 1}`);
-                  setFocusedDigitIndex(currentFocus - 1);
-                }
+                if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
             } else {
-                if (currentFocus < maxDigits - 1) {
-                  console.log(`🔄 [LTR-KEYBOARD] Moviendo foco de ${currentFocus} a ${currentFocus + 1}`);
-                  setFocusedDigitIndex(currentFocus + 1);
-                }
+                if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
             }
           }
           event.preventDefault();
