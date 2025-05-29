@@ -2004,7 +2004,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const handleDigitInput = (value: string) => {
-    if (waitingRef.current || !currentProblem || exerciseCompleted || viewingPrevious) return;
+    console.log(`🔍 [RTL-DEBUG] handleDigitInput llamado con valor: "${value}"`);
+    if (waitingRef.current || !currentProblem || exerciseCompleted || viewingPrevious) {
+      console.log(`🔍 [RTL-DEBUG] Función bloqueada - waiting: ${waitingRef.current}, problema: ${!!currentProblem}, completado: ${exerciseCompleted}, viendo anterior: ${viewingPrevious}`);
+      return;
+    }
     if (!exerciseStarted) startExercise();
 
     console.log(`🔍 [RTL-DEBUG] === INICIO handleDigitInput ===`);
@@ -2115,7 +2119,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (waitingRef.current || exerciseCompleted || viewingPrevious || showLevelUpReward || !currentProblem) return;
 
       const key = event.key;
+      console.log(`🔍 [RTL-DEBUG-KEYBOARD] Tecla presionada: "${key}"`);
       if (key >= '0' && key <= '9') {
+        console.log(`🔍 [RTL-DEBUG-KEYBOARD] === INICIO handlePhysicalKeyDown ===`);
+        console.log(`🔍 [RTL-DEBUG-KEYBOARD] Dígito ingresado: "${key}"`);
+        console.log(`🔍 [RTL-DEBUG-KEYBOARD] Estado actual - focusedDigitIndex: ${focusedDigitIndex}, inputDirection: "${inputDirection}"`);
+        console.log(`🔍 [RTL-DEBUG-KEYBOARD] digitAnswers actual:`, digitAnswers);
           // 🧠 DETECCIÓN INTELIGENTE: Verificar si es el primer dígito ingresado
           const isFirstDigit = digitAnswers.every(digit => digit === "") && focusedDigitIndex === null;
           let currentFocus = focusedDigitIndex;
