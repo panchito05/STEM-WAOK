@@ -1334,8 +1334,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setDigitAnswers(restoredDigitAnswers);
         setFeedbackMessage(
             prevAnswerEntry.isCorrect ?
-            t('exercises.yourAnswerWasCorrect', { userAnswer: prevAnswerEntry.userAnswer }) :
-            t('exercises.yourAnswerWasIncorrect', { userAnswer: (prevAnswerEntry.userAnswer === undefined || isNaN(prevAnswerEntry.userAnswer) ? t('common.notAnswered') : prevAnswerEntry.userAnswer), correctAnswer: prevProblemToView.correctAnswer })
+            (settings.language === 'spa' ? `Tu respuesta fue correcta: ${prevAnswerEntry.userAnswer}` : `Your answer was correct: ${prevAnswerEntry.userAnswer}`) :
+            (settings.language === 'spa' ? `Tu respuesta fue incorrecta: ${prevAnswerEntry.userAnswer === undefined || isNaN(prevAnswerEntry.userAnswer) ? 'Sin respuesta' : prevAnswerEntry.userAnswer}. La respuesta correcta era: ${prevProblemToView.correctAnswer}` : `Your answer was incorrect: ${prevAnswerEntry.userAnswer === undefined || isNaN(prevAnswerEntry.userAnswer) ? 'Not answered' : prevAnswerEntry.userAnswer}. The correct answer was: ${prevProblemToView.correctAnswer}`)
         );
         setFeedbackColor(prevAnswerEntry.isCorrect ? "green" : "red");
     } else {
