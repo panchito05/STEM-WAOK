@@ -35,6 +35,7 @@ export default function MultiOperationsPage() {
   
   const { hiddenModules } = useModuleStore();
   const { favoriteModules } = useModuleFavorites();
+  const { getModuleSettings } = useSettings();
 
   // Obtener el modo desde la URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -64,42 +65,48 @@ export default function MultiOperationsPage() {
       return;
     }
 
-    // Configurar la sesión
+    // Configurar la sesión con problemCount real de cada módulo
+    const modulesWithSettings = availableModules.map(module => {
+      let iconComponent;
+      switch (module.icon) {
+        case 'Plus':
+          iconComponent = <Plus className="w-4 h-4" />;
+          break;
+        case 'Minus':
+          iconComponent = <Minus className="w-4 h-4" />;
+          break;
+        case 'X':
+          iconComponent = <X className="w-4 h-4" />;
+          break;
+        case 'DivideIcon':
+          iconComponent = <Calculator className="w-4 h-4" />;
+          break;
+        default:
+          iconComponent = <Calculator className="w-4 h-4" />;
+      }
+      
+      // Obtener la configuración real del módulo
+      const moduleSettings = getModuleSettings(module.id);
+      
+      return {
+        id: module.id,
+        name: module.displayName,
+        color: module.color || '#4287f5',
+        icon: iconComponent,
+        problemCount: moduleSettings.problemCount
+      };
+    });
+
     const config: SessionConfig = {
-      modules: availableModules.map(module => {
-        let iconComponent;
-        switch (module.icon) {
-          case 'Plus':
-            iconComponent = <Plus className="w-4 h-4" />;
-            break;
-          case 'Minus':
-            iconComponent = <Minus className="w-4 h-4" />;
-            break;
-          case 'X':
-            iconComponent = <X className="w-4 h-4" />;
-            break;
-          case 'DivideIcon':
-            iconComponent = <Calculator className="w-4 h-4" />;
-            break;
-          default:
-            iconComponent = <Calculator className="w-4 h-4" />;
-        }
-        
-        return {
-          id: module.id,
-          name: module.displayName,
-          color: module.color || '#4287f5',
-          icon: iconComponent
-        };
-      }),
-      totalProblems: availableModules.length * 5, // 5 problemas por módulo por defecto
+      modules: modulesWithSettings,
+      totalProblems: modulesWithSettings.reduce((total, module) => total + module.problemCount, 0),
       currentProblem: 1,
       currentModule: availableModules[0].id
     };
 
     setSessionConfig(config);
     setIsLoading(false);
-  }, [availableModules, mode]);
+  }, [availableModules, mode, getModuleSettings]);
 
   const handleStartSession = () => {
     if (!sessionConfig) return;
@@ -216,7 +223,7 @@ export default function MultiOperationsPage() {
                           {module.icon}
                           <span className="font-medium">{module.name}</span>
                           <Badge variant="secondary" style={{ backgroundColor: `${module.color}20`, color: module.color }}>
-                            5 problemas
+                            {module.problemCount} problema{module.problemCount !== 1 ? 's' : ''}
                           </Badge>
                         </div>
                       ))}
