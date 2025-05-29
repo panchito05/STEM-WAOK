@@ -2060,14 +2060,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Verificar que currentFocus no sea null antes de usar
       if (currentFocus !== null) {
         newAnswers[currentFocus] = value;
-      }
-      
-      // Mover el foco según la dirección (solo si currentFocus no es null)
-      if (currentFocus !== null) {
+        
+        // Mover el foco según la dirección INMEDIATAMENTE después de insertar el dígito
         if (inputDirection === 'rtl') {
-          if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
+          if (currentFocus > 0) {
+            console.log(`🔄 [RTL-FIX] Moviendo foco de ${currentFocus} a ${currentFocus - 1}`);
+            setFocusedDigitIndex(currentFocus - 1);
+          }
         } else {
-          if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
+          if (currentFocus < maxDigits - 1) {
+            console.log(`🔄 [LTR] Moviendo foco de ${currentFocus} a ${currentFocus + 1}`);
+            setFocusedDigitIndex(currentFocus + 1);
+          }
         }
       }
     }
@@ -2134,11 +2138,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newAnswers[currentFocus] = key;
             setDigitAnswers(newAnswers);
             
-            // Mover el foco según la dirección
+            // Mover el foco según la dirección INMEDIATAMENTE después de insertar el dígito
             if (inputDirection === 'rtl') {
-                if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
+                if (currentFocus > 0) {
+                  console.log(`🔄 [RTL-KEYBOARD-FIX] Moviendo foco de ${currentFocus} a ${currentFocus - 1}`);
+                  setFocusedDigitIndex(currentFocus - 1);
+                }
             } else {
-                if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
+                if (currentFocus < maxDigits - 1) {
+                  console.log(`🔄 [LTR-KEYBOARD] Moviendo foco de ${currentFocus} a ${currentFocus + 1}`);
+                  setFocusedDigitIndex(currentFocus + 1);
+                }
             }
           }
           event.preventDefault();
