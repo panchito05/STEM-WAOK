@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet";
 import { useLocation } from 'wouter';
 import { useModuleStore, useModuleFavorites } from "@/store/moduleStore";
 import { operationModules } from "@/utils/operationComponents";
+import { useSettings } from "@/context/SettingsContext";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ interface SessionConfig {
     name: string;
     color: string;
     icon: React.ReactNode;
+    problemCount: number;
   }>;
   totalProblems: number;
   currentProblem: number;
