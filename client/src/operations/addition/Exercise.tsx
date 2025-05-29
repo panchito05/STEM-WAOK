@@ -2004,17 +2004,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   };
 
   const handleDigitInput = (value: string) => {
-    console.log(`🔍 [RTL-DEBUG] handleDigitInput llamado con valor: "${value}"`);
-    if (waitingRef.current || !currentProblem || exerciseCompleted || viewingPrevious) {
-      console.log(`🔍 [RTL-DEBUG] Función bloqueada - waiting: ${waitingRef.current}, problema: ${!!currentProblem}, completado: ${exerciseCompleted}, viendo anterior: ${viewingPrevious}`);
-      return;
-    }
+    if (waitingRef.current || !currentProblem || exerciseCompleted || viewingPrevious) return;
     if (!exerciseStarted) startExercise();
-
-    console.log(`🔍 [RTL-DEBUG] === INICIO handleDigitInput ===`);
-    console.log(`🔍 [RTL-DEBUG] Valor ingresado: "${value}"`);
-    console.log(`🔍 [RTL-DEBUG] Estado actual - focusedDigitIndex: ${focusedDigitIndex}, inputDirection: "${inputDirection}"`);
-    console.log(`🔍 [RTL-DEBUG] digitAnswers actual:`, digitAnswers);
 
     let newAnswers = [...digitAnswers];
     let currentFocus = focusedDigitIndex;
@@ -2023,7 +2014,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (/[0-9]/.test(value)) {
       // 🧠 DETECCIÓN INTELIGENTE: Verificar si es el primer dígito ingresado
       const isFirstDigit = digitAnswers.every(digit => digit === "") && focusedDigitIndex === null;
-      console.log(`🔍 [RTL-DEBUG] ¿Es el primer dígito? ${isFirstDigit}`);
+
       
       if (isFirstDigit && currentProblem.correctAnswer !== undefined) {
         // Obtener el primer y último dígito de la respuesta correcta
@@ -2031,85 +2022,55 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         const firstDigitCorrect = correctAnswerStr[0];
         const lastDigitCorrect = correctAnswerStr[correctAnswerStr.length - 1];
         
-        console.log(`🧠 [SMART-INPUT] Detectando primer dígito: ${value}`);
-        console.log(`🧠 [SMART-INPUT] Respuesta correcta: ${currentProblem.correctAnswer} (${correctAnswerStr})`);
-        console.log(`🧠 [SMART-INPUT] Primer dígito correcto: ${firstDigitCorrect}, Último dígito correcto: ${lastDigitCorrect}`);
-        
         // Casos especiales: si primer y último dígito son iguales, usar dirección por defecto del layout
         if (firstDigitCorrect === lastDigitCorrect) {
-          console.log(`🧠 [SMART-INPUT] Primer y último dígito iguales - usando dirección por defecto del layout`);
           currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
           setFocusedDigitIndex(currentFocus);
         }
         // Si coincide con el primer dígito -> LTR (izquierda a derecha)
         else if (value === firstDigitCorrect) {
-          console.log(`🧠 [SMART-INPUT] ✅ Coincide con primer dígito -> LTR (respuesta de memoria)`);
           setInputDirection('ltr');
           currentFocus = 0;
           setFocusedDigitIndex(currentFocus);
         }
         // Si coincide con el último dígito -> RTL (derecha a izquierda)
         else if (value === lastDigitCorrect) {
-          console.log(`🧠 [SMART-INPUT] ✅ Coincide con último dígito -> RTL (cálculo paso a paso)`);
           setInputDirection('rtl');
           currentFocus = maxDigits - 1;
           setFocusedDigitIndex(currentFocus);
         }
         // Si no coincide con ningún extremo, usar dirección por defecto del layout
         else {
-          console.log(`🧠 [SMART-INPUT] No coincide con extremos - usando dirección por defecto: ${inputDirection}`);
           currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
           setFocusedDigitIndex(currentFocus);
         }
       } else if (focusedDigitIndex === null) {
         // Si no hay foco establecido, usar posición por defecto
-        console.log(`🔍 [RTL-DEBUG] No hay foco establecido, estableciendo posición por defecto`);
         currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
         setFocusedDigitIndex(currentFocus);
       }
       
-      console.log(`🔍 [RTL-DEBUG] currentFocus después de lógica inicial: ${currentFocus}`);
-      
       // Verificar que currentFocus no sea null antes de usar
       if (currentFocus !== null) {
-        console.log(`🔍 [RTL-DEBUG] Colocando dígito "${value}" en posición ${currentFocus}`);
-        console.log(`🔍 [RTL-DEBUG] Valor anterior en posición ${currentFocus}: "${newAnswers[currentFocus]}"`);
         newAnswers[currentFocus] = value;
-        console.log(`🔍 [RTL-DEBUG] Nuevo valor en posición ${currentFocus}: "${newAnswers[currentFocus]}"`);
       }
       
       // Mover el foco según la dirección (solo si currentFocus no es null)
       if (currentFocus !== null) {
-        let nextFocus = currentFocus;
-        console.log(`🔍 [RTL-DEBUG] === LÓGICA DE MOVIMIENTO ===`);
-        console.log(`🔍 [RTL-DEBUG] Dirección actual: "${inputDirection}"`);
-        console.log(`🔍 [RTL-DEBUG] Posición actual: ${currentFocus}, maxDigits: ${maxDigits}`);
-        
         if (inputDirection === 'rtl') {
-          console.log(`🔍 [RTL-DEBUG] Modo RTL - moviendo hacia la izquierda`);
+          // RTL: mover hacia la izquierda (índice menor)
           if (currentFocus > 0) {
-            nextFocus = currentFocus - 1;
-            console.log(`🔍 [RTL-DEBUG] RTL: Moviendo de ${currentFocus} a ${nextFocus}`);
-            setFocusedDigitIndex(nextFocus);
-          } else {
-            console.log(`🔍 [RTL-DEBUG] RTL: Ya estamos en la posición más a la izquierda (${currentFocus}), no se mueve`);
+            setFocusedDigitIndex(currentFocus - 1);
           }
         } else {
-          console.log(`🔍 [RTL-DEBUG] Modo LTR - moviendo hacia la derecha`);
+          // LTR: mover hacia la derecha (índice mayor)
           if (currentFocus < maxDigits - 1) {
-            nextFocus = currentFocus + 1;
-            console.log(`🔍 [RTL-DEBUG] LTR: Moviendo de ${currentFocus} a ${nextFocus}`);
-            setFocusedDigitIndex(nextFocus);
-          } else {
-            console.log(`🔍 [RTL-DEBUG] LTR: Ya estamos en la posición más a la derecha (${currentFocus}), no se mueve`);
+            setFocusedDigitIndex(currentFocus + 1);
           }
         }
-        console.log(`🔍 [RTL-DEBUG] Próximo foco será: ${nextFocus}`);
       }
     }
     
-    console.log(`🔍 [RTL-DEBUG] newAnswers final:`, newAnswers);
-    console.log(`🔍 [RTL-DEBUG] === FIN handleDigitInput ===`);
     setDigitAnswers(newAnswers);
   };
 
@@ -2119,12 +2080,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (waitingRef.current || exerciseCompleted || viewingPrevious || showLevelUpReward || !currentProblem) return;
 
       const key = event.key;
-      console.log(`🔍 [RTL-DEBUG-KEYBOARD] Tecla presionada: "${key}"`);
       if (key >= '0' && key <= '9') {
-        console.log(`🔍 [RTL-DEBUG-KEYBOARD] === INICIO handlePhysicalKeyDown ===`);
-        console.log(`🔍 [RTL-DEBUG-KEYBOARD] Dígito ingresado: "${key}"`);
-        console.log(`🔍 [RTL-DEBUG-KEYBOARD] Estado actual - focusedDigitIndex: ${focusedDigitIndex}, inputDirection: "${inputDirection}"`);
-        console.log(`🔍 [RTL-DEBUG-KEYBOARD] digitAnswers actual:`, digitAnswers);
           // 🧠 DETECCIÓN INTELIGENTE: Verificar si es el primer dígito ingresado
           const isFirstDigit = digitAnswers.every(digit => digit === "") && focusedDigitIndex === null;
           let currentFocus = focusedDigitIndex;
