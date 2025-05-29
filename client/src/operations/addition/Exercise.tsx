@@ -2014,6 +2014,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (/[0-9]/.test(value)) {
       // 🧠 DETECCIÓN INTELIGENTE: Verificar si es el primer dígito ingresado
       const isFirstDigit = digitAnswers.every(digit => digit === "") && focusedDigitIndex === null;
+      let detectedDirection = inputDirection; // Variable local para la dirección detectada
 
       
       if (isFirstDigit && currentProblem.correctAnswer !== undefined) {
@@ -2026,28 +2027,33 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         if (firstDigitCorrect === lastDigitCorrect) {
           currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
           setFocusedDigitIndex(currentFocus);
+          detectedDirection = inputDirection;
         }
         // Si coincide con el primer dígito -> LTR (izquierda a derecha)
         else if (value === firstDigitCorrect) {
           setInputDirection('ltr');
           currentFocus = 0;
           setFocusedDigitIndex(currentFocus);
+          detectedDirection = 'ltr';
         }
         // Si coincide con el último dígito -> RTL (derecha a izquierda)
         else if (value === lastDigitCorrect) {
           setInputDirection('rtl');
           currentFocus = maxDigits - 1;
           setFocusedDigitIndex(currentFocus);
+          detectedDirection = 'rtl';
         }
         // Si no coincide con ningún extremo, usar dirección por defecto del layout
         else {
           currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
           setFocusedDigitIndex(currentFocus);
+          detectedDirection = inputDirection;
         }
       } else if (focusedDigitIndex === null) {
         // Si no hay foco establecido, usar posición por defecto
         currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
         setFocusedDigitIndex(currentFocus);
+        detectedDirection = inputDirection;
       }
       
       // Verificar que currentFocus no sea null antes de usar
@@ -2055,9 +2061,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         newAnswers[currentFocus] = value;
       }
       
-      // Mover el foco según la dirección (solo si currentFocus no es null)
+      // Mover el foco según la dirección detectada (solo si currentFocus no es null)
       if (currentFocus !== null) {
-        if (inputDirection === 'rtl') {
+        if (detectedDirection === 'rtl') {
           // RTL: mover hacia la izquierda (índice menor)
           if (currentFocus > 0) {
             setFocusedDigitIndex(currentFocus - 1);
@@ -2085,6 +2091,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           const isFirstDigit = digitAnswers.every(digit => digit === "") && focusedDigitIndex === null;
           let currentFocus = focusedDigitIndex;
           const maxDigits = currentProblem.answerMaxDigits;
+          let detectedDirection = inputDirection; // Variable local para la dirección detectada
           
           if (isFirstDigit && currentProblem.correctAnswer !== undefined) {
             // Obtener el primer y último dígito de la respuesta correcta
@@ -2092,40 +2099,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             const firstDigitCorrect = correctAnswerStr[0];
             const lastDigitCorrect = correctAnswerStr[correctAnswerStr.length - 1];
             
-            console.log(`🧠 [SMART-KEYBOARD] Detectando primer dígito: ${key}`);
-            console.log(`🧠 [SMART-KEYBOARD] Respuesta correcta: ${currentProblem.correctAnswer} (${correctAnswerStr})`);
-            console.log(`🧠 [SMART-KEYBOARD] Primer dígito correcto: ${firstDigitCorrect}, Último dígito correcto: ${lastDigitCorrect}`);
-            
             // Casos especiales: si primer y último dígito son iguales, usar dirección por defecto del layout
             if (firstDigitCorrect === lastDigitCorrect) {
-              console.log(`🧠 [SMART-KEYBOARD] Primer y último dígito iguales - usando dirección por defecto del layout`);
               currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
               setFocusedDigitIndex(currentFocus);
+              detectedDirection = inputDirection;
             }
             // Si coincide con el primer dígito -> LTR (izquierda a derecha)
             else if (key === firstDigitCorrect) {
-              console.log(`🧠 [SMART-KEYBOARD] ✅ Coincide con primer dígito -> LTR (respuesta de memoria)`);
               setInputDirection('ltr');
               currentFocus = 0;
               setFocusedDigitIndex(currentFocus);
+              detectedDirection = 'ltr';
             }
             // Si coincide con el último dígito -> RTL (derecha a izquierda)
             else if (key === lastDigitCorrect) {
-              console.log(`🧠 [SMART-KEYBOARD] ✅ Coincide con último dígito -> RTL (cálculo paso a paso)`);
               setInputDirection('rtl');
               currentFocus = maxDigits - 1;
               setFocusedDigitIndex(currentFocus);
+              detectedDirection = 'rtl';
             }
             // Si no coincide con ningún extremo, usar dirección por defecto del layout
             else {
-              console.log(`🧠 [SMART-KEYBOARD] No coincide con extremos - usando dirección por defecto: ${inputDirection}`);
               currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
               setFocusedDigitIndex(currentFocus);
+              detectedDirection = inputDirection;
             }
           } else if (focusedDigitIndex === null) {
             // Si no hay foco establecido, usar posición por defecto
             currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
             setFocusedDigitIndex(currentFocus);
+            detectedDirection = inputDirection;
           }
           
           // Verificar que currentFocus no sea null antes de usar
@@ -2134,8 +2138,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             newAnswers[currentFocus] = key;
             setDigitAnswers(newAnswers);
             
-            // Mover el foco según la dirección
-            if (inputDirection === 'rtl') {
+            // Mover el foco según la dirección detectada
+            if (detectedDirection === 'rtl') {
                 if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
             } else {
                 if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
