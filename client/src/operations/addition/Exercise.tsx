@@ -2062,17 +2062,27 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         newAnswers[currentFocus] = value;
         
         // Mover el foco según la dirección INMEDIATAMENTE después de insertar el dígito
+        let nextFocus = null;
         if (inputDirection === 'rtl') {
           if (currentFocus > 0) {
-            console.log(`🔄 [RTL-FIX] Moviendo foco de ${currentFocus} a ${currentFocus - 1}`);
-            setFocusedDigitIndex(currentFocus - 1);
+            nextFocus = currentFocus - 1;
+            console.log(`🔄 [RTL-AUTO-MOVE] Moviendo foco de ${currentFocus} a ${nextFocus}`);
           }
         } else {
           if (currentFocus < maxDigits - 1) {
-            console.log(`🔄 [LTR] Moviendo foco de ${currentFocus} a ${currentFocus + 1}`);
-            setFocusedDigitIndex(currentFocus + 1);
+            nextFocus = currentFocus + 1;
+            console.log(`🔄 [LTR-AUTO-MOVE] Moviendo foco de ${currentFocus} a ${nextFocus}`);
           }
         }
+        
+        // Actualizar respuestas primero, luego mover foco
+        setDigitAnswers(newAnswers);
+        
+        if (nextFocus !== null) {
+          setFocusedDigitIndex(nextFocus);
+        }
+        
+        return; // Salir temprano para evitar duplicate setDigitAnswers
       }
     }
     setDigitAnswers(newAnswers);
