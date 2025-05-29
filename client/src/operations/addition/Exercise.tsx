@@ -2055,6 +2055,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Si no hay foco establecido, usar posición por defecto
         currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
         setFocusedDigitIndex(currentFocus);
+      } else {
+        // SI YA HAY UN FOCO ESTABLECIDO, USARLO (esto es lo que faltaba)
+        currentFocus = focusedDigitIndex;
       }
       
       // Verificar que currentFocus no sea null antes de usar
