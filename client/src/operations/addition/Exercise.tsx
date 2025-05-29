@@ -2007,6 +2007,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (waitingRef.current || !currentProblem || exerciseCompleted || viewingPrevious) return;
     if (!exerciseStarted) startExercise();
 
+    console.log(`🔍 [RTL-DEBUG] === INICIO handleDigitInput ===`);
+    console.log(`🔍 [RTL-DEBUG] Valor ingresado: "${value}"`);
+    console.log(`🔍 [RTL-DEBUG] Estado actual - focusedDigitIndex: ${focusedDigitIndex}, inputDirection: "${inputDirection}"`);
+    console.log(`🔍 [RTL-DEBUG] digitAnswers actual:`, digitAnswers);
+
     let newAnswers = [...digitAnswers];
     let currentFocus = focusedDigitIndex;
     const maxDigits = currentProblem.answerMaxDigits;
@@ -2014,6 +2019,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (/[0-9]/.test(value)) {
       // 🧠 DETECCIÓN INTELIGENTE: Verificar si es el primer dígito ingresado
       const isFirstDigit = digitAnswers.every(digit => digit === "") && focusedDigitIndex === null;
+      console.log(`🔍 [RTL-DEBUG] ¿Es el primer dígito? ${isFirstDigit}`);
       
       if (isFirstDigit && currentProblem.correctAnswer !== undefined) {
         // Obtener el primer y último dígito de la respuesta correcta
@@ -2053,24 +2059,53 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }
       } else if (focusedDigitIndex === null) {
         // Si no hay foco establecido, usar posición por defecto
+        console.log(`🔍 [RTL-DEBUG] No hay foco establecido, estableciendo posición por defecto`);
         currentFocus = inputDirection === 'ltr' ? 0 : maxDigits - 1;
         setFocusedDigitIndex(currentFocus);
       }
       
+      console.log(`🔍 [RTL-DEBUG] currentFocus después de lógica inicial: ${currentFocus}`);
+      
       // Verificar que currentFocus no sea null antes de usar
       if (currentFocus !== null) {
+        console.log(`🔍 [RTL-DEBUG] Colocando dígito "${value}" en posición ${currentFocus}`);
+        console.log(`🔍 [RTL-DEBUG] Valor anterior en posición ${currentFocus}: "${newAnswers[currentFocus]}"`);
         newAnswers[currentFocus] = value;
+        console.log(`🔍 [RTL-DEBUG] Nuevo valor en posición ${currentFocus}: "${newAnswers[currentFocus]}"`);
       }
       
       // Mover el foco según la dirección (solo si currentFocus no es null)
       if (currentFocus !== null) {
+        let nextFocus = currentFocus;
+        console.log(`🔍 [RTL-DEBUG] === LÓGICA DE MOVIMIENTO ===`);
+        console.log(`🔍 [RTL-DEBUG] Dirección actual: "${inputDirection}"`);
+        console.log(`🔍 [RTL-DEBUG] Posición actual: ${currentFocus}, maxDigits: ${maxDigits}`);
+        
         if (inputDirection === 'rtl') {
-          if (currentFocus > 0) setFocusedDigitIndex(currentFocus - 1);
+          console.log(`🔍 [RTL-DEBUG] Modo RTL - moviendo hacia la izquierda`);
+          if (currentFocus > 0) {
+            nextFocus = currentFocus - 1;
+            console.log(`🔍 [RTL-DEBUG] RTL: Moviendo de ${currentFocus} a ${nextFocus}`);
+            setFocusedDigitIndex(nextFocus);
+          } else {
+            console.log(`🔍 [RTL-DEBUG] RTL: Ya estamos en la posición más a la izquierda (${currentFocus}), no se mueve`);
+          }
         } else {
-          if (currentFocus < maxDigits - 1) setFocusedDigitIndex(currentFocus + 1);
+          console.log(`🔍 [RTL-DEBUG] Modo LTR - moviendo hacia la derecha`);
+          if (currentFocus < maxDigits - 1) {
+            nextFocus = currentFocus + 1;
+            console.log(`🔍 [RTL-DEBUG] LTR: Moviendo de ${currentFocus} a ${nextFocus}`);
+            setFocusedDigitIndex(nextFocus);
+          } else {
+            console.log(`🔍 [RTL-DEBUG] LTR: Ya estamos en la posición más a la derecha (${currentFocus}), no se mueve`);
+          }
         }
+        console.log(`🔍 [RTL-DEBUG] Próximo foco será: ${nextFocus}`);
       }
     }
+    
+    console.log(`🔍 [RTL-DEBUG] newAnswers final:`, newAnswers);
+    console.log(`🔍 [RTL-DEBUG] === FIN handleDigitInput ===`);
     setDigitAnswers(newAnswers);
   };
 
