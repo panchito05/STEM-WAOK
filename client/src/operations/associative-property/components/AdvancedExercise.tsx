@@ -29,6 +29,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [verificationAnswer, setVerificationAnswer] = useState<string>('');
   const [shuffledChoices, setShuffledChoices] = useState<any[]>([]);
+  const [verificationExpression, setVerificationExpression] = useState<{ expression: string; isCorrect: boolean } | null>(null);
 
   useEffect(() => {
     // Reiniciar estado cuando cambian los operandos
@@ -53,6 +54,24 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
       // Mezclar una sola vez
       const shuffled = [...choices].sort(() => Math.random() - 0.5);
       setShuffledChoices(shuffled);
+    }
+
+    // Generar expresión de verificación una sola vez
+    if (randomExercise === 'verification') {
+      const isCorrectExpression = Math.random() > 0.5;
+      let expression: string;
+      
+      if (isCorrectExpression) {
+        // Expresión correcta: otra forma válida de agrupar
+        expression = `${operands[0]} + (${operands[1]} + ${operands[2]})`;
+      } else {
+        // Expresión incorrecta: cambiar uno de los números
+        const wrongOperands = [...operands];
+        wrongOperands[Math.floor(Math.random() * wrongOperands.length)] += Math.floor(Math.random() * 5) + 1;
+        expression = `${wrongOperands[0]} + (${wrongOperands[1]} + ${wrongOperands[2]})`;
+      }
+      
+      setVerificationExpression({ expression, isCorrect: isCorrectExpression });
     }
   }, [operands, setInteractiveAnswers, setActiveInteractiveField]);
 
@@ -94,7 +113,9 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   };
 
   const handleVerificationSubmit = () => {
-    const isCorrect = verificationAnswer.toLowerCase() === 'verdadero' || verificationAnswer.toLowerCase() === 'true';
+    const userAnsweredTrue = verificationAnswer.toLowerCase() === 'verdadero' || verificationAnswer.toLowerCase() === 'true';
+    const actuallyCorrect = verificationExpression?.isCorrect ?? true;
+    const isCorrect = userAnsweredTrue === actuallyCorrect;
     setShowResult(true);
     onAnswer(isCorrect);
   };
@@ -176,19 +197,8 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   };
 
   const renderVerificationExercise = () => {
-    // Generar una segunda expresión que puede ser correcta o incorrecta
-    const isCorrectExpression = Math.random() > 0.5;
-    let secondExpression: string;
-    
-    if (isCorrectExpression) {
-      // Expresión correcta: otra forma válida de agrupar
-      secondExpression = `${operands[0]} + (${operands[1]} + ${operands[2]})`;
-    } else {
-      // Expresión incorrecta: cambiar uno de los números
-      const wrongOperands = [...operands];
-      wrongOperands[Math.floor(Math.random() * wrongOperands.length)] += Math.floor(Math.random() * 5) + 1;
-      secondExpression = `${wrongOperands[0]} + (${wrongOperands[1]} + ${wrongOperands[2]})`;
-    }
+    // Usar la expresión estable del estado
+    const secondExpression = verificationExpression?.expression || `${operands[0]} + (${operands[1]} + ${operands[2]})`;
 
     return (
       <div className="space-y-6">
@@ -308,7 +318,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
                 parseInt(interactiveAnswers.blank2) === operands[2] && 
                 parseInt(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0)
               : exercise === 'verification'
-              ? verificationAnswer === 'verdadero'
+              ? (verificationAnswer.toLowerCase() === 'verdadero' || verificationAnswer.toLowerCase() === 'true') === (verificationExpression?.isCorrect ?? true)
               : selectedChoice === 'a' || selectedChoice === 'b' // Múltiples respuestas correctas
             ) ? 'text-green-600' : 'text-red-600'
           }`}>
