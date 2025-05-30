@@ -1,0 +1,47 @@
+PROMPT PARA CREAR MÓDULO EN BLANCO
+Crea un nuevo módulo de operación matemática llamado [NOMBRE_MODULO] basado en la estructura y diseño del módulo Addition, pero completamente limpio y genérico.
+
+OBJETIVO:
+Generar un módulo completamente funcional pero vacío, listo para implementar cualquier operación matemática, sin dependencias ni referencias al módulo original.
+
+PROCESO AUTOMATIZADO:
+1. ESTRUCTURA DE ARCHIVOS (Copiar y limpiar):
+client/src/operations/[nombre-modulo]/
+├── Exercise.tsx          (Lógica principal limpia)
+├── Settings.tsx          (Configuraciones genéricas)
+├── index.ts             (Exportaciones limpias)
+├── types.ts             (Tipos genéricos)
+├── utils.ts             (Utilidades genéricas)
+└── components/
+    ├── VisualProblemDisplay.tsx
+    ├── InteractiveExercise.tsx
+    └── AdvancedExercise.tsx
+2. REEMPLAZOS AUTOMÁTICOS OBLIGATORIOS:
+addition → [nombre-modulo]
+Addition → [NombreModulo]
+ADDITION → [NOMBRE_MODULO]
+AdditionProblem → [NombreModulo]Problem
+generateAdditionProblem → generate[NombreModulo]Problem
+Todos los localStorage keys
+Todas las referencias en logs y console
+Settings y configuraciones específicas
+3. LIMPIEZA DE LÓGICA ESPECÍFICA:
+Exercise.tsx: Mantener estructura pero remover lógica de suma
+utils.ts: Función generateProblem() vacía pero funcional
+types.ts: Interfaces genéricas sin operaciones específicas
+VisualProblemDisplay.tsx: Layout limpio sin operaciones
+Settings.tsx: Configuraciones base sin validaciones específicas
+4. INTEGRACIÓN AUTOMÁTICA:
+Agregar a operationComponents.ts
+Registrar rutas de navegación
+Actualizar tipos globales si es necesario
+5. RESULTADO ESPERADO:
+Un módulo que:
+
+✅ Mantenga toda la estética y diseño original
+✅ Tenga su propio storage independiente
+✅ No tenga conflictos de nombres
+✅ Esté listo para implementar nueva lógica matemática
+✅ Funcione inmediatamente sin errores
+✅ Sea completamente independiente del módulo original
+USAR ESTE PROMPT: "Crea un módulo genérico llamado [NOMBRE_EXACTO] basado en la estructura del módulo Addition pero completamente limpio y listo para implementar [TIPO_OPERACION]."

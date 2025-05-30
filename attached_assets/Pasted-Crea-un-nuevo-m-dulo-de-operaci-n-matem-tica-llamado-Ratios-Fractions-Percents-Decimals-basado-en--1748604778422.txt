@@ -1,0 +1,52 @@
+Crea un nuevo módulo de operación matemática llamado “Ratios,Fractions,Percents,Decimals” basado en la estructura y diseño del módulo Addition, pero completamente limpio y genérico.
+OBJETIVO:
+Generar un módulo completamente funcional pero vacío, listo para implementar cualquier operación matemática, sin dependencias ni referencias al módulo original.
+PROCESO AUTOMATIZADO:
+1. ESTRUCTURA DE ARCHIVOS (Copiar y limpiar):
+client/src/operations/[nombre-modulo]/
+├── Exercise.tsx          (Lógica principal limpia)
+├── Settings.tsx          (Configuraciones genéricas)
+├── index.ts             (Exportaciones limpias)
+├── types.ts             (Tipos genéricos)
+├── utils.ts             (Utilidades genéricas)
+└── components/
+    ├── VisualProblemDisplay.tsx
+    ├── InteractiveExercise.tsx
+    └── AdvancedExercise.tsx
+2. REEMPLAZOS AUTOMÁTICOS OBLIGATORIOS:
+Patrones de reemplazo exacto:
+•	addition → [nombre-modulo-kebab-case]
+•	Addition → [NombreModuloPascalCase]
+•	ADDITION → [NOMBRE_MODULO_UPPER_CASE]
+•	AdditionProblem → [NombreModulo]Problem
+•	generateAdditionProblem → generate[NombreModulo]Problem
+•	addition_ → [nombre-modulo]_ (localStorage keys)
+•	[ADDITION] → [[NOMBRE_MODULO]] (logs y console)
+CRÍTICO: NO usar nombres temporales como "AdditionCopy" - usar directamente el nombre final del módulo.
+3. LIMPIEZA DE LÓGICA ESPECÍFICA:
+•	Exercise.tsx: Estructura completa pero lógica matemática genérica
+•	utils.ts: generateProblem() retorna estructura básica vacía
+•	types.ts: Interfaces base sin operaciones específicas
+•	VisualProblemDisplay.tsx: Layout completo sin cálculos específicos
+•	Settings.tsx: Configuraciones base sin validaciones matemáticas específicas
+4. CONTENIDO GENÉRICO DE PLACEHOLDER:
+•	Problemas de muestra: a ○ b = ? (donde ○ es operador genérico)
+•	Mensajes: "Resuelve el problema" (sin mencionar operación específica)
+•	Configuraciones: Rangos numéricos genéricos (1-10, 1-100, etc.)
+5. INTEGRACIÓN AUTOMÁTICA:
+•	Agregar a operationComponents.ts
+•	Registrar rutas de navegación
+•	Actualizar tipos globales si es necesario
+•	Verificar que no existan conflictos de nombres
+6. RESULTADO ESPERADO:
+Un módulo que:
+•	✅ Mantenga toda la estética y diseño original (PRIORIDAD MÁXIMA)
+•	✅ Tenga su propio almacenamiento independiente
+•	✅ No tenga conflictos de nombres ni referencias cruzadas
+•	✅ Esté listo para implementar nueva lógica matemática
+•	✅ Funcione inmediatamente sin errores de compilación
+•	✅ Sea completamente independiente del módulo original
+•	✅ Use el nombre final desde el inicio (NO nombres temporales)
+USAR EXACTAMENTE ASÍ:
+"Crea un módulo genérico llamado “Ratios,Fractions,Percents,Decimals”basado en la estructura del módulo Addition pero completamente limpio y listo para implementar [DESCRIPCIÓN_OPERACIÓN]."
+
