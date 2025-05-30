@@ -91,11 +91,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       detectedLanguage = 'spanish';
       console.log('✅ [DETECTION] Using global language: spanish');
     }
-    // TEMPORARY FIX: Force Spanish until user configures language properly
-    else if (globalLang === 'en' || globalLang === 'english') {
-      console.log('🔧 [TEMP FIX] Detected English config but forcing Spanish for demonstration');
-      console.log('💡 [INFO] User needs to configure language to Spanish in global settings');
-      detectedLanguage = 'spanish'; // Force Spanish for now
+    // Check for English configurations
+    else if (globalLang === 'en' || globalLang === 'english' || moduleLang === 'english') {
+      detectedLanguage = 'english';
+      console.log('✅ [DETECTION] Using English configuration');
     }
     else {
       console.log('⚠️ [DETECTION] Defaulting to english');
