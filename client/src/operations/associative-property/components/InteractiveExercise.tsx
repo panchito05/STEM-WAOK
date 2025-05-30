@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 interface InteractiveExerciseProps {
   operands: number[];
   onAnswer: (isCorrect: boolean) => void;
+  onDigitInput?: (digit: string, fieldId: string) => void;
+  onBackspace?: (fieldId: string) => void;
+  onFieldFocus?: (fieldId: string) => void;
 }
 
 const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onAnswer }) => {
@@ -111,37 +114,7 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
         </div>
       </div>
 
-      {/* Teclado numérico virtual */}
-      {!showResult && focusedInput && (
-        <div className="mt-4">
-          <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9", "⌫", "0", "✓"].map((key) => (
-              <Button
-                key={key}
-                variant="outline"
-                className={`h-12 text-lg font-semibold ${
-                  key === "⌫" 
-                    ? "bg-red-50 hover:bg-red-100 text-red-600" 
-                    : key === "✓"
-                      ? "bg-green-50 hover:bg-green-100 text-green-600"
-                      : "bg-white hover:bg-gray-50"
-                }`}
-                onClick={() => {
-                  if (key === "⌫") {
-                    handleBackspace(focusedInput);
-                  } else if (key === "✓") {
-                    setFocusedInput(null);
-                  } else {
-                    handleDigitInput(key, focusedInput);
-                  }
-                }}
-              >
-                {key}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {!showResult && (
         <div className="text-center mt-4">

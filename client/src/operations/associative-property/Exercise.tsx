@@ -389,6 +389,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const [digitAnswers, setDigitAnswers] = useState<string[]>([]);
   const [focusedDigitIndex, setFocusedDigitIndex] = useState<number | null>(null);
+  
+  // Estados para el nivel intermediate
+  const [interactiveAnswers, setInteractiveAnswers] = useState<{ [key: string]: string }>({
+    blank1: '',
+    blank2: '',
+    blank3: ''
+  });
+  const [activeInteractiveField, setActiveInteractiveField] = useState<string | null>(null);
   const [inputDirection, setInputDirection] = useState<'ltr' | 'rtl'>('rtl');
   // Cambiar el tipo a HTMLDivElement, que es lo que realmente estamos usando
   const digitBoxRefs = useRef<HTMLDivElement[]>([]);
