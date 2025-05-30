@@ -105,7 +105,7 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
         
         <div className="text-center mt-4">
           <p className="text-sm text-gray-600">
-            Ciclo {shuffleCount + 1} de 4 - Próximo cambio en {currentGrouping === 'first' ? '10' : '20'} segundos
+            {shuffleCount < 4 ? `Ciclo ${shuffleCount + 1} de 4` : 'Demostración completada'}
           </p>
         </div>
       </div>
