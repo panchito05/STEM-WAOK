@@ -2032,18 +2032,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (settings.difficulty === 'intermediate' && activeInteractiveField) {
       setInteractiveAnswers(prev => ({
         ...prev,
-        [activeInteractiveField]: value // Reemplazar completamente, no concatenar
+        [activeInteractiveField]: prev[activeInteractiveField] + value
       }));
-      
-      // Avanzar automáticamente al siguiente campo
-      const fieldOrder = ['blank1', 'blank2', 'blank3'];
-      const currentIndex = fieldOrder.indexOf(activeInteractiveField);
-      if (currentIndex < fieldOrder.length - 1) {
-        setActiveInteractiveField(fieldOrder[currentIndex + 1]);
-      } else {
-        // Si estamos en el último campo, quitar el foco
-        setActiveInteractiveField(null);
-      }
       return;
     }
 

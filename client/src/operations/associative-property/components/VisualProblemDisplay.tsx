@@ -196,63 +196,11 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
 
   if (difficulty === 'intermediate') {
     return (
-      <div className="space-y-6">
-        {/* Mostrar la ecuación original */}
-        <div className="text-center">
-          <div className="text-xl font-bold mb-2">
-            ({operands[0]} + {operands[1]}) + {operands[2]} = {operands[0] + operands[1] + operands[2]}
-          </div>
-          <p className="text-sm text-gray-600 mb-4">
-            Puedes agrupar de diferentes maneras y el resultado siempre será el mismo
-          </p>
-        </div>
-
-        {/* Visualización con frutas */}
-        <div className="flex justify-center items-center space-x-4 mb-6">
-          <div className="flex flex-col items-center">
-            <div className="border-2 border-red-400 rounded-lg p-3 mb-2 bg-red-50">
-              <div className="flex space-x-1">
-                {Array.from({length: operands[0]}, (_, i) => (
-                  <span key={i} className="text-2xl">🍎</span>
-                ))}
-                {Array.from({length: operands[1]}, (_, i) => (
-                  <span key={i} className="text-2xl">🍊</span>
-                ))}
-              </div>
-            </div>
-            <span className="text-lg">+</span>
-            <div className="border-2 border-blue-400 rounded-lg p-3 mt-2 bg-blue-50">
-              <div className="flex space-x-1">
-                {Array.from({length: operands[2]}, (_, i) => (
-                  <span key={i} className="text-2xl">🍌</span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="text-3xl font-bold mx-4">=</div>
-
-          <div className="flex flex-col items-center">
-            <div className="border-2 border-green-400 rounded-lg p-3 bg-green-50">
-              <div className="flex space-x-1">
-                {Array.from({length: operands[0]}, (_, i) => (
-                  <span key={i} className="text-2xl">🍎</span>
-                ))}
-              </div>
-            </div>
-            <span className="text-lg">+</span>
-            <div className="border-2 border-purple-400 rounded-lg p-3 mt-2 bg-purple-50">
-              <div className="flex space-x-1">
-                {Array.from({length: operands[1]}, (_, i) => (
-                  <span key={i} className="text-2xl">🍊</span>
-                ))}
-                {Array.from({length: operands[2]}, (_, i) => (
-                  <span key={i} className="text-2xl">🍌</span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full">
+        <InteractiveExercise 
+          operands={operands} 
+          onAnswer={onAnswer || (() => {})} 
+        />
       </div>
     );
   }
