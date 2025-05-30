@@ -349,13 +349,18 @@ const createLetterImage = (letter: string, language: AlphabetLanguage) => {
     }
   };
 
+  console.log('🎨 Rendering SVG for:', { letter, language, word, color });
+  
   return (
-    <svg width="200" height="200" viewBox="0 0 200 200" className="rounded-lg border-2 border-gray-200 bg-white shadow-sm">
-      {getSVGContent()}
-      <text x="100" y="185" textAnchor="middle" fontSize="14" fontWeight="bold" fill={color}>
-        {word}
-      </text>
-    </svg>
+    <div className="border-2 border-green-500 p-2 rounded">
+      <div className="text-xs mb-1">SVG: {letter} - {word}</div>
+      <svg width="120" height="120" viewBox="0 0 200 200" className="rounded-lg border-2 border-gray-200 bg-white shadow-sm">
+        {getSVGContent()}
+        <text x="100" y="185" textAnchor="middle" fontSize="14" fontWeight="bold" fill={color}>
+          {word}
+        </text>
+      </svg>
+    </div>
   );
 };
 
