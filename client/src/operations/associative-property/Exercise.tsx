@@ -701,22 +701,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     }
 
     if (settings.difficulty === 'advanced') {
-      // Para el nivel advanced, usar la validación del AdvancedExercise
-      // Verificar según el tipo de ejercicio actual
-      const exerciseRef = document.querySelector('[data-advanced-exercise]');
-      if (exerciseRef) {
-        // Simular clic en el botón de verificación del ejercicio avanzado
-        const verifyButton = exerciseRef.querySelector('button[data-verify]');
-        if (verifyButton) {
-          verifyButton.click();
-          return true;
-        }
-      }
-      
-      // Si no se encuentra el botón, mostrar mensaje
-      setFeedbackMessage("Complete el ejercicio antes de verificar.");
-      setFeedbackColor("red");
-      return false;
+      // Trigger validation for advanced level
+      setAdvancedValidationTrigger(prev => prev + 1);
+      return false; // Let the AdvancedExercise component handle the validation
     }
 
     // Lógica original para niveles beginner y elementary
@@ -2801,6 +2788,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setInteractiveAnswers={setInteractiveAnswers}
               activeInteractiveField={activeInteractiveField}
               setActiveInteractiveField={setActiveInteractiveField}
+              validationTrigger={advancedValidationTrigger}
               onAnswer={(isCorrect) => {
                 if (isCorrect) {
                   setFeedbackMessage("¡Excelente! Has demostrado tu comprensión de la propiedad asociativa con números más complejos.");

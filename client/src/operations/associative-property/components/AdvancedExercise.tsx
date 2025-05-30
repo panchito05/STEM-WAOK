@@ -8,6 +8,7 @@ interface AdvancedExerciseProps {
   setInteractiveAnswers: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
   activeInteractiveField: string | null;
   setActiveInteractiveField: React.Dispatch<React.SetStateAction<string | null>>;
+  validationTrigger: number;
 }
 
 type ExerciseType = 'fill-blank' | 'verification' | 'multiple-choice';
@@ -18,7 +19,8 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   interactiveAnswers,
   setInteractiveAnswers,
   activeInteractiveField,
-  setActiveInteractiveField
+  setActiveInteractiveField,
+  validationTrigger
 }) => {
   const [exercise, setExercise] = useState<ExerciseType>('fill-blank');
   const [showResult, setShowResult] = useState(false);
@@ -38,6 +40,13 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     const randomExercise = exercises[Math.floor(Math.random() * exercises.length)];
     setExercise(randomExercise);
   }, [operands, setInteractiveAnswers, setActiveInteractiveField]);
+
+  // Handle validation trigger from main "Check Answer" button
+  useEffect(() => {
+    if (validationTrigger > 0) {
+      handleVerify();
+    }
+  }, [validationTrigger]);
 
   const handleFieldClick = (fieldName: string) => {
     setActiveInteractiveField(fieldName);
