@@ -233,15 +233,12 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   };
 
   const renderMultipleChoiceExercise = () => {
-    const sum = operands.reduce((acc, val) => acc + val, 0);
-    const choices = [
+    // Usar las opciones estables guardadas en el estado
+    const choicesToUse = shuffledChoices.length > 0 ? shuffledChoices : [
       { id: 'a', text: `${operands[0]} + (${operands[1]} + ${operands[2]})`, correct: true },
-      { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: true }, // También correcto
+      { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: true },
       { id: 'c', text: `${operands[0]} × (${operands[1]} + ${operands[2]})`, correct: false }
     ];
-
-    // Mezclar las opciones para variar el orden
-    const shuffledChoices = [...choices].sort(() => Math.random() - 0.5);
 
     return (
       <div className="space-y-6">
@@ -254,7 +251,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
           </div>
 
           <div className="space-y-3">
-            {shuffledChoices.map((choice, index) => (
+            {choicesToUse.map((choice, index) => (
               <label
                 key={choice.id}
                 className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
