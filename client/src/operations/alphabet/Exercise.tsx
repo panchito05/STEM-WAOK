@@ -32,6 +32,9 @@ interface ExerciseProps {
 }
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
+  // Global settings context
+  const { globalSettings } = useSettings();
+  
   // Base state
   const [alphabet] = useState<AlphabetItem[]>(getCompleteAlphabet());
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
