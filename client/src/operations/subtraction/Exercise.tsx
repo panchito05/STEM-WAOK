@@ -1318,8 +1318,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setDigitAnswers(restoredDigitAnswers);
         setFeedbackMessage(
             prevAnswerEntry.isCorrect ?
-            t('exercises.yourAnswerWasCorrect', { userAnswer: prevAnswerEntry.userAnswer }) :
-            t('exercises.yourAnswerWasIncorrect', { userAnswer: (prevAnswerEntry.userAnswer === undefined || isNaN(prevAnswerEntry.userAnswer) ? t('common.notAnswered') : prevAnswerEntry.userAnswer), correctAnswer: prevProblemToView.correctAnswer })
+            (settings.language === 'spanish' ? `Tu respuesta fue correcta: ${prevAnswerEntry.userAnswer}` : `Your answer was correct: ${prevAnswerEntry.userAnswer}`) :
+            (settings.language === 'spanish' ? `Tu respuesta fue incorrecta: ${prevAnswerEntry.userAnswer === undefined || isNaN(prevAnswerEntry.userAnswer) ? 'Sin respuesta' : prevAnswerEntry.userAnswer}. La respuesta correcta era: ${prevProblemToView.correctAnswer}` : `Your answer was incorrect: ${prevAnswerEntry.userAnswer === undefined || isNaN(prevAnswerEntry.userAnswer) ? 'Not answered' : prevAnswerEntry.userAnswer}. The correct answer was: ${prevProblemToView.correctAnswer}`)
         );
         setFeedbackColor(prevAnswerEntry.isCorrect ? "green" : "red");
     } else {
@@ -2821,7 +2821,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               onClick={returnToActiveProblem} 
               className="w-full sm:w-auto px-4 sm:px-5 text-sm sm:text-base md:text-lg bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 order-2 sm:order-2"
             >
-                <RotateCcw className="mr-1 h-4 w-4" /> {t('common.returnToActive')}
+                <RotateCcw className="mr-1 h-4 w-4" /> {settings.language === 'spanish' ? 'Volver al Activo' : 'Return to Active'}
             </Button>
           ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
             (<Button
