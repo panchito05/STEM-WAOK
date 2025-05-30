@@ -25,11 +25,11 @@ export const alphabetData: AlphabetLetter[] = [
     lowercase: 'b',
     words: {
       spanish: 'Ballena',
-      english: 'Ball'
+      english: 'Whale'
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/be/',
@@ -187,11 +187,11 @@ export const alphabetData: AlphabetLetter[] = [
     lowercase: 'k',
     words: {
       spanish: 'Koala',
-      english: 'Kite'
+      english: 'Koala'
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1459262838948-3e2de6c1ec80?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1459262838948-3e2de6c1ec80?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ka/',
@@ -241,11 +241,11 @@ export const alphabetData: AlphabetLetter[] = [
     lowercase: 'n',
     words: {
       spanish: 'Nube',
-      english: 'Nest'
+      english: 'Nature'
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ene/',
@@ -295,11 +295,11 @@ export const alphabetData: AlphabetLetter[] = [
     lowercase: 'q',
     words: {
       spanish: 'Queso',
-      english: 'Queen'
+      english: 'Quiet'
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/cu/',
@@ -367,11 +367,11 @@ export const alphabetData: AlphabetLetter[] = [
     lowercase: 'u',
     words: {
       spanish: 'Uva',
-      english: 'Umbrella'
+      english: 'Universe'
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/u/',
@@ -385,11 +385,11 @@ export const alphabetData: AlphabetLetter[] = [
     lowercase: 'v',
     words: {
       spanish: 'Vaca',
-      english: 'Violin'
+      english: 'Village'
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ve/',
