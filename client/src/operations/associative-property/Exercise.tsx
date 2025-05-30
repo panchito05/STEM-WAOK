@@ -8,6 +8,7 @@ import { generateAssociativePropertyProblem, checkAnswer, getVerticalAlignmentIn
 import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, DifficultyLevel } from "./types";
 import VisualProblemDisplay from "./components/VisualProblemDisplay";
 import InteractiveExercise from "./components/InteractiveExercise";
+import VerbalProblemExercise from "./components/VerbalProblemExercise";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
@@ -2725,8 +2726,31 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             />
           )}
 
-          {/* Answer Input Boxes - Solo para niveles que no son intermedio */}
-          {settings.difficulty !== 'intermediate' && (
+          {/* Verbal Problem Exercise para nivel avanzado */}
+          {settings.difficulty === 'advanced' && (
+            <VerbalProblemExercise 
+              operands={currentProblem.operands}
+              onAnswer={(isCorrect) => {
+                if (isCorrect) {
+                  setFeedbackMessage("¡Excelente! Has aplicado correctamente la propiedad asociativa para facilitar el cálculo mental.");
+                  setFeedbackColor("green");
+                  setTimeout(() => {
+                    if (currentProblemIndex < problemsList.length - 1) {
+                      advanceToNextActiveProblem();
+                    } else {
+                      completeExercise();
+                    }
+                  }, 2000);
+                } else {
+                  setFeedbackMessage("Revisa tu estrategia. La propiedad asociativa nos permite agrupar números para facilitar el cálculo.");
+                  setFeedbackColor("red");
+                }
+              }}
+            />
+          )}
+
+          {/* Answer Input Boxes - Solo para niveles que no son intermedio ni avanzado */}
+          {settings.difficulty !== 'intermediate' && settings.difficulty !== 'advanced' && (
             <>
               <div className="mt-4 flex items-center justify-center gap-1">
                 {Array(currentProblem.answerMaxDigits).fill(0).map((_, index) => {
