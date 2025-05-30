@@ -11,14 +11,28 @@ export const alphabetData: AlphabetItem[] = [
     },
     image: {
       svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="50" cy="40" r="25" fill="#ff6b6b" stroke="#d63031" stroke-width="2"/>
-        <ellipse cx="45" cy="35" rx="3" ry="6" fill="#ffffff" opacity="0.8"/>
-        <path d="M50 15 Q55 10 60 15 Q58 20 55 18 Q52 16 50 15" fill="#27ae60" stroke="#229954" stroke-width="1"/>
-        <path d="M55 18 Q60 22 58 25" fill="none" stroke="#27ae60" stroke-width="2" stroke-linecap="round"/>
+        <!-- Apple for English -->
+        <g id="apple">
+          <circle cx="50" cy="40" r="25" fill="#ff6b6b" stroke="#d63031" stroke-width="2"/>
+          <ellipse cx="45" cy="35" rx="3" ry="6" fill="#ffffff" opacity="0.8"/>
+          <path d="M50 15 Q55 10 60 15 Q58 20 55 18 Q52 16 50 15" fill="#27ae60" stroke="#229954" stroke-width="1"/>
+          <path d="M55 18 Q60 22 58 25" fill="none" stroke="#27ae60" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <!-- Airplane for Spanish -->
+        <g id="airplane" style="display: none;">
+          <ellipse cx="50" cy="50" rx="30" ry="8" fill="#74b9ff"/>
+          <ellipse cx="30" cy="45" rx="12" ry="4" fill="#74b9ff"/>
+          <ellipse cx="70" cy="55" rx="12" ry="4" fill="#74b9ff"/>
+          <path d="M20 50 L10 45 L15 50 L10 55 Z" fill="#74b9ff"/>
+          <circle cx="45" cy="48" r="3" fill="#2d3436"/>
+          <circle cx="55" cy="52" r="3" fill="#2d3436"/>
+          <ellipse cx="50" cy="35" rx="15" ry="3" fill="#95a5a6"/>
+          <ellipse cx="50" cy="65" rx="15" ry="3" fill="#95a5a6"/>
+        </g>
       </svg>`,
       alt: {
         english: 'A red apple with a green leaf',
-        spanish: 'Una manzana roja con una hoja verde'
+        spanish: 'Un avión azul volando'
       }
     },
     color: '#ff6b6b',

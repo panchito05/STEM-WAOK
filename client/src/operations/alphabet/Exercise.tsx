@@ -62,6 +62,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     language: settings.language === 'spanish' ? 'spanish' : 'english'
   });
 
+  // Update language when global settings change
+  useEffect(() => {
+    setAlphabetSettings(prev => ({
+      ...prev,
+      language: settings.language === 'spanish' ? 'spanish' : 'english'
+    }));
+  }, [settings.language]);
+
+  // Translation helper
+  const t = (englishText: string, spanishText: string) => {
+    return alphabetSettings.language === 'spanish' ? spanishText : englishText;
+  };
+
   // Refs
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -368,7 +381,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     <div className="mb-6">
                       <div 
                         className="w-32 h-32 mx-auto bg-white rounded-2xl shadow-md flex items-center justify-center"
-                        dangerouslySetInnerHTML={{ __html: currentLetter.image.svg }}
+                        dangerouslySetInnerHTML={{ 
+                          __html: alphabetSettings.language === 'spanish' 
+                            ? currentLetter.image.svg
+                                .replace('id="apple"', 'id="apple" style="display: none;"')
+                                .replace('id="airplane" style="display: none;"', 'id="airplane"')
+                            : currentLetter.image.svg
+                        }}
                       />
                     </div>
 
