@@ -196,11 +196,10 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
 
   if (difficulty === 'intermediate') {
     return (
-      <div className="w-full">
-        <InteractiveExercise 
-          operands={operands} 
-          onAnswer={onAnswer || (() => {})} 
-        />
+      <div className="w-full text-center">
+        <p className="text-lg text-gray-600 mb-4">
+          Usa el teclado para completar los espacios en blanco
+        </p>
       </div>
     );
   }
