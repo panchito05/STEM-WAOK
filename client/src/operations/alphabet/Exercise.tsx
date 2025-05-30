@@ -859,8 +859,8 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="1">Nivel 1: Reconocimiento Visual y Auditivo</SelectItem>
-                <SelectItem value="2">Nivel 2: Ordenar Letras (Próximamente)</SelectItem>
-                <SelectItem value="3">Nivel 3: Completar Palabras (Próximamente)</SelectItem>
+                <SelectItem value="2">Nivel 2: Ordenar Letras</SelectItem>
+                <SelectItem value="3">Nivel 3: Completar Palabras</SelectItem>
                 <SelectItem value="4">Nivel 4: Asociación Sonidos (Próximamente)</SelectItem>
                 <SelectItem value="5">Nivel 5: Formar Palabras (Próximamente)</SelectItem>
               </SelectContent>
@@ -1084,12 +1084,28 @@ const AlphabetExercise: React.FC<AlphabetExerciseProps> = ({ settings: initialSe
           />
         )}
 
-        {settings.level > 1 && (
+        {settings.level === 2 && (
+          <Level2Component
+            settings={settings}
+            progress={progress}
+            onProgress={handleProgressUpdate}
+          />
+        )}
+
+        {settings.level === 3 && (
+          <Level3Component
+            settings={settings}
+            progress={progress}
+            onProgress={handleProgressUpdate}
+          />
+        )}
+
+        {settings.level > 3 && (
           <Card>
             <CardContent className="p-8 text-center">
               <h2 className="text-2xl font-bold mb-4">🚧 Próximamente</h2>
               <p className="text-gray-600 mb-4">
-                Este nivel estará disponible en la próxima fase de desarrollo.
+                Los niveles 4 y 5 estarán disponibles en la próxima fase de desarrollo.
               </p>
               <Button onClick={() => setSettings({ ...settings, level: 1 })}>
                 Volver al Nivel 1
