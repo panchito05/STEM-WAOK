@@ -78,9 +78,9 @@ export const operationModules: Module[] = [
   {
     id: "alphabet",
     displayName: "Alphabet Learning",
-    description: "Interactive alphabet learning with visual and audio associations",
+    description: "Interactive alphabet learning with visual and audio elements",
     difficulty: "beginner",
-    color: "#f59e0b", // Amarillo/naranja para aprendizaje del alfabeto
+    color: "#e91e63", // Rosa vibrante para distinguir del contenido matemático
     icon: "BookOpen",
   },
 

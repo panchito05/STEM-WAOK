@@ -1,50 +1,65 @@
-export interface AlphabetProblem {
+export interface AlphabetItem {
   id: string;
   letter: string;
-  letterCase: 'upper' | 'lower' | 'both';
-  associatedWord: {
+  lowercase: string;
+  word: {
     english: string;
     spanish: string;
   };
-  associatedImage: string;
+  image: {
+    svg: string;
+    alt: {
+      english: string;
+      spanish: string;
+    };
+  };
   color: string;
-  position: number; // Position in alphabet (0-25)
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  correctAnswer?: string;
-  answerMaxDigits: number;
+  pronunciation: {
+    english: string;
+    spanish: string;
+  };
+}
+
+export interface AlphabetProgress {
+  letterVisited: boolean;
+  completed: boolean;
+  attempts: number;
+  correctAnswers: number;
+  lastVisited: number;
+  mode: 'exploration' | 'guided' | 'quiz';
 }
 
 export interface AlphabetSettings {
-  language: 'english' | 'spanish';
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  level: 'beginner' | 'intermediate' | 'advanced';
   showLowercase: boolean;
-  coloredLetters: boolean;
+  showColors: boolean;
   audioEnabled: boolean;
-  animationsEnabled: boolean;
-  letterStyle: 'basic' | 'decorative' | 'manuscript';
-  learningMode: 'exploration' | 'guided' | 'quiz';
-  timerDuration: number;
-  problemCount: number;
-  enableHints: boolean;
+  fontStyle: 'basic' | 'decorative' | 'handwriting';
   autoAdvance: boolean;
+  celebrateCompletion: boolean;
+  quizFrequency: 'never' | 'occasionally' | 'frequent';
+  language: 'english' | 'spanish';
 }
 
-export interface LetterData {
-  letter: string;
-  words: {
-    english: string;
-    spanish: string;
-  };
-  color: string;
-  svgPath: string;
-}
-
-export interface UserAnswerType {
-  problemId: string;
-  problem: AlphabetProblem;
-  userAnswer: string | number;
-  isCorrect: boolean;
-  status: 'active' | 'completed' | 'revealed';
-  attempts: number;
+export interface AlphabetAnswer {
+  id: string;
+  letterId: string;
+  letter: AlphabetItem;
+  userAnswer?: string;
+  isCorrect?: boolean;
+  mode: 'exploration' | 'guided' | 'quiz';
   timestamp: number;
+  attempts: number;
+  timeSpent: number;
+}
+
+export type AlphabetMode = 'exploration' | 'guided' | 'quiz';
+
+export interface AlphabetState {
+  currentLetterIndex: number;
+  mode: AlphabetMode;
+  progress: Record<string, AlphabetProgress>;
+  history: AlphabetAnswer[];
+  completedLetters: string[];
+  isCompleted: boolean;
 }

@@ -1,81 +1,271 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { ArrowLeft } from 'lucide-react';
-import { AlphabetSettings } from './types';
+import { Separator } from '@/components/ui/separator';
+import { ArrowLeft, BookOpen, Volume2, Palette, Type, Zap, Trophy, Brain } from 'lucide-react';
 import { ModuleSettings } from '@/context/SettingsContext';
+import { AlphabetSettings } from './types';
 
 interface SettingsProps {
   settings: ModuleSettings;
   onBack: () => void;
 }
 
-// Convert ModuleSettings to AlphabetSettings with defaults
-function convertToAlphabetSettings(settings: ModuleSettings): AlphabetSettings {
-  return {
-    language: 'english',
-    difficulty: settings.difficulty as 'beginner' | 'intermediate' | 'advanced',
-    showLowercase: true,
-    coloredLetters: true,
-    audioEnabled: settings.enableSoundEffects,
-    animationsEnabled: true,
-    letterStyle: 'basic',
-    learningMode: 'quiz',
-    timerDuration: settings.timeValue || 300,
-    problemCount: settings.problemCount,
-    enableHints: true,
-    autoAdvance: false,
-  };
-}
-
 export default function Settings({ settings, onBack }: SettingsProps) {
-  const alphabetSettings = convertToAlphabetSettings(settings);
-  const isEnglish = alphabetSettings.language === 'english';
+  const [alphabetSettings, setAlphabetSettings] = useState<AlphabetSettings>({
+    level: 'beginner',
+    showLowercase: true,
+    showColors: true,
+    audioEnabled: true,
+    fontStyle: 'basic',
+    autoAdvance: false,
+    celebrateCompletion: true,
+    quizFrequency: 'occasionally',
+    language: settings.language === 'spanish' ? 'spanish' : 'english'
+  });
 
-  const handleSettingChange = (key: keyof AlphabetSettings, value: any) => {
-    // For now, we'll just show the interface
-    // Integration with actual settings storage would be handled by parent component
-    console.log(`Setting ${key} to:`, value);
+  // Load saved settings from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('alphabet_settings');
+    if (saved) {
+      try {
+        const parsedSettings = JSON.parse(saved);
+        setAlphabetSettings(prev => ({ ...prev, ...parsedSettings }));
+      } catch (error) {
+        console.warn('Failed to parse saved alphabet settings');
+      }
+    }
+  }, []);
+
+  // Save settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('alphabet_settings', JSON.stringify(alphabetSettings));
+  }, [alphabetSettings]);
+
+  const updateSetting = <K extends keyof AlphabetSettings>(
+    key: K,
+    value: AlphabetSettings[K]
+  ) => {
+    setAlphabetSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const resetToDefaults = () => {
+    const defaultSettings: AlphabetSettings = {
+      level: 'beginner',
+      showLowercase: true,
+      showColors: true,
+      audioEnabled: true,
+      fontStyle: 'basic',
+      autoAdvance: false,
+      celebrateCompletion: true,
+      quizFrequency: 'occasionally',
+      language: settings.language === 'spanish' ? 'spanish' : 'english'
+    };
+    setAlphabetSettings(defaultSettings);
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
-      {/* Header - Following math modules pattern */}
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" size="sm" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          {isEnglish ? 'Back' : 'Volver'}
-        </Button>
-        <h2 className="text-xl font-bold text-gray-800">
-          {isEnglish ? 'Alphabet Learning Settings' : 'Configuración del Alfabeto'}
-        </h2>
-      </div>
+    <div className="alphabet-settings min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900 dark:to-pink-900 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="outline" onClick={onBack} className="flex items-center gap-2">
+            <ArrowLeft className="w-4 h-4" />
+            {alphabetSettings.language === 'spanish' ? 'Volver' : 'Back'}
+          </Button>
+          <div className="flex items-center gap-3">
+            <BookOpen className="w-8 h-8 text-purple-600 dark:text-purple-300" />
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {alphabetSettings.language === 'spanish' ? 'Configuración del Alfabeto' : 'Alphabet Settings'}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                {alphabetSettings.language === 'spanish' ? 
+                  'Personaliza tu experiencia de aprendizaje del alfabeto' : 
+                  'Customize your alphabet learning experience'
+                }
+              </p>
+            </div>
+          </div>
+        </div>
 
-      {/* Settings Grid - Following math modules layout */}
-      <div className="grid gap-6 md:grid-cols-2">
-        
-        {/* Basic Settings */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
-              {isEnglish ? 'Basic Settings' : 'Configuración Básica'}
-            </h3>
-            
-            <div className="space-y-4">
-              {/* Language Selection */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  {isEnglish ? 'Learning Language' : 'Idioma de Aprendizaje'}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Learning Level */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-blue-600" />
+                {alphabetSettings.language === 'spanish' ? 'Nivel de Aprendizaje' : 'Learning Level'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">
+                  {alphabetSettings.language === 'spanish' ? 'Dificultad' : 'Difficulty'}
                 </Label>
-                <Select 
-                  value={alphabetSettings.language} 
-                  onValueChange={(value) => handleSettingChange('language', value)}
-                >
-                  <SelectTrigger className="w-full">
+                <Select value={alphabetSettings.level} onValueChange={(value: 'beginner' | 'intermediate' | 'advanced') => updateSetting('level', value)}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">
+                      {alphabetSettings.language === 'spanish' ? 'Principiante' : 'Beginner'}
+                    </SelectItem>
+                    <SelectItem value="intermediate">
+                      {alphabetSettings.language === 'spanish' ? 'Intermedio' : 'Intermediate'}
+                    </SelectItem>
+                    <SelectItem value="advanced">
+                      {alphabetSettings.language === 'spanish' ? 'Avanzado' : 'Advanced'}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {alphabetSettings.level === 'beginner' && (alphabetSettings.language === 'spanish' ? 
+                    'Solo exploración y navegación' : 
+                    'Exploration and navigation only'
+                  )}
+                  {alphabetSettings.level === 'intermediate' && (alphabetSettings.language === 'spanish' ? 
+                    'Incluye ejercicios básicos' : 
+                    'Includes basic exercises'
+                  )}
+                  {alphabetSettings.level === 'advanced' && (alphabetSettings.language === 'spanish' ? 
+                    'Ejercicios completos y cuestionarios' : 
+                    'Full exercises and quizzes'
+                  )}
+                </p>
+              </div>
+
+              {alphabetSettings.level !== 'beginner' && (
+                <div>
+                  <Label className="text-sm font-medium">
+                    {alphabetSettings.language === 'spanish' ? 'Frecuencia de Cuestionarios' : 'Quiz Frequency'}
+                  </Label>
+                  <Select value={alphabetSettings.quizFrequency} onValueChange={(value: 'never' | 'occasionally' | 'frequent') => updateSetting('quizFrequency', value)}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="never">
+                        {alphabetSettings.language === 'spanish' ? 'Nunca' : 'Never'}
+                      </SelectItem>
+                      <SelectItem value="occasionally">
+                        {alphabetSettings.language === 'spanish' ? 'Ocasionalmente' : 'Occasionally'}
+                      </SelectItem>
+                      <SelectItem value="frequent">
+                        {alphabetSettings.language === 'spanish' ? 'Frecuente' : 'Frequent'}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Visual Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="w-5 h-5 text-purple-600" />
+                {alphabetSettings.language === 'spanish' ? 'Configuración Visual' : 'Visual Settings'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">
+                    {alphabetSettings.language === 'spanish' ? 'Mostrar Minúsculas' : 'Show Lowercase'}
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    {alphabetSettings.language === 'spanish' ? 
+                      'Muestra las letras en minúscula junto a las mayúsculas' : 
+                      'Display lowercase letters alongside uppercase'
+                    }
+                  </p>
+                </div>
+                <Switch
+                  checked={alphabetSettings.showLowercase}
+                  onCheckedChange={(checked) => updateSetting('showLowercase', checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">
+                    {alphabetSettings.language === 'spanish' ? 'Colores Temáticos' : 'Theme Colors'}
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    {alphabetSettings.language === 'spanish' ? 
+                      'Usa colores únicos para cada letra' : 
+                      'Use unique colors for each letter'
+                    }
+                  </p>
+                </div>
+                <Switch
+                  checked={alphabetSettings.showColors}
+                  onCheckedChange={(checked) => updateSetting('showColors', checked)}
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">
+                  {alphabetSettings.language === 'spanish' ? 'Estilo de Fuente' : 'Font Style'}
+                </Label>
+                <Select value={alphabetSettings.fontStyle} onValueChange={(value: 'basic' | 'decorative' | 'handwriting') => updateSetting('fontStyle', value)}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">
+                      {alphabetSettings.language === 'spanish' ? 'Básica' : 'Basic'}
+                    </SelectItem>
+                    <SelectItem value="decorative">
+                      {alphabetSettings.language === 'spanish' ? 'Decorativa' : 'Decorative'}
+                    </SelectItem>
+                    <SelectItem value="handwriting">
+                      {alphabetSettings.language === 'spanish' ? 'Manuscrita' : 'Handwriting'}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Audio Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Volume2 className="w-5 h-5 text-green-600" />
+                {alphabetSettings.language === 'spanish' ? 'Configuración de Audio' : 'Audio Settings'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">
+                    {alphabetSettings.language === 'spanish' ? 'Audio Habilitado' : 'Audio Enabled'}
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    {alphabetSettings.language === 'spanish' ? 
+                      'Habilita pronunciación de letras y palabras' : 
+                      'Enable pronunciation of letters and words'
+                    }
+                  </p>
+                </div>
+                <Switch
+                  checked={alphabetSettings.audioEnabled}
+                  onCheckedChange={(checked) => updateSetting('audioEnabled', checked)}
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">
+                  {alphabetSettings.language === 'spanish' ? 'Idioma' : 'Language'}
+                </Label>
+                <Select value={alphabetSettings.language} onValueChange={(value: 'english' | 'spanish') => updateSetting('language', value)}>
+                  <SelectTrigger className="mt-1">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -84,243 +274,73 @@ export default function Settings({ settings, onBack }: SettingsProps) {
                   </SelectContent>
                 </Select>
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Difficulty Level */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  {isEnglish ? 'Difficulty Level' : 'Nivel de Dificultad'}
-                </Label>
-                <Select 
-                  value={alphabetSettings.difficulty} 
-                  onValueChange={(value) => handleSettingChange('difficulty', value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="beginner">
-                      {isEnglish ? 'Beginner' : 'Principiante'}
-                    </SelectItem>
-                    <SelectItem value="intermediate">
-                      {isEnglish ? 'Intermediate' : 'Intermedio'}
-                    </SelectItem>
-                    <SelectItem value="advanced">
-                      {isEnglish ? 'Advanced' : 'Avanzado'}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-gray-500">
-                  {alphabetSettings.difficulty === 'beginner' && (
-                    isEnglish 
-                      ? 'Basic letter recognition with visual aids'
-                      : 'Reconocimiento básico de letras con ayudas visuales'
-                  )}
-                  {alphabetSettings.difficulty === 'intermediate' && (
-                    isEnglish 
-                      ? 'Letter sequences and spelling patterns'
-                      : 'Secuencias de letras y patrones de escritura'
-                  )}
-                  {alphabetSettings.difficulty === 'advanced' && (
-                    isEnglish 
-                      ? 'Word association and advanced comprehension'
-                      : 'Asociación de palabras y comprensión avanzada'
-                  )}
-                </p>
-              </div>
-
-              {/* Problem Count */}
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  {isEnglish 
-                    ? `Number of Letters: ${alphabetSettings.problemCount}`
-                    : `Número de Letras: ${alphabetSettings.problemCount}`}
-                </Label>
-                <Slider
-                  value={[alphabetSettings.problemCount]}
-                  onValueChange={([value]) => handleSettingChange('problemCount', value)}
-                  min={5}
-                  max={26}
-                  step={1}
-                  className="w-full"
-                />
-                <p className="text-xs text-gray-500">
-                  {isEnglish 
-                    ? 'How many letters to practice in each session'
-                    : 'Cuántas letras practicar en cada sesión'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Visual Settings */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
-              {isEnglish ? 'Visual Settings' : 'Configuración Visual'}
-            </h3>
-            
-            <div className="space-y-4">
+          {/* Behavior Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-orange-600" />
+                {alphabetSettings.language === 'spanish' ? 'Comportamiento' : 'Behavior'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label htmlFor="show-lowercase" className="text-sm font-medium text-gray-700">
-                  {isEnglish ? 'Show Lowercase Letters' : 'Mostrar Minúsculas'}
-                </Label>
+                <div>
+                  <Label className="text-sm font-medium">
+                    {alphabetSettings.language === 'spanish' ? 'Avance Automático' : 'Auto Advance'}
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    {alphabetSettings.language === 'spanish' ? 
+                      'Avanza automáticamente después de respuestas correctas' : 
+                      'Automatically advance after correct answers'
+                    }
+                  </p>
+                </div>
                 <Switch
-                  id="show-lowercase"
-                  checked={alphabetSettings.showLowercase}
-                  onCheckedChange={(checked) => handleSettingChange('showLowercase', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="colored-letters" className="text-sm font-medium text-gray-700">
-                  {isEnglish ? 'Colored Letters' : 'Letras Coloreadas'}
-                </Label>
-                <Switch
-                  id="colored-letters"
-                  checked={alphabetSettings.coloredLetters}
-                  onCheckedChange={(checked) => handleSettingChange('coloredLetters', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="animations" className="text-sm font-medium text-gray-700">
-                  {isEnglish ? 'Animations' : 'Animaciones'}
-                </Label>
-                <Switch
-                  id="animations"
-                  checked={alphabetSettings.animationsEnabled}
-                  onCheckedChange={(checked) => handleSettingChange('animationsEnabled', checked)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  {isEnglish ? 'Letter Style' : 'Estilo de Letra'}
-                </Label>
-                <Select 
-                  value={alphabetSettings.letterStyle} 
-                  onValueChange={(value) => handleSettingChange('letterStyle', value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="basic">
-                      {isEnglish ? 'Basic' : 'Básico'}
-                    </SelectItem>
-                    <SelectItem value="decorative">
-                      {isEnglish ? 'Decorative' : 'Decorativo'}
-                    </SelectItem>
-                    <SelectItem value="manuscript">
-                      {isEnglish ? 'Manuscript' : 'Manuscrito'}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Advanced Settings */}
-        <div className="space-y-6">
-          {/* Audio Settings */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
-              {isEnglish ? 'Audio Settings' : 'Configuración de Audio'}
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="audio-enabled" className="text-sm font-medium text-gray-700">
-                  {isEnglish ? 'Audio Pronunciation' : 'Pronunciación de Audio'}
-                </Label>
-                <Switch
-                  id="audio-enabled"
-                  checked={alphabetSettings.audioEnabled}
-                  onCheckedChange={(checked) => handleSettingChange('audioEnabled', checked)}
-                />
-              </div>
-              <p className="text-xs text-gray-500">
-                {isEnglish 
-                  ? 'Automatically pronounce letters and words'
-                  : 'Pronunciar automáticamente letras y palabras'}
-              </p>
-            </div>
-          </div>
-
-          {/* Learning Features */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
-              {isEnglish ? 'Learning Features' : 'Características de Aprendizaje'}
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="enable-hints" className="text-sm font-medium text-gray-700">
-                  {isEnglish ? 'Show Hints' : 'Mostrar Pistas'}
-                </Label>
-                <Switch
-                  id="enable-hints"
-                  checked={alphabetSettings.enableHints}
-                  onCheckedChange={(checked) => handleSettingChange('enableHints', checked)}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="auto-advance" className="text-sm font-medium text-gray-700">
-                  {isEnglish ? 'Auto Advance' : 'Avance Automático'}
-                </Label>
-                <Switch
-                  id="auto-advance"
                   checked={alphabetSettings.autoAdvance}
-                  onCheckedChange={(checked) => handleSettingChange('autoAdvance', checked)}
+                  onCheckedChange={(checked) => updateSetting('autoAdvance', checked)}
                 />
               </div>
-              
-              <p className="text-xs text-gray-500">
-                {isEnglish 
-                  ? 'Automatically move to next letter after correct answer'
-                  : 'Avanzar automáticamente a la siguiente letra después de respuesta correcta'}
-              </p>
-            </div>
-          </div>
 
-          {/* Session Settings */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
-              {isEnglish ? 'Session Settings' : 'Configuración de Sesión'}
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  {isEnglish 
-                    ? `Time Limit: ${Math.floor(alphabetSettings.timerDuration / 60)} minutes`
-                    : `Límite de Tiempo: ${Math.floor(alphabetSettings.timerDuration / 60)} minutos`}
-                </Label>
-                <Slider
-                  value={[alphabetSettings.timerDuration]}
-                  onValueChange={([value]) => handleSettingChange('timerDuration', value)}
-                  min={60}
-                  max={1800}
-                  step={60}
-                  className="w-full"
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">
+                    {alphabetSettings.language === 'spanish' ? 'Celebrar Finalización' : 'Celebrate Completion'}
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    {alphabetSettings.language === 'spanish' ? 
+                      'Muestra celebración al completar el alfabeto' : 
+                      'Show celebration when completing the alphabet'
+                    }
+                  </p>
+                </div>
+                <Switch
+                  checked={alphabetSettings.celebrateCompletion}
+                  onCheckedChange={(checked) => updateSetting('celebrateCompletion', checked)}
                 />
-                <p className="text-xs text-gray-500">
-                  {isEnglish 
-                    ? 'Maximum time for each learning session'
-                    : 'Tiempo máximo para cada sesión de aprendizaje'}
-                </p>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-between">
+          <Button variant="outline" onClick={resetToDefaults}>
+            <Trophy className="w-4 h-4 mr-2" />
+            {alphabetSettings.language === 'spanish' ? 'Restablecer por Defecto' : 'Reset to Defaults'}
+          </Button>
+          
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onBack}>
+              {alphabetSettings.language === 'spanish' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button onClick={onBack} className="bg-purple-600 hover:bg-purple-700">
+              {alphabetSettings.language === 'spanish' ? 'Guardar y Continuar' : 'Save & Continue'}
+            </Button>
           </div>
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-center pt-6 border-t border-gray-200">
-        <Button onClick={onBack} className="px-8 py-3">
-          {isEnglish ? 'Save & Continue' : 'Guardar y Continuar'}
-        </Button>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ Crea un nuevo módulo llamado “Alphabet Learning” basado en la estructura y 
 REQUISITOS OBLIGATORIOS:
 1. Mantén la misma arquitectura de archivos y estructura de código
 2. Conserva todas las características actuales: temporizador, entrada RTL/LTR, historial, configuraciones
-3. Usa el mismo sistema de internacionalización (español/inglés)Y ASEGURATE DE QUE EL CAMBIO DE IDIOMA FUNCIONE CORRECTAMENTE
+3. Usa el mismo sistema de internacionalización (español/inglés)
 4. Aplica el diseño visual y UX idéntico a los módulos existentes
 
 OPERACIÓN ESPECÍFICA:
@@ -51,6 +51,3 @@ ESTRUCTURA A SEGUIR:
 - Mismo patrón de tipos y interfaces
 - Misma lógica de estado y efectos
 - Integración con el sistema de módulos existente
-
-
-PRESENTAME EL PARA ARQUITETURA INGIENIERIA Y TEGNOLOGIA QUE USARAS 

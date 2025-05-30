@@ -1,0 +1,22 @@
+Perfecto, veo que quieres crear un módulo de "Alphabet Learning" que es muy diferente a los módulos matemáticos existentes. Antes de implementar, necesito hacer algunas consultas importantes según la estrategia que establecimos:
+Consultas Previas a la Implementación
+1. Características Existentes que NO son Necesarias
+Los módulos matemáticos actuales tienen estas características que probablemente no necesitemos para aprendizaje del alfabeto:
+•	Temporizador por problema: ¿Realmente necesitamos cronometrar cada letra? NO
+•	Sistema de entrada RTL/LTR: ¿Los usuarios escribirán respuestas o solo navegarán? PUEDE SER COMBINADO POR EJEMPLO PARA NIVEL BEGGINER SOLO NAVEGACION, INTERMEDIO NAVEGACION Y UNO QUE OTRA RESPUESTA Y ASU SUCECIVAMENTE
+•	Cálculos matemáticos: Obviamente no aplicable : EXACTO 
+•	Validación de respuestas numéricas: ¿Habrá preguntas con respuestas correctas/incorrectas? SI EN CUALQUIER NIVEL DONDE SE ESRIBA UNA RESPUESTA
+2. Características Adicionales Específicas
+Para el aprendizaje del alfabeto necesitaremos:
+•	Sistema de imágenes: ¿Cómo prefieres manejar las imágenes (SVG, URLs, biblioteca local)? ESTO SE USARA EL TABLETAS, CPUNTADORAS Y CELULARES ELIGEN TU LA MEJOR OPCIONY SI PUEDES COMBINARLO SI ENTIENDES QUE ES APROPIADO LO DEJO EN TUS MANOS
+•	Sistema de audio: ¿Pronunciación de letras y palabras? ¿Necesitas integración con algún servicio específico? SI PUEDE INTEGRAR PRONUNCION PARA CUANDO EL MODULO ESTE EN INGLES QUE SEA AUDIO EN INGLES Y PARA EL MODULO EN ESPANOL AUDIO EN ESPANOL 
+•	Datos del alfabeto: ¿Tienes una fuente específica para las asociaciones letra-imagen-palabra? NO UTILIZA LA MAS ROBUSTA QUE COCIDENRES APROPIADA 
+3. Modificaciones en la Estructura
+•	Tipos de datos: En lugar de "Problem" matemático, necesitaremos "Letter" o "AlphabetItem" SEGÚN TU ENTIENDAS QQU ES MEJOR PARA EML DOULO
+•	Modos de interacción: ¿Los modos (Exploración, Guiado, Cuestionario) reemplazarán completamente el sistema de ejercicios matemáticos? ESTO ME PARECE PERFECTO RECUERDA QUE TENDREMOS TODO LOS NIVEL NINOS QUE NO SABEN NADA Y NINOS QUE SABEN UN POCO
+•	Sistema de progreso: ¿Progreso por letras completadas en lugar de problemas resueltos? SI ENTIEDES QUE ES LO MEJOR ENTONCES SI 
+4. Confirmaciones Específicas
+•	¿Quieres mantener el sistema de configuraciones pero adaptado : SI PERO SLO LO QUE APLIQUE ANALIZA SI ES NECESARIO Y DEJALO TODO LO QUE PUEDA TENER UN PROPOSITO
+•	¿El historial debería mostrar letras visitadas en lugar de respuestas? SI JUNTO CON LAS RESPUESTA CORRESCTA EN LOS NIVELES DONDE SE ESCRIBE LA RESPUESTA Y LA CANTIDAD DE INTENTOS
+•	¿Necesitas que conserve la funcionalidad de "favoritos" y "ocultar módulo"? SI POR FAVOR
+
