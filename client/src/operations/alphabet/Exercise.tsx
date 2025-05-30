@@ -804,6 +804,462 @@ const Level3Component: React.FC<{
   );
 };
 
+// Level 4 Component - Sound-Letter Association
+const Level4Component: React.FC<{
+  settings: AlphabetSettings;
+  progress: AlphabetProgress;
+  onProgress: (progress: AlphabetProgress) => void;
+}> = ({ settings, progress, onProgress }) => {
+  const [currentActivity, setCurrentActivity] = useState<Level4Activity | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [score, setScore] = useState({ correct: 0, total: 0 });
+  const { toast } = useToast();
+
+  // Generate new activity
+  const generateActivity = useCallback(() => {
+    const randomLetter = getRandomLetter();
+    const stimulus = Math.random() > 0.5 ? 'sound' : 'image';
+    
+    // Generate wrong options
+    const wrongOptions = Array.from({ length: 3 }, () => getRandomLetter())
+      .filter(letter => letter.id !== randomLetter.id);
+    
+    const options = [randomLetter, ...wrongOptions.slice(0, 3)].sort(() => Math.random() - 0.5);
+
+    const activity: Level4Activity = {
+      type: 'association',
+      stimulus,
+      content: stimulus === 'sound' ? randomLetter.pronunciation[settings.language] : randomLetter.images[settings.language],
+      options,
+      correctAnswer: randomLetter.id
+    };
+
+    setCurrentActivity(activity);
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setIsCorrect(null);
+  }, [settings.language]);
+
+  // Initialize activity
+  useEffect(() => {
+    generateActivity();
+  }, [generateActivity]);
+
+  const handleAnswer = (option: AlphabetLetter) => {
+    const correct = option.id === currentActivity?.correctAnswer;
+    setSelectedAnswer(option.id);
+    setIsCorrect(correct);
+    setShowFeedback(true);
+    setScore(prev => ({ 
+      correct: prev.correct + (correct ? 1 : 0), 
+      total: prev.total + 1 
+    }));
+
+    // Update progress
+    const newProgress = {
+      ...progress,
+      totalAttempts: progress.totalAttempts + 1,
+      totalCorrectAnswers: correct ? progress.totalCorrectAnswers + 1 : progress.totalCorrectAnswers,
+      currentStreak: correct ? progress.currentStreak + 1 : 0,
+      longestStreak: correct ? Math.max(progress.longestStreak, progress.currentStreak + 1) : progress.longestStreak,
+      lastActivity: new Date()
+    };
+    onProgress(newProgress);
+
+    if (correct && settings.celebrateCompletion) {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.6 }
+      });
+      toast({
+        title: "¡Correcto!",
+        description: "Has identificado la letra correctamente",
+      });
+    }
+
+    // Auto advance after feedback
+    setTimeout(() => {
+      generateActivity();
+    }, 2000);
+  };
+
+  const playSound = () => {
+    if (currentActivity?.stimulus === 'sound' && settings.audioEnabled) {
+      pronounceLetter(
+        currentActivity.options.find(opt => opt.id === currentActivity.correctAnswer)!,
+        settings.language
+      );
+    }
+  };
+
+  if (!currentActivity) return <div>Cargando...</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold">Nivel 4: Asociación de Sonidos</h2>
+        <p className="text-gray-600">
+          {currentActivity.stimulus === 'sound' 
+            ? 'Escucha el sonido y selecciona la letra correcta'
+            : 'Observa la imagen y selecciona la letra que comienza esa palabra'
+          }
+        </p>
+        <Badge variant="outline">
+          {score.correct} / {score.total} correctas
+        </Badge>
+      </div>
+
+      {/* Stimulus Display */}
+      <Card>
+        <CardContent className="p-8">
+          <div className="text-center space-y-6">
+            {currentActivity.stimulus === 'sound' ? (
+              <div className="space-y-4">
+                <div className="text-6xl">🔊</div>
+                <Button 
+                  onClick={playSound}
+                  size="lg"
+                  className="flex items-center space-x-2"
+                >
+                  <Volume2 className="h-5 w-5" />
+                  <span>Reproducir Sonido</span>
+                </Button>
+                <p className="text-sm text-gray-500">Haz clic para escuchar la pronunciación</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  {createImagePlaceholder('', 'Imagen', '#8B5CF6')}
+                </div>
+                <p className="text-lg text-gray-600">
+                  ¿Qué letra comienza esta palabra?
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Answer Options */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {currentActivity.options.map((option) => (
+              <motion.button
+                key={option.id}
+                className={`p-6 rounded-lg border-2 transition-all ${
+                  showFeedback
+                    ? selectedAnswer === option.id
+                      ? isCorrect
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-red-500 bg-red-50 text-red-700'
+                      : option.id === currentActivity.correctAnswer
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-300 bg-gray-50'
+                    : 'border-blue-300 bg-blue-50 hover:border-blue-500 hover:bg-blue-100'
+                }`}
+                onClick={() => !showFeedback && handleAnswer(option)}
+                disabled={showFeedback}
+                whileHover={!showFeedback ? { scale: 1.05 } : {}}
+                whileTap={!showFeedback ? { scale: 0.95 } : {}}
+              >
+                <div className="text-center space-y-2">
+                  <div className="text-4xl font-bold">{option.letter}</div>
+                  <div className="text-sm text-gray-600">{option.letter.toLowerCase()}</div>
+                  <div className="text-xs text-gray-500">
+                    {option.words[settings.language]}
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Feedback */}
+      {showFeedback && (
+        <Card>
+          <CardContent className="p-4">
+            <div className={`text-center ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+              <div className="text-2xl mb-2">
+                {isCorrect ? '✅ ¡Correcto!' : '❌ Incorrecto'}
+              </div>
+              <p className="text-sm">
+                {isCorrect 
+                  ? 'Has identificado la letra correctamente'
+                  : `La respuesta correcta era "${currentActivity.options.find(opt => opt.id === currentActivity.correctAnswer)?.letter}"`
+                }
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Controls */}
+      <div className="flex justify-center space-x-4">
+        <Button
+          variant="outline"
+          onClick={generateActivity}
+          className="flex items-center space-x-2"
+        >
+          <RotateCcw className="h-4 w-4" />
+          <span>Nueva Pregunta</span>
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Level 5 Component - Word Formation
+const Level5Component: React.FC<{
+  settings: AlphabetSettings;
+  progress: AlphabetProgress;
+  onProgress: (progress: AlphabetProgress) => void;
+}> = ({ settings, progress, onProgress }) => {
+  const [currentActivity, setCurrentActivity] = useState<Level5Activity | null>(null);
+  const [formedWord, setFormedWord] = useState<string[]>([]);
+  const [availableLetters, setAvailableLetters] = useState<string[]>([]);
+  const [isComplete, setIsComplete] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [score, setScore] = useState({ correct: 0, total: 0 });
+  const { toast } = useToast();
+
+  // Generate new activity
+  const generateActivity = useCallback(() => {
+    const exercise = generateWordCompletionExercise(settings.language);
+    const targetWord = exercise.word;
+    
+    // Create scrambled letters with some extras
+    const scrambledLetters = [...targetWord.split('')]
+      .sort(() => Math.random() - 0.5);
+    
+    // Add some extra random letters
+    const extraLetters = Array.from({ length: 3 }, () => 
+      String.fromCharCode(65 + Math.floor(Math.random() * 26))
+    );
+    
+    const allLetters = [...scrambledLetters, ...extraLetters]
+      .sort(() => Math.random() - 0.5);
+
+    const activity: Level5Activity = {
+      type: 'formation',
+      targetWord,
+      scrambledLetters: allLetters,
+      image: '',
+      language: settings.language
+    };
+
+    setCurrentActivity(activity);
+    setFormedWord(Array(targetWord.length).fill(''));
+    setAvailableLetters(allLetters);
+    setIsComplete(false);
+    setShowFeedback(false);
+  }, [settings.language]);
+
+  // Initialize activity
+  useEffect(() => {
+    generateActivity();
+  }, [generateActivity]);
+
+  const addLetter = (letter: string, letterIndex: number) => {
+    const nextEmptyPosition = formedWord.findIndex(pos => pos === '');
+    if (nextEmptyPosition === -1) return;
+
+    const newFormedWord = [...formedWord];
+    newFormedWord[nextEmptyPosition] = letter;
+    setFormedWord(newFormedWord);
+
+    const newAvailableLetters = [...availableLetters];
+    newAvailableLetters.splice(letterIndex, 1);
+    setAvailableLetters(newAvailableLetters);
+
+    // Check if word is complete
+    if (newFormedWord.every(pos => pos !== '')) {
+      const formedString = newFormedWord.join('');
+      const isCorrect = formedString.toLowerCase() === currentActivity?.targetWord.toLowerCase();
+      
+      setIsComplete(true);
+      setShowFeedback(true);
+      setScore(prev => ({ 
+        correct: prev.correct + (isCorrect ? 1 : 0), 
+        total: prev.total + 1 
+      }));
+
+      // Update progress
+      const newProgress = {
+        ...progress,
+        totalAttempts: progress.totalAttempts + 1,
+        totalCorrectAnswers: isCorrect ? progress.totalCorrectAnswers + 1 : progress.totalCorrectAnswers,
+        currentStreak: isCorrect ? progress.currentStreak + 1 : 0,
+        longestStreak: isCorrect ? Math.max(progress.longestStreak, progress.currentStreak + 1) : progress.longestStreak,
+        lastActivity: new Date()
+      };
+      onProgress(newProgress);
+
+      if (isCorrect && settings.celebrateCompletion) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        toast({
+          title: "¡Excelente!",
+          description: "Has formado la palabra correctamente",
+        });
+      }
+    }
+  };
+
+  const removeLetter = (position: number) => {
+    if (formedWord[position] === '') return;
+
+    const letter = formedWord[position];
+    const newFormedWord = [...formedWord];
+    newFormedWord[position] = '';
+    setFormedWord(newFormedWord);
+
+    setAvailableLetters(prev => [...prev, letter]);
+    setIsComplete(false);
+    setShowFeedback(false);
+  };
+
+  const resetWord = () => {
+    if (!currentActivity) return;
+    
+    setFormedWord(Array(currentActivity.targetWord.length).fill(''));
+    setAvailableLetters(currentActivity.scrambledLetters);
+    setIsComplete(false);
+    setShowFeedback(false);
+  };
+
+  if (!currentActivity) return <div>Cargando...</div>;
+
+  const isCorrectWord = formedWord.join('').toLowerCase() === currentActivity.targetWord.toLowerCase();
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold">Nivel 5: Formar Palabras</h2>
+        <p className="text-gray-600">Forma la palabra usando las letras disponibles</p>
+        <Badge variant="outline">
+          {score.correct} / {score.total} correctas
+        </Badge>
+      </div>
+
+      {/* Target Image/Hint */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center">
+              {createImagePlaceholder('', currentActivity.targetWord, '#10B981')}
+            </div>
+            <p className="text-lg text-gray-600">
+              Forma esta palabra: <span className="font-bold text-2xl">
+                {currentActivity.targetWord.length} letras
+              </span>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Word Formation Area */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center space-y-4">
+            <h3 className="text-lg font-semibold">Tu palabra:</h3>
+            <div className="flex justify-center space-x-2">
+              {formedWord.map((letter, index) => (
+                <motion.div
+                  key={index}
+                  className={`w-16 h-16 border-2 rounded-lg flex items-center justify-center text-2xl font-bold cursor-pointer transition-colors ${
+                    letter
+                      ? showFeedback
+                        ? isCorrectWord
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : 'border-red-500 bg-red-50 text-red-700'
+                        : 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 border-dashed bg-gray-50'
+                  }`}
+                  onClick={() => removeLetter(index)}
+                  whileHover={letter ? { scale: 1.05 } : {}}
+                  whileTap={letter ? { scale: 0.95 } : {}}
+                >
+                  {letter || '_'}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Available Letters */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center space-y-4">
+            <h3 className="text-lg font-semibold">Letras disponibles:</h3>
+            <div className="flex justify-center space-x-2 flex-wrap gap-2">
+              {availableLetters.map((letter, index) => (
+                <motion.button
+                  key={`${letter}-${index}`}
+                  className="w-12 h-12 bg-purple-500 text-white rounded-lg flex items-center justify-center text-xl font-bold hover:bg-purple-600 transition-colors"
+                  onClick={() => addLetter(letter, index)}
+                  disabled={isComplete}
+                  whileHover={!isComplete ? { scale: 1.1 } : {}}
+                  whileTap={!isComplete ? { scale: 0.9 } : {}}
+                >
+                  {letter}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Feedback */}
+      {showFeedback && isComplete && (
+        <Card>
+          <CardContent className="p-4">
+            <div className={`text-center ${isCorrectWord ? 'text-green-700' : 'text-red-700'}`}>
+              <div className="text-2xl mb-2">
+                {isCorrectWord ? '✅ ¡Perfecto!' : '❌ Incorrecto'}
+              </div>
+              <p className="text-sm">
+                {isCorrectWord 
+                  ? 'Has formado la palabra correctamente'
+                  : `La palabra correcta era "${currentActivity.targetWord}"`
+                }
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Controls */}
+      <div className="flex justify-center space-x-4">
+        <Button
+          variant="outline"
+          onClick={resetWord}
+          className="flex items-center space-x-2"
+        >
+          <RotateCcw className="h-4 w-4" />
+          <span>Reiniciar</span>
+        </Button>
+
+        <Button
+          onClick={generateActivity}
+          className="flex items-center space-x-2"
+        >
+          <ArrowRight className="h-4 w-4" />
+          <span>Nueva Palabra</span>
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 // Settings Component
 const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, onBack }) => {
   const [localSettings, setLocalSettings] = useState<AlphabetSettings>(settings);
@@ -861,8 +1317,8 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
                 <SelectItem value="1">Nivel 1: Reconocimiento Visual y Auditivo</SelectItem>
                 <SelectItem value="2">Nivel 2: Ordenar Letras</SelectItem>
                 <SelectItem value="3">Nivel 3: Completar Palabras</SelectItem>
-                <SelectItem value="4">Nivel 4: Asociación Sonidos (Próximamente)</SelectItem>
-                <SelectItem value="5">Nivel 5: Formar Palabras (Próximamente)</SelectItem>
+                <SelectItem value="4">Nivel 4: Asociación de Sonidos</SelectItem>
+                <SelectItem value="5">Nivel 5: Formar Palabras</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1100,18 +1556,20 @@ const AlphabetExercise: React.FC<AlphabetExerciseProps> = ({ settings: initialSe
           />
         )}
 
-        {settings.level > 3 && (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold mb-4">🚧 Próximamente</h2>
-              <p className="text-gray-600 mb-4">
-                Los niveles 4 y 5 estarán disponibles en la próxima fase de desarrollo.
-              </p>
-              <Button onClick={() => setSettings({ ...settings, level: 1 })}>
-                Volver al Nivel 1
-              </Button>
-            </CardContent>
-          </Card>
+        {settings.level === 4 && (
+          <Level4Component
+            settings={settings}
+            progress={progress}
+            onProgress={handleProgressUpdate}
+          />
+        )}
+
+        {settings.level === 5 && (
+          <Level5Component
+            settings={settings}
+            progress={progress}
+            onProgress={handleProgressUpdate}
+          />
         )}
 
         {/* Progress Summary */}
