@@ -119,20 +119,15 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
       break;
       
     case "intermediate": 
-      // NIVEL INTERMEDIO: Aplicación con números mixtos y posible formato vertical
-      // Ejemplo: 12 + 8 + 15 = 35 (agrupación: (12+8)+15=20+15=35 o 12+(8+15)=12+23=35)
-      // Introduce variación en el formato de presentación
-      layout = getRandomBool(0.6) ? 'horizontal' : 'vertical';
+      // NIVEL INTERMEDIO: Ejercicios guiados para completar espacios en blanco
+      // Ejemplo: (6 + 1) + 3 = ___ y 6 + (___ + ___) = ___
+      // Los estudiantes deben completar los valores faltantes
+      layout = 'horizontal';
       operands = [
         getRandomInt(5, 15),
         getRandomInt(5, 15), 
         getRandomInt(5, 15)
       ];
-      // 30% de probabilidad de añadir un cuarto número para mayor complejidad
-      // Ejemplo: 8 + 12 + 6 + 9 = 35 (múltiples formas de agrupar)
-      if (getRandomBool(0.3)) {
-        operands.push(getRandomInt(5, 10));
-      }
       break;
       
     case "advanced": 
@@ -214,6 +209,7 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
   // Crear objetos visuales para el nivel principiante
   const visualObjects = difficulty === 'beginner' ? generateVisualObjects(operands) : undefined;
   const showVisualMode = difficulty === 'beginner';
+  const interactiveMode = difficulty === 'intermediate';
 
   return {
     id,
@@ -226,6 +222,7 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
     answerDecimalPosition,
     visualObjects,
     showVisualMode,
+    interactiveMode,
   };
 }
 

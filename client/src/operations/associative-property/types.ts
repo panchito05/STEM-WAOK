@@ -29,6 +29,8 @@ export interface AssociativePropertyProblem {
   total?: number;           // Total de problemas en el ejercicio
   visualObjects?: VisualObject[]; // Objetos visuales para nivel principiante
   showVisualMode?: boolean; // Si debe mostrar modo visual
+  interactiveMode?: boolean; // Si debe mostrar campos de entrada interactivos (nivel intermedio)
+  blankPositions?: number[]; // Posiciones de los espacios en blanco para completar
 }
 
 // Tipo genérico para un operando
