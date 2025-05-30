@@ -1,5 +1,5 @@
 // utils.ts
-import { AssociativePropertyProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
+import { AssociativePropertyProblem, DifficultyLevel, ExerciseLayout, Problem, Operand } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -77,7 +77,7 @@ export function problemToAssociativePropertyProblem(problem: Problem): Associati
   };
 }
 
-// --- Generación del Problema ---
+// --- Generación del Problema de Propiedad Asociativa ---
 export function generateAssociativePropertyProblem(difficulty: DifficultyLevel): AssociativePropertyProblem {
   const id = generateUniqueId();
   let operands: number[] = [];
@@ -85,46 +85,36 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
   let problemMaxDecimals: 0 | 1 | 2 = 0;
 
   switch (difficulty) {
-    case "beginner": // Sumas simples, ej: 1+1 a 9+9 (del código original)
-      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
+    case "beginner": // Nivel 1: Agrupar objetos visuales - números pequeños para facilitar comprensión
+      operands = [getRandomInt(1, 5), getRandomInt(1, 5), getRandomInt(1, 5)]; // Tres números simples
       layout = 'horizontal';
       break;
-    case "elementary": // Dos dígitos + un dígito, sin acarreo (adaptado) ej: 12+5, o dos dígitos simples
-      operands = [getRandomInt(10, 30), getRandomInt(1, 9)]; // ej: 23 + 7
-      if (getRandomBool(0.5)) { // 50% chance de dos dígitos + dos dígitos simples
-          operands = [getRandomInt(10, 20), getRandomInt(10, 20)]; // ej: 12 + 15
-      }
+    case "elementary": // Nivel 2: Números simples con paréntesis móviles
+      operands = [getRandomInt(2, 9), getRandomInt(2, 9), getRandomInt(2, 9)]; // ej: (2+3)+4 = 2+(3+4)
       layout = 'horizontal';
       break;
-    case "intermediate": // 2 líneas, aleatoriamente vertical, posible 1 decimal
-      layout = getRandomBool(0.75) ? 'vertical' : 'horizontal'; // 75% vertical
-      if (layout === 'vertical' && getRandomBool(0.4)) { // 40% de chance de 1 decimal si es vertical
-        problemMaxDecimals = 1;
-        operands = [
-          getRandomDecimal(10, 99, problemMaxDecimals),
-          getRandomDecimal(10, 99, problemMaxDecimals)
-        ];
-      } else { // Enteros o formato horizontal
-        operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
+    case "intermediate": // Nivel 3: Números más grandes con agrupaciones
+      operands = [getRandomInt(10, 25), getRandomInt(10, 25), getRandomInt(10, 25)]; // ej: (12+15)+18
+      layout = 'horizontal';
+      break;
+    case "advanced": // Nivel 4: Decimales y fracciones con 3-4 operandos
+      layout = 'horizontal';
+      problemMaxDecimals = 1; // Un decimal
+      const numOperands = getRandomBool(0.7) ? 3 : 4; // 70% chance de 3 operandos
+      for (let i = 0; i < numOperands; i++) {
+        operands.push(getRandomDecimal(1, 15, problemMaxDecimals));
       }
       break;
-    case "advanced": // 3 líneas, siempre vertical, 1 o 2 decimales
-      layout = 'vertical';
+    case "expert": // Nivel 5: Múltiples operandos y expresiones complejas
+      layout = 'horizontal';
+      const expertOperands = getRandomBool(0.5) ? 4 : 5; // 4 o 5 operandos
       problemMaxDecimals = getRandomBool(0.6) ? 2 : 1; // 60% chance de 2 decimales
-      for (let i = 0; i < 3; i++) {
-        operands.push(getRandomDecimal(10, getRandomInt(200, 999), problemMaxDecimals));
+      for (let i = 0; i < expertOperands; i++) {
+        operands.push(getRandomDecimal(5, 50, problemMaxDecimals));
       }
       break;
-    case "expert": // 4 o 5 líneas, siempre vertical, 1 o 2 decimales
-      layout = 'vertical';
-      const numLines = getRandomBool() ? 4 : 5;
-      problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
-      for (let i = 0; i < numLines; i++) {
-        operands.push(getRandomDecimal(100, getRandomInt(2000, 9999), problemMaxDecimals));
-      }
-      break;
-    default: // Fallback a beginner si la dificultad no es reconocida
-      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
+    default: // Fallback a beginner
+      operands = [getRandomInt(1, 5), getRandomInt(1, 5), getRandomInt(1, 5)];
       layout = 'horizontal';
   }
 
