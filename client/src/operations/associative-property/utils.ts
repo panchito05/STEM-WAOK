@@ -89,10 +89,12 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
 
   switch (difficulty) {
     case "beginner": 
-      // NIVEL PRINCIPIANTE: Introducción a la propiedad asociativa
-      // Ejemplo: 2 + 3 + 1 = 6 (el estudiante puede agrupar como (2+3)+1 o 2+(3+1))
-      // Números pequeños (1-5) para facilitar el cálculo mental y enfocar en el concepto
-      operands = [getRandomInt(1, 5), getRandomInt(1, 5), getRandomInt(1, 5)];
+      // NIVEL PRINCIPIANTE: Agrupar objetos visuales para entender la propiedad asociativa
+      // Ejemplo: 🍎🍎 + 🍊🍊🍊 + 🍌 = 6 frutas
+      // El niño puede agrupar como (🍎🍎 + 🍊🍊🍊) + 🍌 = 5 + 1 = 6
+      // O como 🍎🍎 + (🍊🍊🍊 + 🍌) = 2 + 4 = 6
+      // Números muy pequeños (1-3) para facilitar la visualización y conteo
+      operands = [getRandomInt(1, 3), getRandomInt(1, 3), getRandomInt(1, 3)];
       layout = 'horizontal';
       break;
       
