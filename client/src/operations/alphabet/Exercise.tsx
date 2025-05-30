@@ -198,14 +198,24 @@ const createLetterImage = (letter: string, language: AlphabetLanguage) => {
   const getSVGContent = () => {
     switch (letter.toLowerCase()) {
       case 'a':
-        // Airplane for both languages
-        return (
+        return language === 'spanish' ? (
+          // Auto (Car) for Spanish
           <g>
-            <path d="M100 50 L120 90 L170 95 L120 105 L100 130 L80 105 L30 95 L80 90 Z" fill={color} />
-            <circle cx="100" cy="90" r="6" fill="white" />
-            <rect x="95" y="75" width="10" height="8" fill="white" rx="2" />
-            <path d="M85 85 L75 80 L85 75" fill={color} />
-            <path d="M115 85 L125 80 L115 75" fill={color} />
+            <rect x="60" y="85" width="80" height="30" rx="8" fill={color} />
+            <circle cx="80" cy="125" r="12" fill="#333" />
+            <circle cx="120" cy="125" r="12" fill="#333" />
+            <circle cx="80" cy="125" r="8" fill="#666" />
+            <circle cx="120" cy="125" r="8" fill="#666" />
+            <rect x="70" y="70" width="60" height="20" rx="5" fill={color} opacity="0.8" />
+            <rect x="85" y="75" width="8" height="8" fill="lightblue" />
+            <rect x="107" y="75" width="8" height="8" fill="lightblue" />
+          </g>
+        ) : (
+          // Apple for English
+          <g>
+            <path d="M100 60 C85 60 75 75 75 90 C75 110 85 125 100 125 C115 125 125 110 125 90 C125 75 115 60 100 60 Z" fill={color} />
+            <path d="M100 60 C102 55 105 50 108 52 C110 54 108 58 105 60" stroke="#8B4513" strokeWidth="2" fill="#8B4513" />
+            <ellipse cx="90" cy="80" rx="8" ry="12" fill="white" opacity="0.3" />
           </g>
         );
       
