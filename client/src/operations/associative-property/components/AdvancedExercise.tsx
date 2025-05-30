@@ -78,7 +78,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
           {/* Expresión dada */}
           <div className="mb-4 text-center">
             <div className="text-2xl font-bold text-green-600 bg-green-50 p-3 rounded-lg inline-block">
-              ({operands[0]} + {operands[1]}) + {operands[2]} = {operands.reduce((sum, val) => sum + val, 0)}
+              ({operands[0]} + {operands[1]}) + {operands[2]} = ?
             </div>
           </div>
 
