@@ -131,26 +131,33 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
       break;
       
     case "advanced": 
-      // NIVEL AVANZADO: Práctica directa con números de 2-3 dígitos y decimales ocasionales
-      // Enfoque en identificación y aplicación directa de la propiedad asociativa
-      // Ejemplo: (47 + 23) + 15 → 47 + (23 + 15) = 85
-      layout = 'horizontal';
+      // NIVEL AVANZADO: Números más grandes con posibles decimales
+      // Ejemplo: 25.5 + 34.2 + 18.7 = 78.4 (agrupación estratégica para facilitar cálculo)
+      // Enfoque en estrategias de agrupación para simplificar operaciones
+      layout = getRandomBool(0.7) ? 'vertical' : 'horizontal';
+      problemMaxDecimals = getRandomBool(0.4) ? 1 : 0; // 40% chance de decimales
       
-      if (getRandomBool(0.2)) {
-        // 20% de probabilidad: incluir decimales simples
+      if (problemMaxDecimals > 0) {
         operands = [
-          parseFloat((getRandomInt(10, 99) + Math.random()).toFixed(1)),
-          parseFloat((getRandomInt(5, 50) + Math.random()).toFixed(1)),
-          parseFloat((getRandomInt(5, 30) + Math.random()).toFixed(1))
+          getRandomDecimal(10, 50, problemMaxDecimals),
+          getRandomDecimal(10, 50, problemMaxDecimals),
+          getRandomDecimal(10, 50, problemMaxDecimals)
         ];
-        problemMaxDecimals = 1;
       } else {
-        // 80% de probabilidad: números enteros de 2-3 dígitos
         operands = [
-          getRandomInt(15, 99),   // Números de 2 dígitos
-          getRandomInt(10, 50),   // Números medianos
-          getRandomInt(5, 40)     // Números menores
+          getRandomInt(15, 75),
+          getRandomInt(15, 75),
+          getRandomInt(15, 75)
         ];
+      }
+      
+      // 50% de probabilidad de cuarto operando para demostrar agrupaciones múltiples
+      if (getRandomBool(0.5)) {
+        if (problemMaxDecimals > 0) {
+          operands.push(getRandomDecimal(10, 30, problemMaxDecimals));
+        } else {
+          operands.push(getRandomInt(10, 40));
+        }
       }
       break;
       
@@ -203,7 +210,6 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
   const visualObjects = difficulty === 'beginner' ? generateVisualObjects(operands) : undefined;
   const showVisualMode = difficulty === 'beginner';
   const interactiveMode = difficulty === 'intermediate';
-  const verbalMode = difficulty === 'advanced';
 
   return {
     id,
@@ -217,7 +223,6 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
     visualObjects,
     showVisualMode,
     interactiveMode,
-    verbalMode,
   };
 }
 
