@@ -502,7 +502,7 @@ const Level5Component: React.FC<{
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { saveExerciseResult } = useProgress();
-  const [currentLevel, setCurrentLevel] = useState<AssociativeActivityLevel>(1);
+  const currentLevel = (settings as any).currentLevel || 1;
   const [currentProblem, setCurrentProblem] = useState<AssociativePropertyProblem | null>(null);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<any[]>([]);
@@ -705,22 +705,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           />
         </div>
 
-        {/* Level Selector */}
-        <div className="mb-6">
-          <div className="flex justify-center space-x-2">
-            {[1, 2, 3, 4, 5].map((level) => (
-              <Button
-                key={level}
-                variant={currentLevel === level ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentLevel(level as AssociativeActivityLevel)}
-                disabled={showResult}
-              >
-                Nivel {level}
-              </Button>
-            ))}
-          </div>
-        </div>
+
 
         {/* Current Problem */}
         <div className="mb-6">
