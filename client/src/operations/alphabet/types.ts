@@ -34,12 +34,17 @@ export interface AlphabetProgress {
   currentLevel: AlphabetLevel;
   currentLetterIndex: number;
   completedLetters: string[];
-  totalCorrectAnswers: number;
-  totalAttempts: number;
-  longestStreak: number;
-  currentStreak: number;
+  completedLevels: number[];
+  totalScore: number;
+  accuracy: number;
   timeSpent: number;
-  lastActivity: Date;
+  activities: {
+    level1: Level1Activity[];
+    level2: Level2Activity[];
+    level3: Level3Activity[];
+    level4: Level4Activity[];
+    level5: Level5Activity[];
+  };
 }
 
 export interface AlphabetExerciseProps {
@@ -55,16 +60,17 @@ export interface AlphabetSettingsProps {
 
 // Level-specific interfaces
 export interface Level1Activity {
-  type: 'recognition';
-  letter: AlphabetLetter;
-  showWord: boolean;
-  showImage: boolean;
+  letterId: string;
+  timestamp: number;
+  completed: boolean;
 }
 
 export interface Level2Activity {
-  type: 'ordering';
-  letters: AlphabetLetter[];
-  targetSequence: string[];
+  sequence: string[];
+  userSequence: string[];
+  completed: boolean;
+  timestamp: number;
+  attempts: number;
 }
 
 export interface Level3Activity {
@@ -77,19 +83,19 @@ export interface Level3Activity {
 }
 
 export interface Level4Activity {
-  type: 'association';
-  stimulus: 'sound' | 'image';
-  content: string; // Audio file path or image path
-  options: AlphabetLetter[];
-  correctAnswer: string;
+  wordId: string;
+  word: string;
+  missingIndices: number[];
+  userAnswers: string[];
+  completed: boolean;
+  timestamp: number;
 }
 
 export interface Level5Activity {
-  type: 'formation';
-  targetWord: string;
-  scrambledLetters: string[];
-  image: string;
-  language: AlphabetLanguage;
+  targetLetter: string;
+  selectedLetter: string;
+  completed: boolean;
+  timestamp: number;
 }
 
 export type AlphabetActivity = 
@@ -146,7 +152,6 @@ export interface WordCompletionData {
 }
 
 export interface LetterOption {
+  id: number;
   letter: string;
-  isUsed: boolean;
-  isCorrect: boolean;
 }
