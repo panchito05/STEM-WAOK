@@ -2730,6 +2730,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {settings.difficulty === 'advanced' && (
             <VerbalProblemExercise 
               operands={currentProblem.operands}
+              interactiveAnswers={interactiveAnswers}
+              setInteractiveAnswers={setInteractiveAnswers}
+              activeInteractiveField={activeInteractiveField}
+              setActiveInteractiveField={setActiveInteractiveField}
               onAnswer={(isCorrect) => {
                 if (isCorrect) {
                   setFeedbackMessage("¡Excelente! Has aplicado correctamente la propiedad asociativa para facilitar el cálculo mental.");

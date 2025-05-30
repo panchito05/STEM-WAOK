@@ -3,10 +3,20 @@ import React, { useState } from 'react';
 interface VerbalProblemExerciseProps {
   operands: number[];
   onAnswer: (isCorrect: boolean) => void;
+  interactiveAnswers: { [key: string]: string };
+  setInteractiveAnswers: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
+  activeInteractiveField: string | null;
+  setActiveInteractiveField: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands, onAnswer }) => {
-  const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
+const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ 
+  operands, 
+  onAnswer,
+  interactiveAnswers,
+  setInteractiveAnswers,
+  activeInteractiveField,
+  setActiveInteractiveField
+}) => {
 
   // Generar problemas basados en los operandos
   const [a, b, c] = operands;
@@ -22,8 +32,12 @@ const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands,
   const correctBlank1 = showFirstGrouping ? b : a;
   const correctBlank2 = showFirstGrouping ? c : b;
 
+  const handleFieldClick = (fieldName: string) => {
+    setActiveInteractiveField(fieldName);
+  };
+
   const handleInputChange = (fieldName: string, value: string) => {
-    setUserAnswers(prev => ({
+    setInteractiveAnswers(prev => ({
       ...prev,
       [fieldName]: value
     }));
@@ -39,18 +53,24 @@ const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands,
           <span>(</span>
           <input
             type="text"
-            value={userAnswers['blank1'] || ''}
+            value={interactiveAnswers['blank1'] || ''}
             onChange={(e) => handleInputChange('blank1', e.target.value)}
-            className="w-16 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            onClick={() => handleFieldClick('blank1')}
+            className={`w-16 h-10 text-center border-2 rounded mx-1 text-lg ${
+              activeInteractiveField === 'blank1' ? 'border-purple-500 bg-purple-50' : 'border-purple-300'
+            }`}
             placeholder="?"
             maxLength={3}
           />
           <span className="mx-2">+</span>
           <input
             type="text"
-            value={userAnswers['blank2'] || ''}
+            value={interactiveAnswers['blank2'] || ''}
             onChange={(e) => handleInputChange('blank2', e.target.value)}
-            className="w-16 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            onClick={() => handleFieldClick('blank2')}
+            className={`w-16 h-10 text-center border-2 rounded mx-1 text-lg ${
+              activeInteractiveField === 'blank2' ? 'border-purple-500 bg-purple-50' : 'border-purple-300'
+            }`}
             placeholder="?"
             maxLength={3}
           />
@@ -58,9 +78,12 @@ const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands,
           <span className="mx-2">=</span>
           <input
             type="text"
-            value={userAnswers['finalAnswer'] || ''}
+            value={interactiveAnswers['finalAnswer'] || ''}
             onChange={(e) => handleInputChange('finalAnswer', e.target.value)}
-            className="w-20 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            onClick={() => handleFieldClick('finalAnswer')}
+            className={`w-20 h-10 text-center border-2 rounded mx-1 text-lg ${
+              activeInteractiveField === 'finalAnswer' ? 'border-purple-500 bg-purple-50' : 'border-purple-300'
+            }`}
             placeholder="?"
             maxLength={4}
           />
@@ -73,18 +96,24 @@ const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands,
           <span>(</span>
           <input
             type="text"
-            value={userAnswers['blank1'] || ''}
+            value={interactiveAnswers['blank1'] || ''}
             onChange={(e) => handleInputChange('blank1', e.target.value)}
-            className="w-16 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            onClick={() => handleFieldClick('blank1')}
+            className={`w-16 h-10 text-center border-2 rounded mx-1 text-lg ${
+              activeInteractiveField === 'blank1' ? 'border-purple-500 bg-purple-50' : 'border-purple-300'
+            }`}
             placeholder="?"
             maxLength={3}
           />
           <span className="mx-2">+</span>
           <input
             type="text"
-            value={userAnswers['blank2'] || ''}
+            value={interactiveAnswers['blank2'] || ''}
             onChange={(e) => handleInputChange('blank2', e.target.value)}
-            className="w-16 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            onClick={() => handleFieldClick('blank2')}
+            className={`w-16 h-10 text-center border-2 rounded mx-1 text-lg ${
+              activeInteractiveField === 'blank2' ? 'border-purple-500 bg-purple-50' : 'border-purple-300'
+            }`}
             placeholder="?"
             maxLength={3}
           />
@@ -94,9 +123,12 @@ const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands,
           <span className="mx-2">=</span>
           <input
             type="text"
-            value={userAnswers['finalAnswer'] || ''}
+            value={interactiveAnswers['finalAnswer'] || ''}
             onChange={(e) => handleInputChange('finalAnswer', e.target.value)}
-            className="w-20 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            onClick={() => handleFieldClick('finalAnswer')}
+            className={`w-20 h-10 text-center border-2 rounded mx-1 text-lg ${
+              activeInteractiveField === 'finalAnswer' ? 'border-purple-500 bg-purple-50' : 'border-purple-300'
+            }`}
             placeholder="?"
             maxLength={4}
           />
@@ -106,9 +138,9 @@ const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands,
   };
 
   const checkAnswers = () => {
-    const blank1Correct = parseInt(userAnswers['blank1'] || '0') === correctBlank1;
-    const blank2Correct = parseInt(userAnswers['blank2'] || '0') === correctBlank2;
-    const answerCorrect = parseInt(userAnswers['finalAnswer'] || '0') === correctAnswer;
+    const blank1Correct = parseInt(interactiveAnswers['blank1'] || '0') === correctBlank1;
+    const blank2Correct = parseInt(interactiveAnswers['blank2'] || '0') === correctBlank2;
+    const answerCorrect = parseInt(interactiveAnswers['finalAnswer'] || '0') === correctAnswer;
     
     const isCorrect = blank1Correct && blank2Correct && answerCorrect;
     onAnswer(isCorrect);
@@ -137,7 +169,7 @@ const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands,
             <button
               onClick={checkAnswers}
               className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
-              disabled={!userAnswers['blank1'] || !userAnswers['blank2'] || !userAnswers['finalAnswer']}
+              disabled={!interactiveAnswers['blank1'] || !interactiveAnswers['blank2'] || !interactiveAnswers['finalAnswer']}
             >
               Verificar Respuestas
             </button>
