@@ -9,6 +9,7 @@ interface VisualProblemDisplayProps {
 
 const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjects, operands, difficulty = 'beginner' }) => {
   const [shuffledObjects, setShuffledObjects] = useState<VisualObject[]>(visualObjects);
+  const [shuffleCount, setShuffleCount] = useState(0);
 
   // Función para mezclar el array
   const shuffleArray = (array: VisualObject[]) => {
@@ -20,12 +21,20 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
     return newArray;
   };
 
-  // Efecto para cambiar posiciones cada 5 segundos
+  // Efecto para cambiar posiciones cada 5 segundos, máximo 4 veces
   useEffect(() => {
     setShuffledObjects(visualObjects);
+    setShuffleCount(0);
     
     const interval = setInterval(() => {
-      setShuffledObjects(prev => shuffleArray(prev));
+      setShuffleCount(prevCount => {
+        if (prevCount >= 4) {
+          clearInterval(interval);
+          return prevCount;
+        }
+        setShuffledObjects(prev => shuffleArray(prev));
+        return prevCount + 1;
+      });
     }, 5000);
 
     return () => clearInterval(interval);
