@@ -327,7 +327,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
                 parseInt(interactiveAnswers.blank2) === operands[2] && 
                 parseInt(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0)
               : exercise === 'verification'
-              ? verificationAnswer === 'verdadero'
+              ? (verificationAnswer.toLowerCase() === 'verdadero' || verificationAnswer.toLowerCase() === 'true') === (verificationExpression?.isCorrect ?? true)
               : selectedChoice === 'a' || selectedChoice === 'b'
             ) ? '¡Correcto!' : 'Incorrecto. La propiedad asociativa permite cambiar la agrupación manteniendo el mismo resultado.'}
           </div>
