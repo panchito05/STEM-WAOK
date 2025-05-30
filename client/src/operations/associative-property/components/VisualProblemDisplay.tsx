@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { VisualObject } from '../types';
 
 interface VisualProblemDisplayProps {
@@ -8,6 +8,28 @@ interface VisualProblemDisplayProps {
 }
 
 const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjects, operands, difficulty = 'beginner' }) => {
+  const [shuffledObjects, setShuffledObjects] = useState<VisualObject[]>(visualObjects);
+
+  // Función para mezclar el array
+  const shuffleArray = (array: VisualObject[]) => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+
+  // Efecto para cambiar posiciones cada 5 segundos
+  useEffect(() => {
+    setShuffledObjects(visualObjects);
+    
+    const interval = setInterval(() => {
+      setShuffledObjects(prev => shuffleArray(prev));
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [visualObjects]);
   const renderFruitGroup = (visual: VisualObject, index: number) => {
     const fruits = Array.from({ length: visual.count }, (_, i) => (
       <span key={i} className="text-3xl mr-1">
@@ -50,11 +72,11 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
           </p>
         </div>
         {/* Visualización con frutas para principiantes */}
-        <div className="flex justify-center items-center flex-wrap mb-6 p-4 bg-gray-50 rounded-lg">
-          {visualObjects.map((visual, index) => (
-            <React.Fragment key={index}>
+        <div className="flex justify-center items-center flex-wrap mb-6 p-4 bg-gray-50 rounded-lg transition-all duration-1000 ease-in-out">
+          {shuffledObjects.map((visual, index) => (
+            <React.Fragment key={`${visual.emoji}-${visual.count}-${index}`}>
               {renderFruitGroup(visual, index)}
-              {index < visualObjects.length - 1 && (
+              {index < shuffledObjects.length - 1 && (
                 <div className="text-3xl font-bold text-gray-600 mx-2">
                   +
                 </div>
