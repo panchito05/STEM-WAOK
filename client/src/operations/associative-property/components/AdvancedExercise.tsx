@@ -124,17 +124,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
           </div>
         </div>
 
-        {!showResult && (
-          <div className="text-center mt-4">
-            <Button 
-              onClick={handleFillBlankSubmit}
-              className="bg-blue-600 hover:bg-blue-700"
-              disabled={!interactiveAnswers.blank1 || !interactiveAnswers.blank2 || !interactiveAnswers.blank3}
-            >
-              Verificar Respuesta
-            </Button>
-          </div>
-        )}
+
       </div>
     );
   };
@@ -191,16 +181,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
           </div>
         </div>
 
-        {!showResult && verificationAnswer && (
-          <div className="text-center">
-            <Button 
-              onClick={handleVerificationSubmit}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              Verificar Respuesta
-            </Button>
-          </div>
-        )}
+
       </div>
     );
   };
@@ -254,17 +235,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
           </div>
         </div>
 
-        {!showResult && (
-          <div className="text-center">
-            <Button 
-              onClick={handleMultipleChoiceSubmit}
-              className="bg-orange-600 hover:bg-orange-700"
-              disabled={!selectedChoice}
-            >
-              Verificar Respuesta
-            </Button>
-          </div>
-        )}
+
       </div>
     );
   };

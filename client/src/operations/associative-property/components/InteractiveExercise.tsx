@@ -106,17 +106,7 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
 
 
 
-      {!showResult && (
-        <div className="text-center mt-4">
-          <Button 
-            onClick={handleFillBlankSubmit}
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={!interactiveAnswers.blank1 || !interactiveAnswers.blank2 || !interactiveAnswers.blank3}
-          >
-            Verificar Respuesta
-          </Button>
-        </div>
-      )}
+
     </div>
   );
 
