@@ -993,13 +993,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       }, 50);
 
       if (autoContinue && !blockAutoAdvance) {
+        console.log("[AUTO-CONTINUE] Iniciando timer de auto-continuo");
         if (autoContinueTimerRef.current) clearTimeout(autoContinueTimerRef.current);
         autoContinueTimerRef.current = setTimeout(() => {
+          console.log("[AUTO-CONTINUE] Timer ejecutado - Verificando condiciones:", {
+            blockAutoAdvance,
+            waitingRef: waitingRef.current,
+            autoContinue
+          });
           if (!blockAutoAdvance && waitingRef.current) { // Re-check waitingRef.current
+            console.log("[AUTO-CONTINUE] Ejecutando handleContinue automáticamente");
             handleContinue(); // Asume que handleContinue está memoizada
             autoContinueTimerRef.current = null;
+          } else {
+            console.log("[AUTO-CONTINUE] No se ejecutó - Condiciones no cumplidas");
           }
-        }, 3000);
+        }, 1500); // Reducido a 1.5 segundos para mejor experiencia
+      } else {
+        console.log("[AUTO-CONTINUE] No iniciado - Estado:", { autoContinue, blockAutoAdvance });
       }
       return true; // Problema resuelto (correctamente)
     } else { // Incorrecta
