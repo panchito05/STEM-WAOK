@@ -859,25 +859,80 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }
 
   return (
-    <div className="associative-property-exercise bg-white rounded-lg shadow-lg max-w-4xl mx-auto">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Propiedad Asociativa</h2>
-          <Button
-            onClick={onOpenSettings}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Settings className="w-4 h-4" />
-            <span className="text-sm">
-              {currentTranslations.settings}
+    <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg min-h-[calc(100vh-8rem)] md:min-h-0 flex flex-col ${
+      settings.difficulty === "beginner" ? "bg-blue-50 border-blue-200" :
+      settings.difficulty === "elementary" ? "bg-emerald-50 border-emerald-200" :
+      settings.difficulty === "intermediate" ? "bg-orange-50 border-orange-200" :
+      settings.difficulty === "advanced" ? "bg-purple-50 border-purple-200" :
+      settings.difficulty === "expert" ? "bg-rose-50 border-rose-200" :
+      "bg-indigo-50 border-indigo-200"
+    } border-2`}>
+      {/* Header - Responsive Design: Stack vertically on mobile, horizontal on desktop */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+          <div className="flex flex-row justify-between items-center sm:flex-col sm:items-start">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Associative Property</h2>
+            <span className="sm:hidden font-medium text-sm bg-[#3b82f6] text-[#f9fafb] px-2 py-1 rounded">
+              Problem {problemIndex + 1} de {problems.length}
             </span>
-          </Button>
-        </div>
+          </div>
+          
+          {/* Top row info - Timer and basic stats */}
+          <div className="flex items-center justify-center sm:justify-end gap-2 sm:gap-3 text-xs sm:text-sm flex-wrap">
+              {/* Rewards button - Desktop only, left of timer */}
+              <button className="hidden sm:flex items-center gap-1 py-1 px-2 text-xs text-yellow-600 hover:bg-yellow-50 border border-yellow-300 bg-yellow-50 rounded">
+                <span>⭐</span>
+                <span>View Rewards (⭐105 pts)</span>
+              </button>
+              
+              <span className="font-medium text-gray-700 flex items-center">
+                <span className="mr-1">🕐</span>
+                00:00
+              </span>
+              
+              <span className="font-medium p-1 rounded bg-gray-100 text-gray-700">
+                Attempts: 0/2
+              </span>
+              
+              <span className="font-medium p-1 rounded bg-gray-100 text-gray-700">
+                Racha: 0 (10)
+              </span>
+              
+              <span className="font-medium p-1 rounded bg-gray-100 text-gray-700">
+                Level: Intermediate
+              </span>
+          </div>
+      </div>
 
-        {/* Problem Display Area - Level-Specific Components */}
-        <div className="rounded-lg mb-4 shadow-sm bg-white border">
+      {/* Second row - More controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <div className="flex items-center gap-2 order-2 sm:order-1">
+              <button className="flex items-center gap-1 py-1 px-2 text-xs text-blue-600 hover:bg-blue-50 border border-blue-300 bg-blue-50 rounded">
+                  Problem: 1 de 10
+              </button>
+              <span className="text-xs text-gray-600">Score 0</span>
+              <button className="flex items-center gap-1 py-1 px-2 text-xs text-blue-600 hover:bg-blue-50 border border-blue-300 bg-blue-50 rounded">
+                  Professor Mode 📘
+              </button>
+              <button className="flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-50 border border-gray-300 bg-gray-50 rounded">
+                  Watch Explanatory Video 📺
+              </button>
+          </div>
+          
+          <div className="flex items-center gap-2 order-1 sm:order-2">
+              <button className="flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-50 border border-gray-300 bg-gray-50 rounded">
+                  📊 Exercise History
+              </button>
+              <button 
+                onClick={onOpenSettings}
+                className="flex items-center gap-1 py-1 px-2 text-xs text-gray-600 hover:bg-gray-50 border border-gray-300 bg-gray-50 rounded"
+              >
+                  ⚙️ Settings
+              </button>
+          </div>
+      </div>
+
+      {/* Problem Display Area - Level-Specific Components */}
+      <div className="rounded-lg mb-4 shadow-sm bg-white border">
           {(() => {
             const currentDifficulty = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
             const isDisabled = viewingPrevious || exerciseCompleted || waitingRef.current;
@@ -931,9 +986,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 );
             }
           })()}
-        </div>
+      </div>
 
-        {/* Navigation and Controls */}
+      {/* Navigation and Controls */}
         <div className="mt-6 space-y-4">
           <div className="flex justify-between items-center">
             <Button
@@ -1004,45 +1059,44 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Tooltip>
           </TooltipProvider>
         </div>
-      </div>
 
-      {/* Professor Mode */}
-      {showProfessorMode && (
-        <div className="professor-mode bg-purple-50 border border-purple-200 rounded-lg p-6 mt-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold text-purple-700">Modo Profesor</h3>
-            <button
-              onClick={() => setShowProfessorMode(false)}
-              className="text-purple-600 hover:text-purple-800 text-xl font-bold"
-            >
-              ×
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="bg-white rounded-lg p-4 border border-purple-200">
-              <h4 className="font-semibold text-purple-700 mb-2">Explicación de la Propiedad Asociativa:</h4>
-              <p className="text-gray-700 mb-3">
-                La propiedad asociativa dice que cuando sumamos tres o más números, 
-                podemos agruparlos de diferentes maneras sin cambiar el resultado.
-              </p>
-              
-              <div className="space-y-2">
-                <div className="text-lg">
-                  <span className="font-semibold">Primera forma:</span> ({currentProblem.operands[0]} + {currentProblem.operands[1]}) + {currentProblem.operands[2]} = {currentProblem.operands[0] + currentProblem.operands[1]} + {currentProblem.operands[2]} = {currentProblem.correctAnswer}
+        {/* Professor Mode */}
+        {showProfessorMode && (
+          <div className="professor-mode bg-purple-50 border border-purple-200 rounded-lg p-6 mt-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-purple-700">Modo Profesor</h3>
+              <button
+                onClick={() => setShowProfessorMode(false)}
+                className="text-purple-600 hover:text-purple-800 text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg p-4 border border-purple-200">
+                <h4 className="font-semibold text-purple-700 mb-2">Explicación de la Propiedad Asociativa:</h4>
+                <p className="text-gray-700 mb-3">
+                  La propiedad asociativa dice que cuando sumamos tres o más números, 
+                  podemos agruparlos de diferentes maneras sin cambiar el resultado.
+                </p>
+                
+                <div className="space-y-2">
+                  <div className="text-lg">
+                    <span className="font-semibold">Primera forma:</span> ({currentProblem.operands[0]} + {currentProblem.operands[1]}) + {currentProblem.operands[2]} = {currentProblem.operands[0] + currentProblem.operands[1]} + {currentProblem.operands[2]} = {currentProblem.correctAnswer}
+                  </div>
+                  <div className="text-lg">
+                    <span className="font-semibold">Segunda forma:</span> {currentProblem.operands[0]} + ({currentProblem.operands[1]} + {currentProblem.operands[2]}) = {currentProblem.operands[0]} + {currentProblem.operands[1] + currentProblem.operands[2]} = {currentProblem.correctAnswer}
+                  </div>
                 </div>
-                <div className="text-lg">
-                  <span className="font-semibold">Segunda forma:</span> {currentProblem.operands[0]} + ({currentProblem.operands[1]} + {currentProblem.operands[2]}) = {currentProblem.operands[0]} + {currentProblem.operands[1] + currentProblem.operands[2]} = {currentProblem.correctAnswer}
-                </div>
+                
+                <p className="text-gray-600 mt-3 text-sm">
+                  ¡Ambas formas dan el mismo resultado! Esto es lo que nos enseña la propiedad asociativa.
+                </p>
               </div>
-              
-              <p className="text-gray-600 mt-3 text-sm">
-                ¡Ambas formas dan el mismo resultado! Esto es lo que nos enseña la propiedad asociativa.
-              </p>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
-}
+        )}
+      </div>
+    );
+  }
