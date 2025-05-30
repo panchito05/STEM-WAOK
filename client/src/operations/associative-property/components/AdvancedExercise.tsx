@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { useAdvancedInput } from '../hooks/useAdvancedInput';
+import AdvancedInputField from './AdvancedInputField';
 
 interface AdvancedExerciseProps {
   operands: number[];
   onAnswer: (isCorrect: boolean) => void;
-  interactiveAnswers: { [key: string]: string };
-  setInteractiveAnswers: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
-  activeInteractiveField: string | null;
-  setActiveInteractiveField: React.Dispatch<React.SetStateAction<string | null>>;
   validationTrigger: number;
   exerciseStarted: boolean;
+  onDigitInput?: (digit: string) => void;
+  onBackspace?: () => void;
 }
 
 type ExerciseType = 'fill-blank' | 'verification' | 'multiple-choice';
@@ -17,12 +17,10 @@ type ExerciseType = 'fill-blank' | 'verification' | 'multiple-choice';
 const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({ 
   operands, 
   onAnswer,
-  interactiveAnswers,
-  setInteractiveAnswers,
-  activeInteractiveField,
-  setActiveInteractiveField,
   validationTrigger,
-  exerciseStarted
+  exerciseStarted,
+  onDigitInput,
+  onBackspace
 }) => {
   const [exercise, setExercise] = useState<ExerciseType>('fill-blank');
   const [showResult, setShowResult] = useState(false);
@@ -30,14 +28,16 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   const [verificationAnswer, setVerificationAnswer] = useState<string>('');
   const [shuffledChoices, setShuffledChoices] = useState<any[]>([]);
   const [verificationExpression, setVerificationExpression] = useState<{ expression: string; isCorrect: boolean } | null>(null);
+  
+  // Use the advanced input management hook
+  const inputManager = useAdvancedInput(exerciseStarted, ['blank1', 'blank2', 'blank3', 'blank4']);
 
   useEffect(() => {
     // Reiniciar estado cuando cambian los operandos
     setShowResult(false);
     setSelectedChoice('');
     setVerificationAnswer('');
-    setInteractiveAnswers({ blank1: '', blank2: '', blank3: '', blank4: '' });
-    setActiveInteractiveField(null);
+    inputManager.resetAllFields();
     
     // Seleccionar tipo de ejercicio aleatoriamente
     const exercises: ExerciseType[] = ['fill-blank', 'verification', 'multiple-choice'];
