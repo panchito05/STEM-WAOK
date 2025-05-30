@@ -2,7 +2,6 @@ import * as Addition from "../operations/addition";
 import * as Subtraction from "../operations/subtraction";
 import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
-import * as Alphabet from "../operations/alphabet";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -75,14 +74,6 @@ export const operationModules: Module[] = [
     color: "#8b5cf6", // Violeta para distinguir de otros módulos
     icon: "DivideIcon",
   },
-  {
-    id: "alphabet",
-    displayName: "Alphabet Learning",
-    description: "Interactive alphabet learning with bilingual support",
-    difficulty: "beginner",
-    color: "#f59e0b", // Naranja para el módulo del alfabeto
-    icon: "BookOpen",
-  },
 
 ];
 
@@ -92,5 +83,4 @@ export const operationComponents: Record<string, ModuleComponent> = {
   subtraction: Subtraction, // El módulo de resta
   multiplication: Multiplication, // El módulo de multiplicación
   division: Division, // El módulo de división
-  alphabet: Alphabet, // El módulo de aprendizaje del alfabeto
 };

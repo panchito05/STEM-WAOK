@@ -10,7 +10,7 @@ import {
   progressEntries
 } from "@shared/schema";
 import { z } from "zod";
-
+import alphabet2Routes from "./routes-alphabet2";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
 
@@ -926,7 +926,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
+  // Rutas para el módulo Alphabet Journey (alphabet2)
+  app.use('/alphabet2', alphabet2Routes);
 
   const httpServer = createServer(app);
   return httpServer;
