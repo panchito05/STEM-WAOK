@@ -43,30 +43,18 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
   };
 
   const handleMultipleChoiceSubmit = () => {
-    const isCorrect = selectedChoice === 'a';
+    const correctAnswer = operands[0] + operands[1] + operands[2];
+    const isCorrect = parseInt(selectedChoice) === correctAnswer;
     setShowResult(true);
     onAnswer(isCorrect);
   };
 
-  const renderFillBlankExercise = () => (
-    <div className="space-y-6">
-      <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
-        <h3 className="text-lg font-semibold text-blue-800 mb-4">
-          Completa la expresión equivalente
-        </h3>
-        
-        {/* Expresión dada */}
-        <div className="mb-4 text-center">
-          <div className="text-xl font-medium mb-2">Se muestra:</div>
-          <div className="text-2xl font-bold text-green-600 bg-green-50 p-3 rounded-lg inline-block">
-            ({operands[0]} + {operands[1]}) + {operands[2]} = {operands[0] + operands[1] + operands[2]}
-          </div>
-        </div>
-
-        {/* Ejercicio a completar */}
+  if (exercise === 'fill-blank') {
+    return (
+      <div className="space-y-6">
         <div className="text-center">
-          <div className="text-xl font-medium mb-2">Completa la otra forma:</div>
-          <div className="text-2xl font-bold flex items-center justify-center gap-2">
+          <h3 className="text-lg font-semibold mb-4">Completa la otra forma:</h3>
+          <div className="flex items-center justify-center space-x-2 text-xl">
             <span>{operands[0]} +</span>
             <span>(</span>
             <div
@@ -103,113 +91,100 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
             </div>
           </div>
         </div>
-      </div>
-
-
-
-      {!showResult && (
-        <div className="text-center mt-4">
-          <Button 
-            onClick={handleFillBlankSubmit}
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={!interactiveAnswers.blank1 || !interactiveAnswers.blank2 || !interactiveAnswers.blank3}
-          >
-            Verificar Respuesta
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-
-  const renderMultipleChoiceExercise = () => {
-    const choices = [
-      { id: 'a', text: `${operands[0]} + (${operands[1]} + ${operands[2]})`, correct: true },
-      { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: false },
-      { id: 'c', text: `${operands[0]} × (${operands[1]} + ${operands[2]})`, correct: false }
-    ];
-
-    return (
-      <div className="space-y-6">
-        <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-200">
-          <h3 className="text-lg font-semibold text-purple-800 mb-4">
-            Elige la opción correcta
-          </h3>
-          
-          <div className="mb-6 text-center">
-            <div className="text-xl font-medium mb-2">¿Cuál es igual a:</div>
-            <div className="text-2xl font-bold text-purple-600 bg-purple-100 p-3 rounded-lg inline-block">
-              ({operands[0]} + {operands[1]}) + {operands[2]}?
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            {choices.map((choice) => (
-              <label
-                key={choice.id}
-                className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
-                  selectedChoice === choice.id
-                    ? 'border-purple-400 bg-purple-100'
-                    : 'border-gray-200 hover:border-purple-300'
-                } ${showResult && choice.correct ? 'bg-green-100 border-green-400' : ''}
-                ${showResult && selectedChoice === choice.id && !choice.correct ? 'bg-red-100 border-red-400' : ''}`}
-              >
-                <input
-                  type="radio"
-                  name="choice"
-                  value={choice.id}
-                  checked={selectedChoice === choice.id}
-                  onChange={(e) => setSelectedChoice(e.target.value)}
-                  className="mr-3"
-                  disabled={showResult}
-                />
-                <span className="text-lg font-medium">
-                  {choice.id}) {choice.text}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
 
         {!showResult && (
-          <div className="text-center">
+          <div className="text-center mt-4">
             <Button 
-              onClick={handleMultipleChoiceSubmit}
-              className="bg-purple-600 hover:bg-purple-700"
-              disabled={!selectedChoice}
+              onClick={handleFillBlankSubmit}
+              className="bg-blue-600 hover:bg-blue-700"
+              disabled={!interactiveAnswers.blank1 || !interactiveAnswers.blank2 || !interactiveAnswers.blank3}
             >
               Verificar Respuesta
             </Button>
           </div>
         )}
+
+        {showResult && (
+          <div className="text-center mt-4">
+            <div className={`p-4 rounded-lg ${
+              parseInt(interactiveAnswers.blank1) === operands[1] &&
+              parseInt(interactiveAnswers.blank2) === operands[2] &&
+              parseInt(interactiveAnswers.blank3) === operands[0] + operands[1] + operands[2]
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {parseInt(interactiveAnswers.blank1) === operands[1] &&
+               parseInt(interactiveAnswers.blank2) === operands[2] &&
+               parseInt(interactiveAnswers.blank3) === operands[0] + operands[1] + operands[2]
+                ? '¡Correcto!' 
+                : `Incorrecto. La respuesta correcta es: ${operands[0]} + (${operands[1]} + ${operands[2]}) = ${operands[0] + operands[1] + operands[2]}`}
+            </div>
+          </div>
+        )}
       </div>
     );
-  };
+  } else {
+    // Multiple choice exercise
+    const correctAnswer = operands[0] + operands[1] + operands[2];
+    const choices = [
+      correctAnswer,
+      correctAnswer + Math.floor(Math.random() * 5) + 1,
+      correctAnswer - Math.floor(Math.random() * 3) - 1,
+      correctAnswer + Math.floor(Math.random() * 3) + 6
+    ].sort(() => Math.random() - 0.5);
 
-  return (
-    <div className="w-full max-w-4xl mx-auto">
-      {exercise === 'fill-blank' ? renderFillBlankExercise() : renderMultipleChoiceExercise()}
-      
-      {showResult && (
-        <div className="mt-6 text-center">
-          <div className={`text-lg font-semibold ${
-            (exercise === 'fill-blank' 
-              ? parseInt(digitAnswers.blank1) === operands[1] && 
-                parseInt(digitAnswers.blank2) === operands[2] && 
-                parseInt(digitAnswers.blank3) === operands[0] + operands[1] + operands[2]
-              : selectedChoice === 'a'
-            ) ? 'text-green-600' : 'text-red-600'
-          }`}>
-            {(exercise === 'fill-blank' 
-              ? parseInt(digitAnswers.blank1) === operands[1] && 
-                parseInt(digitAnswers.blank2) === operands[2] && 
-                parseInt(digitAnswers.blank3) === operands[0] + operands[1] + operands[2]
-              : selectedChoice === 'a'
-            ) ? '¡Correcto!' : 'Incorrecto. La propiedad asociativa dice que podemos cambiar la agrupación sin cambiar el resultado.'}
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-4">¿Cuál es el resultado?</h3>
+          <div className="text-xl mb-4">
+            ({operands[0]} + {operands[1]}) + {operands[2]} = ?
+          </div>
+          <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
+            {choices.map((choice, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedChoice(choice.toString())}
+                disabled={showResult}
+                className={`p-3 rounded-lg border-2 font-semibold transition-all duration-200 ${
+                  selectedChoice === choice.toString()
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-300 bg-white hover:border-blue-300 hover:bg-blue-50'
+                } ${showResult ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+              >
+                {choice}
+              </button>
+            ))}
           </div>
         </div>
-      )}
-    </div>
-  );
+
+        {!showResult && selectedChoice && (
+          <div className="text-center mt-4">
+            <Button 
+              onClick={handleMultipleChoiceSubmit}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Verificar Respuesta
+            </Button>
+          </div>
+        )}
+
+        {showResult && (
+          <div className="text-center mt-4">
+            <div className={`p-4 rounded-lg ${
+              parseInt(selectedChoice) === correctAnswer
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-red-100 text-red-800'
+            }`}>
+              {parseInt(selectedChoice) === correctAnswer
+                ? '¡Correcto!' 
+                : `Incorrecto. La respuesta correcta es: ${correctAnswer}`}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 };
 
 export default InteractiveExercise;
