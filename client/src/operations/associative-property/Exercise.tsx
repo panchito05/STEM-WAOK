@@ -1,5 +1,171 @@
-// Exercise.tsx
+// Exercise.tsx - Associative Property Module
 import React, { useState, useEffect, useRef, useCallback } from "react";
+
+// Level-specific components for Associative Property
+const Level1Component: React.FC<{ problem: AssociativePropertyProblem; onAnswer: (answer: number) => void; disabled: boolean }> = ({ problem, onAnswer, disabled }) => {
+  const [selectedGrouping, setSelectedGrouping] = useState<'left' | 'right' | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  
+  const animals = ['🐶', '🐱', '🐷'];
+  const operands = problem.operands.slice(0, 3);
+  
+  const leftGrouping = `(${operands[0]} + ${operands[1]}) + ${operands[2]}`;
+  const rightGrouping = `${operands[0]} + (${operands[1]} + ${operands[2]})`;
+  
+  const handleGroupingSelect = (grouping: 'left' | 'right') => {
+    if (disabled) return;
+    setSelectedGrouping(grouping);
+    setShowResult(true);
+    onAnswer(problem.correctAnswer);
+  };
+  
+  return (
+    <div className="space-y-6 p-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-blue-600 mb-2">Nivel 1: Agrupando Animales</h3>
+        <p className="text-gray-600">Aprende la propiedad asociativa con animales</p>
+      </div>
+      
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="text-center mb-6">
+          <div className="text-3xl mb-4">
+            {operands.map((count, i) => (
+              <span key={i} className="mx-2">
+                {Array(count).fill(0).map((_, j) => (
+                  <span key={j}>{animals[i]}</span>
+                ))}
+                {i < operands.length - 1 && <span className="text-2xl mx-2">+</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div 
+            className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              selectedGrouping === 'left' ? 'border-blue-500 bg-blue-100' : 'border-gray-300 hover:border-blue-300'
+            }`}
+            onClick={() => handleGroupingSelect('left')}
+          >
+            <div className="text-center space-y-3">
+              <h4 className="text-lg font-semibold">Agrupación A</h4>
+              <div className="text-xl">{leftGrouping}</div>
+              <div className="text-sm text-gray-600">Primero suma los dos primeros grupos</div>
+            </div>
+          </div>
+          
+          <div 
+            className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              selectedGrouping === 'right' ? 'border-blue-500 bg-blue-100' : 'border-gray-300 hover:border-blue-300'
+            }`}
+            onClick={() => handleGroupingSelect('right')}
+          >
+            <div className="text-center space-y-3">
+              <h4 className="text-lg font-semibold">Agrupación B</h4>
+              <div className="text-xl">{rightGrouping}</div>
+              <div className="text-sm text-gray-600">Primero suma los dos últimos grupos</div>
+            </div>
+          </div>
+        </div>
+        
+        {showResult && (
+          <div className="text-center mt-6 p-4 bg-white border border-gray-200 rounded-lg">
+            <div className="text-lg font-semibold text-blue-700">
+              ¡Ambas agrupaciones dan el mismo resultado: {problem.correctAnswer}!
+            </div>
+            <div className="text-sm text-blue-600 mt-2">
+              Esta es la propiedad asociativa: no importa cómo agrupa, el resultado es el mismo
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const Level2Component: React.FC<{ problem: AssociativePropertyProblem; onAnswer: (answer: number) => void; disabled: boolean }> = ({ problem, onAnswer, disabled }) => {
+  const [parenthesisPosition, setParenthesisPosition] = useState<'left' | 'right'>('left');
+  const [showCalculation, setShowCalculation] = useState(false);
+  
+  const operands = problem.operands.slice(0, 3);
+  
+  const calculateResult = () => {
+    if (parenthesisPosition === 'left') {
+      return (operands[0] + operands[1]) + operands[2];
+    } else {
+      return operands[0] + (operands[1] + operands[2]);
+    }
+  };
+  
+  const handleVerify = () => {
+    if (disabled) return;
+    setShowCalculation(true);
+    onAnswer(problem.correctAnswer);
+  };
+  
+  return (
+    <div className="space-y-6 p-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-purple-600 mb-2">Nivel 2: Moviendo Paréntesis</h3>
+        <p className="text-gray-600">Experimenta con diferentes agrupaciones</p>
+      </div>
+      
+      <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+        <div className="text-center mb-6">
+          <div className="text-4xl font-bold text-gray-800 mb-4">
+            {parenthesisPosition === 'left' ? (
+              <>({operands[0]} + {operands[1]}) + {operands[2]}</>
+            ) : (
+              <>{operands[0]} + ({operands[1]} + {operands[2]})</>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex justify-center gap-4 mb-6">
+          <button
+            className={`px-4 py-2 rounded-lg border-2 transition-all ${
+              parenthesisPosition === 'left' ? 'border-purple-500 bg-purple-100' : 'border-gray-300 hover:border-purple-300'
+            }`}
+            onClick={() => setParenthesisPosition('left')}
+            disabled={disabled}
+          >
+            Paréntesis a la izquierda
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg border-2 transition-all ${
+              parenthesisPosition === 'right' ? 'border-purple-500 bg-purple-100' : 'border-gray-300 hover:border-purple-300'
+            }`}
+            onClick={() => setParenthesisPosition('right')}
+            disabled={disabled}
+          >
+            Paréntesis a la derecha
+          </button>
+        </div>
+        
+        <div className="text-center">
+          <button
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+            onClick={handleVerify}
+            disabled={disabled}
+          >
+            Verificar Resultado
+          </button>
+        </div>
+        
+        {showCalculation && (
+          <div className="text-center mt-6 p-4 bg-white border border-gray-200 rounded-lg">
+            <div className="text-lg font-semibold text-purple-700 mb-2">
+              Resultado: {calculateResult()}
+            </div>
+            <div className="text-sm text-purple-600">
+              No importa dónde pongas los paréntesis, siempre obtienes {problem.correctAnswer}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 import { useProgress } from "@/context/ProgressContext";
 import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
