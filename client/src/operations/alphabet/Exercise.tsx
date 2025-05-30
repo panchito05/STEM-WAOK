@@ -1,30 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Settings, 
-  RotateCcw, 
-  Volume2,
-  VolumeX,
-  Star,
-  Play,
-  Pause,
-  Home,
-  BookOpen,
-  Brain,
-  Trophy
-} from 'lucide-react';
-import { useSettings } from '@/context/SettingsContext';
-import { ModuleSettings } from '@/types/settings';
-import { AlphabetItem, AlphabetAnswer, AlphabetMode, AlphabetSettings, AlphabetState } from './types';
-import { getCompleteAlphabet, getNextLetter, getPreviousLetter } from './alphabetData';
+import { ChevronLeft, ChevronRight, Volume2, Settings } from 'lucide-react';
+import { ModuleSettings } from '@/context/SettingsContext';
+import { useAlphabetLanguage } from './hooks/useAlphabetLanguage';
+import { getCompleteAlphabet } from './alphabetData';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -32,606 +14,139 @@ interface ExerciseProps {
 }
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
-  // Global settings context
-  const { globalSettings } = useSettings();
+  const language = useAlphabetLanguage(settings);
+  const alphabet = getCompleteAlphabet();
+  const [currentIndex, setCurrentIndex] = useState(0);
   
-  // Base state
-  const [alphabet] = useState<AlphabetItem[]>(getCompleteAlphabet());
-  const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
-  const [mode, setMode] = useState<AlphabetMode>('exploration');
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [userInput, setUserInput] = useState('');
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [feedback, setFeedback] = useState('');
-  const [feedbackColor, setFeedbackColor] = useState('');
-  
-  // Progress tracking
-  const [visitedLetters, setVisitedLetters] = useState<Set<string>>(new Set());
-  const [completedLetters, setCompletedLetters] = useState<Set<string>>(new Set());
-  const [history, setHistory] = useState<AlphabetAnswer[]>([]);
-  const [attempts, setAttempts] = useState(0);
-  const [startTime, setStartTime] = useState(Date.now());
-  
-  // Alphabet-specific settings
-  const [alphabetSettings, setAlphabetSettings] = useState<AlphabetSettings>({
-    level: 'beginner',
-    showLowercase: true,
-    showColors: true,
-    audioEnabled: true,
-    fontStyle: 'basic',
-    autoAdvance: false,
-    celebrateCompletion: true,
-    quizFrequency: 'occasionally',
-    language: 'english'
-  });
+  const currentLetter = alphabet[currentIndex];
+  const progress = ((currentIndex + 1) / alphabet.length) * 100;
 
-  // Update language when global settings change
-  useEffect(() => {
-    console.log('🔍 [ALPHABET DIAGNOSTIC] Analyzing language settings...');
-    console.log('📋 [GLOBAL SETTINGS]:', globalSettings);
-    console.log('📋 [MODULE SETTINGS]:', settings);
-    
-    // Check multiple sources for language setting
-    const globalLang = globalSettings?.language;
-    const moduleLang = settings?.language;
-    
-    console.log('🌐 Global language raw:', globalLang);
-    console.log('📝 Module language raw:', moduleLang);
-    
-    // Priority: Module settings first, then global settings
-    let detectedLanguage = 'english';
-    
-    // Check module language settings (supports both 'spanish' and 'español')
-    if (moduleLang === 'spanish' || moduleLang === 'español') {
-      detectedLanguage = 'spanish';
-      console.log('✅ [DETECTION] Using module language: spanish');
-    } 
-    // Check global language settings (supports 'es', 'spanish', 'español')
-    else if (globalLang === 'es' || globalLang === 'spanish' || globalLang === 'español') {
-      detectedLanguage = 'spanish';
-      console.log('✅ [DETECTION] Using global language: spanish');
-    }
-    // Check for English configurations
-    else if (globalLang === 'en' || globalLang === 'english' || moduleLang === 'english') {
-      detectedLanguage = 'english';
-      console.log('✅ [DETECTION] Using English configuration');
-    }
-    else {
-      console.log('⚠️ [DETECTION] Defaulting to english');
-    }
-    
-    console.log('🎯 [FINAL] Alphabet language set to:', detectedLanguage);
-    
-    setAlphabetSettings(prev => ({
-      ...prev,
-      language: detectedLanguage
-    }));
-  }, [globalSettings, settings]);
-
-  // Translation helper
-  const t = (englishText: string, spanishText: string) => {
-    return alphabetSettings.language === 'spanish' ? spanishText : englishText;
+  const nextLetter = () => {
+    setCurrentIndex((prev) => (prev + 1) % alphabet.length);
   };
 
-  // Refs
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const previousLetter = () => {
+    setCurrentIndex((prev) => (prev - 1 + alphabet.length) % alphabet.length);
+  };
 
-  // Current letter
-  const currentLetter = alphabet[currentLetterIndex] || alphabet[0];
-
-  // Audio synthesis for pronunciation
-  const playPronunciation = useCallback((text: string, lang: string) => {
-    if (!alphabetSettings.audioEnabled) return;
-    
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === 'spanish' ? 'es-ES' : 'en-US';
-      utterance.rate = 0.8;
-      utterance.pitch = 1.2;
-      speechSynthesis.speak(utterance);
+  // Get word based on language
+  const getWord = () => {
+    if (language === 'spanish') {
+      return currentLetter.words.spanish;
     }
-  }, [alphabetSettings.audioEnabled]);
+    return currentLetter.words.english;
+  };
 
-  // Navigation functions
-  const goToNextLetter = useCallback(() => {
-    if (currentLetterIndex < alphabet.length - 1) {
-      setCurrentLetterIndex(prev => prev + 1);
-      setUserInput('');
-      setShowAnswer(false);
-      setFeedback('');
-      setAttempts(0);
-      setStartTime(Date.now());
+  const getTitle = () => {
+    const word = getWord();
+    if (language === 'spanish') {
+      return `${currentLetter.letter} para ${word}`;
     }
-  }, [currentLetterIndex, alphabet.length]);
-
-  const goToPreviousLetter = useCallback(() => {
-    if (currentLetterIndex > 0) {
-      setCurrentLetterIndex(prev => prev - 1);
-      setUserInput('');
-      setShowAnswer(false);
-      setFeedback('');
-      setAttempts(0);
-      setStartTime(Date.now());
-    }
-  }, [currentLetterIndex]);
-
-  // Mark letter as visited
-  useEffect(() => {
-    if (currentLetter) {
-      setVisitedLetters(prev => new Set([...prev, currentLetter.letter]));
-    }
-  }, [currentLetter]);
-
-  // Auto-play pronunciation when letter changes
-  useEffect(() => {
-    if (currentLetter && mode === 'exploration') {
-      const timer = setTimeout(() => {
-        const word = alphabetSettings.language === 'spanish' 
-          ? currentLetter.word.spanish 
-          : currentLetter.word.english;
-        playPronunciation(`${currentLetter.letter}. ${word}`, alphabetSettings.language);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [currentLetter, mode, alphabetSettings.language, playPronunciation]);
-
-  // Check for quiz mode triggers
-  const shouldShowQuiz = useCallback(() => {
-    if (alphabetSettings.quizFrequency === 'never') return false;
-    if (alphabetSettings.level === 'beginner') return false;
-    
-    const threshold = alphabetSettings.quizFrequency === 'frequent' ? 3 : 5;
-    return visitedLetters.size > 0 && visitedLetters.size % threshold === 0;
-  }, [alphabetSettings.quizFrequency, alphabetSettings.level, visitedLetters.size]);
-
-  // Handle quiz answer submission
-  const handleQuizSubmit = useCallback(() => {
-    if (!userInput.trim()) return;
-
-    const correctAnswer = alphabetSettings.language === 'spanish' 
-      ? currentLetter.word.spanish.toLowerCase()
-      : currentLetter.word.english.toLowerCase();
-    
-    const isCorrect = userInput.toLowerCase().trim() === correctAnswer;
-    const newAttempts = attempts + 1;
-    setAttempts(newAttempts);
-
-    // Create answer record
-    const answer: AlphabetAnswer = {
-      id: `${currentLetter.id}-${Date.now()}`,
-      letterId: currentLetter.id,
-      letter: currentLetter,
-      userAnswer: userInput.trim(),
-      isCorrect,
-      mode,
-      timestamp: Date.now(),
-      attempts: newAttempts,
-      timeSpent: Date.now() - startTime
-    };
-
-    setHistory(prev => [...prev, answer]);
-
-    if (isCorrect) {
-      setFeedback(alphabetSettings.language === 'spanish' ? 
-        `¡Correcto! ${currentLetter.letter} es para ${currentLetter.word.spanish}` :
-        `Correct! ${currentLetter.letter} is for ${currentLetter.word.english}`
-      );
-      setFeedbackColor('green');
-      setCompletedLetters(prev => new Set([...prev, currentLetter.letter]));
-      
-      if (alphabetSettings.autoAdvance) {
-        setTimeout(goToNextLetter, 2000);
-      }
-    } else {
-      setFeedback(alphabetSettings.language === 'spanish' ? 
-        `Intenta de nuevo. ${currentLetter.letter} es para ${currentLetter.word.spanish}` :
-        `Try again. ${currentLetter.letter} is for ${currentLetter.word.english}`
-      );
-      setFeedbackColor('red');
-      setShowAnswer(true);
-    }
-
-    playPronunciation(
-      isCorrect ? (alphabetSettings.language === 'spanish' ? '¡Correcto!' : 'Correct!') : 
-      (alphabetSettings.language === 'spanish' ? 'Intenta de nuevo' : 'Try again'),
-      alphabetSettings.language
-    );
-  }, [userInput, attempts, currentLetter, alphabetSettings, mode, startTime, goToNextLetter, playPronunciation]);
-
-  // Handle keyboard input
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (mode === 'quiz' && event.key === 'Enter') {
-        handleQuizSubmit();
-      } else if (event.key === 'ArrowRight') {
-        goToNextLetter();
-      } else if (event.key === 'ArrowLeft') {
-        goToPreviousLetter();
-      } else if (event.key === ' ') {
-        event.preventDefault();
-        const word = alphabetSettings.language === 'spanish' 
-          ? currentLetter.word.spanish 
-          : currentLetter.word.english;
-        playPronunciation(`${currentLetter.letter}. ${word}`, alphabetSettings.language);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [mode, handleQuizSubmit, goToNextLetter, goToPreviousLetter, currentLetter, alphabetSettings, playPronunciation]);
-
-  // Calculate progress
-  const progress = Math.round((visitedLetters.size / alphabet.length) * 100);
-  const completionProgress = Math.round((completedLetters.size / alphabet.length) * 100);
-
-  // Mode switching
-  const switchMode = (newMode: AlphabetMode) => {
-    setMode(newMode);
-    setUserInput('');
-    setShowAnswer(false);
-    setFeedback('');
-    setAttempts(0);
-    setStartTime(Date.now());
+    return `${currentLetter.letter} for ${word}`;
   };
 
   return (
-    <div className="alphabet-learning-module min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900 dark:to-pink-900 p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <BookOpen className="w-8 h-8 text-purple-600 dark:text-purple-300" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {alphabetSettings.language === 'spanish' ? 'Aprendizaje del Alfabeto' : 'Alphabet Learning'}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                {alphabetSettings.language === 'spanish' ? 
-                  `Letra ${currentLetterIndex + 1} de ${alphabet.length}` :
-                  `Letter ${currentLetterIndex + 1} of ${alphabet.length}`
-                }
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setAlphabetSettings(prev => ({ ...prev, audioEnabled: !prev.audioEnabled }))}
-            >
-              {alphabetSettings.audioEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </Button>
-            <Button variant="outline" size="sm" onClick={onOpenSettings}>
-              <Settings className="w-4 h-4" />
-            </Button>
-          </div>
+    <div className="w-full max-w-4xl mx-auto space-y-6 p-4">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">
+            {language === 'spanish' ? 'Aprendizaje del Alfabeto' : 'Alphabet Learning'}
+          </h1>
+          <p className="text-gray-600">
+            {language === 'spanish' ? 'Explora cada letra del alfabeto' : 'Explore each letter of the alphabet'}
+          </p>
         </div>
+        <Button variant="outline" onClick={onOpenSettings}>
+          <Settings className="w-4 h-4 mr-2" />
+          {language === 'spanish' ? 'Configuración' : 'Settings'}
+        </Button>
+      </div>
 
-        {/* Progress Bar */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">
-                {alphabetSettings.language === 'spanish' ? 'Progreso de Exploración' : 'Exploration Progress'}
-              </span>
-              <span className="text-sm text-gray-600">{progress}%</span>
-            </div>
-            <Progress value={progress} className="h-2 mb-3" />
-            
-            {alphabetSettings.level !== 'beginner' && (
-              <>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">
-                    {alphabetSettings.language === 'spanish' ? 'Letras Dominadas' : 'Letters Mastered'}
-                  </span>
-                  <span className="text-sm text-gray-600">{completionProgress}%</span>
-                </div>
-                <Progress value={completionProgress} className="h-2" />
-              </>
-            )}
-          </CardContent>
-        </Card>
+      {/* Progress */}
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm">
+          <span>{language === 'spanish' ? 'Progreso' : 'Progress'}</span>
+          <span>{currentIndex + 1} / {alphabet.length}</span>
+        </div>
+        <Progress value={progress} className="w-full" />
+      </div>
 
-        {/* Mode Selection */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant={mode === 'exploration' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => switchMode('exploration')}
-                className="flex items-center gap-2"
-              >
-                <BookOpen className="w-4 h-4" />
-                {alphabetSettings.language === 'spanish' ? 'Exploración' : 'Exploration'}
-              </Button>
-              
-              <Button
-                variant={mode === 'guided' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => switchMode('guided')}
-                className="flex items-center gap-2"
-              >
-                <Play className="w-4 h-4" />
-                {alphabetSettings.language === 'spanish' ? 'Guiado' : 'Guided'}
-              </Button>
-              
-              {alphabetSettings.level !== 'beginner' && (
-                <Button
-                  variant={mode === 'quiz' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => switchMode('quiz')}
-                  className="flex items-center gap-2"
-                >
-                  <Brain className="w-4 h-4" />
-                  {alphabetSettings.language === 'spanish' ? 'Cuestionario' : 'Quiz'}
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Main Learning Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Main Card */}
+      <Card className="w-full">
+        <CardHeader className="text-center">
+          <CardTitle className="text-lg">
+            {getTitle()}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
           {/* Letter Display */}
-          <div className="lg:col-span-2">
-            <Card className="h-full">
-              <CardContent className="p-8">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentLetter.id}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.3 }}
-                    className="text-center"
-                  >
-                    {/* Letter Display */}
-                    <div 
-                      className="inline-block mb-6 p-8 rounded-3xl shadow-lg"
-                      style={{ 
-                        backgroundColor: alphabetSettings.showColors ? currentLetter.color : '#f8f9fa',
-                        color: alphabetSettings.showColors ? '#ffffff' : '#2d3436'
-                      }}
-                    >
-                      <div 
-                        className={`text-8xl font-bold ${
-                          alphabetSettings.fontStyle === 'decorative' ? 'font-serif' :
-                          alphabetSettings.fontStyle === 'handwriting' ? 'font-mono' : 'font-sans'
-                        }`}
-                      >
-                        {currentLetter.letter}
-                      </div>
-                      {alphabetSettings.showLowercase && (
-                        <div 
-                          className={`text-4xl mt-2 ${
-                            alphabetSettings.fontStyle === 'decorative' ? 'font-serif' :
-                            alphabetSettings.fontStyle === 'handwriting' ? 'font-mono' : 'font-sans'
-                          }`}
-                        >
-                          {currentLetter.lowercase}
-                        </div>
-                      )}
-                    </div>
+          <motion.div
+            key={currentLetter.letter}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="text-center"
+          >
+            <div className="text-8xl font-bold text-blue-600 mb-4">
+              {currentLetter.letter}
+            </div>
+            <div className="text-6xl mb-4">
+              {currentLetter.letter.toLowerCase()}
+            </div>
+          </motion.div>
 
-                    {/* Image */}
-                    <div className="mb-6">
-                      <div 
-                        className="w-32 h-32 mx-auto bg-white rounded-2xl shadow-md flex items-center justify-center"
-                        dangerouslySetInnerHTML={{ 
-                          __html: alphabetSettings.language === 'spanish' 
-                            ? currentLetter.image.svg
-                                .replace('id="apple"', 'id="apple" style="display: none;"')
-                                .replace('id="airplane" style="display: none;"', 'id="airplane"')
-                            : currentLetter.image.svg
-                        }}
-                      />
-                    </div>
+          {/* Word and Image */}
+          <div className="text-center space-y-4">
+            <div className="text-2xl font-semibold text-gray-700">
+              {getWord()}
+            </div>
+            
+            {/* SVG Image */}
+            <div className="flex justify-center">
+              <div 
+                className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center"
+                dangerouslySetInnerHTML={{ __html: currentLetter.image }}
+              />
+            </div>
 
-                    {/* Word */}
-                    <div className="mb-6">
-                      <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                        {alphabetSettings.language === 'spanish' ? 
-                          currentLetter.word.spanish : 
-                          currentLetter.word.english
-                        }
-                      </h2>
-                      <p className="text-gray-600 dark:text-gray-300">
-                        {alphabetSettings.language === 'spanish' ? 
-                          currentLetter.image.alt.spanish : 
-                          currentLetter.image.alt.english
-                        }
-                      </p>
-                    </div>
-
-                    {/* Pronunciation Button */}
-                    <Button
-                      onClick={() => {
-                        const word = alphabetSettings.language === 'spanish' 
-                          ? currentLetter.word.spanish 
-                          : currentLetter.word.english;
-                        playPronunciation(`${currentLetter.letter}. ${word}`, alphabetSettings.language);
-                      }}
-                      className="mb-6"
-                      size="lg"
-                    >
-                      <Volume2 className="w-5 h-5 mr-2" />
-                      {alphabetSettings.language === 'spanish' ? 'Escuchar' : 'Listen'}
-                    </Button>
-
-                    {/* Quiz Mode Input */}
-                    {mode === 'quiz' && alphabetSettings.level !== 'beginner' && (
-                      <div className="mt-6 space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-2">
-                            {alphabetSettings.language === 'spanish' ? 
-                              `¿Qué palabra empieza con ${currentLetter.letter}?` :
-                              `What word starts with ${currentLetter.letter}?`
-                            }
-                          </label>
-                          <div className="flex gap-2">
-                            <Input
-                              value={userInput}
-                              onChange={(e) => setUserInput(e.target.value)}
-                              placeholder={alphabetSettings.language === 'spanish' ? 'Escribe tu respuesta...' : 'Type your answer...'}
-                              onKeyPress={(e) => e.key === 'Enter' && handleQuizSubmit()}
-                              disabled={showAnswer}
-                              className="flex-1"
-                            />
-                            <Button onClick={handleQuizSubmit} disabled={showAnswer || !userInput.trim()}>
-                              {alphabetSettings.language === 'spanish' ? 'Enviar' : 'Submit'}
-                            </Button>
-                          </div>
-                        </div>
-
-                        {feedback && (
-                          <div 
-                            className={`p-3 rounded-lg text-center font-medium ${
-                              feedbackColor === 'green' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {feedback}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </CardContent>
-            </Card>
+            {/* Audio Button */}
+            <Button variant="outline" className="mx-auto">
+              <Volume2 className="w-4 h-4 mr-2" />
+              {language === 'spanish' ? 'Reproducir Sonido' : 'Play Sound'}
+            </Button>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Navigation */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {alphabetSettings.language === 'spanish' ? 'Navegación' : 'Navigation'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2 mb-4">
-                  <Button
-                    variant="outline"
-                    onClick={goToPreviousLetter}
-                    disabled={currentLetterIndex === 0}
-                    className="flex-1"
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
-                    {alphabetSettings.language === 'spanish' ? 'Anterior' : 'Previous'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={goToNextLetter}
-                    disabled={currentLetterIndex === alphabet.length - 1}
-                    className="flex-1"
-                  >
-                    {alphabetSettings.language === 'spanish' ? 'Siguiente' : 'Next'}
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                </div>
-                
-                {/* Letter Grid */}
-                <div className="grid grid-cols-5 gap-1">
-                  {alphabet.map((letter, index) => (
-                    <Button
-                      key={letter.id}
-                      variant={index === currentLetterIndex ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => {
-                        setCurrentLetterIndex(index);
-                        setUserInput('');
-                        setShowAnswer(false);
-                        setFeedback('');
-                        setAttempts(0);
-                        setStartTime(Date.now());
-                      }}
-                      className={`aspect-square p-0 text-xs relative ${
-                        completedLetters.has(letter.letter) ? 'border-green-500' : ''
-                      }`}
-                    >
-                      {letter.letter}
-                      {completedLetters.has(letter.letter) && (
-                        <Trophy className="w-2 h-2 absolute top-0 right-0 text-yellow-500" />
-                      )}
-                      {visitedLetters.has(letter.letter) && !completedLetters.has(letter.letter) && (
-                        <div className="w-1 h-1 absolute top-0 right-0 bg-blue-500 rounded-full" />
-                      )}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+          {/* Navigation */}
+          <div className="flex justify-between items-center pt-4">
+            <Button 
+              variant="outline" 
+              onClick={previousLetter}
+              disabled={currentIndex === 0}
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              {language === 'spanish' ? 'Anterior' : 'Previous'}
+            </Button>
 
-            {/* Statistics */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {alphabetSettings.language === 'spanish' ? 'Estadísticas' : 'Statistics'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm">
-                      {alphabetSettings.language === 'spanish' ? 'Letras Visitadas:' : 'Letters Visited:'}
-                    </span>
-                    <Badge variant="secondary">{visitedLetters.size}/{alphabet.length}</Badge>
-                  </div>
-                  
-                  {alphabetSettings.level !== 'beginner' && (
-                    <div className="flex justify-between">
-                      <span className="text-sm">
-                        {alphabetSettings.language === 'spanish' ? 'Letras Dominadas:' : 'Letters Mastered:'}
-                      </span>
-                      <Badge variant="secondary">{completedLetters.size}/{alphabet.length}</Badge>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between">
-                    <span className="text-sm">
-                      {alphabetSettings.language === 'spanish' ? 'Sesión Actual:' : 'Current Session:'}
-                    </span>
-                    <Badge variant="secondary">{history.length} {alphabetSettings.language === 'spanish' ? 'respuestas' : 'answers'}</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <span className="text-sm text-gray-500">
+              {language === 'spanish' ? 'Letra' : 'Letter'} {currentIndex + 1}
+            </span>
 
-            {/* Completion Celebration */}
-            {visitedLetters.size === alphabet.length && alphabetSettings.celebrateCompletion && (
-              <Card className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
-                <CardContent className="p-4 text-center">
-                  <Trophy className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                  <h3 className="font-bold text-yellow-800 dark:text-yellow-200">
-                    {alphabetSettings.language === 'spanish' ? '¡Felicitaciones!' : 'Congratulations!'}
-                  </h3>
-                  <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    {alphabetSettings.language === 'spanish' ? 
-                      '¡Has explorado todo el alfabeto!' : 
-                      'You\'ve explored the entire alphabet!'
-                    }
-                  </p>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setCurrentLetterIndex(0);
-                      setVisitedLetters(new Set());
-                      setCompletedLetters(new Set());
-                      setHistory([]);
-                    }}
-                    className="mt-2"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-1" />
-                    {alphabetSettings.language === 'spanish' ? 'Comenzar de Nuevo' : 'Start Over'}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            <Button 
+              variant="outline" 
+              onClick={nextLetter}
+              disabled={currentIndex === alphabet.length - 1}
+            >
+              {language === 'spanish' ? 'Siguiente' : 'Next'}
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
-        </div>
+        </CardContent>
+      </Card>
+
+      {/* Debug Info */}
+      <div className="text-xs text-gray-400 p-2 bg-gray-50 rounded">
+        Debug: Language = {language} | Letter = {currentLetter.letter} | Word = {getWord()}
       </div>
     </div>
   );
