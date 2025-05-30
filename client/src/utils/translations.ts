@@ -88,6 +88,10 @@ type TranslationKeys = {
       name: string;
       description: string;
     };
+    "associative-property": {
+      name: string;
+      description: string;
+    };
 
   };
 };
@@ -180,6 +184,10 @@ export const enTranslations: TranslationKeys = {
       name: "Division",
       description: "Practice division with various difficulty levels"
     },
+    "associative-property": {
+      name: "Associative Property",
+      description: "Practice associative property with various difficulty levels"
+    },
 
   },
 };
@@ -271,6 +279,10 @@ export const esTranslations: TranslationKeys = {
     division: {
       name: "División",
       description: "Practica divisiones con varios niveles de dificultad"
+    },
+    "associative-property": {
+      name: "Propiedad Asociativa",
+      description: "Practica la propiedad asociativa con diferentes niveles de dificultad"
     },
 
   },

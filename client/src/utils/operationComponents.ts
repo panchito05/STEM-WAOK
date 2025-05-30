@@ -77,11 +77,11 @@ export const operationModules: Module[] = [
   },
   {
     id: "associative-property",
-    displayName: "Associative Property",
-    description: "Practice associative property with various difficulty levels",
+    displayName: "Propiedad Asociativa",
+    description: "Practica la propiedad asociativa con diferentes niveles de dificultad",
     difficulty: "beginner",
     color: "#f97316", // Naranja para distinguir de otros módulos
-    icon: "Shuffle",
+    icon: "ArrowLeftRight",
   },
 
 ];
