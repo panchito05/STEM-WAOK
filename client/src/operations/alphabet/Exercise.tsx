@@ -187,32 +187,24 @@ const defaultProgress: AlphabetProgress = {
   lastActivity: new Date()
 };
 
-// Real Images for each letter based on language
+// SVG Images for each letter based on language
 const createLetterImage = (letter: string, language: AlphabetLanguage) => {
   // Find the letter data in the array
   const data = alphabetData.find(item => item.letter === letter.toUpperCase());
+  console.log('🔍 createLetterImage Debug:', { letter, language, data, alphabetDataLength: alphabetData.length });
   
   if (!data) {
+    console.log('❌ No data found for letter:', letter);
     return <div className="text-red-500">No data for {letter}</div>;
   }
   
   const word = language === 'spanish' ? data.words.spanish : data.words.english;
-  const imageUrl = language === 'spanish' ? data.images.spanish : data.images.english;
-
-  return (
-    <div className="flex flex-col items-center space-y-2">
-      <img 
-        src={imageUrl} 
-        alt={word}
-        className="w-32 h-32 object-cover rounded-lg shadow-md"
-        onError={(e) => {
-          e.currentTarget.src = `https://via.placeholder.com/200x200/FF6B6B/FFFFFF?text=${letter}`;
-        }}
-      />
-      <span className="text-sm font-medium text-gray-700">{word}</span>
-    </div>
-  );
-};
+  const color = data.color;
+  
+  console.log('✅ Found data:', { word, color, letter });
+  
+  // Get appropriate SVG based on letter and language
+  const getSVGContent = () => {
     switch (letter.toLowerCase()) {
       case 'a':
         return language === 'spanish' ? (
