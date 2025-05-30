@@ -55,27 +55,48 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
             <span>{operands[0]} +</span>
             <span>(</span>
             <Input
-              type="number"
-              className="w-16 text-center"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              className="w-16 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500"
               value={userAnswers.blank1 || ''}
-              onChange={(e) => setUserAnswers(prev => ({ ...prev, blank1: e.target.value }))}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                setUserAnswers(prev => ({ ...prev, blank1: value }));
+              }}
               disabled={showResult}
+              placeholder="?"
+              autoComplete="off"
             />
             <span>+</span>
             <Input
-              type="number"
-              className="w-16 text-center"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              className="w-16 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500"
               value={userAnswers.blank2 || ''}
-              onChange={(e) => setUserAnswers(prev => ({ ...prev, blank2: e.target.value }))}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                setUserAnswers(prev => ({ ...prev, blank2: value }));
+              }}
               disabled={showResult}
+              placeholder="?"
+              autoComplete="off"
             />
             <span>) =</span>
             <Input
-              type="number"
-              className="w-20 text-center"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              className="w-20 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500"
               value={userAnswers.blank3 || ''}
-              onChange={(e) => setUserAnswers(prev => ({ ...prev, blank3: e.target.value }))}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                setUserAnswers(prev => ({ ...prev, blank3: value }));
+              }}
               disabled={showResult}
+              placeholder="?"
+              autoComplete="off"
             />
           </div>
         </div>
