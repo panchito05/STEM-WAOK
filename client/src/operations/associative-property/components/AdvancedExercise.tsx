@@ -10,7 +10,6 @@ interface AdvancedExerciseProps {
   setActiveInteractiveField: React.Dispatch<React.SetStateAction<string | null>>;
   validationTrigger: number;
   exerciseStarted: boolean;
-  onContinue?: () => void;
 }
 
 type ExerciseType = 'fill-blank' | 'verification' | 'multiple-choice';
@@ -23,12 +22,10 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   activeInteractiveField,
   setActiveInteractiveField,
   validationTrigger,
-  exerciseStarted,
-  onContinue
+  exerciseStarted
 }) => {
   const [exercise, setExercise] = useState<ExerciseType>('fill-blank');
   const [showResult, setShowResult] = useState(false);
-  const [waitingForContinue, setWaitingForContinue] = useState(false);
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [verificationAnswer, setVerificationAnswer] = useState<string>('');
   const [shuffledChoices, setShuffledChoices] = useState<any[]>([]);
@@ -37,7 +34,6 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   useEffect(() => {
     // Reiniciar estado cuando cambian los operandos
     setShowResult(false);
-    setWaitingForContinue(false);
     setSelectedChoice('');
     setVerificationAnswer('');
     setInteractiveAnswers({ blank1: '', blank2: '', blank3: '', blank4: '' });
@@ -148,7 +144,6 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     
     const isCorrect = blank1Correct && blank2Correct && blank3Correct;
     setShowResult(true);
-    setWaitingForContinue(true);
     onAnswer(isCorrect);
   };
 
@@ -157,7 +152,6 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     const actuallyCorrect = verificationExpression?.isCorrect ?? true;
     const isCorrect = userAnsweredTrue === actuallyCorrect;
     setShowResult(true);
-    setWaitingForContinue(true);
     onAnswer(isCorrect);
   };
 
@@ -166,15 +160,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     const selectedChoiceData = shuffledChoices.find(choice => choice.id === selectedChoice);
     const isCorrect = selectedChoiceData?.correct || false;
     setShowResult(true);
-    setWaitingForContinue(true);
     onAnswer(isCorrect);
-  };
-
-  const handleContinue = () => {
-    setWaitingForContinue(false);
-    if (onContinue) {
-      onContinue();
-    }
   };
 
   const renderFillBlankExercise = () => {
