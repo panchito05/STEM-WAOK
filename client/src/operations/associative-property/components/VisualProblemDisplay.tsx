@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { VisualObject } from '../types';
+import InteractiveExercise from './InteractiveExercise';
 
 interface VisualProblemDisplayProps {
   visualObjects: VisualObject[];
   operands: number[];
   difficulty?: string;
+  onAnswer?: (isCorrect: boolean) => void;
 }
 
-const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjects, operands, difficulty = 'beginner' }) => {
+const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjects, operands, difficulty = 'beginner', onAnswer }) => {
   const [shuffledObjects, setShuffledObjects] = useState<VisualObject[]>(visualObjects);
   const [shuffleCount, setShuffleCount] = useState(0);
   const [currentGrouping, setCurrentGrouping] = useState<'first' | 'second'>('first');
@@ -22,9 +24,13 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
     return newArray;
   };
 
-  // Efecto para cambiar posiciones con intervalos crecientes: 10s, 20s, 30s, 40s
+  // Efecto para manejar el cambio de agrupación solo en elementary
   useEffect(() => {
-    setShuffledObjects(visualObjects);
+    if (difficulty !== 'elementary') {
+      setShuffledObjects(visualObjects);
+      return;
+    }
+    
     setShuffleCount(0);
     setCurrentGrouping('first');
     
@@ -35,18 +41,47 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
       const intervals = [10000, 20000, 30000, 40000];
       const delay = intervals[count];
       
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         setShuffleCount(count + 1);
         setCurrentGrouping(prev => prev === 'first' ? 'second' : 'first');
-        if (difficulty === 'beginner') {
-          setShuffledObjects(prev => shuffleArray(prev));
-        }
         scheduleNextShuffle(count + 1);
       }, delay);
+      
+      return timeoutId;
     };
     
-    scheduleNextShuffle(0);
-  }, [visualObjects, difficulty]);
+    const timeoutId = scheduleNextShuffle(0);
+    
+    // Cleanup function
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [operands, difficulty]);
+  
+  // Efecto separado para el shuffle de frutas solo en beginner
+  useEffect(() => {
+    if (difficulty === 'beginner') {
+      setShuffledObjects(visualObjects);
+      setShuffleCount(0);
+      
+      const scheduleNextShuffle = (count: number) => {
+        if (count >= 4) return;
+        
+        const intervals = [10000, 20000, 30000, 40000];
+        const delay = intervals[count];
+        
+        setTimeout(() => {
+          setShuffleCount(count + 1);
+          setShuffledObjects(prev => shuffleArray(prev));
+          scheduleNextShuffle(count + 1);
+        }, delay);
+      };
+      
+      scheduleNextShuffle(0);
+    }
+  }, [visualObjects]);
   const renderFruitGroup = (visual: VisualObject, index: number) => {
     const fruits = Array.from({ length: visual.count }, (_, i) => (
       <span key={i} className="text-3xl mr-1">
@@ -162,16 +197,10 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
   if (difficulty === 'intermediate') {
     return (
       <div className="w-full">
-        <div className="text-center mb-4">
-          <p className="text-lg font-medium text-gray-700">
-            Completa las ecuaciones con la propiedad asociativa
-          </p>
-        </div>
-        <div className="bg-purple-50 p-4 rounded-lg">
-          <div className="text-lg text-center">
-            ({operands[0]} + {operands[1]}) + {operands[2]} = ? y {operands[0]} + ({operands[1]} + {operands[2]}) = ?
-          </div>
-        </div>
+        <InteractiveExercise 
+          operands={operands} 
+          onAnswer={onAnswer || (() => {})} 
+        />
       </div>
     );
   }

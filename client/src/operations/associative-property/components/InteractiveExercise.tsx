@@ -1,134 +1,187 @@
 import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface InteractiveExerciseProps {
   operands: number[];
-  onAnswer: (answers: number[]) => void;
+  onAnswer: (isCorrect: boolean) => void;
 }
 
 const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onAnswer }) => {
-  const [form1Answer, setForm1Answer] = useState<string>('');
-  const [form2Blank1, setForm2Blank1] = useState<string>('');
-  const [form2Blank2, setForm2Blank2] = useState<string>('');
-  const [form2Answer, setForm2Answer] = useState<string>('');
+  const [exercise] = useState(() => Math.random() > 0.5 ? 'fill-blank' : 'multiple-choice');
+  const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
+  const [selectedChoice, setSelectedChoice] = useState<string>('');
+  const [showResult, setShowResult] = useState(false);
 
-  const handleSubmit = () => {
-    const answers = [
-      parseFloat(form1Answer) || 0,
-      parseFloat(form2Blank1) || 0,
-      parseFloat(form2Blank2) || 0,
-      parseFloat(form2Answer) || 0
-    ];
-    onAnswer(answers);
+  const handleFillBlankSubmit = () => {
+    const correctAnswer1 = operands[1];
+    const correctAnswer2 = operands[2];
+    const correctAnswer3 = operands[0] + operands[1] + operands[2];
+
+    const isCorrect = 
+      parseInt(userAnswers.blank1) === correctAnswer1 &&
+      parseInt(userAnswers.blank2) === correctAnswer2 &&
+      parseInt(userAnswers.blank3) === correctAnswer3;
+
+    setShowResult(true);
+    onAnswer(isCorrect);
   };
 
-  const expectedForm1Answer = operands[0] + operands[1];
-  const expectedForm2Sum = operands[1] + operands[2];
+  const handleMultipleChoiceSubmit = () => {
+    const isCorrect = selectedChoice === 'a';
+    setShowResult(true);
+    onAnswer(isCorrect);
+  };
 
-  return (
-    <div className="w-full">
-      <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-        <div className="text-center mb-4">
-          <h4 className="text-lg font-semibold text-purple-800 mb-2">
-            🎯 Nivel Intermedio: Aplicar la Propiedad en Ejercicios Guiados
-          </h4>
-          <p className="text-sm text-purple-700">
-            Completa los espacios usando diferentes agrupaciones
-          </p>
-        </div>
+  const renderFillBlankExercise = () => (
+    <div className="space-y-6">
+      <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
+        <h3 className="text-lg font-semibold text-blue-800 mb-4">
+          Completa la expresión equivalente
+        </h3>
         
-        <div className="bg-blue-50 p-4 rounded-lg mb-4">
-          <h4 className="text-sm font-semibold text-blue-800 mb-3 text-center">
-            💡 Propiedad Asociativa: Puedes agrupar de diferentes maneras
-          </h4>
-          
-          {/* Forma 1 con agrupación visual */}
-          <div className="mb-4">
-            <div className="flex items-center justify-center gap-2 text-lg flex-wrap">
-              <span className="text-sm font-medium text-blue-800">Forma 1:</span>
-              <span className="px-2 py-1 bg-green-100 border-2 border-green-400 rounded">
-                ({operands[0]} + {operands[1]})
-              </span>
-              <span className="text-gray-600">+</span>
-              <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
-                {operands[2]}
-              </span>
-              <span className="text-gray-600">=</span>
-              <span className="px-2 py-1 bg-green-100 border-2 border-green-400 rounded">
-                {expectedForm1Answer}
-              </span>
-              <span className="text-gray-600">+</span>
-              <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
-                {operands[2]}
-              </span>
-              <span className="text-gray-600">=</span>
-              <Input
-                type="number"
-                value={form1Answer}
-                onChange={(e) => setForm1Answer(e.target.value)}
-                className="w-16 h-8 text-center text-blue-600 font-bold"
-                placeholder="?"
-              />
-            </div>
+        {/* Expresión dada */}
+        <div className="mb-4 text-center">
+          <div className="text-xl font-medium mb-2">Se muestra:</div>
+          <div className="text-2xl font-bold text-green-600 bg-green-50 p-3 rounded-lg inline-block">
+            ({operands[0]} + {operands[1]}) + {operands[2]} = {operands[0] + operands[1] + operands[2]}
           </div>
-          
-          {/* Forma 2 con agrupación visual diferente */}
-          <div className="mb-4">
-            <div className="flex items-center justify-center gap-2 text-lg flex-wrap">
-              <span className="text-sm font-medium text-blue-800">Forma 2:</span>
-              <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
-                {operands[0]}
-              </span>
-              <span className="text-gray-600">+</span>
-              <span className="px-2 py-1 bg-purple-100 border-2 border-purple-400 rounded">
-                (
-                <Input
-                  type="number"
-                  value={form2Blank1}
-                  onChange={(e) => setForm2Blank1(e.target.value)}
-                  className="w-12 h-6 text-center inline mx-1"
-                  placeholder="?"
-                />
-                +
-                <Input
-                  type="number"
-                  value={form2Blank2}
-                  onChange={(e) => setForm2Blank2(e.target.value)}
-                  className="w-12 h-6 text-center inline mx-1"
-                  placeholder="?"
-                />
-                )
-              </span>
-              <span className="text-gray-600">=</span>
-              <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
-                {operands[0]}
-              </span>
-              <span className="text-gray-600">+</span>
-              <span className="px-2 py-1 bg-purple-100 border-2 border-purple-400 rounded">
-                {expectedForm2Sum}
-              </span>
-              <span className="text-gray-600">=</span>
-              <Input
-                type="number"
-                value={form2Answer}
-                onChange={(e) => setForm2Answer(e.target.value)}
-                className="w-16 h-8 text-center text-blue-600 font-bold"
-                placeholder="?"
-              />
-            </div>
-          </div>
+        </div>
 
-          <div className="text-center mt-4">
-            <Button 
-              onClick={handleSubmit}
-              className="bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              Verificar Respuestas
-            </Button>
+        {/* Ejercicio a completar */}
+        <div className="text-center">
+          <div className="text-xl font-medium mb-2">Completa la otra forma:</div>
+          <div className="text-2xl font-bold flex items-center justify-center gap-2">
+            <span>{operands[0]} +</span>
+            <span>(</span>
+            <Input
+              type="number"
+              className="w-16 text-center"
+              value={userAnswers.blank1 || ''}
+              onChange={(e) => setUserAnswers(prev => ({ ...prev, blank1: e.target.value }))}
+              disabled={showResult}
+            />
+            <span>+</span>
+            <Input
+              type="number"
+              className="w-16 text-center"
+              value={userAnswers.blank2 || ''}
+              onChange={(e) => setUserAnswers(prev => ({ ...prev, blank2: e.target.value }))}
+              disabled={showResult}
+            />
+            <span>) =</span>
+            <Input
+              type="number"
+              className="w-20 text-center"
+              value={userAnswers.blank3 || ''}
+              onChange={(e) => setUserAnswers(prev => ({ ...prev, blank3: e.target.value }))}
+              disabled={showResult}
+            />
           </div>
         </div>
       </div>
+
+      {!showResult && (
+        <div className="text-center">
+          <Button 
+            onClick={handleFillBlankSubmit}
+            className="bg-blue-600 hover:bg-blue-700"
+            disabled={!userAnswers.blank1 || !userAnswers.blank2 || !userAnswers.blank3}
+          >
+            Verificar Respuesta
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderMultipleChoiceExercise = () => {
+    const choices = [
+      { id: 'a', text: `${operands[0]} + (${operands[1]} + ${operands[2]})`, correct: true },
+      { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: false },
+      { id: 'c', text: `${operands[0]} × (${operands[1]} + ${operands[2]})`, correct: false }
+    ];
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-200">
+          <h3 className="text-lg font-semibold text-purple-800 mb-4">
+            Elige la opción correcta
+          </h3>
+          
+          <div className="mb-6 text-center">
+            <div className="text-xl font-medium mb-2">¿Cuál es igual a:</div>
+            <div className="text-2xl font-bold text-purple-600 bg-purple-100 p-3 rounded-lg inline-block">
+              ({operands[0]} + {operands[1]}) + {operands[2]}?
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {choices.map((choice) => (
+              <label
+                key={choice.id}
+                className={`flex items-center p-3 rounded-lg border-2 cursor-pointer transition-colors ${
+                  selectedChoice === choice.id
+                    ? 'border-purple-400 bg-purple-100'
+                    : 'border-gray-200 hover:border-purple-300'
+                } ${showResult && choice.correct ? 'bg-green-100 border-green-400' : ''}
+                ${showResult && selectedChoice === choice.id && !choice.correct ? 'bg-red-100 border-red-400' : ''}`}
+              >
+                <input
+                  type="radio"
+                  name="choice"
+                  value={choice.id}
+                  checked={selectedChoice === choice.id}
+                  onChange={(e) => setSelectedChoice(e.target.value)}
+                  className="mr-3"
+                  disabled={showResult}
+                />
+                <span className="text-lg font-medium">
+                  {choice.id}) {choice.text}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {!showResult && (
+          <div className="text-center">
+            <Button 
+              onClick={handleMultipleChoiceSubmit}
+              className="bg-purple-600 hover:bg-purple-700"
+              disabled={!selectedChoice}
+            >
+              Verificar Respuesta
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      {exercise === 'fill-blank' ? renderFillBlankExercise() : renderMultipleChoiceExercise()}
+      
+      {showResult && (
+        <div className="mt-6 text-center">
+          <div className={`text-lg font-semibold ${
+            (exercise === 'fill-blank' 
+              ? parseInt(userAnswers.blank1) === operands[1] && 
+                parseInt(userAnswers.blank2) === operands[2] && 
+                parseInt(userAnswers.blank3) === operands[0] + operands[1] + operands[2]
+              : selectedChoice === 'a'
+            ) ? 'text-green-600' : 'text-red-600'
+          }`}>
+            {(exercise === 'fill-blank' 
+              ? parseInt(userAnswers.blank1) === operands[1] && 
+                parseInt(userAnswers.blank2) === operands[2] && 
+                parseInt(userAnswers.blank3) === operands[0] + operands[1] + operands[2]
+              : selectedChoice === 'a'
+            ) ? '¡Correcto!' : 'Incorrecto. La propiedad asociativa dice que podemos cambiar la agrupación sin cambiar el resultado.'}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
