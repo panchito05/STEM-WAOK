@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
-import { AdditionProblem } from '../../types';
+import { AssociativePropertyProblem } from '../../types';
 import { InputValidator } from './utils/ValidationUtils';
 import { Calculator, AlertTriangle } from 'lucide-react';
 
 interface ProblemDisplayProps {
-  problem: AdditionProblem;
+  problem: AssociativePropertyProblem;
   showVerticalFormat?: boolean;
   attempts: number;
   maxAttempts: number;

@@ -26,8 +26,8 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   const debouncedSave = useMemo(
     () =>
       debounce((settings: ModuleSettings) => {
-        updateModuleSettings("addition", settings);
-        console.log(`[ADDITION] Guardando configuración (debounced):`, settings);
+        updateModuleSettings("associative-property", settings);
+        console.log(`[ASSOCIATIVE-PROPERTY] Guardando configuración (debounced):`, settings);
       }, 500), // Reducir el tiempo de espera a 500ms para asegurar que se guarde pronto
     [updateModuleSettings]
   );
@@ -39,9 +39,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     
     // Para cambios de dificultad, aplicar cambio inmediatamente
     if (key === "difficulty") {
-      console.log("[ADDITION] Guardando configuración de dificultad inmediatamente:", value);
+      console.log("[ASSOCIATIVE-PROPERTY] Guardando configuración de dificultad inmediatamente:", value);
       // Actualizamos directamente sin usar debounce para cambios de dificultad
-      updateModuleSettings("addition", updatedSettings);
+      updateModuleSettings("associative-property", updatedSettings);
     } else {
       // Para otros ajustes, usar debounce para evitar múltiples llamadas de guardado
       debouncedSave(updatedSettings);
@@ -56,16 +56,16 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   // Forzar el guardado de la configuración al componente cargarse
   useEffect(() => {
     // Guardar configuración inmediatamente al montar el componente para persistir valores actuales
-    updateModuleSettings("addition", localSettings);
-    console.log("[ADDITION] Guardando configuración al cargar:", localSettings);
+    updateModuleSettings("associative-property", localSettings);
+    console.log("[ASSOCIATIVE-PROPERTY] Guardando configuración al cargar:", localSettings);
     
     // Al desmontar, volver a guardar
     return () => {
       if (!hasSavedRef.current) {
         hasSavedRef.current = true;
         // Llamada directa sin debounce para asegurar que se ejecute
-        updateModuleSettings("addition", localSettings);
-        console.log("[ADDITION] Guardando configuración al desmontar:", localSettings);
+        updateModuleSettings("associative-property", localSettings);
+        console.log("[ASSOCIATIVE-PROPERTY] Guardando configuración al desmontar:", localSettings);
         
         // Forzar localStorage para asegurar persistencia
         try {
@@ -82,7 +82,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               addition: localSettings
             };
             localStorage.setItem(key, JSON.stringify(updated));
-            console.log("[ADDITION] Forzando actualización en localStorage:", updated);
+            console.log("[ASSOCIATIVE-PROPERTY] Forzando actualización en localStorage:", updated);
           }
         } catch (e) {
           console.error("Error al forzar guardado en localStorage:", e);
@@ -93,7 +93,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {
-      await resetModuleSettings("addition");
+      await resetModuleSettings("associative-property");
       setLocalSettings({ ...defaultModuleSettings });
       setShowResetConfirm(false);
     } else {
@@ -239,7 +239,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           
           <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
             <DifficultyExamples 
-              operation="addition" 
+              operation="associative-property" 
               activeDifficulty={localSettings.difficulty}
               onSelectDifficulty={(difficulty) => 
                 handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AdditionProblem } from '../../../types';
+import { AssociativePropertyProblem } from '../../../types';
 
 interface ProfessorSettings {
   maxAttempts: number;
@@ -20,7 +20,7 @@ interface UseProfessorLogicReturn {
 }
 
 export const useProfessorLogic = (
-  problem: AdditionProblem,
+  problem: AssociativePropertyProblem,
   settings: ProfessorSettings,
   onComplete: (wasCorrect: boolean) => void
 ): UseProfessorLogicReturn => {
@@ -40,7 +40,7 @@ export const useProfessorLogic = (
   }, []);
 
   // Calcular respuesta correcta de forma segura
-  const getCorrectAnswer = useCallback((prob: AdditionProblem): number => {
+  const getCorrectAnswer = useCallback((prob: AssociativePropertyProblem): number => {
     try {
       return prob.operands.reduce((sum, operand) => {
         const num = typeof operand === 'number' ? operand : parseFloat(operand.toString());

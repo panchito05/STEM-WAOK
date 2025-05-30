@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { AdditionProblem } from '../types';
+import { AssociativePropertyProblem } from '../types';
 import { CloseButton } from './professor/CloseButton';
 import { DrawingArea } from './professor/DrawingArea';
 import { useProgress } from '../../../context/ProgressContext';
 import { SynchronizedLayoutProvider, useSynchronizedLayout } from './professor/context/SynchronizedLayoutContext';
 
 interface ProfessorModeProps {
-  problem: AdditionProblem;
+  problem: AssociativePropertyProblem;
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
@@ -34,7 +34,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   });
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
-    problem: AdditionProblem;
+    problem: AssociativePropertyProblem;
     userAnswer: number;
     isCorrect: boolean;
     attempts: number;
@@ -81,7 +81,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
       // ESTRUCTURA EXACTA COMO EL MODO NORMAL - VERSIÓN 4.0
       const exerciseData = {
-        operationId: "addition",
+        operationId: "associative-property",
         date: new Date().toISOString(),
         score: stats.correctAnswers,
         totalProblems: stats.totalProblems,
@@ -147,7 +147,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   // Calcular respuesta correcta
-  const calculateCorrectAnswer = useCallback((prob: AdditionProblem): number => {
+  const calculateCorrectAnswer = useCallback((prob: AssociativePropertyProblem): number => {
     return prob.operands.reduce((sum, operand) => {
       const num = typeof operand === 'number' ? operand : parseFloat(operand.toString());
       return sum + (isNaN(num) ? 0 : num);
