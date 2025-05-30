@@ -2,6 +2,7 @@ import * as Addition from "../operations/addition";
 import * as Subtraction from "../operations/subtraction";
 import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
+import * as Alphabet from "../operations/alphabet";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
