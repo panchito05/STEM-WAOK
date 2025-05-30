@@ -397,6 +397,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     blank2: '',
     blank3: ''
   });
+  const [advancedValidationTrigger, setAdvancedValidationTrigger] = useState<number>(0);
   const [activeInteractiveField, setActiveInteractiveField] = useState<string | null>(null);
   const [inputDirection, setInputDirection] = useState<'ltr' | 'rtl'>('rtl');
   // Cambiar el tipo a HTMLDivElement, que es lo que realmente estamos usando
@@ -653,6 +654,72 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       return false; // No cuenta como intento, no está "resuelto"
     }
 
+    // Manejar niveles intermediate y advanced con sus propios componentes
+    if (settings.difficulty === 'intermediate') {
+      // Verificar si todos los campos están completados
+      if (!interactiveAnswers.blank1 || !interactiveAnswers.blank2 || !interactiveAnswers.blank3) {
+        setFeedbackMessage("Por favor completa todos los campos antes de verificar.");
+        setFeedbackColor("red");
+        return false;
+      }
+
+      // Validar respuestas del nivel intermediate
+      const blank1Correct = parseInt(interactiveAnswers.blank1) === currentProblem.operands[1];
+      const blank2Correct = parseInt(interactiveAnswers.blank2) === currentProblem.operands[2];
+      const blank3Correct = parseInt(interactiveAnswers.blank3) === currentProblem.correctAnswer;
+      
+      const isCorrect = blank1Correct && blank2Correct && blank3Correct;
+      
+      if (isCorrect) {
+        setFeedbackMessage("¡Excelente! Has completado correctamente la propiedad asociativa.");
+        setFeedbackColor("green");
+        
+        // Incrementar contador de respuestas correctas consecutivas
+        const newConsecutive = consecutiveCorrectAnswers + 1;
+        setConsecutiveCorrectAnswers(newConsecutive);
+        setConsecutiveIncorrectAnswers(0);
+        
+        setTimeout(() => {
+          if (currentProblemIndex < problemsList.length - 1) {
+            setCurrentProblemIndex(prev => prev + 1);
+            // Limpiar campos para el siguiente problema
+            setInteractiveAnswers({});
+            setActiveInteractiveField(null);
+          } else {
+            completeExercise();
+          }
+        }, 2000);
+      } else {
+        setFeedbackMessage("Revisa tu respuesta. La propiedad asociativa mantiene el mismo resultado independientemente de la agrupación.");
+        setFeedbackColor("red");
+        
+        // Incrementar contador de respuestas incorrectas consecutivas
+        setConsecutiveIncorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(0);
+      }
+      return isCorrect;
+    }
+
+    if (settings.difficulty === 'advanced') {
+      // Para el nivel advanced, usar la validación del AdvancedExercise
+      // Verificar según el tipo de ejercicio actual
+      const exerciseRef = document.querySelector('[data-advanced-exercise]');
+      if (exerciseRef) {
+        // Simular clic en el botón de verificación del ejercicio avanzado
+        const verifyButton = exerciseRef.querySelector('button[data-verify]');
+        if (verifyButton) {
+          verifyButton.click();
+          return true;
+        }
+      }
+      
+      // Si no se encuentra el botón, mostrar mensaje
+      setFeedbackMessage("Complete el ejercicio antes de verificar.");
+      setFeedbackColor("red");
+      return false;
+    }
+
+    // Lógica original para niveles beginner y elementary
     let userAnswerString = "";
     const decPosInAnswer = currentProblem.answerDecimalPosition;
     const totalDigitBoxes = currentProblem.answerMaxDigits;
