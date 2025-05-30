@@ -119,7 +119,7 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
   }
 
   if (operands.length === 0) { // Salvaguarda final
-    operands = [getRandomInt(1,5), getRandomInt(1,5)];
+    operands = [getRandomInt(1,5), getRandomInt(1,5), getRandomInt(1,5)];
   }
 
   const sum = operands.reduce((acc, val) => acc + val, 0);

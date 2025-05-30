@@ -5,6 +5,531 @@ import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateAssociativePropertyProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
+
+// Componentes específicos para cada nivel de Propiedad Asociativa
+
+// Nivel 1: Agrupar objetos visuales
+const Level1Component: React.FC<{ problem: AssociativePropertyProblem; onAnswer: (answer: number) => void; disabled: boolean }> = ({ problem, onAnswer, disabled }) => {
+  const [selectedGrouping, setSelectedGrouping] = useState<'left' | 'right' | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  
+  const animals = ['🐶', '🐱', '🐷'];
+  const operands = problem.operands.slice(0, 3); // Usar solo 3 operandos
+  
+  const leftGrouping = `(${operands[0]} + ${operands[1]}) + ${operands[2]}`;
+  const rightGrouping = `${operands[0]} + (${operands[1]} + ${operands[2]})`;
+  
+  const handleGroupingSelect = (grouping: 'left' | 'right') => {
+    if (disabled) return;
+    setSelectedGrouping(grouping);
+    setShowResult(true);
+    // Ambas agrupaciones son correctas por la propiedad asociativa
+    onAnswer(problem.correctAnswer);
+  };
+  
+  return (
+    <div className="space-y-6 p-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-purple-600 mb-2">Nivel 1: Agrupar Objetos</h3>
+        <p className="text-gray-600">¿De cuántas maneras puedes agrupar estos animales?</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Agrupación Izquierda */}
+        <div 
+          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+            selectedGrouping === 'left' ? 'border-purple-500 bg-purple-50' : 'border-gray-300 hover:border-purple-300'
+          }`}
+          onClick={() => handleGroupingSelect('left')}
+        >
+          <div className="text-center space-y-3">
+            <div className="text-lg font-semibold">{leftGrouping}</div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="border-2 border-dashed border-purple-400 rounded p-2 flex space-x-1">
+                {Array(operands[0]).fill(0).map((_, i) => <span key={i}>{animals[0]}</span>)}
+                {Array(operands[1]).fill(0).map((_, i) => <span key={i}>{animals[1]}</span>)}
+              </div>
+              <span className="text-xl">+</span>
+              <div className="flex space-x-1">
+                {Array(operands[2]).fill(0).map((_, i) => <span key={i}>{animals[2]}</span>)}
+              </div>
+            </div>
+            <div className="text-sm text-gray-600">
+              Primero agrupa los primeros dos, luego suma el tercero
+            </div>
+          </div>
+        </div>
+        
+        {/* Agrupación Derecha */}
+        <div 
+          className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+            selectedGrouping === 'right' ? 'border-purple-500 bg-purple-50' : 'border-gray-300 hover:border-purple-300'
+          }`}
+          onClick={() => handleGroupingSelect('right')}
+        >
+          <div className="text-center space-y-3">
+            <div className="text-lg font-semibold">{rightGrouping}</div>
+            <div className="flex justify-center items-center space-x-2">
+              <div className="flex space-x-1">
+                {Array(operands[0]).fill(0).map((_, i) => <span key={i}>{animals[0]}</span>)}
+              </div>
+              <span className="text-xl">+</span>
+              <div className="border-2 border-dashed border-purple-400 rounded p-2 flex space-x-1">
+                {Array(operands[1]).fill(0).map((_, i) => <span key={i}>{animals[1]}</span>)}
+                {Array(operands[2]).fill(0).map((_, i) => <span key={i}>{animals[2]}</span>)}
+              </div>
+            </div>
+            <div className="text-sm text-gray-600">
+              Primero agrupa los últimos dos, luego suma el primero
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {showResult && (
+        <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="text-lg font-semibold text-green-700">
+            ¡Correcto! Ambas agrupaciones dan el mismo resultado: {problem.correctAnswer}
+          </div>
+          <div className="text-sm text-green-600 mt-2">
+            Esta es la Propiedad Asociativa: (a + b) + c = a + (b + c)
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Nivel 2: Números simples con paréntesis móviles
+const Level2Component: React.FC<{ problem: AssociativePropertyProblem; onAnswer: (answer: number) => void; disabled: boolean }> = ({ problem, onAnswer, disabled }) => {
+  const [draggedParenthesis, setDraggedParenthesis] = useState<'opening' | 'closing' | null>(null);
+  const [parenthesisPosition, setParenthesisPosition] = useState<'left' | 'right'>('left');
+  const [showCalculation, setShowCalculation] = useState(false);
+  
+  const operands = problem.operands.slice(0, 3);
+  
+  const calculateResult = () => {
+    if (parenthesisPosition === 'left') {
+      return (operands[0] + operands[1]) + operands[2];
+    } else {
+      return operands[0] + (operands[1] + operands[2]);
+    }
+  };
+  
+  const handleVerify = () => {
+    if (disabled) return;
+    setShowCalculation(true);
+    onAnswer(calculateResult());
+  };
+  
+  return (
+    <div className="space-y-6 p-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-blue-600 mb-2">Nivel 2: Paréntesis Móviles</h3>
+        <p className="text-gray-600">Mueve los paréntesis para cambiar la agrupación</p>
+      </div>
+      
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <div className="text-center">
+          <div className="text-3xl font-bold mb-4 flex justify-center items-center space-x-2">
+            {parenthesisPosition === 'left' && <span className="text-red-500">(</span>}
+            <span>{operands[0]}</span>
+            <span>+</span>
+            <span>{operands[1]}</span>
+            {parenthesisPosition === 'left' && <span className="text-red-500">)</span>}
+            <span>+</span>
+            {parenthesisPosition === 'right' && <span className="text-red-500">(</span>}
+            <span>{operands[2]}</span>
+            {parenthesisPosition === 'right' && <span className="text-red-500">)</span>}
+          </div>
+          
+          <div className="flex justify-center space-x-4 mb-4">
+            <button
+              className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                parenthesisPosition === 'left' ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-red-300'
+              }`}
+              onClick={() => !disabled && setParenthesisPosition('left')}
+              disabled={disabled}
+            >
+              Agrupar primeros dos
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                parenthesisPosition === 'right' ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-red-300'
+              }`}
+              onClick={() => !disabled && setParenthesisPosition('right')}
+              disabled={disabled}
+            >
+              Agrupar últimos dos
+            </button>
+          </div>
+          
+          {showCalculation && (
+            <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+              <div className="text-lg">
+                {parenthesisPosition === 'left' ? (
+                  <div>
+                    <div>({operands[0]} + {operands[1]}) + {operands[2]}</div>
+                    <div>= {operands[0] + operands[1]} + {operands[2]}</div>
+                    <div>= {calculateResult()}</div>
+                  </div>
+                ) : (
+                  <div>
+                    <div>{operands[0]} + ({operands[1]} + {operands[2]})</div>
+                    <div>= {operands[0]} + {operands[1] + operands[2]}</div>
+                    <div>= {calculateResult()}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          <button
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            onClick={handleVerify}
+            disabled={disabled || showCalculation}
+          >
+            Verificar Resultado
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Nivel 3: Números más grandes con agrupaciones
+const Level3Component: React.FC<{ problem: AssociativePropertyProblem; onAnswer: (answer: number) => void; disabled: boolean }> = ({ problem, onAnswer, disabled }) => {
+  const [selectedStrategy, setSelectedStrategy] = useState<'left' | 'right' | null>(null);
+  const [showSteps, setShowSteps] = useState(false);
+  
+  const operands = problem.operands.slice(0, 3);
+  
+  const calculateLeftFirst = () => {
+    const step1 = operands[0] + operands[1];
+    const result = step1 + operands[2];
+    return { step1, result };
+  };
+  
+  const calculateRightFirst = () => {
+    const step1 = operands[1] + operands[2];
+    const result = operands[0] + step1;
+    return { step1, result };
+  };
+  
+  const handleStrategySelect = (strategy: 'left' | 'right') => {
+    if (disabled) return;
+    setSelectedStrategy(strategy);
+    setShowSteps(true);
+    onAnswer(problem.correctAnswer);
+  };
+  
+  return (
+    <div className="space-y-6 p-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-green-600 mb-2">Nivel 3: Números Grandes</h3>
+        <p className="text-gray-600">Elige la estrategia más fácil para calcular</p>
+      </div>
+      
+      <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+        <div className="text-center mb-6">
+          <div className="text-4xl font-bold text-gray-800 mb-4">
+            {operands[0]} + {operands[1]} + {operands[2]}
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Estrategia Izquierda */}
+          <div 
+            className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              selectedStrategy === 'left' ? 'border-green-500 bg-green-100' : 'border-gray-300 hover:border-green-300'
+            }`}
+            onClick={() => handleStrategySelect('left')}
+          >
+            <div className="text-center space-y-3">
+              <h4 className="text-lg font-semibold">Estrategia A</h4>
+              <div className="text-xl">({operands[0]} + {operands[1]}) + {operands[2]}</div>
+              {showSteps && selectedStrategy === 'left' && (
+                <div className="bg-white border border-gray-200 rounded p-3 text-sm">
+                  <div>Paso 1: {operands[0]} + {operands[1]} = {calculateLeftFirst().step1}</div>
+                  <div>Paso 2: {calculateLeftFirst().step1} + {operands[2]} = {calculateLeftFirst().result}</div>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Estrategia Derecha */}
+          <div 
+            className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+              selectedStrategy === 'right' ? 'border-green-500 bg-green-100' : 'border-gray-300 hover:border-green-300'
+            }`}
+            onClick={() => handleStrategySelect('right')}
+          >
+            <div className="text-center space-y-3">
+              <h4 className="text-lg font-semibold">Estrategia B</h4>
+              <div className="text-xl">{operands[0]} + ({operands[1]} + {operands[2]})</div>
+              {showSteps && selectedStrategy === 'right' && (
+                <div className="bg-white border border-gray-200 rounded p-3 text-sm">
+                  <div>Paso 1: {operands[1]} + {operands[2]} = {calculateRightFirst().step1}</div>
+                  <div>Paso 2: {operands[0]} + {calculateRightFirst().step1} = {calculateRightFirst().result}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {showSteps && (
+          <div className="text-center mt-6 p-4 bg-white border border-gray-200 rounded-lg">
+            <div className="text-lg font-semibold text-green-700">
+              ¡Ambas estrategias dan el mismo resultado: {problem.correctAnswer}!
+            </div>
+            <div className="text-sm text-green-600 mt-2">
+              Puedes elegir la agrupación que sea más fácil de calcular
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Nivel 4: Decimales y fracciones
+const Level4Component: React.FC<{ problem: AssociativePropertyProblem; onAnswer: (answer: number) => void; disabled: boolean }> = ({ problem, onAnswer, disabled }) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [userAnswers, setUserAnswers] = useState<number[]>([]);
+  const [showSolution, setShowSolution] = useState(false);
+  
+  const operands = problem.operands.slice(0, 4); // Usar hasta 4 operandos
+  
+  const steps = [
+    {
+      title: "Paso 1: Identifica una agrupación conveniente",
+      content: `¿Qué números sería más fácil sumar primero?`,
+      options: [
+        { text: `(${operands[0]} + ${operands[1]}) + ${operands[2]} + ${operands[3]}`, value: operands[0] + operands[1] },
+        { text: `${operands[0]} + (${operands[1]} + ${operands[2]}) + ${operands[3]}`, value: operands[1] + operands[2] },
+        { text: `${operands[0]} + ${operands[1]} + (${operands[2]} + ${operands[3]})`, value: operands[2] + operands[3] }
+      ]
+    }
+  ];
+  
+  const handleStepAnswer = (value: number) => {
+    if (disabled) return;
+    const newAnswers = [...userAnswers, value];
+    setUserAnswers(newAnswers);
+    
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      setShowSolution(true);
+      onAnswer(problem.correctAnswer);
+    }
+  };
+  
+  return (
+    <div className="space-y-6 p-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-orange-600 mb-2">Nivel 4: Decimales y Fracciones</h3>
+        <p className="text-gray-600">Usa la propiedad asociativa con números decimales</p>
+      </div>
+      
+      <div className="bg-orange-50 border border-orange-200 rounded-lg p-6">
+        <div className="text-center mb-6">
+          <div className="text-3xl font-bold text-gray-800 mb-4">
+            {operands.map((op, i) => (
+              <span key={i}>
+                {i > 0 && " + "}
+                {op}
+              </span>
+            ))}
+          </div>
+        </div>
+        
+        {!showSolution && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <h4 className="text-lg font-semibold mb-4">{steps[currentStep]?.title}</h4>
+              <p className="text-gray-600 mb-6">{steps[currentStep]?.content}</p>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4">
+              {steps[currentStep]?.options.map((option, index) => (
+                <button
+                  key={index}
+                  className="border-2 border-gray-300 hover:border-orange-400 rounded-lg p-4 text-lg transition-all"
+                  onClick={() => handleStepAnswer(option.value)}
+                  disabled={disabled}
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {showSolution && (
+          <div className="text-center space-y-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="text-lg font-semibold text-orange-700 mb-2">
+                ¡Excelente! Solución completa:
+              </div>
+              <div className="text-left space-y-2">
+                <div>Expresión original: {operands.join(' + ')}</div>
+                <div>Agrupación elegida: Puede variar según la estrategia</div>
+                <div className="font-bold">Resultado final: {problem.correctAnswer}</div>
+              </div>
+            </div>
+            <div className="text-sm text-orange-600">
+              Con decimales, la propiedad asociativa nos ayuda a elegir agrupaciones que sean más fáciles de calcular mentalmente
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Nivel 5: Múltiples operandos y expresiones complejas
+const Level5Component: React.FC<{ problem: AssociativePropertyProblem; onAnswer: (answer: number) => void; disabled: boolean }> = ({ problem, onAnswer, disabled }) => {
+  const [selectedGroupings, setSelectedGroupings] = useState<number[]>([]);
+  const [currentPhase, setCurrentPhase] = useState<'select' | 'calculate' | 'verify'>('select');
+  const [calculations, setCalculations] = useState<{ step: string; result: number }[]>([]);
+  
+  const operands = problem.operands; // Usar todos los operandos (4-5)
+  
+  const generateGroupings = () => {
+    // Generar diferentes formas de agrupar los operandos
+    const groupings = [
+      { name: "Agrupación A", pattern: "((a+b)+c)+d+e", indices: [[0,1], [2], [3], [4]] },
+      { name: "Agrupación B", pattern: "(a+b)+(c+d)+e", indices: [[0,1], [2,3], [4]] },
+      { name: "Agrupación C", pattern: "a+(b+(c+d))+e", indices: [[0], [1], [2,3], [4]] }
+    ];
+    return groupings.filter(g => g.indices.every(group => group.every(i => i < operands.length)));
+  };
+  
+  const calculateGrouping = (grouping: any) => {
+    const steps: { step: string; result: number }[] = [];
+    let tempResults: number[] = [];
+    
+    grouping.indices.forEach((group: number[], groupIndex: number) => {
+      if (group.length === 1) {
+        tempResults.push(operands[group[0]]);
+      } else {
+        const sum = group.reduce((acc: number, i: number) => acc + operands[i], 0);
+        tempResults.push(sum);
+        steps.push({
+          step: `Grupo ${groupIndex + 1}: ${group.map(i => operands[i]).join(' + ')} = ${sum}`,
+          result: sum
+        });
+      }
+    });
+    
+    const finalResult = tempResults.reduce((acc, val) => acc + val, 0);
+    steps.push({
+      step: `Resultado final: ${tempResults.join(' + ')} = ${finalResult}`,
+      result: finalResult
+    });
+    
+    return { steps, result: finalResult };
+  };
+  
+  const handleGroupingSelect = (groupingIndex: number) => {
+    if (disabled || currentPhase !== 'select') return;
+    
+    const groupings = generateGroupings();
+    const selected = groupings[groupingIndex];
+    const calc = calculateGrouping(selected);
+    
+    setCalculations(calc.steps);
+    setCurrentPhase('calculate');
+  };
+  
+  const handleVerify = () => {
+    if (disabled) return;
+    setCurrentPhase('verify');
+    onAnswer(problem.correctAnswer);
+  };
+  
+  const groupings = generateGroupings();
+  
+  return (
+    <div className="space-y-6 p-6">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold text-red-600 mb-2">Nivel 5: Expresiones Complejas</h3>
+        <p className="text-gray-600">Domina la propiedad asociativa con múltiples términos</p>
+      </div>
+      
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <div className="text-center mb-6">
+          <div className="text-2xl font-bold text-gray-800 mb-4">
+            {operands.map((op, i) => (
+              <span key={i}>
+                {i > 0 && " + "}
+                {op}
+              </span>
+            ))}
+          </div>
+        </div>
+        
+        {currentPhase === 'select' && (
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-center mb-4">
+              Elige una estrategia de agrupación:
+            </h4>
+            <div className="grid grid-cols-1 gap-4">
+              {groupings.map((grouping, index) => (
+                <button
+                  key={index}
+                  className="border-2 border-gray-300 hover:border-red-400 rounded-lg p-4 text-left transition-all"
+                  onClick={() => handleGroupingSelect(index)}
+                  disabled={disabled}
+                >
+                  <div className="font-semibold">{grouping.name}</div>
+                  <div className="text-sm text-gray-600 mt-1">{grouping.pattern}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {currentPhase === 'calculate' && (
+          <div className="space-y-4">
+            <h4 className="text-lg font-semibold text-center mb-4">Pasos de cálculo:</h4>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              {calculations.map((calc, index) => (
+                <div key={index} className="mb-2 text-lg">
+                  {calc.step}
+                </div>
+              ))}
+            </div>
+            <div className="text-center">
+              <button
+                className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                onClick={handleVerify}
+                disabled={disabled}
+              >
+                Verificar Resultado
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {currentPhase === 'verify' && (
+          <div className="text-center space-y-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <div className="text-xl font-bold text-red-700 mb-2">
+                ¡Perfecto! Resultado: {problem.correctAnswer}
+              </div>
+              <div className="text-sm text-red-600">
+                No importa cómo agrupa los números, el resultado siempre es el mismo gracias a la propiedad asociativa
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
@@ -2640,22 +3165,74 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
         </div>
 
-        {/* Problem Display Area - Compact Design */}
-        <div className="p-4 rounded-lg mb-4 shadow-sm bg-gray-50 border">
-          {currentProblem.layout === 'horizontal' ? (
-            <div className="text-2xl font-bold flex items-center justify-center gap-2">
-              <span>{currentProblem.operands[0]}</span>
-              <span className="text-gray-600">+</span>
-              <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
-              {currentProblem.operands.length > 2 && (
-                <>
-                  <span className="text-gray-600">+</span>
-                  <span>{currentProblem.operands[2]}</span>
-                </>
-              )}
-              <span className="text-gray-600">=</span>
-            </div>
-          ) : (
+        {/* Problem Display Area - Specific Level Components */}
+        <div className="rounded-lg mb-4 shadow-sm bg-white border">
+          {(() => {
+            const currentDifficulty = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : settings.difficulty;
+            const isDisabled = viewingPrevious || exerciseCompleted || waitingRef.current;
+            
+            const handleLevelAnswer = (answer: number) => {
+              if (isDisabled) return;
+              
+              // Simular el input de respuesta
+              const answerString = answer.toString();
+              const newDigitAnswers = Array(currentProblem.answerMaxDigits).fill("");
+              for (let i = 0; i < answerString.length && i < newDigitAnswers.length; i++) {
+                newDigitAnswers[i] = answerString[i];
+              }
+              setDigitAnswers(newDigitAnswers);
+              
+              // Trigger automatic verification
+              setTimeout(() => {
+                handleSubmit();
+              }, 1000);
+            };
+            
+            switch (currentDifficulty) {
+              case 'beginner':
+                return <Level1Component problem={currentProblem} onAnswer={handleLevelAnswer} disabled={isDisabled} />;
+              case 'elementary':
+                return <Level2Component problem={currentProblem} onAnswer={handleLevelAnswer} disabled={isDisabled} />;
+              case 'intermediate':
+                return <Level3Component problem={currentProblem} onAnswer={handleLevelAnswer} disabled={isDisabled} />;
+              case 'advanced':
+                return <Level4Component problem={currentProblem} onAnswer={handleLevelAnswer} disabled={isDisabled} />;
+              case 'expert':
+                return <Level5Component problem={currentProblem} onAnswer={handleLevelAnswer} disabled={isDisabled} />;
+              default:
+                // Fallback para mostrar el formato tradicional si es necesario
+                return (
+                  <div className="p-4">
+                    {currentProblem.layout === 'horizontal' ? (
+                      <div className="text-2xl font-bold flex items-center justify-center gap-2">
+                        <span>{currentProblem.operands[0]}</span>
+                        <span className="text-gray-600">+</span>
+                        <span>{currentProblem.operands.length > 1 ? currentProblem.operands[1] : '?'}</span>
+                        {currentProblem.operands.length > 2 && (
+                          <>
+                            <span className="text-gray-600">+</span>
+                            <span>{currentProblem.operands[2]}</span>
+                          </>
+                        )}
+                        <span className="text-gray-600">=</span>
+                      </div>
+                    ) : (
+                      <div className="flex justify-center">
+                        <div className="inline-block text-right my-1 sm:my-2">
+                          {operandsFormatted.map((op, index) => (
+                            <div key={`op-${index}-${currentProblem.id}`} className="text-xl font-bold">
+                              {index === operandsFormatted.length -1 && operandsFormatted.length > 1 && <span className="mr-2">+</span>}
+                              {op.original}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+            }
+          })()}
+        </div>
             <div className="flex justify-center">
               <div className="inline-block text-right my-1 sm:my-2">
                 {operandsFormatted.map((op, index) => (
