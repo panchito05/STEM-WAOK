@@ -2004,11 +2004,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (waitingRef.current || exerciseCompleted || viewingPrevious) return;
     if (!exerciseStarted) startExercise();
 
-    // Si estamos en nivel intermediate y hay un campo activo, manejar el borrado para ese campo
-    if (settings.difficulty === 'intermediate' && activeInteractiveField) {
+    // Si estamos en nivel intermediate o advanced y hay un campo activo, manejar el borrado para ese campo
+    if ((settings.difficulty === 'intermediate' || settings.difficulty === 'advanced') && activeInteractiveField) {
       setInteractiveAnswers(prev => ({
         ...prev,
-        [activeInteractiveField]: prev[activeInteractiveField].slice(0, -1)
+        [activeInteractiveField]: (prev[activeInteractiveField] || '').slice(0, -1)
       }));
       return;
     }
@@ -2083,20 +2083,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (waitingRef.current || !currentProblem || exerciseCompleted || viewingPrevious) return;
     if (!exerciseStarted) startExercise();
 
-    // Si estamos en nivel intermediate y hay un campo activo, manejar la entrada para ese campo
-    if (settings.difficulty === 'intermediate' && activeInteractiveField) {
+    // Si estamos en nivel intermediate o advanced y hay un campo activo, manejar la entrada para ese campo
+    if ((settings.difficulty === 'intermediate' || settings.difficulty === 'advanced') && activeInteractiveField) {
       setInteractiveAnswers(prev => ({
         ...prev,
-        [activeInteractiveField]: value // Reemplazar el valor completo, no concatenar
+        [activeInteractiveField]: (prev[activeInteractiveField] || '') + value // Concatenar el valor para advanced
       }));
       
-      // Avance automático al siguiente campo
-      if (activeInteractiveField === 'blank1') {
-        setActiveInteractiveField('blank2');
-      } else if (activeInteractiveField === 'blank2') {
-        setActiveInteractiveField('blank3');
-      } else if (activeInteractiveField === 'blank3') {
-        setActiveInteractiveField(null); // Desfocalizar después del último campo
+      // Solo avance automático para intermediate
+      if (settings.difficulty === 'intermediate') {
+        if (activeInteractiveField === 'blank1') {
+          setActiveInteractiveField('blank2');
+        } else if (activeInteractiveField === 'blank2') {
+          setActiveInteractiveField('blank3');
+        } else if (activeInteractiveField === 'blank3') {
+          setActiveInteractiveField(null); // Desfocalizar después del último campo
+        }
       }
       return;
     }
