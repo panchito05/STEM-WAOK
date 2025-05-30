@@ -93,7 +93,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {
-      await resetModuleSettings("addition");
+      await resetModuleSettings("associative-property");
       setLocalSettings({ ...defaultModuleSettings });
       setShowResetConfirm(false);
     } else {

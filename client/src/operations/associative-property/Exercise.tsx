@@ -4,8 +4,8 @@ import { useProgress } from "@/context/ProgressContext";
 import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
-import { generateAdditionProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
-import { Problem, UserAnswer as UserAnswerType, AdditionProblem, DifficultyLevel } from "./types";
+import { generateAssociativePropertyProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
+import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, DifficultyLevel } from "./types";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
@@ -376,13 +376,13 @@ const YoutubeVideoDialog = ({
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Acceder a la información de historial mediante el contexto de progreso
   const { exerciseHistory } = useProgress();
-  const moduleId = "addition"; // ID del módulo de suma
+  const moduleId = "associative-property"; // ID del módulo de propiedad asociativa
   
   // Hook para manejar sesiones multi-operaciones
   const { isMultiMode, completeCurrentModule } = useMultiOperationsSession();
 
-  const [problemsList, setProblemsList] = useState<AdditionProblem[]>([]);
-  const [currentProblem, setCurrentProblem] = useState<AdditionProblem | null>(null);
+  const [problemsList, setProblemsList] = useState<AssociativePropertyProblem[]>([]);
+  const [currentProblem, setCurrentProblem] = useState<AssociativePropertyProblem | null>(null);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
 
   const [digitAnswers, setDigitAnswers] = useState<string[]>([]);
@@ -409,7 +409,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [blockAutoAdvance, setBlockAutoAdvance] = useState(false);
   const [autoContinue, setAutoContinue] = useState(() => {
     try {
-      const stored = localStorage.getItem('addition_autoContinue');
+      const stored = localStorage.getItem('associative-property_autoContinue');
       return stored === 'true';
     } catch (e) { return false; }
   });
@@ -424,9 +424,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     } catch (e) { console.error('Error loading adaptive difficulty from localStorage:', e); }
     return settings.difficulty as DifficultyLevel;
   });
-  const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveCorrectAnswers') || '0', 10));
-  const [maxConsecutiveStreak, setMaxConsecutiveStreak] = useState(() => parseInt(localStorage.getItem('addition_maxConsecutiveStreak') || '0', 10));
-  const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => parseInt(localStorage.getItem('addition_consecutiveIncorrectAnswers') || '0', 10));
+  const [consecutiveCorrectAnswers, setConsecutiveCorrectAnswers] = useState(() => parseInt(localStorage.getItem('associative-property_consecutiveCorrectAnswers') || '0', 10));
+  const [maxConsecutiveStreak, setMaxConsecutiveStreak] = useState(() => parseInt(localStorage.getItem('associative-property_maxConsecutiveStreak') || '0', 10));
+  const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(() => parseInt(localStorage.getItem('associative-property_consecutiveIncorrectAnswers') || '0', 10));
   const [currentAttempts, setCurrentAttempts] = useState(0);
   const [showLevelUpReward, setShowLevelUpReward] = useState(false);
 
@@ -442,7 +442,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [showVideoDialog, setShowVideoDialog] = useState(false);
   const [youtubeVideos, setYoutubeVideos] = useState<string[]>(() => {
     try {
-      const storedVideos = localStorage.getItem('addition_youtubeVideos');
+      const storedVideos = localStorage.getItem('associative-property_youtubeVideos');
       return storedVideos ? JSON.parse(storedVideos) : [];
     } catch (e) {
       console.error('Error loading YouTube videos from localStorage:', e);
@@ -464,7 +464,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // 🎯 Sistema de Recompensas Simplificado (sin hooks problemáticos)
   const [rewardStats, setRewardStats] = useState(() => {
     // Cargar datos guardados al inicializar
-    const saved = localStorage.getItem('addition_rewards');
+    const saved = localStorage.getItem('associative-property_rewards');
     const defaultStats = {
       totalProblems: 0,
       currentStreak: 0,
@@ -496,7 +496,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Traducciones para elementos específicos de la interfaz
   const translations = {
     english: {
-      addition: "Addition",
+      addition: "Associative Property",
       attempts: "Attempts",
       level: "Level",
       settings: "Settings",
@@ -507,7 +507,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       of: "of"
     },
     spanish: {
-      addition: "Suma",
+      addition: "Propiedad Asociativa",
       attempts: "Intentos",
       level: "Nivel",
       settings: "Ajustes",
@@ -535,11 +535,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (consecutiveCorrectAnswers !== undefined) {
       try {
         // 1. Almacenar en localStorage para persistencia
-        localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString());
+        localStorage.setItem('associative-property_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString());
         
         // 2. También almacenar en sessionStorage para verificación cruzada
-        sessionStorage.setItem('addition_lastConsecutiveCorrect', consecutiveCorrectAnswers.toString());
-        sessionStorage.setItem('addition_lastConsecutiveUpdateTime', Date.now().toString());
+        sessionStorage.setItem('associative-property_lastConsecutiveCorrect', consecutiveCorrectAnswers.toString());
+        sessionStorage.setItem('associative-property_lastConsecutiveUpdateTime', Date.now().toString());
         
         // 3. Logs detallados para seguimiento
         console.log(`[CONTADOR-V2] Actualizado contador de respuestas correctas consecutivas a ${consecutiveCorrectAnswers}`);
@@ -554,7 +554,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           
           if (currentLevelIdx < difficultiesOrder.length - 1) {
             console.log(`[CONTADOR-V2] ✅ Confirmado: condiciones cumplidas para subir de nivel`);
-            sessionStorage.setItem('addition_levelUpEligible', 'true');
+            sessionStorage.setItem('associative-property_levelUpEligible', 'true');
           }
         }
       } catch (error) {
@@ -692,11 +692,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Actualizar racha máxima si es necesario
       if (newConsecutive > maxConsecutiveStreak) {
         setMaxConsecutiveStreak(newConsecutive);
-        localStorage.setItem('addition_maxConsecutiveStreak', newConsecutive.toString());
+        localStorage.setItem('associative-property_maxConsecutiveStreak', newConsecutive.toString());
         console.log("[CONTADOR-V2] Nueva racha máxima alcanzada:", newConsecutive);
       }
       
-      localStorage.setItem('addition_consecutiveCorrectAnswers', newConsecutive.toString());
+      localStorage.setItem('associative-property_consecutiveCorrectAnswers', newConsecutive.toString());
       console.log("[CONTADOR-V2] Actualizado contador de respuestas correctas consecutivas a", newConsecutive);
 
       // 🎯 Sistema de Recompensas Simplificado - Detección de Hitos
@@ -782,7 +782,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             };
             
             // Guardar en localStorage
-            localStorage.setItem('addition_rewards', JSON.stringify({
+            localStorage.setItem('associative-property_rewards', JSON.stringify({
               totalPoints: newStats.totalPoints,
               unlockedRewards: newStats.unlockedRewards,
               completedMilestones: Array.from(newStats.completedMilestones),
@@ -833,7 +833,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   
                   // CRÍTICO: Guardar progreso de los 10 problemas correctos antes de avanzar de nivel
                   const progressDataForLevelUp = {
-                    operationId: "addition",
+                    operationId: "associative-property",
                     date: new Date().toISOString(),
                     score: CORRECT_ANSWERS_FOR_LEVEL_UP, // Los 10 problemas fueron correctos
                     totalProblems: CORRECT_ANSWERS_FOR_LEVEL_UP,
@@ -865,19 +865,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   console.log(`[NIVEL] ✅ Progreso guardado exitosamente antes del avance de nivel`);
                   
                   // Actualizar localStorage con el nuevo nivel
-                  localStorage.setItem('addition_adaptiveDifficulty', newLevel);
-                  localStorage.setItem('addition_currentLevel', newLevel);
+                  localStorage.setItem('associative-property_adaptiveDifficulty', newLevel);
+                  localStorage.setItem('associative-property_currentLevel', newLevel);
                   
                   // Actualizar los estados para la UI
                   setAdaptiveDifficulty(newLevel);
-                  updateModuleSettings("addition", { 
+                  updateModuleSettings("associative-property", { 
                       difficulty: newLevel, 
                       enableAdaptiveDifficulty: true 
                   });
                   
                   // Reiniciar contador de respuestas correctas
                   setConsecutiveCorrectAnswers(0);
-                  localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+                  localStorage.setItem('associative-property_consecutiveCorrectAnswers', '0');
                   
                   // Mostrar recompensa y bloquear avance automático
                   setShowLevelUpReward(true);
@@ -943,7 +943,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const newConsecutiveInc = consecutiveIncorrectAnswers + 1;
       setConsecutiveIncorrectAnswers(newConsecutiveInc);
       setConsecutiveCorrectAnswers(0);
-      localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+      localStorage.setItem('associative-property_consecutiveCorrectAnswers', '0');
 
       if (settings.enableAdaptiveDifficulty && newConsecutiveInc >= 5) {
           const difficultiesOrder: DifficultyLevel[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
@@ -951,7 +951,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           if (currentLevelIdx > 0) {
               const newLevel = difficultiesOrder[currentLevelIdx - 1];
               setAdaptiveDifficulty(newLevel);
-              updateModuleSettings("addition", { difficulty: newLevel });
+              updateModuleSettings("associative-property", { difficulty: newLevel });
               setConsecutiveIncorrectAnswers(0);
               setFeedbackMessage(`${t('adaptiveDifficulty.levelDecreased')} ${t(newLevel)}. ${t('exercises.incorrect')}`);
           }
@@ -975,7 +975,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             ? adaptiveDifficulty
             : (settings.difficulty as DifficultyLevel);
 
-          const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+          const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
           // Agregamos null al historial para que coincida con el nuevo problema añadido
           setUserAnswersHistory(prev => [...prev, null]);
@@ -1045,7 +1045,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               ? adaptiveDifficulty
               : (settings.difficulty as DifficultyLevel);
 
-            const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+            const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
             setProblemsList(prev => [...prev, compensationProblem]);
             // Agregamos null al historial para que coincida con el nuevo problema añadido
             setUserAnswersHistory(prev => [...prev, null]);
@@ -1098,7 +1098,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             ? adaptiveDifficulty
             : (settings.difficulty as DifficultyLevel);
 
-          const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+          const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
           // Agregamos null al historial para que coincida con el nuevo problema añadido
           setUserAnswersHistory(prev => [...prev, null]);
@@ -1164,15 +1164,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
        handleTimeOrAttemptsUp, problemTimerValue // Incluir problemTimerValue si se resetea aquí
      ]);
 
-  useEffect(() => localStorage.setItem('addition_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
-  useEffect(() => localStorage.setItem('addition_consecutiveIncorrectAnswers', consecutiveIncorrectAnswers.toString()), [consecutiveIncorrectAnswers]);
-  useEffect(() => localStorage.setItem('addition_autoContinue', autoContinue.toString()), [autoContinue]);
+  useEffect(() => localStorage.setItem('associative-property_consecutiveCorrectAnswers', consecutiveCorrectAnswers.toString()), [consecutiveCorrectAnswers]);
+  useEffect(() => localStorage.setItem('associative-property_consecutiveIncorrectAnswers', consecutiveIncorrectAnswers.toString()), [consecutiveIncorrectAnswers]);
+  useEffect(() => localStorage.setItem('associative-property_autoContinue', autoContinue.toString()), [autoContinue]);
 
   const generateNewProblemSet = () => {
     const difficultyToUse = settings.enableAdaptiveDifficulty ? adaptiveDifficulty : (settings.difficulty as DifficultyLevel);
-    const newProblemsArray: AdditionProblem[] = [];
+    const newProblemsArray: AssociativePropertyProblem[] = [];
     for (let i = 0; i < settings.problemCount; i++) {
-      const problem = generateAdditionProblem(difficultyToUse);
+      const problem = generateAssociativePropertyProblem(difficultyToUse);
       // Agregar información de índice y total a cada problema
       problem.index = i;
       problem.total = settings.problemCount;
@@ -1471,7 +1471,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
     // Nivel final - usamos el último nivel alcanzado
     const finalLevel = settings.enableAdaptiveDifficulty
-      ? localStorage.getItem('addition_adaptiveDifficulty') || adaptiveDifficulty
+      ? localStorage.getItem('associative-property_adaptiveDifficulty') || adaptiveDifficulty
       : settings.difficulty;
 
     // Construir detalles de problemas para guardar en historial
@@ -1499,7 +1499,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
     // Create screenshot-like data structure that matches our template
     const screenshotData = {
-      title: "Addition Exercise Complete!",
+      title: "Associative Property Exercise Complete!",
       scoreData: {
         totalTime: formatTime(timer),
         score: {
@@ -1754,7 +1754,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       // Respaldo simple en localStorage (solo para depuración)
       try {
         const timestamp = Date.now();
-        const claveRespaldo = `math_addition_${timestamp}`;
+        const claveRespaldo = `math_associative-property_${timestamp}`;
         localStorage.setItem(claveRespaldo, JSON.stringify(problemasCapturados));
       } catch (error) {
         console.error("Error al guardar respaldo local:", error);
@@ -1835,7 +1835,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // VERSIÓN 6.0 INTERCEPTOR ANTIFRAGIL: Usando valores interceptados y validados
     saveExerciseResult({
-      operationId: "addition",
+      operationId: "associative-property",
       date: new Date().toISOString(),
       score: scoreFinal, // ✅ Score interceptado y validado
       totalProblems: problemsList.length,
@@ -1853,7 +1853,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Metadatos para trazabilidad
         version: "4.0",
         timestamp: Date.now(),
-        exerciseId: `addition_${Date.now()}`,
+        exerciseId: `associative-property_${Date.now()}`,
         
         // Almacenar los problemas en una ubicación consistente
         problemDetails: problemasCapturados,
@@ -1863,11 +1863,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         capturedProblems: problemasCapturados,
         
         // Incluir información específica del tipo de ejercicio
-        exerciseType: "addition",
+        exerciseType: "associative-property",
         
         // Incluir resumen para facilitar acceso rápido
         summary: {
-          operation: "addition",
+          operation: "associative-property",
           level: finalLevel,
           score: {
             correct: scoreFinal,
@@ -2176,7 +2176,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (showLevelUpReward) {
       setShowLevelUpReward(false);
       setBlockAutoAdvance(false);
-      const newProblemForLevelUp = generateAdditionProblem(adaptiveDifficulty);
+      const newProblemForLevelUp = generateAssociativePropertyProblem(adaptiveDifficulty);
       const updatedProblemsList = [...problemsList];
       updatedProblemsList[actualActiveProblemIndexBeforeViewingPrevious] = newProblemForLevelUp;
       setProblemsList(updatedProblemsList);
@@ -2240,13 +2240,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     // Nivel final - actualizamos para detectar posibles cambios de nivel durante el ejercicio
     // Si se usa dificultad adaptativa, el nivel mostrado será el último alcanzado
     const finalLevel = settings.enableAdaptiveDifficulty
-      ? localStorage.getItem('addition_adaptiveDifficulty') || adaptiveDifficulty
+      ? localStorage.getItem('associative-property_adaptiveDifficulty') || adaptiveDifficulty
       : settings.difficulty;
 
     return (
       <div className="px-4 py-5 sm:p-6">
         <h2 className="text-2xl font-bold text-gray-900 text-center mb-4">
-          {t('Addition Exercise Complete!')}
+          {t('Associative Property Exercise Complete!')}
         </h2>
 
         {/* Tiempo total */}
@@ -2377,7 +2377,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Función para manejar los videos explicativos de YouTube
   const handleSaveYoutubeVideos = (newVideos: string[]) => {
     setYoutubeVideos(newVideos);
-    localStorage.setItem('addition_youtubeVideos', JSON.stringify(newVideos));
+    localStorage.setItem('associative-property_youtubeVideos', JSON.stringify(newVideos));
   };
 
   // Función para mostrar un video de YouTube en una nueva pestaña
@@ -2820,7 +2820,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                           ? adaptiveDifficulty
                                           : (settings.difficulty as DifficultyLevel);
 
-                                      const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                                      const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
                                       setProblemsList(prev => [...prev, compensationProblem]);
                                       // Agregamos null al historial para que coincida con el nuevo problema añadido
                                       setUserAnswersHistory(prev => [...prev, null]);
@@ -2917,7 +2917,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             
                             // Reiniciar el contador de respuestas correctas consecutivas cuando se revela una respuesta
                             setConsecutiveCorrectAnswers(0);
-                            localStorage.setItem('addition_consecutiveCorrectAnswers', '0');
+                            localStorage.setItem('associative-property_consecutiveCorrectAnswers', '0');
                             console.log("[ADDITION] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
                             
                             // Usamos la respuesta correcta del problema directamente
@@ -2946,7 +2946,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                         ? adaptiveDifficulty
                                         : (settings.difficulty as DifficultyLevel);
 
-                                    const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+                                    const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
                                     setProblemsList(prev => [...prev, compensationProblem]);
                                     // Agregamos null al historial para que coincida con el nuevo problema añadido
                                     setUserAnswersHistory(prev => [...prev, null]);
@@ -3006,14 +3006,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 ? adaptiveDifficulty
                 : (settings.difficulty as DifficultyLevel);
                 
-              const compensationProblem = generateAdditionProblem(difficultyForCompensation);
+              const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
               setProblemsList(prev => [...prev, compensationProblem]);
               // Agregamos null al historial para que coincida con el nuevo problema añadido
               setUserAnswersHistory(prev => [...prev, null]);
             }
             
             // Generar un nuevo problema
-            const newProblem = generateAdditionProblem(settings.difficulty);
+            const newProblem = generateAssociativePropertyProblem(settings.difficulty);
             // Agregar información sobre la posición y total de problemas
             newProblem.index = currentProblemIndex;
             newProblem.total = settings.problemCount;
