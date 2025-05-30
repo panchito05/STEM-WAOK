@@ -48,7 +48,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     if (randomExercise === 'multiple-choice') {
       const choices = [
         { id: 'a', text: `${operands[0]} + (${operands[1]} + ${operands[2]})`, correct: true },
-        { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: true },
+        { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: false },
         { id: 'c', text: `${operands[0]} × (${operands[1]} + ${operands[2]})`, correct: false }
       ];
       // Mezclar una sola vez
@@ -148,8 +148,9 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   };
 
   const handleMultipleChoiceSubmit = () => {
-    // Both options A and B are correct for associative property
-    const isCorrect = selectedChoice === 'a' || selectedChoice === 'b';
+    // Find the selected choice from the shuffled choices
+    const selectedChoiceData = shuffledChoices.find(choice => choice.id === selectedChoice);
+    const isCorrect = selectedChoiceData?.correct || false;
     setShowResult(true);
     onAnswer(isCorrect);
   };
