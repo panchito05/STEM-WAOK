@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface InteractiveExerciseProps {
@@ -22,10 +22,112 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [showResult, setShowResult] = useState(false);
 
+  // Auto-seleccionar el primer campo al inicializar
+  useEffect(() => {
+    if (exercise === 'fill-blank' && !activeInteractiveField && !showResult) {
+      setActiveInteractiveField('blank1');
+    }
+  }, [exercise, activeInteractiveField, showResult, setActiveInteractiveField]);
+
+  // Manejar entrada de teclado
+  useEffect(() => {
+    if (exercise !== 'fill-blank' || showResult) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!activeInteractiveField) return;
+
+      const key = event.key;
+      
+      // Solo permitir números y algunas teclas especiales
+      if (!/^[0-9]$/.test(key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (key === 'Backspace' || key === 'Delete') {
+        // Limpiar el campo activo
+        setInteractiveAnswers(prev => ({
+          ...prev,
+          [activeInteractiveField]: ''
+        }));
+      } else if (/^[0-9]$/.test(key)) {
+        // Agregar dígito al campo activo
+        setInteractiveAnswers(prev => {
+          const currentValue = prev[activeInteractiveField] || '';
+          const newValue = currentValue + key;
+          
+          // Verificar si el nuevo valor es correcto y avanzar si es necesario
+          setTimeout(() => checkAndAdvanceField(activeInteractiveField, newValue), 0);
+          
+          return {
+            ...prev,
+            [activeInteractiveField]: newValue
+          };
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [exercise, showResult, activeInteractiveField, setInteractiveAnswers, operands]);
+
   // Función para manejar el clic en un campo
   const handleFieldClick = (fieldName: string) => {
     if (showResult) return;
     setActiveInteractiveField(fieldName);
+  };
+
+  // Función para verificar si un valor es correcto y decidir si avanzar
+  const checkAndAdvanceField = (fieldName: string, value: string) => {
+    if (!value || isNaN(parseInt(value))) return;
+    
+    let isFieldCorrect = false;
+    
+    if (fieldName === 'blank1' && parseInt(value) === operands[1]) {
+      isFieldCorrect = true;
+    } else if (fieldName === 'blank2' && parseInt(value) === operands[2]) {
+      isFieldCorrect = true;
+    } else if (fieldName === 'blank3' && parseInt(value) === (operands[0] + operands[1] + operands[2])) {
+      isFieldCorrect = true;
+    }
+
+    // Solo avanzar al siguiente campo si el valor es correcto
+    if (isFieldCorrect) {
+      if (fieldName === 'blank1') {
+        setActiveInteractiveField('blank2');
+      } else if (fieldName === 'blank2') {
+        setActiveInteractiveField('blank3');
+      }
+      // Si es blank3 y está correcto, mantener el foco ahí
+    }
+  };
+
+  // Función para obtener el estilo del campo basado en si es correcto
+  const getFieldStyle = (fieldName: string) => {
+    const value = interactiveAnswers[fieldName];
+    if (!value) {
+      return activeInteractiveField === fieldName 
+        ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
+        : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md';
+    }
+
+    let isCorrect = false;
+    if (fieldName === 'blank1' && parseInt(value) === operands[1]) {
+      isCorrect = true;
+    } else if (fieldName === 'blank2' && parseInt(value) === operands[2]) {
+      isCorrect = true;
+    } else if (fieldName === 'blank3' && parseInt(value) === (operands[0] + operands[1] + operands[2])) {
+      isCorrect = true;
+    }
+
+    if (isCorrect) {
+      return 'border-green-500 bg-green-50 text-green-700';
+    } else {
+      return activeInteractiveField === fieldName 
+        ? 'border-red-400 bg-red-50 shadow-lg ring-2 ring-red-200' 
+        : 'border-red-300 bg-red-50 hover:border-red-400';
+    }
   };
 
   const handleFillBlankSubmit = () => {
@@ -69,33 +171,21 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
             <span>{operands[0]} +</span>
             <span>(</span>
             <div
-              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
-                activeInteractiveField === 'blank1' 
-                  ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
-                  : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
-              }`}
+              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${getFieldStyle('blank1')}`}
               onClick={() => handleFieldClick('blank1')}
             >
               {interactiveAnswers.blank1 || <span className="text-gray-400">?</span>}
             </div>
             <span>+</span>
             <div
-              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
-                activeInteractiveField === 'blank2' 
-                  ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
-                  : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
-              }`}
+              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${getFieldStyle('blank2')}`}
               onClick={() => handleFieldClick('blank2')}
             >
               {interactiveAnswers.blank2 || <span className="text-gray-400">?</span>}
             </div>
             <span>) =</span>
             <div
-              className={`w-20 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
-                activeInteractiveField === 'blank3' 
-                  ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
-                  : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
-              }`}
+              className={`w-20 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${getFieldStyle('blank3')}`}
               onClick={() => handleFieldClick('blank3')}
             >
               {interactiveAnswers.blank3 || <span className="text-gray-400">?</span>}
