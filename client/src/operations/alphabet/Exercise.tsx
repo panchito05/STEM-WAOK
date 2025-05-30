@@ -31,10 +31,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Get word based on language
   const getWord = () => {
-    if (language === 'spanish') {
-      return currentLetter.words.spanish;
+    if (!currentLetter || !currentLetter.word) {
+      return language === 'spanish' ? 'Palabra' : 'Word';
     }
-    return currentLetter.words.english;
+    
+    if (language === 'spanish') {
+      return currentLetter.word.spanish || 'Palabra';
+    }
+    return currentLetter.word.english || 'Word';
   };
 
   const getTitle = () => {
@@ -106,7 +110,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <div className="flex justify-center">
               <div 
                 className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center"
-                dangerouslySetInnerHTML={{ __html: currentLetter.image }}
+                dangerouslySetInnerHTML={{ __html: currentLetter.image?.svg || '' }}
               />
             </div>
 
