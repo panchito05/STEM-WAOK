@@ -2643,6 +2643,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         {/* Problem Display Area - Compact Design */}
         <div className="p-4 rounded-lg mb-4 shadow-sm bg-gray-50 border">
+          {/* Visualización con frutas para nivel principiante */}
+          {currentProblem.showVisualMode && currentProblem.visualObjects && (
+            <VisualProblemDisplay 
+              visualObjects={currentProblem.visualObjects}
+              operands={currentProblem.operands}
+            />
+          )}
+          
+          {/* Problema matemático tradicional para todos los niveles */}
           {currentProblem.layout === 'horizontal' ? (
             <div className="text-2xl font-bold flex items-center justify-center gap-2">
               <span>{currentProblem.operands[0]}</span>
