@@ -38,6 +38,129 @@ import {
   generateWordCompletionExercise
 } from './data/alphabetData';
 
+// Translations
+const translations = {
+  spanish: {
+    // Settings
+    alphabetConfiguration: 'Configuración del Alfabeto',
+    back: 'Volver',
+    primaryLanguage: 'Idioma Principal',
+    english: 'Inglés',
+    spanish: 'Español',
+    difficultyLevel: 'Nivel de Dificultad',
+    level1: 'Nivel 1: Reconocimiento Visual y Auditivo',
+    level2: 'Nivel 2: Ordenamiento de Letras',
+    level3: 'Nivel 3: Completar Palabras',
+    level4: 'Nivel 4: Asociación Sonido-Letra',
+    level5: 'Nivel 5: Formación de Palabras',
+    showBothLanguages: 'Mostrar Ambos Idiomas',
+    showBothLanguagesDesc: 'Muestra palabras en español e inglés simultáneamente',
+    autoAdvance: 'Avance Automático',
+    autoAdvanceDesc: 'Cambia automáticamente a la siguiente letra',
+    audioEnabled: 'Audio Habilitado',
+    audioEnabledDesc: 'Reproduce pronunciación de letras y palabras',
+    showImages: 'Mostrar Imágenes',
+    showImagesDesc: 'Muestra imágenes representativas de cada letra',
+    celebrateAchievements: 'Celebrar Logros',
+    celebrateAchievementsDesc: 'Efectos visuales al completar el alfabeto',
+    autoAdvanceTime: 'Tiempo de Avance Automático',
+    time1s: '1 segundo',
+    time2s: '2 segundos',
+    time3s: '3 segundos',
+    time5s: '5 segundos',
+    // Exercise
+    alphabetLearning: 'Aprendizaje del Alfabeto',
+    currentLevel: 'Nivel Actual',
+    progress: 'Progreso',
+    settings: 'Configuración',
+    resetProgress: 'Reiniciar Progreso',
+    startExercise: 'Comenzar Ejercicio',
+    nextLetter: 'Siguiente Letra',
+    previousLetter: 'Letra Anterior',
+    playAudio: 'Reproducir Audio',
+    correct: 'Correcto',
+    incorrect: 'Incorrecto',
+    tryAgain: 'Intentar de Nuevo',
+    congratulations: 'Felicitaciones',
+    levelCompleted: 'Nivel Completado',
+    nextLevel: 'Siguiente Nivel',
+    allLevelsCompleted: 'Todos los Niveles Completados',
+    excellentWork: 'Excelente Trabajo',
+    // Activities
+    recognizeLetterAndWord: 'Reconoce la letra y la palabra',
+    orderLetters: 'Ordena las letras correctamente',
+    completeWord: 'Completa la palabra',
+    associateSound: 'Asocia el sonido con la letra',
+    formWord: 'Forma la palabra correcta',
+    dragLettersHere: 'Arrastra las letras aquí',
+    selectCorrectLetter: 'Selecciona la letra correcta',
+    listenAndSelect: 'Escucha y selecciona',
+    arrangeLetters: 'Organiza las letras'
+  },
+  english: {
+    // Settings
+    alphabetConfiguration: 'Alphabet Configuration',
+    back: 'Back',
+    primaryLanguage: 'Primary Language',
+    english: 'English',
+    spanish: 'Spanish',
+    difficultyLevel: 'Difficulty Level',
+    level1: 'Level 1: Visual and Audio Recognition',
+    level2: 'Level 2: Letter Ordering',
+    level3: 'Level 3: Word Completion',
+    level4: 'Level 4: Sound-Letter Association',
+    level5: 'Level 5: Word Formation',
+    showBothLanguages: 'Show Both Languages',
+    showBothLanguagesDesc: 'Display words in Spanish and English simultaneously',
+    autoAdvance: 'Auto Advance',
+    autoAdvanceDesc: 'Automatically move to the next letter',
+    audioEnabled: 'Audio Enabled',
+    audioEnabledDesc: 'Play pronunciation of letters and words',
+    showImages: 'Show Images',
+    showImagesDesc: 'Display representative images for each letter',
+    celebrateAchievements: 'Celebrate Achievements',
+    celebrateAchievementsDesc: 'Visual effects when completing the alphabet',
+    autoAdvanceTime: 'Auto Advance Time',
+    time1s: '1 second',
+    time2s: '2 seconds',
+    time3s: '3 seconds',
+    time5s: '5 seconds',
+    // Exercise
+    alphabetLearning: 'Alphabet Learning',
+    currentLevel: 'Current Level',
+    progress: 'Progress',
+    settings: 'Settings',
+    resetProgress: 'Reset Progress',
+    startExercise: 'Start Exercise',
+    nextLetter: 'Next Letter',
+    previousLetter: 'Previous Letter',
+    playAudio: 'Play Audio',
+    correct: 'Correct',
+    incorrect: 'Incorrect',
+    tryAgain: 'Try Again',
+    congratulations: 'Congratulations',
+    levelCompleted: 'Level Completed',
+    nextLevel: 'Next Level',
+    allLevelsCompleted: 'All Levels Completed',
+    excellentWork: 'Excellent Work',
+    // Activities
+    recognizeLetterAndWord: 'Recognize the letter and word',
+    orderLetters: 'Order the letters correctly',
+    completeWord: 'Complete the word',
+    associateSound: 'Associate the sound with the letter',
+    formWord: 'Form the correct word',
+    dragLettersHere: 'Drag letters here',
+    selectCorrectLetter: 'Select the correct letter',
+    listenAndSelect: 'Listen and select',
+    arrangeLetters: 'Arrange the letters'
+  }
+};
+
+// Helper function to get translations
+const getTranslation = (language: AlphabetLanguage, key: string): string => {
+  return translations[language][key] || key;
+};
+
 // Default settings
 const defaultSettings: AlphabetSettings = {
   language: 'english',
@@ -1277,21 +1400,24 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
     setLocalSettings(prev => ({ ...prev, [key]: value }));
   };
 
+  // Get current language for translations
+  const t = (key: string) => getTranslation(localSettings.language, key);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4 mb-6">
         <Button variant="outline" onClick={onBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Volver
+          {t('back')}
         </Button>
-        <h2 className="text-2xl font-bold">Configuración del Alfabeto</h2>
+        <h2 className="text-2xl font-bold">{t('alphabetConfiguration')}</h2>
       </div>
 
       <Card>
         <CardContent className="p-6 space-y-6">
           {/* Language Selection */}
           <div className="space-y-2">
-            <Label htmlFor="language">Idioma Principal</Label>
+            <Label htmlFor="language">{t('primaryLanguage')}</Label>
             <Select 
               value={localSettings.language} 
               onValueChange={(value: AlphabetLanguage) => 
@@ -1302,15 +1428,15 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="spanish">🇪🇸 Español</SelectItem>
-                <SelectItem value="english">🇺🇸 English</SelectItem>
+                <SelectItem value="spanish">🇪🇸 {t('spanish')}</SelectItem>
+                <SelectItem value="english">🇺🇸 {t('english')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Level Selection */}
           <div className="space-y-2">
-            <Label htmlFor="level">Nivel de Dificultad</Label>
+            <Label htmlFor="level">{t('difficultyLevel')}</Label>
             <Select 
               value={localSettings.level.toString()} 
               onValueChange={(value) => 
@@ -1321,11 +1447,11 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">Nivel 1: Reconocimiento Visual y Auditivo</SelectItem>
-                <SelectItem value="2">Nivel 2: Ordenar Letras</SelectItem>
-                <SelectItem value="3">Nivel 3: Completar Palabras</SelectItem>
-                <SelectItem value="4">Nivel 4: Asociación de Sonidos</SelectItem>
-                <SelectItem value="5">Nivel 5: Formar Palabras</SelectItem>
+                <SelectItem value="1">{t('level1')}</SelectItem>
+                <SelectItem value="2">{t('level2')}</SelectItem>
+                <SelectItem value="3">{t('level3')}</SelectItem>
+                <SelectItem value="4">{t('level4')}</SelectItem>
+                <SelectItem value="5">{t('level5')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1335,9 +1461,9 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
           {/* Bilingual Options */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="both-languages">Mostrar Ambos Idiomas</Label>
+              <Label htmlFor="both-languages">{t('showBothLanguages')}</Label>
               <div className="text-sm text-gray-500">
-                Muestra palabras en español e inglés simultáneamente
+                {t('showBothLanguagesDesc')}
               </div>
             </div>
             <Switch
@@ -1352,9 +1478,9 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
           {/* Auto-advance */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="auto-advance">Avance Automático</Label>
+              <Label htmlFor="auto-advance">{t('autoAdvance')}</Label>
               <div className="text-sm text-gray-500">
-                Cambia automáticamente a la siguiente letra
+                {t('autoAdvanceDesc')}
               </div>
             </div>
             <Switch
@@ -1369,9 +1495,9 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
           {/* Audio */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="audio">Audio Habilitado</Label>
+              <Label htmlFor="audio">{t('audioEnabled')}</Label>
               <div className="text-sm text-gray-500">
-                Reproduce pronunciación de letras y palabras
+                {t('audioEnabledDesc')}
               </div>
             </div>
             <Switch
