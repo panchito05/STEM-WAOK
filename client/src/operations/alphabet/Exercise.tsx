@@ -1261,13 +1261,20 @@ const Level5Component: React.FC<{
 };
 
 // Settings Component
-const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, onBack }) => {
+const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, onBack, onSettingsChange }) => {
   const [localSettings, setLocalSettings] = useState<AlphabetSettings>(settings);
 
-  const handleSave = () => {
-    // Save settings to localStorage
+  // Auto-save settings whenever they change
+  useEffect(() => {
     localStorage.setItem('alphabet_settings', JSON.stringify(localSettings));
-    onBack();
+    onSettingsChange(localSettings);
+  }, [localSettings, onSettingsChange]);
+
+  const updateSetting = <K extends keyof AlphabetSettings>(
+    key: K, 
+    value: AlphabetSettings[K]
+  ) => {
+    setLocalSettings(prev => ({ ...prev, [key]: value }));
   };
 
   return (
@@ -1288,7 +1295,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
             <Select 
               value={localSettings.language} 
               onValueChange={(value: AlphabetLanguage) => 
-                setLocalSettings({ ...localSettings, language: value })
+                updateSetting('language', value)
               }
             >
               <SelectTrigger>
@@ -1307,7 +1314,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
             <Select 
               value={localSettings.level.toString()} 
               onValueChange={(value) => 
-                setLocalSettings({ ...localSettings, level: parseInt(value) as AlphabetLevel })
+                updateSetting('level', parseInt(value) as AlphabetLevel)
               }
             >
               <SelectTrigger>
@@ -1337,7 +1344,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
               id="both-languages"
               checked={localSettings.showBothLanguages}
               onCheckedChange={(checked) =>
-                setLocalSettings({ ...localSettings, showBothLanguages: checked })
+                updateSetting('showBothLanguages', checked)
               }
             />
           </div>
@@ -1354,7 +1361,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
               id="auto-advance"
               checked={localSettings.autoAdvance}
               onCheckedChange={(checked) =>
-                setLocalSettings({ ...localSettings, autoAdvance: checked })
+                updateSetting('autoAdvance', checked)
               }
             />
           </div>

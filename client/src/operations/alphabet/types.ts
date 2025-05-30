@@ -53,6 +53,7 @@ export interface AlphabetExerciseProps {
 export interface AlphabetSettingsProps {
   settings: AlphabetSettings;
   onBack: () => void;
+  onSettingsChange: (settings: AlphabetSettings) => void;
 }
 
 // Level-specific interfaces
