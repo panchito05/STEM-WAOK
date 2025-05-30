@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 interface InteractiveExerciseProps {
   operands: number[];
@@ -9,13 +8,31 @@ interface InteractiveExerciseProps {
 
 const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onAnswer }) => {
   const [exercise] = useState(() => Math.random() > 0.5 ? 'fill-blank' : 'multiple-choice');
-  const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({
+  const [digitAnswers, setDigitAnswers] = useState<{ [key: string]: string }>({
     blank1: '',
     blank2: '',
     blank3: ''
   });
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [showResult, setShowResult] = useState(false);
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+
+  // Funciones para manejar la entrada de dígitos
+  const handleDigitInput = (digit: string, fieldName: string) => {
+    if (showResult) return;
+    setDigitAnswers(prev => ({
+      ...prev,
+      [fieldName]: digit
+    }));
+  };
+
+  const handleBackspace = (fieldName: string) => {
+    if (showResult) return;
+    setDigitAnswers(prev => ({
+      ...prev,
+      [fieldName]: ''
+    }));
+  };
 
   const handleFillBlankSubmit = () => {
     const correctAnswer1 = operands[1];
@@ -23,9 +40,9 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
     const correctAnswer3 = operands[0] + operands[1] + operands[2];
 
     const isCorrect = 
-      parseInt(userAnswers.blank1) === correctAnswer1 &&
-      parseInt(userAnswers.blank2) === correctAnswer2 &&
-      parseInt(userAnswers.blank3) === correctAnswer3;
+      parseInt(digitAnswers.blank1) === correctAnswer1 &&
+      parseInt(digitAnswers.blank2) === correctAnswer2 &&
+      parseInt(digitAnswers.blank3) === correctAnswer3;
 
     setShowResult(true);
     onAnswer(isCorrect);
@@ -58,44 +75,38 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
           <div className="text-2xl font-bold flex items-center justify-center gap-2">
             <span>{operands[0]} +</span>
             <span>(</span>
-            <input
-              type="text"
-              className="w-16 h-12 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500 rounded-md focus:outline-none"
-              value={userAnswers.blank1}
-              onChange={(e) => {
-                console.log('Input 1 changed:', e.target.value);
-                setUserAnswers(prev => ({ ...prev, blank1: e.target.value }));
-              }}
-              disabled={showResult}
-              placeholder="?"
-              maxLength={2}
-            />
+            <div
+              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
+                focusedInput === 'blank1' 
+                  ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
+                  : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
+              }`}
+              onClick={() => setFocusedInput('blank1')}
+            >
+              {digitAnswers.blank1 || <span className="text-gray-400">?</span>}
+            </div>
             <span>+</span>
-            <input
-              type="text"
-              className="w-16 h-12 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500 rounded-md focus:outline-none"
-              value={userAnswers.blank2}
-              onChange={(e) => {
-                console.log('Input 2 changed:', e.target.value);
-                setUserAnswers(prev => ({ ...prev, blank2: e.target.value }));
-              }}
-              disabled={showResult}
-              placeholder="?"
-              maxLength={2}
-            />
+            <div
+              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
+                focusedInput === 'blank2' 
+                  ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
+                  : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
+              }`}
+              onClick={() => setFocusedInput('blank2')}
+            >
+              {digitAnswers.blank2 || <span className="text-gray-400">?</span>}
+            </div>
             <span>) =</span>
-            <input
-              type="text"
-              className="w-20 h-12 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500 rounded-md focus:outline-none"
-              value={userAnswers.blank3}
-              onChange={(e) => {
-                console.log('Input 3 changed:', e.target.value);
-                setUserAnswers(prev => ({ ...prev, blank3: e.target.value }));
-              }}
-              disabled={showResult}
-              placeholder="?"
-              maxLength={3}
-            />
+            <div
+              className={`w-20 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
+                focusedInput === 'blank3' 
+                  ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
+                  : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
+              }`}
+              onClick={() => setFocusedInput('blank3')}
+            >
+              {digitAnswers.blank3 || <span className="text-gray-400">?</span>}
+            </div>
           </div>
         </div>
       </div>
@@ -105,7 +116,7 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
           <Button 
             onClick={handleFillBlankSubmit}
             className="bg-blue-600 hover:bg-blue-700"
-            disabled={!userAnswers.blank1 || !userAnswers.blank2 || !userAnswers.blank3}
+            disabled={!digitAnswers.blank1 || !digitAnswers.blank2 || !digitAnswers.blank3}
           >
             Verificar Respuesta
           </Button>
