@@ -111,12 +111,7 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
         </div>
       </div>
 
-      {/* Problema numérico */}
-      <div className="text-center">
-        <div className="text-2xl font-bold text-gray-800 mb-4">
-          {operands.join(' + ')} = 
-        </div>
-      </div>
+
     </div>
   );
 };
