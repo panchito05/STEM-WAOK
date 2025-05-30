@@ -508,29 +508,15 @@ const Level1Component: React.FC<{
                 <div className="relative">
                   <div className="w-80 h-64 border-4 border-blue-500 rounded-xl bg-white shadow-lg flex flex-col items-center justify-center p-4">
                     {/* Image Display */}
-                    {settings.showBothLanguages ? (
-                      <div className="flex justify-center space-x-4">
-                        <div className="text-center space-y-2">
-                          {createLetterImage(currentLetter.letter, 'spanish')}
-                          <Badge variant="secondary" className="text-xs">
-                            🇪🇸 {currentLetter.words.spanish}
-                          </Badge>
-                        </div>
-                        <div className="text-center space-y-2">
-                          {createLetterImage(currentLetter.letter, 'english')}
-                          <Badge variant="secondary" className="text-xs">
-                            🇺🇸 {currentLetter.words.english}
-                          </Badge>
-                        </div>
+                    <div className="text-center space-y-2">
+                      <div className="text-lg font-bold text-blue-600 mb-2">
+                        Debug: Letter {currentLetter.letter} - {settings.language}
                       </div>
-                    ) : (
-                      <div className="text-center space-y-2">
-                        {createLetterImage(currentLetter.letter, settings.language)}
-                        <Badge variant="secondary" className="text-sm">
-                          {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {currentLetter.words[settings.language]}
-                        </Badge>
-                      </div>
-                    )}
+                      {createLetterImage(currentLetter.letter, settings.language)}
+                      <Badge variant="secondary" className="text-sm">
+                        {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {currentLetter.words[settings.language]}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
 
