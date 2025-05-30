@@ -84,6 +84,13 @@ export default function DifficultyExamples({
       intermediate: ["Count by 10s to 100", "Count from 15 to 30"],
       advanced: ["Count backwards from 30", "Count by 3s to 30"],
       expert: ["Count by 25s to 200", "Count backwards by 10s from 100"]
+    },
+    "associative-property": {
+      beginner: ["(2+3)+4 = 2+(3+4)", "🍎🍌🍊 groupings"],
+      elementary: ["(5+7)+8 = 5+(7+8)", "(12+6)+9 = 12+(6+9)"],
+      intermediate: ["(15+20)+25 = ?", "(18+14)+22 = ?"],
+      advanced: ["(25+38)+47 = ?", "(34+29)+56 = ?"],
+      expert: ["(45+67)+89 = ?", "(58+73)+91 = ?"]
     }
   };
 
