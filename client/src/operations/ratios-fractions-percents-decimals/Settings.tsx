@@ -51,7 +51,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   }, [settings]);
 
   const handleReset = () => {
-    const defaultSettings = defaultModuleSettings();
+    const defaultSettings = defaultModuleSettings;
     setLocalSettings(defaultSettings);
     resetModuleSettings("ratios-fractions-percents-decimals");
     console.log("[RATIOS-FRACTIONS-PERCENTS-DECIMALS] Configuración restablecida a valores por defecto");
@@ -74,7 +74,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           <Label className="text-lg font-semibold">Nivel de dificultad</Label>
           <RadioGroup
             value={localSettings.difficulty}
-            onValueChange={(value) => handleUpdateSetting("difficulty", value)}
+            onValueChange={(value) => handleUpdateSetting("difficulty", value as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")}
             className="grid grid-cols-2 gap-4"
           >
             <div className="flex items-center space-x-2">
@@ -98,7 +98,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               <Label htmlFor="expert">Experto</Label>
             </div>
           </RadioGroup>
-          <DifficultyExamples difficulty={localSettings.difficulty} operation="generic" />
+          <DifficultyExamples activeDifficulty={localSettings.difficulty} operation="generic" />
         </div>
 
         {/* Cantidad de problemas */}
@@ -124,11 +124,11 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           <div className="flex items-center justify-between">
             <Label className="text-lg font-semibold">Temporizador por problema</Label>
             <Switch
-              checked={localSettings.hasTimerEnabled}
-              onCheckedChange={(checked) => handleUpdateSetting("hasTimerEnabled", checked)}
+              checked={localSettings.timeValue > 0}
+              onCheckedChange={(checked) => handleUpdateSetting("timeValue", checked ? 30 : 0)}
             />
           </div>
-          {localSettings.hasTimerEnabled && (
+          {localSettings.timeValue > 0 && (
             <div className="space-y-2">
               <Slider
                 value={[localSettings.timeValue]}
