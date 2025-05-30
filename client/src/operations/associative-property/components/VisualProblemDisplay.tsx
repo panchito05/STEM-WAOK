@@ -36,9 +36,7 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
 
     return (
       <div className="bg-blue-50 p-4 rounded-lg mb-4">
-        <h4 className="text-sm font-semibold text-blue-800 mb-3 text-center">
-          💡 Propiedad Asociativa: Puedes agrupar de diferentes maneras
-        </h4>
+
         
         {/* Forma 1 con agrupación visual */}
         <div className="mb-3">
