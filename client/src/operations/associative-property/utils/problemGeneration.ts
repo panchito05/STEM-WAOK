@@ -33,7 +33,14 @@ export function generateNumbers(difficulty: AssociativeDifficulty, level: Associ
     expert: { min: 10, max: 50 }
   };
 
-  const range = ranges[difficulty];
+  // Map common difficulty names to our internal system
+  let mappedDifficulty = difficulty;
+  if (difficulty === 'beginner' as any) mappedDifficulty = 'easy';
+  if (difficulty === 'elementary' as any) mappedDifficulty = 'easy';
+  if (difficulty === 'intermediate' as any) mappedDifficulty = 'medium';
+  if (difficulty === 'advanced' as any) mappedDifficulty = 'hard';
+
+  const range = ranges[mappedDifficulty] || ranges.easy;
   const numbers: number[] = [];
   
   // Always generate 3 numbers for associative property (a + b) + c = a + (b + c)
