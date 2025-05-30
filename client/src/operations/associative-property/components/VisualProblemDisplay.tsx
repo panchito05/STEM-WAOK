@@ -52,17 +52,61 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
         </div>
       </div>
 
-      {/* Explicación de agrupación */}
+      {/* Explicación de agrupación con paréntesis visuales */}
       <div className="bg-blue-50 p-4 rounded-lg mb-4">
-        <h4 className="text-sm font-semibold text-blue-800 mb-2">
+        <h4 className="text-sm font-semibold text-blue-800 mb-3">
           💡 Propiedad Asociativa: Puedes agrupar de diferentes maneras
         </h4>
-        <div className="text-sm text-blue-700 space-y-1">
-          <div>
-            Forma 1: ({operands[0]} + {operands[1]}) + {operands[2]} = {operands[0] + operands[1]} + {operands[2]} = {operands[0] + operands[1] + operands[2]}
+        
+        {/* Forma 1 con agrupación visual */}
+        <div className="mb-3">
+          <div className="text-sm font-medium text-blue-800 mb-1">Forma 1:</div>
+          <div className="flex items-center justify-center gap-1 text-lg">
+            <span className="px-2 py-1 bg-green-100 border-2 border-green-400 rounded">
+              ({operands[0]} + {operands[1]})
+            </span>
+            <span className="text-gray-600">+</span>
+            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
+              {operands[2]}
+            </span>
+            <span className="text-gray-600">=</span>
+            <span className="px-2 py-1 bg-green-100 border-2 border-green-400 rounded">
+              {operands[0] + operands[1]}
+            </span>
+            <span className="text-gray-600">+</span>
+            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
+              {operands[2]}
+            </span>
+            <span className="text-gray-600">=</span>
+            <span className="font-bold text-blue-600">
+              {operands[0] + operands[1] + operands[2]}
+            </span>
           </div>
-          <div>
-            Forma 2: {operands[0]} + ({operands[1]} + {operands[2]}) = {operands[0]} + {operands[1] + operands[2]} = {operands[0] + operands[1] + operands[2]}
+        </div>
+        
+        {/* Forma 2 con agrupación visual diferente */}
+        <div>
+          <div className="text-sm font-medium text-blue-800 mb-1">Forma 2:</div>
+          <div className="flex items-center justify-center gap-1 text-lg">
+            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
+              {operands[0]}
+            </span>
+            <span className="text-gray-600">+</span>
+            <span className="px-2 py-1 bg-purple-100 border-2 border-purple-400 rounded">
+              ({operands[1]} + {operands[2]})
+            </span>
+            <span className="text-gray-600">=</span>
+            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
+              {operands[0]}
+            </span>
+            <span className="text-gray-600">+</span>
+            <span className="px-2 py-1 bg-purple-100 border-2 border-purple-400 rounded">
+              {operands[1] + operands[2]}
+            </span>
+            <span className="text-gray-600">=</span>
+            <span className="font-bold text-blue-600">
+              {operands[0] + operands[1] + operands[2]}
+            </span>
           </div>
         </div>
       </div>
