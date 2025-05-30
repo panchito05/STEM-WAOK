@@ -10,8 +10,8 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Apple'
     },
     images: {
-      spanish: '/images/alphabet/es/avion.svg',
-      english: '/images/alphabet/en/apple.svg'
+      spanish: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ah/',
@@ -28,8 +28,8 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Ball'
     },
     images: {
-      spanish: '/images/alphabet/es/ballena.svg',
-      english: '/images/alphabet/en/ball.svg'
+      spanish: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/be/',
@@ -46,14 +46,14 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Cat'
     },
     images: {
-      spanish: '/images/alphabet/es/casa.svg',
-      english: '/images/alphabet/en/cat.svg'
+      spanish: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/se/',
       english: '/siː/'
     },
-    color: '#45B7D1'
+    color: '#95E1D3'
   },
   {
     id: 'D',
@@ -64,14 +64,14 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Dog'
     },
     images: {
-      spanish: '/images/alphabet/es/delfin.svg',
-      english: '/images/alphabet/en/dog.svg'
+      spanish: 'https://images.unsplash.com/photo-1607153333879-c174d265f1d2?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/de/',
       english: '/diː/'
     },
-    color: '#96CEB4'
+    color: '#F38BA8'
   },
   {
     id: 'E',
@@ -82,14 +82,14 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Elephant'
     },
     images: {
-      spanish: '/images/alphabet/es/elefante.svg',
-      english: '/images/alphabet/en/elephant.svg'
+      spanish: 'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/e/',
       english: '/iː/'
     },
-    color: '#FFEAA7'
+    color: '#A8E6CF'
   },
   {
     id: 'F',
@@ -100,14 +100,14 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Fish'
     },
     images: {
-      spanish: '/images/alphabet/es/flor.svg',
-      english: '/images/alphabet/en/fish.svg'
+      spanish: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/efe/',
       english: '/ɛf/'
     },
-    color: '#DDA0DD'
+    color: '#FFB3BA'
   },
   {
     id: 'G',
@@ -118,50 +118,50 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Giraffe'
     },
     images: {
-      spanish: '/images/alphabet/es/gato.svg',
-      english: '/images/alphabet/en/giraffe.svg'
+      spanish: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ge/',
       english: '/dʒiː/'
     },
-    color: '#FDA7DF'
+    color: '#BFBFBF'
   },
   {
     id: 'H',
     letter: 'H',
     lowercase: 'h',
     words: {
-      spanish: 'Hormiga',
+      spanish: 'Hipopótamo',
       english: 'Horse'
     },
     images: {
-      spanish: '/images/alphabet/es/hormiga.svg',
-      english: '/images/alphabet/en/horse.svg'
+      spanish: 'https://images.unsplash.com/photo-1621769101275-4f1cdc9bb7ac?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ache/',
       english: '/eɪtʃ/'
     },
-    color: '#E17055'
+    color: '#C7CEEA'
   },
   {
     id: 'I',
     letter: 'I',
     lowercase: 'i',
     words: {
-      spanish: 'Iglú',
+      spanish: 'Iguana',
       english: 'Ice cream'
     },
     images: {
-      spanish: '/images/alphabet/es/iglu.svg',
-      english: '/images/alphabet/en/icecream.svg'
+      spanish: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/i/',
       english: '/aɪ/'
     },
-    color: '#74B9FF'
+    color: '#FFD93D'
   },
   {
     id: 'J',
@@ -172,14 +172,14 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Juice'
     },
     images: {
-      spanish: '/images/alphabet/es/jirafa.svg',
-      english: '/images/alphabet/en/juice.svg'
+      spanish: 'https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/jota/',
       english: '/dʒeɪ/'
     },
-    color: '#55A3FF'
+    color: '#6BCF7F'
   },
   {
     id: 'K',
@@ -190,14 +190,14 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Kite'
     },
     images: {
-      spanish: '/images/alphabet/es/koala.svg',
-      english: '/images/alphabet/en/kite.svg'
+      spanish: 'https://images.unsplash.com/photo-1459262838948-3e2de6c1ec80?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ka/',
       english: '/keɪ/'
     },
-    color: '#A29BFE'
+    color: '#4D96FF'
   },
   {
     id: 'L',
@@ -208,32 +208,32 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Lion'
     },
     images: {
-      spanish: '/images/alphabet/es/leon.svg',
-      english: '/images/alphabet/en/lion.svg'
+      spanish: 'https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ele/',
       english: '/ɛl/'
     },
-    color: '#FD79A8'
+    color: '#9B59B6'
   },
   {
     id: 'M',
     letter: 'M',
     lowercase: 'm',
     words: {
-      spanish: 'Mariposa',
-      english: 'Mouse'
+      spanish: 'Mono',
+      english: 'Monkey'
     },
     images: {
-      spanish: '/images/alphabet/es/mariposa.svg',
-      english: '/images/alphabet/en/mouse.svg'
+      spanish: 'https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/eme/',
       english: '/ɛm/'
     },
-    color: '#FDCB6E'
+    color: '#E67E22'
   },
   {
     id: 'N',
@@ -241,17 +241,17 @@ export const alphabetData: AlphabetLetter[] = [
     lowercase: 'n',
     words: {
       spanish: 'Nube',
-      english: 'Nose'
+      english: 'Nest'
     },
     images: {
-      spanish: '/images/alphabet/es/nube.svg',
-      english: '/images/alphabet/en/nose.svg'
+      spanish: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ene/',
       english: '/ɛn/'
     },
-    color: '#6C5CE7'
+    color: '#1ABC9C'
   },
   {
     id: 'O',
@@ -262,32 +262,32 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Orange'
     },
     images: {
-      spanish: '/images/alphabet/es/oso.svg',
-      english: '/images/alphabet/en/orange.svg'
+      spanish: 'https://images.unsplash.com/photo-1446948588913-9fc215cc6777?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1580052614034-c55d20bfee3b?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/o/',
       english: '/oʊ/'
     },
-    color: '#00B894'
+    color: '#F39C12'
   },
   {
     id: 'P',
     letter: 'P',
     lowercase: 'p',
     words: {
-      spanish: 'Pez',
+      spanish: 'Pájaro',
       english: 'Penguin'
     },
     images: {
-      spanish: '/images/alphabet/es/pez.svg',
-      english: '/images/alphabet/en/penguin.svg'
+      spanish: 'https://images.unsplash.com/photo-1552728089-57bdde30beb3?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1551986782-d0169b3f8fa7?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/pe/',
       english: '/piː/'
     },
-    color: '#00CEC9'
+    color: '#E74C3C'
   },
   {
     id: 'Q',
@@ -298,32 +298,32 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Queen'
     },
     images: {
-      spanish: '/images/alphabet/es/queso.svg',
-      english: '/images/alphabet/en/queen.svg'
+      spanish: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/cu/',
       english: '/kjuː/'
     },
-    color: '#E84393'
+    color: '#8E44AD'
   },
   {
     id: 'R',
     letter: 'R',
     lowercase: 'r',
     words: {
-      spanish: 'Ratón',
+      spanish: 'Rana',
       english: 'Rabbit'
     },
     images: {
-      spanish: '/images/alphabet/es/raton.svg',
-      english: '/images/alphabet/en/rabbit.svg'
+      spanish: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/erre/',
       english: '/ɑr/'
     },
-    color: '#0984E3'
+    color: '#27AE60'
   },
   {
     id: 'S',
@@ -334,14 +334,14 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Sun'
     },
     images: {
-      spanish: '/images/alphabet/es/sol.svg',
-      english: '/images/alphabet/en/sun.svg'
+      spanish: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ese/',
       english: '/ɛs/'
     },
-    color: '#F39C12'
+    color: '#F1C40F'
   },
   {
     id: 'T',
@@ -352,14 +352,14 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Tiger'
     },
     images: {
-      spanish: '/images/alphabet/es/tigre.svg',
-      english: '/images/alphabet/en/tiger.svg'
+      spanish: 'https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/te/',
       english: '/tiː/'
     },
-    color: '#E74C3C'
+    color: '#E67E22'
   },
   {
     id: 'U',
@@ -370,8 +370,8 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Umbrella'
     },
     images: {
-      spanish: '/images/alphabet/es/uva.svg',
-      english: '/images/alphabet/en/umbrella.svg'
+      spanish: 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/u/',
@@ -388,32 +388,32 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'Violin'
     },
     images: {
-      spanish: '/images/alphabet/es/vaca.svg',
-      english: '/images/alphabet/en/violin.svg'
+      spanish: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ve/',
       english: '/viː/'
     },
-    color: '#1ABC9C'
+    color: '#3498DB'
   },
   {
     id: 'W',
     letter: 'W',
     lowercase: 'w',
     words: {
-      spanish: 'Wifi',
+      spanish: 'Wafle',
       english: 'Whale'
     },
     images: {
-      spanish: '/images/alphabet/es/wifi.svg',
-      english: '/images/alphabet/en/whale.svg'
+      spanish: 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/doble ve/',
       english: '/ˈdʌbəl juː/'
     },
-    color: '#3498DB'
+    color: '#34495E'
   },
   {
     id: 'X',
@@ -424,169 +424,49 @@ export const alphabetData: AlphabetLetter[] = [
       english: 'X-ray'
     },
     images: {
-      spanish: '/images/alphabet/es/xilofono.svg',
-      english: '/images/alphabet/en/xray.svg'
+      spanish: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/equis/',
       english: '/ɛks/'
     },
-    color: '#2ECC71'
+    color: '#95A5A6'
   },
   {
     id: 'Y',
     letter: 'Y',
     lowercase: 'y',
     words: {
-      spanish: 'Yoyo',
-      english: 'Yellow'
+      spanish: 'Yate',
+      english: 'Yacht'
     },
     images: {
-      spanish: '/images/alphabet/es/yoyo.svg',
-      english: '/images/alphabet/en/yellow.svg'
+      spanish: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=200&h=200&fit=crop'
     },
     pronunciation: {
-      spanish: '/i griega/',
+      spanish: '/ye/',
       english: '/waɪ/'
     },
-    color: '#F1C40F'
+    color: '#16A085'
   },
   {
     id: 'Z',
     letter: 'Z',
     lowercase: 'z',
     words: {
-      spanish: 'Zapato',
+      spanish: 'Zebra',
       english: 'Zebra'
     },
     images: {
-      spanish: '/images/alphabet/es/zapato.svg',
-      english: '/images/alphabet/en/zebra.svg'
+      spanish: 'https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?w=200&h=200&fit=crop',
+      english: 'https://images.unsplash.com/photo-1551969014-7d2c4cddf0b6?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/zeta/',
       english: '/ziː/'
     },
-    color: '#E67E22'
+    color: '#2C3E50'
   }
 ];
-
-export const getLetterByIndex = (index: number): AlphabetLetter => {
-  return alphabetData[index % alphabetData.length];
-};
-
-export const getLetterById = (id: string): AlphabetLetter | undefined => {
-  return alphabetData.find(letter => letter.id === id);
-};
-
-export const getRandomLetter = (): AlphabetLetter => {
-  const randomIndex = Math.floor(Math.random() * alphabetData.length);
-  return alphabetData[randomIndex];
-};
-
-export const getLettersRange = (start: number, end: number): AlphabetLetter[] => {
-  return alphabetData.slice(start, end + 1);
-};
-
-// Level 2: Letter ordering sequences (3-5 letters)
-export const level2Sequences = [
-  { letters: ['A', 'B', 'C'], difficulty: 'easy' },
-  { letters: ['D', 'E', 'F'], difficulty: 'easy' },
-  { letters: ['G', 'H', 'I'], difficulty: 'easy' },
-  { letters: ['J', 'K', 'L'], difficulty: 'easy' },
-  { letters: ['M', 'N', 'O'], difficulty: 'easy' },
-  { letters: ['P', 'Q', 'R'], difficulty: 'easy' },
-  { letters: ['S', 'T', 'U'], difficulty: 'easy' },
-  { letters: ['V', 'W', 'X'], difficulty: 'easy' },
-  { letters: ['Y', 'Z'], difficulty: 'easy' },
-  { letters: ['A', 'B', 'C', 'D'], difficulty: 'medium' },
-  { letters: ['E', 'F', 'G', 'H'], difficulty: 'medium' },
-  { letters: ['I', 'J', 'K', 'L'], difficulty: 'medium' },
-  { letters: ['M', 'N', 'O', 'P'], difficulty: 'medium' },
-  { letters: ['Q', 'R', 'S', 'T'], difficulty: 'medium' },
-  { letters: ['U', 'V', 'W', 'X'], difficulty: 'medium' },
-  { letters: ['A', 'B', 'C', 'D', 'E'], difficulty: 'hard' },
-  { letters: ['F', 'G', 'H', 'I', 'J'], difficulty: 'hard' },
-  { letters: ['K', 'L', 'M', 'N', 'O'], difficulty: 'hard' },
-  { letters: ['P', 'Q', 'R', 'S', 'T'], difficulty: 'hard' },
-  { letters: ['U', 'V', 'W', 'X', 'Y', 'Z'], difficulty: 'expert' }
-];
-
-// Level 3: Word completion exercises with missing letters
-export const level3WordExercises = [
-  {
-    spanish: { word: 'CASA', missing: [1], options: ['A', 'E', 'I', 'O'] },
-    english: { word: 'CAT', missing: [0], options: ['C', 'B', 'D', 'F'] }
-  },
-  {
-    spanish: { word: 'PERRO', missing: [2, 4], options: ['R', 'L', 'S', 'O', 'A', 'E'] },
-    english: { word: 'DOG', missing: [1], options: ['O', 'A', 'E', 'I'] }
-  },
-  {
-    spanish: { word: 'AZUL', missing: [0, 3], options: ['A', 'U', 'E', 'L', 'R', 'S'] },
-    english: { word: 'BLUE', missing: [1, 3], options: ['L', 'U', 'A', 'O', 'E', 'I'] }
-  },
-  {
-    spanish: { word: 'FLOR', missing: [1, 2], options: ['L', 'O', 'A', 'E', 'R', 'S'] },
-    english: { word: 'FLOWER', missing: [2, 4], options: ['O', 'W', 'A', 'E', 'I', 'U'] }
-  },
-  {
-    spanish: { word: 'LIBRO', missing: [0, 3], options: ['L', 'R', 'P', 'B', 'T', 'M'] },
-    english: { word: 'BOOK', missing: [1, 2], options: ['O', 'O', 'A', 'E', 'U', 'I'] }
-  },
-  {
-    spanish: { word: 'MESA', missing: [1, 3], options: ['E', 'A', 'I', 'O', 'U', 'Y'] },
-    english: { word: 'TABLE', missing: [1, 4], options: ['A', 'E', 'I', 'O', 'U', 'Y'] }
-  },
-  {
-    spanish: { word: 'SOL', missing: [1], options: ['O', 'A', 'E', 'I'] },
-    english: { word: 'SUN', missing: [1], options: ['U', 'O', 'A', 'E'] }
-  },
-  {
-    spanish: { word: 'AGUA', missing: [0, 2], options: ['A', 'U', 'E', 'I', 'O', 'Y'] },
-    english: { word: 'WATER', missing: [1, 3], options: ['A', 'E', 'I', 'O', 'U', 'Y'] }
-  },
-  {
-    spanish: { word: 'NIÑO', missing: [1, 3], options: ['I', 'Ñ', 'E', 'A', 'O', 'U'] },
-    english: { word: 'CHILD', missing: [2, 4], options: ['I', 'D', 'A', 'E', 'O', 'U'] }
-  },
-  {
-    spanish: { word: 'MAMÁ', missing: [1, 3], options: ['A', 'Á', 'E', 'I', 'O', 'U'] },
-    english: { word: 'MOTHER', missing: [1, 4], options: ['O', 'E', 'A', 'I', 'U', 'Y'] }
-  }
-];
-
-// Helper functions for Level 2
-export const generateOrderingExercise = (difficulty: 'easy' | 'medium' | 'hard' | 'expert') => {
-  const sequences = level2Sequences.filter(seq => seq.difficulty === difficulty);
-  const randomSequence = sequences[Math.floor(Math.random() * sequences.length)];
-  
-  // Shuffle the letters for the drag items
-  const shuffledLetters = [...randomSequence.letters].sort(() => Math.random() - 0.5);
-  
-  return {
-    correctSequence: randomSequence.letters,
-    shuffledLetters,
-    difficulty
-  };
-};
-
-// Helper functions for Level 3
-export const generateWordCompletionExercise = (language: 'spanish' | 'english') => {
-  const exercise = level3WordExercises[Math.floor(Math.random() * level3WordExercises.length)];
-  const wordData = exercise[language];
-  
-  // Create the word array with missing letters as null
-  const wordArray = wordData.word.split('');
-  const completionArray = wordArray.map((letter, index) => 
-    wordData.missing.includes(index) ? null : letter
-  );
-  
-  return {
-    word: wordData.word,
-    completionArray,
-    missingPositions: wordData.missing,
-    options: wordData.options,
-    language
-  };
-};
