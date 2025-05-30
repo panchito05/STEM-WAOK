@@ -1378,7 +1378,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
               id="audio"
               checked={localSettings.audioEnabled}
               onCheckedChange={(checked) =>
-                setLocalSettings({ ...localSettings, audioEnabled: checked })
+                updateSetting('audioEnabled', checked)
               }
             />
           </div>
@@ -1395,7 +1395,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
               id="images"
               checked={localSettings.showImages}
               onCheckedChange={(checked) =>
-                setLocalSettings({ ...localSettings, showImages: checked })
+                updateSetting('showImages', checked)
               }
             />
           </div>
@@ -1412,7 +1412,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
               id="celebrate"
               checked={localSettings.celebrateCompletion}
               onCheckedChange={(checked) =>
-                setLocalSettings({ ...localSettings, celebrateCompletion: checked })
+                updateSetting('celebrateCompletion', checked)
               }
             />
           </div>
@@ -1426,7 +1426,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
               <Select 
                 value={localSettings.autoAdvanceDelay.toString()} 
                 onValueChange={(value) => 
-                  setLocalSettings({ ...localSettings, autoAdvanceDelay: parseInt(value) })
+                  updateSetting('autoAdvanceDelay', parseInt(value))
                 }
               >
                 <SelectTrigger>
@@ -1444,14 +1444,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
         </CardContent>
       </Card>
 
-      <div className="flex justify-end space-x-4">
-        <Button variant="outline" onClick={onBack}>
-          Cancelar
-        </Button>
-        <Button onClick={handleSave}>
-          Guardar Configuración
-        </Button>
-      </div>
+
     </div>
   );
 };
@@ -1484,6 +1477,10 @@ const AlphabetExercise: React.FC<AlphabetExerciseProps> = ({ settings: initialSe
     setProgress(newProgress);
   }, []);
 
+  const handleSettingsChange = useCallback((newSettings: AlphabetSettings) => {
+    setSettings(newSettings);
+  }, []);
+
   const resetProgress = useCallback(() => {
     const resetProgress = { ...defaultProgress };
     setProgress(resetProgress);
@@ -1495,6 +1492,7 @@ const AlphabetExercise: React.FC<AlphabetExerciseProps> = ({ settings: initialSe
       <AlphabetSettingsComponent
         settings={settings}
         onBack={() => setShowSettings(false)}
+        onSettingsChange={handleSettingsChange}
       />
     );
   }
