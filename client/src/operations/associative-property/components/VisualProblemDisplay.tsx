@@ -59,8 +59,8 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
         
         {/* Forma 1 con agrupación visual */}
         <div className="mb-3">
-          <div className="text-sm font-medium text-blue-800 mb-1">Forma 1:</div>
-          <div className="flex items-center justify-center gap-1 text-lg">
+          <div className="flex items-center justify-center gap-2 text-lg">
+            <span className="text-sm font-medium text-blue-800">Forma 1:</span>
             <span className="px-2 py-1 bg-green-100 border-2 border-green-400 rounded">
               ({operands[0]} + {operands[1]})
             </span>
@@ -85,8 +85,8 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
         
         {/* Forma 2 con agrupación visual diferente */}
         <div>
-          <div className="text-sm font-medium text-blue-800 mb-1">Forma 2:</div>
-          <div className="flex items-center justify-center gap-1 text-lg">
+          <div className="flex items-center justify-center gap-2 text-lg">
+            <span className="text-sm font-medium text-blue-800">Forma 2:</span>
             <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
               {operands[0]}
             </span>
