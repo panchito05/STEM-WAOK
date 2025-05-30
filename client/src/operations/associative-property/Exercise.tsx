@@ -2032,8 +2032,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     if (settings.difficulty === 'intermediate' && activeInteractiveField) {
       setInteractiveAnswers(prev => ({
         ...prev,
-        [activeInteractiveField]: prev[activeInteractiveField] + value
+        [activeInteractiveField]: value // Reemplazar el valor completo, no concatenar
       }));
+      
+      // Avance automático al siguiente campo
+      if (activeInteractiveField === 'blank1') {
+        setActiveInteractiveField('blank2');
+      } else if (activeInteractiveField === 'blank2') {
+        setActiveInteractiveField('blank3');
+      } else if (activeInteractiveField === 'blank3') {
+        setActiveInteractiveField(null); // Desfocalizar después del último campo
+      }
       return;
     }
 

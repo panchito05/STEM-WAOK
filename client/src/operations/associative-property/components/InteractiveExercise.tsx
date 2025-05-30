@@ -193,16 +193,16 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
         <div className="mt-6 text-center">
           <div className={`text-lg font-semibold ${
             (exercise === 'fill-blank' 
-              ? parseInt(digitAnswers.blank1) === operands[1] && 
-                parseInt(digitAnswers.blank2) === operands[2] && 
-                parseInt(digitAnswers.blank3) === operands[0] + operands[1] + operands[2]
+              ? parseInt(interactiveAnswers.blank1) === operands[1] && 
+                parseInt(interactiveAnswers.blank2) === operands[2] && 
+                parseInt(interactiveAnswers.blank3) === operands[0] + operands[1] + operands[2]
               : selectedChoice === 'a'
             ) ? 'text-green-600' : 'text-red-600'
           }`}>
             {(exercise === 'fill-blank' 
-              ? parseInt(digitAnswers.blank1) === operands[1] && 
-                parseInt(digitAnswers.blank2) === operands[2] && 
-                parseInt(digitAnswers.blank3) === operands[0] + operands[1] + operands[2]
+              ? parseInt(interactiveAnswers.blank1) === operands[1] && 
+                parseInt(interactiveAnswers.blank2) === operands[2] && 
+                parseInt(interactiveAnswers.blank3) === operands[0] + operands[1] + operands[2]
               : selectedChoice === 'a'
             ) ? '¡Correcto!' : 'Incorrecto. La propiedad asociativa dice que podemos cambiar la agrupación sin cambiar el resultado.'}
           </div>
