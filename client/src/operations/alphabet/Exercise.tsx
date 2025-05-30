@@ -67,13 +67,36 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Update language when global settings change
   useEffect(() => {
-    const currentLanguage = globalSettings.language === 'spanish' ? 'spanish' : 'english';
-    console.log('Global settings language:', globalSettings.language, 'Module settings language:', settings.language, 'Alphabet language:', currentLanguage);
+    console.log('🔍 [ALPHABET DIAGNOSTIC] Analyzing language settings...');
+    console.log('📋 [GLOBAL SETTINGS]:', globalSettings);
+    console.log('📋 [MODULE SETTINGS]:', settings);
+    
+    // Check multiple sources for language setting
+    const globalLang = globalSettings?.language;
+    const moduleLang = settings?.language;
+    
+    console.log('🌐 Global language raw:', globalLang);
+    console.log('📝 Module language raw:', moduleLang);
+    
+    // Priority: Module settings first, then global settings
+    let detectedLanguage = 'english';
+    if (moduleLang === 'spanish' || moduleLang === 'español') {
+      detectedLanguage = 'spanish';
+      console.log('✅ [DETECTION] Using module language: spanish');
+    } else if (globalLang === 'spanish' || globalLang === 'español') {
+      detectedLanguage = 'spanish';
+      console.log('✅ [DETECTION] Using global language: spanish');
+    } else {
+      console.log('⚠️ [DETECTION] Defaulting to english');
+    }
+    
+    console.log('🎯 [FINAL] Alphabet language set to:', detectedLanguage);
+    
     setAlphabetSettings(prev => ({
       ...prev,
-      language: currentLanguage
+      language: detectedLanguage
     }));
-  }, [globalSettings.language, settings.language]);
+  }, [globalSettings, settings]);
 
   // Translation helper
   const t = (englishText: string, spanishText: string) => {
