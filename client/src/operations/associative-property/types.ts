@@ -1,4 +1,4 @@
-// Definición de tipos para el módulo de propiedad asociativa
+// Definición de tipos para el módulo de suma
 
 // Niveles de dificultad estandarizados para todos los módulos
 export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
@@ -7,7 +7,7 @@ export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'adva
 export type ExerciseLayout = 'horizontal' | 'vertical';
 
 // Definición de un problema de suma específico
-export interface AssociativePropertyProblem {
+export interface AdditionProblem {
   id: string;
   operands: number[];       // Operandos de la suma (puede ser más de 2 en niveles avanzados)
   num1?: number;            // Campo legacy para compatibilidad

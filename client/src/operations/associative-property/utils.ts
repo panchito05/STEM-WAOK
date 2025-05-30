@@ -1,5 +1,5 @@
 // utils.ts
-import { AssociativePropertyProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
+import { AdditionProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -27,17 +27,17 @@ function generateUniqueId(): string {
 }
 
 /**
- * Convierte un problema de tipo AssociativePropertyProblem al tipo genérico Problem
+ * Convierte un problema de tipo AdditionProblem al tipo genérico Problem
  * Este adaptador garantiza la compatibilidad entre los dos tipos
  */
-export function additionProblemToProblem(problem: AssociativePropertyProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
+export function additionProblemToProblem(problem: AdditionProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
   // Convertir operandos simples a tipo Operand
   const operands: Operand[] = problem.operands.map(value => ({ value }));
   
   return {
     id: problem.id,
     operands,
-    displayFormat: problem.layout, // El layout de AssociativePropertyProblem es el displayFormat de Problem
+    displayFormat: problem.layout, // El layout de AdditionProblem es el displayFormat de Problem
     correctAnswer: problem.correctAnswer,
     difficulty, // Usamos el parámetro de dificultad o el predeterminado
     allowDecimals: problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0,
@@ -46,10 +46,10 @@ export function additionProblemToProblem(problem: AssociativePropertyProblem, di
 }
 
 /**
- * Convierte un problema de tipo Problem al tipo específico AssociativePropertyProblem
- * Este adaptador se usa cuando necesitamos utilizar funciones que requieren AssociativePropertyProblem
+ * Convierte un problema de tipo Problem al tipo específico AdditionProblem
+ * Este adaptador se usa cuando necesitamos utilizar funciones que requieren AdditionProblem
  */
-export function problemToAssociativePropertyProblem(problem: Problem): AssociativePropertyProblem {
+export function problemToAdditionProblem(problem: Problem): AdditionProblem {
   const operands = problem.operands.map(op => op.value);
   let answerDecimalPosition: number | undefined = undefined;
   
@@ -78,7 +78,7 @@ export function problemToAssociativePropertyProblem(problem: Problem): Associati
 }
 
 // --- Generación del Problema ---
-export function generateAssociativePropertyProblem(difficulty: DifficultyLevel): AssociativePropertyProblem {
+export function generateAdditionProblem(difficulty: DifficultyLevel): AdditionProblem {
   const id = generateUniqueId();
   let operands: number[] = [];
   let layout: ExerciseLayout = 'horizontal';
@@ -168,7 +168,7 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
 }
 
 // --- Validación de la Respuesta ---
-export function checkAnswer(problem: AssociativePropertyProblem, userAnswer: number): boolean {
+export function checkAnswer(problem: AdditionProblem, userAnswer: number): boolean {
   if (isNaN(userAnswer)) return false;
 
   const precisionForComparison = problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0

@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import { AssociativePropertyProblem } from '../../types';
+import { AdditionProblem } from '../../types';
 import { CloseButton } from './CloseButton';
 import { DrawingArea } from './DrawingArea';
 import { ControlPanelEnhanced } from './ControlPanelEnhanced';
@@ -8,7 +8,7 @@ import { useProfessorStateMachine } from './state/StateMachine';
 import { InputValidator, ErrorHandler, TimingUtils } from './utils/ValidationUtils';
 
 interface ProfessorModeEnhancedProps {
-  problem: AssociativePropertyProblem;
+  problem: AdditionProblem;
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
@@ -30,7 +30,7 @@ const ProfessorModeContent: React.FC<ProfessorModeEnhancedProps> = ({
   const stateMachine = useProfessorStateMachine('waiting_answer');
 
   // Calcular respuesta correcta de forma segura
-  const calculateCorrectAnswer = useCallback((prob: AssociativePropertyProblem): number => {
+  const calculateCorrectAnswer = useCallback((prob: AdditionProblem): number => {
     if (!InputValidator.validateProblem(prob)) {
       ErrorHandler.logError('ProfessorMode', 'Problema inválido recibido');
       return 0;

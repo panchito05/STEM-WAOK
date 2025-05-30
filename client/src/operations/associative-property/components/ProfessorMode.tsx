@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { AssociativePropertyProblem } from '../types';
+import { AdditionProblem } from '../types';
 import { CloseButton } from './professor/CloseButton';
 import { DrawingArea } from './professor/DrawingArea';
 import { useProgress } from '../../../context/ProgressContext';
 import { SynchronizedLayoutProvider, useSynchronizedLayout } from './professor/context/SynchronizedLayoutContext';
 
 interface ProfessorModeProps {
-  problem: AssociativePropertyProblem;
+  problem: AdditionProblem;
   onClose: () => void;
   onCorrectAnswer: (wasCorrect: boolean) => void;
   showVerticalFormat?: boolean;
@@ -34,7 +34,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   });
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0);
   const [problemHistory, setProblemHistory] = useState<Array<{
-    problem: AssociativePropertyProblem;
+    problem: AdditionProblem;
     userAnswer: number;
     isCorrect: boolean;
     attempts: number;
@@ -81,7 +81,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
 
       // ESTRUCTURA EXACTA COMO EL MODO NORMAL - VERSIÓN 4.0
       const exerciseData = {
-        operationId: "associative-property",
+        operationId: "addition",
         date: new Date().toISOString(),
         score: stats.correctAnswers,
         totalProblems: stats.totalProblems,
@@ -147,7 +147,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   };
 
   // Calcular respuesta correcta
-  const calculateCorrectAnswer = useCallback((prob: AssociativePropertyProblem): number => {
+  const calculateCorrectAnswer = useCallback((prob: AdditionProblem): number => {
     return prob.operands.reduce((sum, operand) => {
       const num = typeof operand === 'number' ? operand : parseFloat(operand.toString());
       return sum + (isNaN(num) ? 0 : num);
@@ -421,7 +421,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl w-full">
             {/* Título */}
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Associative Property Exercise Complete!</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Addition Exercise Complete!</h1>
               
               {/* Tiempo total */}
               <div className="mb-6">

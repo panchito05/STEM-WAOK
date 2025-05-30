@@ -1,8 +1,8 @@
 import React from 'react';
-import { AssociativePropertyProblem } from '../types';
+import { AdditionProblem } from '../types';
 
 interface ProblemViewerProps {
-  problem: AssociativePropertyProblem;
+  problem: AdditionProblem;
   onClose: () => void;
 }
 

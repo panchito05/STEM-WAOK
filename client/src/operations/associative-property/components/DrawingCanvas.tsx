@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { AssociativePropertyProblem } from '../types';
+import { AdditionProblem } from '../types';
 
 // Definir los diferentes modos de herramientas
 type ToolMode = 'pen' | 'eraser';
@@ -17,7 +17,7 @@ interface DrawingCanvasProps {
   strokeWidth?: number;
   className?: string;
   onClear?: () => void;
-  currentProblem?: AssociativePropertyProblem | null; // Problema actual para estampar en el canvas
+  currentProblem?: AdditionProblem | null; // Problema actual para estampar en el canvas
 }
 
 export function DrawingCanvas({

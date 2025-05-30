@@ -1,5 +1,5 @@
 import React from 'react';
-import { AssociativePropertyProblem } from '../../types';
+import { AdditionProblem } from '../../types';
 import { ProblemDisplay } from './ProblemDisplay';
 import { AnswerInput } from './AnswerInput';
 import { CheckButton } from './CheckButton';
@@ -8,7 +8,7 @@ import { PositionControl } from './PositionControl';
 import { useProfessorContext } from './context/ProfessorContext';
 
 interface ControlPanelEnhancedProps {
-  problem: AssociativePropertyProblem;
+  problem: AdditionProblem;
   position: string;
   onPositionChange: (position: string) => void;
   userAnswer: string;

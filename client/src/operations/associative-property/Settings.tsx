@@ -26,8 +26,8 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   const debouncedSave = useMemo(
     () =>
       debounce((settings: ModuleSettings) => {
-        updateModuleSettings("associative-property", settings);
-        console.log(`[ASSOCIATIVE-PROPERTY] Guardando configuración (debounced):`, settings);
+        updateModuleSettings("addition", settings);
+        console.log(`[ADDITION] Guardando configuración (debounced):`, settings);
       }, 500), // Reducir el tiempo de espera a 500ms para asegurar que se guarde pronto
     [updateModuleSettings]
   );
@@ -39,9 +39,9 @@ export default function Settings({ settings, onBack }: SettingsProps) {
     
     // Para cambios de dificultad, aplicar cambio inmediatamente
     if (key === "difficulty") {
-      console.log("[ASSOCIATIVE-PROPERTY] Guardando configuración de dificultad inmediatamente:", value);
+      console.log("[ADDITION] Guardando configuración de dificultad inmediatamente:", value);
       // Actualizamos directamente sin usar debounce para cambios de dificultad
-      updateModuleSettings("associative-property", updatedSettings);
+      updateModuleSettings("addition", updatedSettings);
     } else {
       // Para otros ajustes, usar debounce para evitar múltiples llamadas de guardado
       debouncedSave(updatedSettings);
@@ -56,16 +56,16 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   // Forzar el guardado de la configuración al componente cargarse
   useEffect(() => {
     // Guardar configuración inmediatamente al montar el componente para persistir valores actuales
-    updateModuleSettings("associative-property", localSettings);
-    console.log("[ASSOCIATIVE-PROPERTY] Guardando configuración al cargar:", localSettings);
+    updateModuleSettings("addition", localSettings);
+    console.log("[ADDITION] Guardando configuración al cargar:", localSettings);
     
     // Al desmontar, volver a guardar
     return () => {
       if (!hasSavedRef.current) {
         hasSavedRef.current = true;
         // Llamada directa sin debounce para asegurar que se ejecute
-        updateModuleSettings("associative-property", localSettings);
-        console.log("[ASSOCIATIVE-PROPERTY] Guardando configuración al desmontar:", localSettings);
+        updateModuleSettings("addition", localSettings);
+        console.log("[ADDITION] Guardando configuración al desmontar:", localSettings);
         
         // Forzar localStorage para asegurar persistencia
         try {
@@ -82,7 +82,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               addition: localSettings
             };
             localStorage.setItem(key, JSON.stringify(updated));
-            console.log("[ASSOCIATIVE-PROPERTY] Forzando actualización en localStorage:", updated);
+            console.log("[ADDITION] Forzando actualización en localStorage:", updated);
           }
         } catch (e) {
           console.error("Error al forzar guardado en localStorage:", e);
@@ -93,7 +93,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   const handleResetSettings = async () => {
     if (showResetConfirm) {
-      await resetModuleSettings("associative-property");
+      await resetModuleSettings("addition");
       setLocalSettings({ ...defaultModuleSettings });
       setShowResetConfirm(false);
     } else {
@@ -195,7 +195,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
 
   // Determinar textos según el idioma actual
   const isEnglish = localSettings.language === "english";
-  const headerTitle = isEnglish ? "Configuration - Associative Property Exercise" : "Configuración - Ejercicio de Suma";
+  const headerTitle = isEnglish ? "Configuration - Addition Exercise" : "Configuración - Ejercicio de Suma";
   const subheaderText = isEnglish ? "Customize your exercise experience" : "Personaliza tu experiencia de ejercicio";
   const backButtonText = isEnglish ? "Back to Exercise" : "Volver al Ejercicio";
   const languageButtonText = isEnglish ? "Español" : "English";
@@ -239,7 +239,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           
           <div className="mt-4 mb-6 bg-white/80 rounded-lg p-4 border border-gray-100 shadow-sm">
             <DifficultyExamples 
-              operation="associative-property" 
+              operation="addition" 
               activeDifficulty={localSettings.difficulty}
               onSelectDifficulty={(difficulty) => 
                 handleUpdateSetting("difficulty", difficulty as "beginner" | "elementary" | "intermediate" | "advanced" | "expert")
@@ -256,7 +256,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               <span className="font-bold">{isEnglish ? "Elementary:" : "Elemental:"}</span> {isEnglish ? "Two-digit number additions (12+15, 24+13)" : "Sumas de números de dos dígitos (12+15, 24+13)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
-              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Associative Propertys with large numbers (65+309, 392+132)" : "Sumas con números grandes (65+309, 392+132)"}
+              <span className="font-bold">{isEnglish ? "Intermediate:" : "Intermedio:"}</span> {isEnglish ? "Additions with large numbers (65+309, 392+132)" : "Sumas con números grandes (65+309, 392+132)"}
             </p>
             <p className={`text-sm ${theme.accent} bg-white/60 rounded-md p-2 border ${theme.border}`}>
               <span className="font-bold">{isEnglish ? "Advanced:" : "Avanzado:"}</span> {isEnglish ? "4-digit number additions (1247+3568, 5934+8742)" : "Sumas de números de 4 dígitos (1247+3568, 5934+8742)"}
@@ -396,7 +396,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
           </div>
 
           <h3 className={`text-lg font-bold ${theme.text} flex items-center mt-6`}>
-            <span className="mr-2">⚙️</span>{isEnglish ? "Associative Propertyal Settings" : "Configuración Adicional"}
+            <span className="mr-2">⚙️</span>{isEnglish ? "Additional Settings" : "Configuración Adicional"}
           </h3>
           <div className="mt-3 space-y-3">
             <div className={`flex items-center justify-between p-2.5 rounded-md bg-white/70 border ${theme.border}`}>
