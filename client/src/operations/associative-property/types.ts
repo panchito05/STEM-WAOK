@@ -5,14 +5,16 @@ export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'adva
 
 // Formatos de visualización para los problemas
 export type ExerciseLayout = 'horizontal' | 'vertical';
+export type DisplayFormat = 'horizontal' | 'vertical' | 'word';
 
 // Definición de un problema de propiedad asociativa específico
+// La propiedad asociativa establece que: (a + b) + c = a + (b + c)
 export interface AssociativePropertyProblem {
   id: string;
-  operands: number[];       // Operandos para la propiedad asociativa (puede ser más de 2 en niveles avanzados)
+  operands: number[];       // Operandos para demostrar la propiedad asociativa (mínimo 3 números)
   num1?: number;            // Campo legacy para compatibilidad
   num2?: number;            // Campo legacy para compatibilidad
-  correctAnswer: number;    // Respuesta correcta
+  correctAnswer: number;    // Respuesta correcta (suma de todos los operandos)
   layout: ExerciseLayout;   // Formato de visualización
   answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
   answerDecimalPosition?: number; // Posición del decimal en la respuesta (si aplica)

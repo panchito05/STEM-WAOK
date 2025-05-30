@@ -78,6 +78,9 @@ export function problemToAssociativePropertyProblem(problem: Problem): Associati
 }
 
 // --- Generación del Problema ---
+// La Propiedad Asociativa de la Suma establece que:
+// (a + b) + c = a + (b + c)
+// El resultado es el mismo independientemente de cómo se agrupen los números
 export function generateAssociativePropertyProblem(difficulty: DifficultyLevel): AssociativePropertyProblem {
   const id = generateUniqueId();
   let operands: number[] = [];
@@ -85,46 +88,85 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
   let problemMaxDecimals: 0 | 1 | 2 = 0;
 
   switch (difficulty) {
-    case "beginner": // Sumas simples, ej: 1+1 a 9+9 (del código original)
-      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
+    case "beginner": 
+      // NIVEL PRINCIPIANTE: Introducción a la propiedad asociativa
+      // Ejemplo: 2 + 3 + 1 = 6 (el estudiante puede agrupar como (2+3)+1 o 2+(3+1))
+      // Números pequeños (1-5) para facilitar el cálculo mental y enfocar en el concepto
+      operands = [getRandomInt(1, 5), getRandomInt(1, 5), getRandomInt(1, 5)];
       layout = 'horizontal';
       break;
-    case "elementary": // Dos dígitos + un dígito, sin acarreo (adaptado) ej: 12+5, o dos dígitos simples
-      operands = [getRandomInt(10, 30), getRandomInt(1, 9)]; // ej: 23 + 7
-      if (getRandomBool(0.5)) { // 50% chance de dos dígitos + dos dígitos simples
-          operands = [getRandomInt(10, 20), getRandomInt(10, 20)]; // ej: 12 + 15
+      
+    case "elementary": 
+      // NIVEL ELEMENTAL: Refuerzo del concepto con números ligeramente mayores
+      // Ejemplo: 4 + 6 + 3 = 13 (puede agruparse como (4+6)+3=10+3=13 o 4+(6+3)=4+9=13)
+      // Números de un dígito (2-8) que permiten diferentes estrategias de agrupación
+      operands = [getRandomInt(2, 8), getRandomInt(2, 8), getRandomInt(2, 8)];
+      layout = 'horizontal';
+      break;
+      
+    case "intermediate": 
+      // NIVEL INTERMEDIO: Aplicación con números mixtos y posible formato vertical
+      // Ejemplo: 12 + 8 + 15 = 35 (agrupación: (12+8)+15=20+15=35 o 12+(8+15)=12+23=35)
+      // Introduce variación en el formato de presentación
+      layout = getRandomBool(0.6) ? 'horizontal' : 'vertical';
+      operands = [
+        getRandomInt(5, 15),
+        getRandomInt(5, 15), 
+        getRandomInt(5, 15)
+      ];
+      // 30% de probabilidad de añadir un cuarto número para mayor complejidad
+      // Ejemplo: 8 + 12 + 6 + 9 = 35 (múltiples formas de agrupar)
+      if (getRandomBool(0.3)) {
+        operands.push(getRandomInt(5, 10));
       }
-      layout = 'horizontal';
       break;
-    case "intermediate": // 2 líneas, aleatoriamente vertical, posible 1 decimal
-      layout = getRandomBool(0.75) ? 'vertical' : 'horizontal'; // 75% vertical
-      if (layout === 'vertical' && getRandomBool(0.4)) { // 40% de chance de 1 decimal si es vertical
-        problemMaxDecimals = 1;
+      
+    case "advanced": 
+      // NIVEL AVANZADO: Números más grandes con posibles decimales
+      // Ejemplo: 25.5 + 34.2 + 18.7 = 78.4 (agrupación estratégica para facilitar cálculo)
+      // Enfoque en estrategias de agrupación para simplificar operaciones
+      layout = getRandomBool(0.7) ? 'vertical' : 'horizontal';
+      problemMaxDecimals = getRandomBool(0.4) ? 1 : 0; // 40% chance de decimales
+      
+      if (problemMaxDecimals > 0) {
         operands = [
-          getRandomDecimal(10, 99, problemMaxDecimals),
-          getRandomDecimal(10, 99, problemMaxDecimals)
+          getRandomDecimal(10, 50, problemMaxDecimals),
+          getRandomDecimal(10, 50, problemMaxDecimals),
+          getRandomDecimal(10, 50, problemMaxDecimals)
         ];
-      } else { // Enteros o formato horizontal
-        operands = [getRandomInt(10, 99), getRandomInt(10, 99)];
+      } else {
+        operands = [
+          getRandomInt(15, 75),
+          getRandomInt(15, 75),
+          getRandomInt(15, 75)
+        ];
+      }
+      
+      // 50% de probabilidad de cuarto operando para demostrar agrupaciones múltiples
+      if (getRandomBool(0.5)) {
+        if (problemMaxDecimals > 0) {
+          operands.push(getRandomDecimal(10, 30, problemMaxDecimals));
+        } else {
+          operands.push(getRandomInt(10, 40));
+        }
       }
       break;
-    case "advanced": // 3 líneas, siempre vertical, 1 o 2 decimales
+      
+    case "expert": 
+      // NIVEL EXPERTO: Máxima complejidad con 4-5 números y decimales
+      // Ejemplo: 45.75 + 62.25 + 38.50 + 29.75 + 33.25 = 209.50
+      // Requiere planificación estratégica de agrupaciones para optimizar el cálculo
       layout = 'vertical';
-      problemMaxDecimals = getRandomBool(0.6) ? 2 : 1; // 60% chance de 2 decimales
-      for (let i = 0; i < 3; i++) {
-        operands.push(getRandomDecimal(10, getRandomInt(200, 999), problemMaxDecimals));
+      const numOperands = getRandomBool(0.6) ? 4 : 5; // 60% cuatro números, 40% cinco números
+      problemMaxDecimals = getRandomBool(0.7) ? 2 : 1; // 70% dos decimales, 30% un decimal
+      
+      for (let i = 0; i < numOperands; i++) {
+        operands.push(getRandomDecimal(20, 150, problemMaxDecimals));
       }
       break;
-    case "expert": // 4 o 5 líneas, siempre vertical, 1 o 2 decimales
-      layout = 'vertical';
-      const numLines = getRandomBool() ? 4 : 5;
-      problemMaxDecimals = getRandomBool(0.75) ? 2 : 1; // 75% chance de 2 decimales
-      for (let i = 0; i < numLines; i++) {
-        operands.push(getRandomDecimal(100, getRandomInt(2000, 9999), problemMaxDecimals));
-      }
-      break;
-    default: // Fallback a beginner si la dificultad no es reconocida
-      operands = [getRandomInt(1, 9), getRandomInt(1, 9)];
+      
+    default: // Fallback a beginner
+      operands = [getRandomInt(1, 5), getRandomInt(1, 5), getRandomInt(1, 5)];
       layout = 'horizontal';
   }
 
