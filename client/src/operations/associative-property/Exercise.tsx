@@ -60,7 +60,7 @@ const AssociativePropertyExercise = ({ settings, onOpenSettings }: ExerciseProps
   // Hooks
   const { updateProgress } = useProgress();
   const { updateModuleSettings } = useSettings();
-  const t = useTranslations();
+  const { t } = useTranslations();
   
   // Rewards
   const { checkAndAwardRewards } = useRewards('associative-property');

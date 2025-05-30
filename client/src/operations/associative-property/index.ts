@@ -1,3 +1,4 @@
 import Exercise from './Exercise';
+import Settings from './Settings';
 
-export default Exercise;
+export { Exercise, Settings };
