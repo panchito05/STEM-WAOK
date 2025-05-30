@@ -12,16 +12,32 @@ export const useAlphabetLanguage = (moduleSettings: ModuleSettings) => {
     // Priority order: Module settings > Global settings > Default to English
     let detectedLanguage: AlphabetLanguage = 'english';
 
-    // Check module settings first
-    if (moduleSettings.language === 'spanish' || moduleSettings.language === 'español') {
+    console.log('[ALPHABET LANGUAGE DEBUG] Raw values:', {
+      moduleLanguage: moduleSettings.language,
+      globalLanguage: globalSettings.language,
+      moduleType: typeof moduleSettings.language,
+      globalType: typeof globalSettings.language
+    });
+
+    // Check module settings first (supports multiple formats)
+    const moduleLang = String(moduleSettings.language || '').toLowerCase();
+    if (moduleLang === 'spanish' || moduleLang === 'español' || moduleLang === 'es') {
       detectedLanguage = 'spanish';
+      console.log('[ALPHABET LANGUAGE] Using module language: spanish');
     }
-    // Check global settings
-    else if (globalSettings.language === 'es' || globalSettings.language === 'spanish' || globalSettings.language === 'español') {
-      detectedLanguage = 'spanish';
+    // Check global settings (supports multiple formats)
+    else if (globalSettings.language) {
+      const globalLang = String(globalSettings.language).toLowerCase();
+      if (globalLang === 'es' || globalLang === 'spanish' || globalLang === 'español') {
+        detectedLanguage = 'spanish';
+        console.log('[ALPHABET LANGUAGE] Using global language: spanish');
+      } else if (globalLang === 'en' || globalLang === 'english') {
+        detectedLanguage = 'english';
+        console.log('[ALPHABET LANGUAGE] Using global language: english');
+      }
     }
 
-    console.log(`[ALPHABET LANGUAGE] Detected: ${detectedLanguage} (Global: ${globalSettings.language}, Module: ${moduleSettings.language})`);
+    console.log(`[ALPHABET LANGUAGE] Final decision: ${detectedLanguage}`);
     setLanguage(detectedLanguage);
   }, [globalSettings.language, moduleSettings.language]);
 
