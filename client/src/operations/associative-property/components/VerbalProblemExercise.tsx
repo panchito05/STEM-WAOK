@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 
 interface VerbalProblemExerciseProps {
   operands: number[];
@@ -7,11 +6,7 @@ interface VerbalProblemExerciseProps {
 }
 
 const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands, onAnswer }) => {
-  const [blank1, setBlank1] = useState<string>('');
-  const [blank2, setBlank2] = useState<string>('');
-  const [finalAnswer, setFinalAnswer] = useState<string>('');
-  const [showResult, setShowResult] = useState(false);
-  const [activeField, setActiveField] = useState<string>('');
+  const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
 
   // Generar problemas basados en los operandos
   const [a, b, c] = operands;
@@ -23,134 +18,129 @@ const VerbalProblemExercise: React.FC<VerbalProblemExerciseProps> = ({ operands,
   const givenExpression = showFirstGrouping 
     ? `(${a} + ${b}) + ${c}`
     : `${a} + (${b} + ${c})`;
-    
-  const completeExpression = showFirstGrouping
-    ? `${a} + (__ + __) = __`
-    : `(__ + __) + ${c} = __`;
 
   const correctBlank1 = showFirstGrouping ? b : a;
   const correctBlank2 = showFirstGrouping ? c : b;
 
-  const handleFieldClick = (fieldName: string) => {
-    setActiveField(fieldName);
+  const handleInputChange = (fieldName: string, value: string) => {
+    setUserAnswers(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
   };
 
-  const handleNumberInput = (digit: string) => {
-    if (activeField === 'blank1') {
-      setBlank1(prev => prev + digit);
-    } else if (activeField === 'blank2') {
-      setBlank2(prev => prev + digit);
-    } else if (activeField === 'finalAnswer') {
-      setFinalAnswer(prev => prev + digit);
+  const renderExpression = () => {
+    if (showFirstGrouping) {
+      // Mostrar: a + (__ + __) = __
+      return (
+        <div className="text-2xl font-bold text-center bg-white p-4 rounded border">
+          <span className="text-purple-800">{a}</span>
+          <span className="mx-2">+</span>
+          <span>(</span>
+          <input
+            type="text"
+            value={userAnswers['blank1'] || ''}
+            onChange={(e) => handleInputChange('blank1', e.target.value)}
+            className="w-16 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            placeholder="?"
+            maxLength={3}
+          />
+          <span className="mx-2">+</span>
+          <input
+            type="text"
+            value={userAnswers['blank2'] || ''}
+            onChange={(e) => handleInputChange('blank2', e.target.value)}
+            className="w-16 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            placeholder="?"
+            maxLength={3}
+          />
+          <span>)</span>
+          <span className="mx-2">=</span>
+          <input
+            type="text"
+            value={userAnswers['finalAnswer'] || ''}
+            onChange={(e) => handleInputChange('finalAnswer', e.target.value)}
+            className="w-20 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            placeholder="?"
+            maxLength={4}
+          />
+        </div>
+      );
+    } else {
+      // Mostrar: (__ + __) + c = __
+      return (
+        <div className="text-2xl font-bold text-center bg-white p-4 rounded border">
+          <span>(</span>
+          <input
+            type="text"
+            value={userAnswers['blank1'] || ''}
+            onChange={(e) => handleInputChange('blank1', e.target.value)}
+            className="w-16 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            placeholder="?"
+            maxLength={3}
+          />
+          <span className="mx-2">+</span>
+          <input
+            type="text"
+            value={userAnswers['blank2'] || ''}
+            onChange={(e) => handleInputChange('blank2', e.target.value)}
+            className="w-16 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            placeholder="?"
+            maxLength={3}
+          />
+          <span>)</span>
+          <span className="mx-2">+</span>
+          <span className="text-purple-800">{c}</span>
+          <span className="mx-2">=</span>
+          <input
+            type="text"
+            value={userAnswers['finalAnswer'] || ''}
+            onChange={(e) => handleInputChange('finalAnswer', e.target.value)}
+            className="w-20 h-10 text-center border-2 border-purple-300 rounded mx-1 text-lg"
+            placeholder="?"
+            maxLength={4}
+          />
+        </div>
+      );
     }
   };
 
-  const handleSubmit = () => {
-    const blank1Correct = parseInt(blank1) === correctBlank1;
-    const blank2Correct = parseInt(blank2) === correctBlank2;
-    const answerCorrect = parseInt(finalAnswer) === correctAnswer;
+  const checkAnswers = () => {
+    const blank1Correct = parseInt(userAnswers['blank1'] || '0') === correctBlank1;
+    const blank2Correct = parseInt(userAnswers['blank2'] || '0') === correctBlank2;
+    const answerCorrect = parseInt(userAnswers['finalAnswer'] || '0') === correctAnswer;
     
     const isCorrect = blank1Correct && blank2Correct && answerCorrect;
-    setShowResult(true);
     onAnswer(isCorrect);
   };
 
   return (
     <div className="space-y-6">
       <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-200">
-        <h3 className="text-xl font-bold text-purple-800 mb-4">
+        <h3 className="text-xl font-bold text-purple-800 mb-4 text-center">
           🔢 Aplicación de la Propiedad Asociativa
         </h3>
         
-        <div className="space-y-4">
-          <div className="bg-white p-4 rounded border">
-            <p className="text-lg mb-3">
-              <strong>Dada:</strong> {givenExpression} = {correctAnswer}
+        <div className="space-y-6">
+          <div className="text-center">
+            <p className="text-lg mb-4">
+              <strong>Dada:</strong> <span className="bg-green-100 px-2 py-1 rounded">{givenExpression} = {correctAnswer}</span>
             </p>
             <p className="text-lg mb-4">
-              <strong>Completa:</strong> {completeExpression.replace('__', '_____')}
+              <strong>Completa la forma equivalente:</strong>
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Primer número:</label>
-              <input
-                type="text"
-                value={blank1}
-                onClick={() => handleFieldClick('blank1')}
-                readOnly
-                className={`w-full p-3 border rounded-lg text-lg text-center cursor-pointer ${
-                  activeField === 'blank1' ? 'border-purple-500 bg-purple-50' : 'border-gray-300'
-                }`}
-                placeholder="?"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Segundo número:</label>
-              <input
-                type="text"
-                value={blank2}
-                onClick={() => handleFieldClick('blank2')}
-                readOnly
-                className={`w-full p-3 border rounded-lg text-lg text-center cursor-pointer ${
-                  activeField === 'blank2' ? 'border-purple-500 bg-purple-50' : 'border-gray-300'
-                }`}
-                placeholder="?"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Resultado final:</label>
-              <input
-                type="text"
-                value={finalAnswer}
-                onClick={() => handleFieldClick('finalAnswer')}
-                readOnly
-                className={`w-full p-3 border rounded-lg text-lg text-center cursor-pointer ${
-                  activeField === 'finalAnswer' ? 'border-purple-500 bg-purple-50' : 'border-gray-300'
-                }`}
-                placeholder="?"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-5 gap-2 mt-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((digit) => (
-              <Button
-                key={digit}
-                variant="outline"
-                onClick={() => handleNumberInput(digit.toString())}
-                className="h-12 text-lg"
-                disabled={!activeField}
-              >
-                {digit}
-              </Button>
-            ))}
-          </div>
-
-          <div className="flex space-x-2">
-            <Button 
-              onClick={() => {
-                if (activeField === 'blank1') setBlank1('');
-                else if (activeField === 'blank2') setBlank2('');
-                else if (activeField === 'finalAnswer') setFinalAnswer('');
-              }}
-              variant="outline"
-              disabled={!activeField}
-              className="flex-1"
+          {renderExpression()}
+          
+          <div className="text-center">
+            <button
+              onClick={checkAnswers}
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+              disabled={!userAnswers['blank1'] || !userAnswers['blank2'] || !userAnswers['finalAnswer']}
             >
-              Borrar
-            </Button>
-            
-            <Button 
-              onClick={handleSubmit}
-              disabled={!blank1 || !blank2 || !finalAnswer || showResult}
-              className="flex-1"
-            >
-              {showResult ? 'Completado' : 'Verificar'}
-            </Button>
+              Verificar Respuestas
+            </button>
           </div>
         </div>
       </div>
