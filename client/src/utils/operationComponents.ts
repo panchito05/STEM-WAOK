@@ -3,6 +3,7 @@ import * as Subtraction from "../operations/subtraction";
 import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
 import * as Alphabet from "../operations/alphabet";
+import * as AssociativeProperty from "../operations/associative-property";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -83,6 +84,14 @@ export const operationModules: Module[] = [
     color: "#f59e0b", // Naranja para el módulo del alfabeto
     icon: "BookOpen",
   },
+  {
+    id: "associative-property",
+    displayName: "Associative Property",
+    description: "Learn the associative property through 5 progressive levels",
+    difficulty: "beginner",
+    color: "#ec4899", // Rosa para el módulo de propiedad asociativa
+    icon: "Parentheses",
+  },
 
 ];
 
@@ -93,4 +102,5 @@ export const operationComponents: Record<string, ModuleComponent> = {
   multiplication: Multiplication, // El módulo de multiplicación
   division: Division, // El módulo de división
   alphabet: Alphabet, // El módulo de aprendizaje del alfabeto
+  "associative-property": AssociativeProperty, // El módulo de propiedad asociativa
 };
