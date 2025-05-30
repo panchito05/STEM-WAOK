@@ -487,3 +487,106 @@ export const getRandomLetter = (): AlphabetLetter => {
 export const getLettersRange = (start: number, end: number): AlphabetLetter[] => {
   return alphabetData.slice(start, end + 1);
 };
+
+// Level 2: Letter ordering sequences (3-5 letters)
+export const level2Sequences = [
+  { letters: ['A', 'B', 'C'], difficulty: 'easy' },
+  { letters: ['D', 'E', 'F'], difficulty: 'easy' },
+  { letters: ['G', 'H', 'I'], difficulty: 'easy' },
+  { letters: ['J', 'K', 'L'], difficulty: 'easy' },
+  { letters: ['M', 'N', 'O'], difficulty: 'easy' },
+  { letters: ['P', 'Q', 'R'], difficulty: 'easy' },
+  { letters: ['S', 'T', 'U'], difficulty: 'easy' },
+  { letters: ['V', 'W', 'X'], difficulty: 'easy' },
+  { letters: ['Y', 'Z'], difficulty: 'easy' },
+  { letters: ['A', 'B', 'C', 'D'], difficulty: 'medium' },
+  { letters: ['E', 'F', 'G', 'H'], difficulty: 'medium' },
+  { letters: ['I', 'J', 'K', 'L'], difficulty: 'medium' },
+  { letters: ['M', 'N', 'O', 'P'], difficulty: 'medium' },
+  { letters: ['Q', 'R', 'S', 'T'], difficulty: 'medium' },
+  { letters: ['U', 'V', 'W', 'X'], difficulty: 'medium' },
+  { letters: ['A', 'B', 'C', 'D', 'E'], difficulty: 'hard' },
+  { letters: ['F', 'G', 'H', 'I', 'J'], difficulty: 'hard' },
+  { letters: ['K', 'L', 'M', 'N', 'O'], difficulty: 'hard' },
+  { letters: ['P', 'Q', 'R', 'S', 'T'], difficulty: 'hard' },
+  { letters: ['U', 'V', 'W', 'X', 'Y', 'Z'], difficulty: 'expert' }
+];
+
+// Level 3: Word completion exercises with missing letters
+export const level3WordExercises = [
+  {
+    spanish: { word: 'CASA', missing: [1], options: ['A', 'E', 'I', 'O'] },
+    english: { word: 'CAT', missing: [0], options: ['C', 'B', 'D', 'F'] }
+  },
+  {
+    spanish: { word: 'PERRO', missing: [2, 4], options: ['R', 'L', 'S', 'O', 'A', 'E'] },
+    english: { word: 'DOG', missing: [1], options: ['O', 'A', 'E', 'I'] }
+  },
+  {
+    spanish: { word: 'AZUL', missing: [0, 3], options: ['A', 'U', 'E', 'L', 'R', 'S'] },
+    english: { word: 'BLUE', missing: [1, 3], options: ['L', 'U', 'A', 'O', 'E', 'I'] }
+  },
+  {
+    spanish: { word: 'FLOR', missing: [1, 2], options: ['L', 'O', 'A', 'E', 'R', 'S'] },
+    english: { word: 'FLOWER', missing: [2, 4], options: ['O', 'W', 'A', 'E', 'I', 'U'] }
+  },
+  {
+    spanish: { word: 'LIBRO', missing: [0, 3], options: ['L', 'R', 'P', 'B', 'T', 'M'] },
+    english: { word: 'BOOK', missing: [1, 2], options: ['O', 'O', 'A', 'E', 'U', 'I'] }
+  },
+  {
+    spanish: { word: 'MESA', missing: [1, 3], options: ['E', 'A', 'I', 'O', 'U', 'Y'] },
+    english: { word: 'TABLE', missing: [1, 4], options: ['A', 'E', 'I', 'O', 'U', 'Y'] }
+  },
+  {
+    spanish: { word: 'SOL', missing: [1], options: ['O', 'A', 'E', 'I'] },
+    english: { word: 'SUN', missing: [1], options: ['U', 'O', 'A', 'E'] }
+  },
+  {
+    spanish: { word: 'AGUA', missing: [0, 2], options: ['A', 'U', 'E', 'I', 'O', 'Y'] },
+    english: { word: 'WATER', missing: [1, 3], options: ['A', 'E', 'I', 'O', 'U', 'Y'] }
+  },
+  {
+    spanish: { word: 'NIÑO', missing: [1, 3], options: ['I', 'Ñ', 'E', 'A', 'O', 'U'] },
+    english: { word: 'CHILD', missing: [2, 4], options: ['I', 'D', 'A', 'E', 'O', 'U'] }
+  },
+  {
+    spanish: { word: 'MAMÁ', missing: [1, 3], options: ['A', 'Á', 'E', 'I', 'O', 'U'] },
+    english: { word: 'MOTHER', missing: [1, 4], options: ['O', 'E', 'A', 'I', 'U', 'Y'] }
+  }
+];
+
+// Helper functions for Level 2
+export const generateOrderingExercise = (difficulty: 'easy' | 'medium' | 'hard' | 'expert') => {
+  const sequences = level2Sequences.filter(seq => seq.difficulty === difficulty);
+  const randomSequence = sequences[Math.floor(Math.random() * sequences.length)];
+  
+  // Shuffle the letters for the drag items
+  const shuffledLetters = [...randomSequence.letters].sort(() => Math.random() - 0.5);
+  
+  return {
+    correctSequence: randomSequence.letters,
+    shuffledLetters,
+    difficulty
+  };
+};
+
+// Helper functions for Level 3
+export const generateWordCompletionExercise = (language: 'spanish' | 'english') => {
+  const exercise = level3WordExercises[Math.floor(Math.random() * level3WordExercises.length)];
+  const wordData = exercise[language];
+  
+  // Create the word array with missing letters as null
+  const wordArray = wordData.word.split('');
+  const completionArray = wordArray.map((letter, index) => 
+    wordData.missing.includes(index) ? null : letter
+  );
+  
+  return {
+    word: wordData.word,
+    completionArray,
+    missingPositions: wordData.missing,
+    options: wordData.options,
+    language
+  };
+};

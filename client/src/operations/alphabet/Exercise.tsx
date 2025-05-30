@@ -21,9 +21,22 @@ import {
   AlphabetLanguage,
   AlphabetLevel,
   Level1Activity,
-  AlphabetGameState
+  Level2Activity,
+  Level3Activity,
+  AlphabetGameState,
+  DragItem,
+  DropZone,
+  DragDropState,
+  WordCompletionData,
+  LetterOption
 } from './types';
-import { alphabetData, getLetterByIndex, getRandomLetter } from './data/alphabetData';
+import { 
+  alphabetData, 
+  getLetterByIndex, 
+  getRandomLetter,
+  generateOrderingExercise,
+  generateWordCompletionExercise
+} from './data/alphabetData';
 
 // Default settings
 const defaultSettings: AlphabetSettings = {
@@ -307,6 +320,486 @@ const Level1Component: React.FC<{
           </Badge>
         </div>
       )}
+    </div>
+  );
+};
+
+// Level 2 Component - Drag & Drop Letter Ordering
+const Level2Component: React.FC<{
+  settings: AlphabetSettings;
+  progress: AlphabetProgress;
+  onProgress: (progress: AlphabetProgress) => void;
+}> = ({ settings, progress, onProgress }) => {
+  const [dragDropState, setDragDropState] = useState<DragDropState>({
+    dragItems: [],
+    dropZones: [],
+    draggedItem: null,
+    isComplete: false,
+    correctPlacements: 0
+  });
+  const [currentExercise, setCurrentExercise] = useState<any>(null);
+  const { toast } = useToast();
+
+  // Initialize exercise
+  useEffect(() => {
+    const difficulty = settings.difficulty === 'beginner' ? 'easy' : 
+                     settings.difficulty === 'intermediate' ? 'medium' : 'hard';
+    const exercise = generateOrderingExercise(difficulty);
+    
+    const dragItems: DragItem[] = exercise.shuffledLetters.map((letter, index) => ({
+      id: `drag-${letter}-${index}`,
+      letter,
+      index,
+      isPlaced: false
+    }));
+
+    const dropZones: DropZone[] = exercise.correctSequence.map((letter, index) => ({
+      id: `drop-${index}`,
+      expectedLetter: letter,
+      currentLetter: null,
+      isCorrect: false,
+      position: index
+    }));
+
+    setCurrentExercise(exercise);
+    setDragDropState({
+      dragItems,
+      dropZones,
+      draggedItem: null,
+      isComplete: false,
+      correctPlacements: 0
+    });
+  }, [settings.difficulty]);
+
+  const handleDragStart = (item: DragItem) => {
+    setDragDropState(prev => ({ ...prev, draggedItem: item }));
+  };
+
+  const handleDrop = (zone: DropZone) => {
+    if (!dragDropState.draggedItem) return;
+
+    const draggedItem = dragDropState.draggedItem;
+    const isCorrect = draggedItem.letter === zone.expectedLetter;
+
+    setDragDropState(prev => {
+      const newDragItems = prev.dragItems.map(item =>
+        item.id === draggedItem.id ? { ...item, isPlaced: true } : item
+      );
+
+      const newDropZones = prev.dropZones.map(z =>
+        z.id === zone.id ? { ...z, currentLetter: draggedItem.letter, isCorrect } : z
+      );
+
+      const correctPlacements = newDropZones.filter(z => z.isCorrect).length;
+      const isComplete = correctPlacements === newDropZones.length;
+
+      if (isComplete && settings.celebrateCompletion) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        toast({
+          title: "¡Excelente!",
+          description: "Has ordenado todas las letras correctamente",
+        });
+      }
+
+      return {
+        ...prev,
+        dragItems: newDragItems,
+        dropZones: newDropZones,
+        draggedItem: null,
+        correctPlacements,
+        isComplete
+      };
+    });
+
+    // Update progress
+    const newProgress = {
+      ...progress,
+      totalAttempts: progress.totalAttempts + 1,
+      totalCorrectAnswers: isCorrect ? progress.totalCorrectAnswers + 1 : progress.totalCorrectAnswers,
+      currentStreak: isCorrect ? progress.currentStreak + 1 : 0,
+      longestStreak: isCorrect ? Math.max(progress.longestStreak, progress.currentStreak + 1) : progress.longestStreak,
+      lastActivity: new Date()
+    };
+    onProgress(newProgress);
+  };
+
+  const resetExercise = () => {
+    const difficulty = settings.difficulty === 'beginner' ? 'easy' : 
+                     settings.difficulty === 'intermediate' ? 'medium' : 'hard';
+    const exercise = generateOrderingExercise(difficulty);
+    
+    const dragItems: DragItem[] = exercise.shuffledLetters.map((letter, index) => ({
+      id: `drag-${letter}-${index}`,
+      letter,
+      index,
+      isPlaced: false
+    }));
+
+    const dropZones: DropZone[] = exercise.correctSequence.map((letter, index) => ({
+      id: `drop-${index}`,
+      expectedLetter: letter,
+      currentLetter: null,
+      isCorrect: false,
+      position: index
+    }));
+
+    setCurrentExercise(exercise);
+    setDragDropState({
+      dragItems,
+      dropZones,
+      draggedItem: null,
+      isComplete: false,
+      correctPlacements: 0
+    });
+  };
+
+  if (!currentExercise) return <div>Cargando...</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold">Nivel 2: Ordenar Letras</h2>
+        <p className="text-gray-600">Arrastra las letras al orden correcto del alfabeto</p>
+        <Badge variant="outline">
+          {dragDropState.correctPlacements} / {dragDropState.dropZones.length} correctas
+        </Badge>
+      </div>
+
+      {/* Target sequence visualization */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold">Secuencia objetivo:</h3>
+            <div className="flex justify-center space-x-2 mt-2">
+              {currentExercise.correctSequence.map((letter: string, index: number) => (
+                <div
+                  key={index}
+                  className="w-12 h-12 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-400 text-sm"
+                >
+                  {letter}
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Drop zones */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex justify-center space-x-4">
+            {dragDropState.dropZones.map((zone) => (
+              <motion.div
+                key={zone.id}
+                className={`w-16 h-16 border-2 rounded-lg flex items-center justify-center text-2xl font-bold cursor-pointer transition-colors ${
+                  zone.currentLetter
+                    ? zone.isCorrect
+                      ? 'border-green-500 bg-green-50 text-green-700'
+                      : 'border-red-500 bg-red-50 text-red-700'
+                    : 'border-gray-300 border-dashed bg-gray-50'
+                }`}
+                onClick={() => handleDrop(zone)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {zone.currentLetter || '?'}
+              </motion.div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Drag items */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold">Letras disponibles:</h3>
+          </div>
+          <div className="flex justify-center space-x-4 flex-wrap gap-2">
+            {dragDropState.dragItems
+              .filter(item => !item.isPlaced)
+              .map((item) => (
+                <motion.div
+                  key={item.id}
+                  className="w-14 h-14 bg-blue-500 text-white rounded-lg flex items-center justify-center text-2xl font-bold cursor-grab hover:bg-blue-600 transition-colors"
+                  onClick={() => handleDragStart(item)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  drag
+                  dragSnapToOrigin
+                >
+                  {item.letter}
+                </motion.div>
+              ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Controls */}
+      <div className="flex justify-center space-x-4">
+        <Button
+          variant="outline"
+          onClick={resetExercise}
+          className="flex items-center space-x-2"
+        >
+          <RotateCcw className="h-4 w-4" />
+          <span>Nuevo Ejercicio</span>
+        </Button>
+
+        {dragDropState.isComplete && (
+          <Button
+            onClick={resetExercise}
+            className="flex items-center space-x-2"
+          >
+            <ArrowRight className="h-4 w-4" />
+            <span>Siguiente</span>
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Level 3 Component - Word Completion
+const Level3Component: React.FC<{
+  settings: AlphabetSettings;
+  progress: AlphabetProgress;
+  onProgress: (progress: AlphabetProgress) => void;
+}> = ({ settings, progress, onProgress }) => {
+  const [wordCompletion, setWordCompletion] = useState<WordCompletionData>({
+    word: '',
+    language: settings.language,
+    image: '',
+    missingPositions: [],
+    completedWord: [],
+    selectedOptions: [],
+    isComplete: false
+  });
+  const [availableOptions, setAvailableOptions] = useState<LetterOption[]>([]);
+  const [currentExercise, setCurrentExercise] = useState<any>(null);
+  const { toast } = useToast();
+
+  // Initialize exercise
+  useEffect(() => {
+    const exercise = generateWordCompletionExercise(settings.language);
+    
+    const completedWord = exercise.completionArray.map((letter: string | null) => letter || '');
+    const selectedOptions = exercise.missingPositions.map(() => null);
+    
+    const options: LetterOption[] = exercise.options.map((letter: string) => ({
+      letter,
+      isUsed: false,
+      isCorrect: exercise.word.includes(letter)
+    }));
+
+    setCurrentExercise(exercise);
+    setWordCompletion({
+      word: exercise.word,
+      language: exercise.language,
+      image: '',
+      missingPositions: exercise.missingPositions,
+      completedWord,
+      selectedOptions,
+      isComplete: false
+    });
+    setAvailableOptions(options);
+  }, [settings.language]);
+
+  const selectLetter = (option: LetterOption, missingIndex: number) => {
+    if (option.isUsed) return;
+
+    const position = wordCompletion.missingPositions[missingIndex];
+    const correctLetter = wordCompletion.word[position];
+    const isCorrect = option.letter === correctLetter;
+
+    setWordCompletion(prev => {
+      const newCompletedWord = [...prev.completedWord];
+      newCompletedWord[position] = option.letter;
+
+      const newSelectedOptions = [...prev.selectedOptions];
+      newSelectedOptions[missingIndex] = option.letter;
+
+      const isComplete = newSelectedOptions.every((letter, index) => {
+        const pos = prev.missingPositions[index];
+        return letter === prev.word[pos];
+      });
+
+      if (isComplete && settings.celebrateCompletion) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        toast({
+          title: "¡Perfecto!",
+          description: "Has completado la palabra correctamente",
+        });
+      }
+
+      return {
+        ...prev,
+        completedWord: newCompletedWord,
+        selectedOptions: newSelectedOptions,
+        isComplete
+      };
+    });
+
+    setAvailableOptions(prev =>
+      prev.map(opt => 
+        opt.letter === option.letter ? { ...opt, isUsed: true } : opt
+      )
+    );
+
+    // Update progress
+    const newProgress = {
+      ...progress,
+      totalAttempts: progress.totalAttempts + 1,
+      totalCorrectAnswers: isCorrect ? progress.totalCorrectAnswers + 1 : progress.totalCorrectAnswers,
+      currentStreak: isCorrect ? progress.currentStreak + 1 : 0,
+      longestStreak: isCorrect ? Math.max(progress.longestStreak, progress.currentStreak + 1) : progress.longestStreak,
+      lastActivity: new Date()
+    };
+    onProgress(newProgress);
+  };
+
+  const resetExercise = () => {
+    const exercise = generateWordCompletionExercise(settings.language);
+    
+    const completedWord = exercise.completionArray.map((letter: string | null) => letter || '');
+    const selectedOptions = exercise.missingPositions.map(() => null);
+    
+    const options: LetterOption[] = exercise.options.map((letter: string) => ({
+      letter,
+      isUsed: false,
+      isCorrect: exercise.word.includes(letter)
+    }));
+
+    setCurrentExercise(exercise);
+    setWordCompletion({
+      word: exercise.word,
+      language: exercise.language,
+      image: '',
+      missingPositions: exercise.missingPositions,
+      completedWord,
+      selectedOptions,
+      isComplete: false
+    });
+    setAvailableOptions(options);
+  };
+
+  if (!currentExercise) return <div>Cargando...</div>;
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold">Nivel 3: Completar Palabras</h2>
+        <p className="text-gray-600">Selecciona las letras que faltan para completar la palabra</p>
+        <Badge variant="outline">
+          {settings.language === 'spanish' ? '🇪🇸 Español' : '🇺🇸 English'}
+        </Badge>
+      </div>
+
+      {/* Word display */}
+      <Card>
+        <CardContent className="p-8">
+          <div className="text-center space-y-6">
+            {/* Image placeholder */}
+            <div className="flex justify-center">
+              {createImagePlaceholder('', wordCompletion.word, '#4F46E5')}
+            </div>
+
+            {/* Word with missing letters */}
+            <div className="flex justify-center space-x-2">
+              {wordCompletion.word.split('').map((letter, index) => {
+                const isMissing = wordCompletion.missingPositions.includes(index);
+                const missingIndex = wordCompletion.missingPositions.indexOf(index);
+                const selectedLetter = isMissing ? wordCompletion.selectedOptions[missingIndex] : null;
+
+                return (
+                  <motion.div
+                    key={index}
+                    className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center text-2xl font-bold ${
+                      isMissing
+                        ? selectedLetter
+                          ? selectedLetter === letter
+                            ? 'border-green-500 bg-green-50 text-green-700'
+                            : 'border-red-500 bg-red-50 text-red-700'
+                          : 'border-blue-500 border-dashed bg-blue-50 text-blue-500'
+                        : 'border-gray-300 bg-gray-50 text-gray-700'
+                    }`}
+                    whileHover={isMissing && !selectedLetter ? { scale: 1.05 } : {}}
+                  >
+                    {isMissing ? (selectedLetter || '_') : letter}
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Word meaning */}
+            <div className="text-lg text-gray-600">
+              {settings.language === 'spanish' ? 'Palabra en español' : 'Word in English'}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Letter options */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold">Letras disponibles:</h3>
+          </div>
+          <div className="flex justify-center space-x-2 flex-wrap gap-2">
+            {availableOptions.map((option, index) => (
+              <motion.button
+                key={index}
+                className={`w-12 h-12 rounded-lg text-xl font-bold border-2 transition-colors ${
+                  option.isUsed
+                    ? 'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'border-blue-500 bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                }`}
+                disabled={option.isUsed}
+                onClick={() => {
+                  const nextMissingIndex = wordCompletion.selectedOptions.findIndex(opt => opt === null);
+                  if (nextMissingIndex !== -1) {
+                    selectLetter(option, nextMissingIndex);
+                  }
+                }}
+                whileHover={!option.isUsed ? { scale: 1.1 } : {}}
+                whileTap={!option.isUsed ? { scale: 0.9 } : {}}
+              >
+                {option.letter}
+              </motion.button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Controls */}
+      <div className="flex justify-center space-x-4">
+        <Button
+          variant="outline"
+          onClick={resetExercise}
+          className="flex items-center space-x-2"
+        >
+          <RotateCcw className="h-4 w-4" />
+          <span>Nueva Palabra</span>
+        </Button>
+
+        {wordCompletion.isComplete && (
+          <Button
+            onClick={resetExercise}
+            className="flex items-center space-x-2"
+          >
+            <ArrowRight className="h-4 w-4" />
+            <span>Siguiente</span>
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

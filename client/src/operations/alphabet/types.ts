@@ -111,3 +111,44 @@ export interface AlphabetGameState {
   completedActivities: number;
   totalActivities: number;
 }
+
+// Drag and drop types for Level 2
+export interface DragItem {
+  id: string;
+  letter: string;
+  index: number;
+  isPlaced: boolean;
+}
+
+export interface DropZone {
+  id: string;
+  expectedLetter: string;
+  currentLetter: string | null;
+  isCorrect: boolean;
+  position: number;
+}
+
+export interface DragDropState {
+  dragItems: DragItem[];
+  dropZones: DropZone[];
+  draggedItem: DragItem | null;
+  isComplete: boolean;
+  correctPlacements: number;
+}
+
+// Word completion types for Level 3
+export interface WordCompletionData {
+  word: string;
+  language: AlphabetLanguage;
+  image: string;
+  missingPositions: number[];
+  completedWord: string[];
+  selectedOptions: (string | null)[];
+  isComplete: boolean;
+}
+
+export interface LetterOption {
+  letter: string;
+  isUsed: boolean;
+  isCorrect: boolean;
+}
