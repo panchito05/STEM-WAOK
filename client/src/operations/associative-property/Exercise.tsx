@@ -2688,6 +2688,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               visualObjects={currentProblem.visualObjects || []}
               operands={currentProblem.operands}
               difficulty={settings.difficulty}
+              interactiveAnswers={interactiveAnswers}
+              setInteractiveAnswers={setInteractiveAnswers}
+              activeInteractiveField={activeInteractiveField}
+              setActiveInteractiveField={setActiveInteractiveField}
             />
           )}
 

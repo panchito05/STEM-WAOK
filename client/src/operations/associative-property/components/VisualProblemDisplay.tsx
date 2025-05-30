@@ -7,9 +7,22 @@ interface VisualProblemDisplayProps {
   operands: number[];
   difficulty?: string;
   onAnswer?: (isCorrect: boolean) => void;
+  interactiveAnswers?: { [key: string]: string };
+  setInteractiveAnswers?: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
+  activeInteractiveField?: string | null;
+  setActiveInteractiveField?: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjects, operands, difficulty = 'beginner', onAnswer }) => {
+const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ 
+  visualObjects, 
+  operands, 
+  difficulty = 'beginner', 
+  onAnswer,
+  interactiveAnswers = {},
+  setInteractiveAnswers = () => {},
+  activeInteractiveField = null,
+  setActiveInteractiveField = () => {}
+}) => {
   const [shuffledObjects, setShuffledObjects] = useState<VisualObject[]>(visualObjects);
   const [shuffleCount, setShuffleCount] = useState(0);
   const [currentGrouping, setCurrentGrouping] = useState<'first' | 'second'>('first');
@@ -199,7 +212,11 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
       <div className="w-full">
         <InteractiveExercise 
           operands={operands} 
-          onAnswer={onAnswer || (() => {})} 
+          onAnswer={onAnswer || (() => {})}
+          interactiveAnswers={interactiveAnswers}
+          setInteractiveAnswers={setInteractiveAnswers}
+          activeInteractiveField={activeInteractiveField}
+          setActiveInteractiveField={setActiveInteractiveField}
         />
       </div>
     );
