@@ -222,17 +222,17 @@ export default function Settings({ settings, onBack }: SettingsProps) {
         <div className="space-y-4">
           <Label className="text-lg font-semibold">Idioma</Label>
           <RadioGroup
-            value={localSettings.language}
-            onValueChange={(value) => handleUpdateSetting("language", value)}
+            value={localSettings.language || "english"}
+            onValueChange={(value) => handleUpdateSetting("language", value as "english" | "spanish")}
             className="grid grid-cols-2 gap-4"
           >
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="eng" id="eng" />
-              <Label htmlFor="eng">English</Label>
+              <RadioGroupItem value="english" id="english" />
+              <Label htmlFor="english">English</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <RadioGroupItem value="esp" id="esp" />
-              <Label htmlFor="esp">Español</Label>
+              <RadioGroupItem value="spanish" id="spanish" />
+              <Label htmlFor="spanish">Español</Label>
             </div>
           </RadioGroup>
         </div>
