@@ -2645,64 +2645,97 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         {/* Problem Display Area - Compact Design */}
         <div className="p-4 rounded-lg mb-4 shadow-sm bg-gray-50 border">
           {/* Visualización para diferentes niveles de dificultad */}
-          {(settings.difficulty === 'beginner' || settings.difficulty === 'elementary' || settings.difficulty === 'intermediate') && (
+          {(settings.difficulty === 'beginner' || settings.difficulty === 'elementary') && (
             <VisualProblemDisplay 
               visualObjects={currentProblem.visualObjects || []}
               operands={currentProblem.operands}
               difficulty={settings.difficulty}
             />
           )}
-          
 
+          {/* Interactive Exercise para nivel intermedio */}
+          {settings.difficulty === 'intermediate' && (
+            <InteractiveExercise 
+              operands={currentProblem.operands}
+              onAnswer={(answers) => {
+                // Verificar todas las respuestas del ejercicio interactivo
+                const correctSum = currentProblem.correctAnswer;
+                const form1Correct = answers[0] === correctSum;
+                const form2Blanks = answers[1] === currentProblem.operands[1] && answers[2] === currentProblem.operands[2];
+                const form2Answer = answers[3] === correctSum;
+                
+                if (form1Correct && form2Blanks && form2Answer) {
+                  // Simular respuesta correcta
+                  setFeedbackMessage("¡Excelente! Has completado correctamente ambas formas de la propiedad asociativa.");
+                  setFeedbackColor("green");
+                  setTimeout(() => {
+                    if (currentProblemIndex < problems.length - 1) {
+                      nextProblem();
+                    } else {
+                      completeExercise();
+                    }
+                  }, 2000);
+                } else {
+                  // Simular respuesta incorrecta
+                  setFeedbackMessage("Revisa tus respuestas. Recuerda que ambas formas deben dar el mismo resultado.");
+                  setFeedbackColor("red");
+                }
+              }}
+            />
+          )}
 
-          {/* Answer Input Boxes - Compact Design */}
-          <div className="mt-4 flex items-center justify-center gap-1">
-            {Array(currentProblem.answerMaxDigits).fill(0).map((_, index) => {
-              const integerDigitsCount = currentProblem.answerMaxDigits - (currentProblem.answerDecimalPosition || 0);
-              const isVisualDecimalPointAfterThisBox = currentProblem.answerDecimalPosition !== undefined &&
-                                                       currentProblem.answerDecimalPosition > 0 &&
-                                                       index === integerDigitsCount - 1 &&
-                                                       integerDigitsCount < currentProblem.answerMaxDigits;
+          {/* Answer Input Boxes - Solo para niveles que no son intermedio */}
+          {settings.difficulty !== 'intermediate' && (
+            <>
+              <div className="mt-4 flex items-center justify-center gap-1">
+                {Array(currentProblem.answerMaxDigits).fill(0).map((_, index) => {
+                  const integerDigitsCount = currentProblem.answerMaxDigits - (currentProblem.answerDecimalPosition || 0);
+                  const isVisualDecimalPointAfterThisBox = currentProblem.answerDecimalPosition !== undefined &&
+                                                           currentProblem.answerDecimalPosition > 0 &&
+                                                           index === integerDigitsCount - 1 &&
+                                                           integerDigitsCount < currentProblem.answerMaxDigits;
 
-              return (
-                <React.Fragment key={`digit-box-frag-${index}-${currentProblem.id}`}>
-                  <div
-                    ref={el => {
-                      if (el) {
-                        boxRefsArrayRef.current[index] = el;
-                        digitBoxRefs.current = boxRefsArrayRef.current;
-                      }
-                    }}
-                    tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
-                    className={`
-                      w-12 h-12 border-2 rounded-md
-                      flex items-center justify-center
-                      text-xl font-bold
-                      transition-all duration-200
-                      ${viewingPrevious || exerciseCompleted || waitingRef.current 
-                        ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed' 
-                        : (focusedDigitIndex === index 
-                          ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
-                          : 'border-gray-300 bg-white hover:border-gray-400 hover:shadow-md cursor-text'
-                        )
-                      }
-                    `}
-                    onClick={() => !viewingPrevious && !exerciseCompleted && !waitingRef.current && handleDigitBoxClick(index)}
-                    onFocus={() => {if (!viewingPrevious && !exerciseCompleted && !waitingRef.current) setFocusedDigitIndex(index);}}
-                  >
-                    {digitAnswers[index] || <span className="opacity-0">0</span>}
-                  </div>
-                  {isVisualDecimalPointAfterThisBox && (
-                    <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mx-0.5 sm:mx-1 opacity-80 self-center pt-1 select-none">.</div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
-          {feedbackMessage && (viewingPrevious || (!viewingPrevious && currentProblemIndex === actualActiveProblemIndexBeforeViewingPrevious) || exerciseCompleted) && (
-            <div className={`mt-2 sm:mt-3 text-center font-medium text-sm sm:text-base md:text-lg ${feedbackColor === "green" ? "text-green-600" : feedbackColor === "blue" ? "text-blue-700" : "text-red-600"}`}>
-              {feedbackMessage}
-            </div>
+                  return (
+                    <React.Fragment key={`digit-box-frag-${index}-${currentProblem.id}`}>
+                      <div
+                        ref={el => {
+                          if (el) {
+                            boxRefsArrayRef.current[index] = el;
+                            digitBoxRefs.current = boxRefsArrayRef.current;
+                          }
+                        }}
+                        tabIndex={viewingPrevious || exerciseCompleted || waitingRef.current ? -1 : 0}
+                        className={`
+                          w-12 h-12 border-2 rounded-md
+                          flex items-center justify-center
+                          text-xl font-bold
+                          transition-all duration-200
+                          ${viewingPrevious || exerciseCompleted || waitingRef.current 
+                            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed' 
+                            : (focusedDigitIndex === index 
+                              ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
+                              : 'border-gray-300 bg-white hover:border-gray-400 hover:shadow-md cursor-text'
+                            )
+                          }
+                        `}
+                        onClick={() => !viewingPrevious && !exerciseCompleted && !waitingRef.current && handleDigitBoxClick(index)}
+                        onFocus={() => {if (!viewingPrevious && !exerciseCompleted && !waitingRef.current) setFocusedDigitIndex(index);}}
+                      >
+                        {digitAnswers[index] || <span className="opacity-0">0</span>}
+                      </div>
+                      {isVisualDecimalPointAfterThisBox && (
+                        <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mx-0.5 sm:mx-1 opacity-80 self-center pt-1 select-none">.</div>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+              {feedbackMessage && (viewingPrevious || (!viewingPrevious && currentProblemIndex === actualActiveProblemIndexBeforeViewingPrevious) || exerciseCompleted) && (
+                <div className={`mt-2 sm:mt-3 text-center font-medium text-sm sm:text-base md:text-lg ${feedbackColor === "green" ? "text-green-600" : feedbackColor === "blue" ? "text-blue-700" : "text-red-600"}`}>
+                  {feedbackMessage}
+                </div>
+              )}
+            </>
           )}
         </div>
         {/* Number Keypad - Full Width Design */}
