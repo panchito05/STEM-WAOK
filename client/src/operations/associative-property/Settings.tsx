@@ -24,7 +24,10 @@ interface SettingsProps {
 
 export default function Settings({ settings, onBack }: SettingsProps) {
   const { updateModuleSettings, resetModuleSettings } = useSettings();
-  const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
+  const [localSettings, setLocalSettings] = useState<AssociativePropertySettings>({ 
+    ...settings, 
+    currentLevel: (settings as any).currentLevel || 1 
+  });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   
   // Referencia a la función debounced para guardar la configuración
@@ -38,7 +41,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   );
   
   // Guardar automáticamente cada vez que cambia un ajuste
-  const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
+  const handleUpdateSetting = <K extends keyof AssociativePropertySettings>(key: K, value: AssociativePropertySettings[K]) => {
     const updatedSettings = { ...localSettings, [key]: value };
     setLocalSettings(updatedSettings);
     
@@ -303,7 +306,11 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               return (
                 <button
                   key={level}
-                  onClick={() => handleUpdateSetting("currentLevel", level)}
+                  onClick={() => {
+                    const updatedSettings = { ...localSettings, currentLevel: level };
+                    setLocalSettings(updatedSettings);
+                    updateModuleSettings("associative-property", updatedSettings);
+                  }}
                   className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
                     isSelected 
                       ? `${theme.bgLight} ${theme.border} ring-2 ring-offset-1 ring-${theme.text.split('-')[1]}-300` 
