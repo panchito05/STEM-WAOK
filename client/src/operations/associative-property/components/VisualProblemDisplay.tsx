@@ -43,6 +43,12 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
   if (difficulty === 'beginner') {
     return (
       <div className="w-full">
+        {/* Texto explicativo centrado */}
+        <div className="text-center mb-4">
+          <p className="text-lg font-medium text-gray-700">
+            Puedes agrupar de diferentes maneras y el resultado siempre será el mismo
+          </p>
+        </div>
         {/* Visualización con frutas para principiantes */}
         <div className="flex justify-center items-center flex-wrap mb-6 p-4 bg-gray-50 rounded-lg">
           {visualObjects.map((visual, index) => (
