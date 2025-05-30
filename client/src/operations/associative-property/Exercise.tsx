@@ -8,6 +8,7 @@ import { generateAssociativePropertyProblem, checkAnswer, getVerticalAlignmentIn
 import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, DifficultyLevel } from "./types";
 import VisualProblemDisplay from "./components/VisualProblemDisplay";
 import InteractiveExercise from "./components/InteractiveExercise";
+import AdvancedExercise from "./components/AdvancedExercise";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
@@ -2710,8 +2711,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   setFeedbackMessage("¡Excelente! Has completado correctamente ambas formas de la propiedad asociativa.");
                   setFeedbackColor("green");
                   setTimeout(() => {
-                    if (currentProblemIndex < problems.length - 1) {
-                      nextProblem();
+                    if (currentProblemIndex < problemsList.length - 1) {
+                      setCurrentProblemIndex(prev => prev + 1);
                     } else {
                       completeExercise();
                     }
@@ -2725,8 +2726,45 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             />
           )}
 
-          {/* Answer Input Boxes - Solo para niveles que no son intermedio */}
-          {settings.difficulty !== 'intermediate' && (
+          {/* Advanced Exercise para nivel avanzado */}
+          {settings.difficulty === 'advanced' && (
+            <AdvancedExercise 
+              operands={currentProblem.operands}
+              interactiveAnswers={interactiveAnswers}
+              setInteractiveAnswers={setInteractiveAnswers}
+              activeInteractiveField={activeInteractiveField}
+              setActiveInteractiveField={setActiveInteractiveField}
+              onAnswer={(isCorrect) => {
+                if (isCorrect) {
+                  setFeedbackMessage("¡Excelente! Has demostrado tu comprensión de la propiedad asociativa con números más complejos.");
+                  setFeedbackColor("green");
+                  
+                  // Incrementar contador de respuestas correctas consecutivas
+                  const newConsecutive = consecutiveCorrectAnswers + 1;
+                  setConsecutiveCorrectAnswers(newConsecutive);
+                  setConsecutiveIncorrectAnswers(0);
+                  
+                  setTimeout(() => {
+                    if (currentProblemIndex < problemsList.length - 1) {
+                      setCurrentProblemIndex(prev => prev + 1);
+                    } else {
+                      completeExercise();
+                    }
+                  }, 2000);
+                } else {
+                  setFeedbackMessage("Revisa tu respuesta. La propiedad asociativa mantiene el mismo resultado independientemente de la agrupación.");
+                  setFeedbackColor("red");
+                  
+                  // Incrementar contador de respuestas incorrectas consecutivas
+                  setConsecutiveIncorrectAnswers(prev => prev + 1);
+                  setConsecutiveCorrectAnswers(0);
+                }
+              }}
+            />
+          )}
+
+          {/* Answer Input Boxes - Solo para niveles que no son intermedio o avanzado */}
+          {settings.difficulty !== 'intermediate' && settings.difficulty !== 'advanced' && (
             <>
               <div className="mt-4 flex items-center justify-center gap-1">
                 {Array(currentProblem.answerMaxDigits).fill(0).map((_, index) => {
