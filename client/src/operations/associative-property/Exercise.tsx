@@ -20,8 +20,7 @@ import {
   Level2Problem, 
   Level3Problem, 
   Level4Problem, 
-  Level5Problem,
-  AssociativePropertySettings 
+  Level5Problem
 } from "./types";
 
 interface ExerciseProps {
@@ -152,12 +151,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setExerciseHistory(prev => [...prev, result]);
     
     saveExerciseResult({
-      operation: 'associative-property',
-      problem: currentProblem,
-      userAnswer: answer,
-      isCorrect: correct,
+      operationId: 'associative-property',
+      date: new Date().toISOString(),
+      score: correct ? 1 : 0,
+      totalProblems: 1,
       timeSpent: timer,
-      difficulty: `level${currentLevel}`
+      difficulty: `level${currentLevel}`,
+      accuracy: correct ? 100 : 0,
+      avgTimePerProblem: timer,
+      avgAttempts: 1,
+      revealedAnswers: 0,
+      extra_data: {
+        problem: currentProblem,
+        userAnswer: answer,
+        isCorrect: correct
+      }
     });
   }, [currentProblem, currentLevel, currentProblemIndex, timer, saveExerciseResult]);
 
@@ -178,16 +186,72 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Level 1 Component: Visual Object Grouping
   const Level1Component: React.FC<{
     problem: Level1Problem;
-    onAnswer: (answer: number) => void;
+    onAnswer: (answer: boolean) => void;
     showResult?: boolean;
     isCorrect?: boolean;
   }> = ({ problem, onAnswer, showResult, isCorrect }) => {
-    const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+    const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
 
     const handleSubmit = () => {
       if (selectedAnswer !== null) {
         onAnswer(selectedAnswer);
       }
+    };
+
+    // Helper function to render grouping
+    const renderGrouping = (grouping: any, title: string) => {
+      const firstGroup = grouping.groups.first.map((idx: number) => problem.objects[idx]);
+      const secondGroup = grouping.groups.second.map((idx: number) => problem.objects[idx]);
+      const thirdGroup = grouping.groups.third ? grouping.groups.third.map((idx: number) => problem.objects[idx]) : [];
+
+      return (
+        <div className="p-4 border-2 border-gray-300 rounded-lg bg-gray-50">
+          <div className="text-center mb-3">
+            <div className="text-sm font-bold text-gray-700">{title}</div>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3">
+            {/* First group */}
+            <div className="p-2 border border-blue-300 rounded bg-blue-50">
+              <div className="flex gap-1">
+                {firstGroup.map((obj: any, idx: number) => (
+                  <span key={idx} className="text-2xl">{obj.emoji}</span>
+                ))}
+              </div>
+              <div className="text-xs text-center mt-1">({firstGroup.length})</div>
+            </div>
+            
+            <div className="text-xl font-bold text-gray-600 self-center">+</div>
+            
+            {/* Second group */}
+            <div className="p-2 border border-green-300 rounded bg-green-50">
+              <div className="flex gap-1">
+                {secondGroup.map((obj: any, idx: number) => (
+                  <span key={idx} className="text-2xl">{obj.emoji}</span>
+                ))}
+              </div>
+              <div className="text-xs text-center mt-1">({secondGroup.length})</div>
+            </div>
+            
+            {/* Third group if exists */}
+            {thirdGroup.length > 0 && (
+              <>
+                <div className="text-xl font-bold text-gray-600 self-center">+</div>
+                <div className="p-2 border border-red-300 rounded bg-red-50">
+                  <div className="flex gap-1">
+                    {thirdGroup.map((obj: any, idx: number) => (
+                      <span key={idx} className="text-2xl">{obj.emoji}</span>
+                    ))}
+                  </div>
+                  <div className="text-xs text-center mt-1">({thirdGroup.length})</div>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="text-center mt-2">
+            <div className="text-lg font-bold">= {problem.objects.length}</div>
+          </div>
+        </div>
+      );
     };
 
     return (
@@ -202,41 +266,37 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           <div className="space-y-6">
             <div className="text-center">
               <div className="text-lg mb-4">
-                {settings.language === 'english' 
-                  ? `Count the total number of ${problem.animalType}:` 
-                  : `Cuenta el total de ${problem.animalType}:`}
+                {problem.question}
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                {problem.groups.map((group, idx) => (
-                  <div key={idx} className="p-4 border-2 border-gray-300 rounded-lg bg-gray-50">
-                    <div className="text-center">
-                      <div className="text-6xl mb-2">{problem.emoji}</div>
-                      <div className="text-xl font-bold">× {group}</div>
-                      <div className="text-sm text-gray-600 mt-2">
-                        {settings.language === 'english' ? 'Group' : 'Grupo'} {idx + 1}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {renderGrouping(problem.grouping1, settings.language === 'english' ? 'Grouping 1' : 'Agrupación 1')}
+                {renderGrouping(problem.grouping2, settings.language === 'english' ? 'Grouping 2' : 'Agrupación 2')}
               </div>
               
               <div className="text-lg mb-4">
-                {settings.language === 'english' ? 'How many in total?' : '¿Cuántos hay en total?'}
+                {settings.language === 'english' 
+                  ? 'Are there the same number of animals in both cases?' 
+                  : '¿Hay el mismo número de animales en ambos casos?'}
               </div>
               
-              <div className="flex flex-wrap justify-center gap-2">
-                {[problem.correctAnswer - 2, problem.correctAnswer - 1, problem.correctAnswer, problem.correctAnswer + 1, problem.correctAnswer + 2].map((option) => (
-                  <Button
-                    key={option}
-                    variant={selectedAnswer === option ? "default" : "outline"}
-                    onClick={() => setSelectedAnswer(option)}
-                    disabled={showResult}
-                    className="text-lg px-6 py-3"
-                  >
-                    {option}
-                  </Button>
-                ))}
+              <div className="flex justify-center gap-4">
+                <Button
+                  variant={selectedAnswer === true ? "default" : "outline"}
+                  onClick={() => setSelectedAnswer(true)}
+                  disabled={showResult}
+                  className="text-lg px-8 py-3"
+                >
+                  {settings.language === 'english' ? 'Yes' : 'Sí'}
+                </Button>
+                <Button
+                  variant={selectedAnswer === false ? "default" : "outline"}
+                  onClick={() => setSelectedAnswer(false)}
+                  disabled={showResult}
+                  className="text-lg px-8 py-3"
+                >
+                  {settings.language === 'english' ? 'No' : 'No'}
+                </Button>
               </div>
             </div>
             
@@ -256,9 +316,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     : (settings.language === 'english' ? 'Incorrect' : 'Incorrecto')}
                 </div>
                 <div className="text-sm mt-2 text-center">
-                  {settings.language === 'english' ? 'Correct answer:' : 'Respuesta correcta:'} {problem.correctAnswer}
-                  <br />
-                  ({problem.groups.join(' + ')} = {problem.correctAnswer})
+                  {settings.language === 'english' 
+                    ? 'The correct answer is: Yes, both groupings have the same total number of animals.' 
+                    : 'La respuesta correcta es: Sí, ambas agrupaciones tienen el mismo número total de animales.'}
                 </div>
               </div>
             )}
@@ -404,10 +464,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     <div className="relative">
       {/* Exercise History Dialog */}
       <ExerciseHistoryDialog
-        isOpen={showExerciseHistory}
-        onClose={() => setShowExerciseHistory(false)}
+        moduleId="associative-property"
         exerciseHistory={exerciseHistory}
-        moduleName="associative-property"
+        trigger={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowExerciseHistory(!showExerciseHistory)}
+          >
+            <History className="w-4 h-4 mr-2" />
+            {translations.history}
+          </Button>
+        }
       />
 
       <div className={`px-2 py-3 sm:px-4 sm:py-5 rounded-xl shadow-lg min-h-[calc(100vh-8rem)] md:min-h-0 flex flex-col ${
