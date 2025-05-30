@@ -121,7 +121,8 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   };
 
   const handleMultipleChoiceSubmit = () => {
-    const isCorrect = selectedChoice === 'a';
+    // Both options A and B are correct for associative property
+    const isCorrect = selectedChoice === 'a' || selectedChoice === 'b';
     setShowResult(true);
     onAnswer(isCorrect);
   };
