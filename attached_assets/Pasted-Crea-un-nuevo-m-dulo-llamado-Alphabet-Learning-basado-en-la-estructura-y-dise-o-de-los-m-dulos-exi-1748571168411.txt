@@ -1,0 +1,56 @@
+Crea un nuevo módulo llamado “Alphabet Learning” basado en la estructura y diseño de los módulos existentes (addition,). 
+
+REQUISITOS OBLIGATORIOS:
+1. Mantén la misma arquitectura de archivos y estructura de código
+2. Conserva todas las características actuales: temporizador, entrada RTL/LTR, historial, configuraciones
+3. Usa el mismo sistema de internacionalización (español/inglés)Y ASEGURATE DE QUE EL CAMBIO DE IDIOMA FUNCIONE CORRECTAMENTE
+4. Aplica el diseño visual y UX idéntico a los módulos existentes
+
+OPERACIÓN ESPECÍFICA:
+•	Tipo de operación: Aprendizaje educativo interactivo
+•	Enfoque principal: Enseñanza del alfabeto mediante métodos visuales, auditivos e interactivos
+•	Público objetivo: Niños en etapas tempranas de alfabetización o aprendices de idiomas
+
+Componentes principales:
+•	Sistema de presentación de letras: Muestra cada letra (mayúscula y opcionalmente minúscula) con un diseño visualmente atractivo y colorido.
+•	Asociación visual-verbal: Cada letra se asocia con:
+•	Una imagen representativa (por ejemplo, "A" con una manzana - "Apple")
+•	Una palabra que comienza con esa letra (en inglés y español)
+•	Un color específico para cada letra, creando asociaciones cromáticas
+•	Modos de aprendizaje adaptables:
+•	Modo Exploración: Los usuarios pueden navegar libremente por el alfabeto
+•	Modo Guiado: Secuencia paso a paso estructurada
+•	Modo Cuestionario: Incorpora pruebas de conocimiento a intervalos configurables
+•	Elementos interactivos:
+•	Navegación mediante flechas para moverse entre letras
+•	Animaciones y efectos visuales que responden a las acciones del usuario
+•	Feedback positivo mediante mensajes y animaciones de recompensa
+•	Indicadores de progreso que muestran el avance en el aprendizaje
+•	Personalización del aprendizaje:
+•	Opciones de idioma (inglés/español)
+•	Ajustes de visualización (mostrar/ocultar minúsculas, letras coloridas)
+•	Control de audio y animaciones
+•	Diferentes estilos de letra (básico, decorativo, manuscrito)
+•	Sistema de seguimiento:
+•	Registro de letras completadas
+•	Indicadores visuales de progreso
+•	Celebraciones automáticas al completar el alfabeto
+•	Reinicio opcional para repetir el aprendizaje
+•	El diseño pedagógico sigue principios de aprendizaje multimodal, combinando estímulos visuales, posiblemente auditivos, y participación activa para maximizar la retención y el compromiso durante el proceso de familiarización con el alfabeto.
+•	
+
+
+ANTES DE IMPLEMENTAR:
+- Consulta sobre características adicionales específicas para esta operación
+- Pregunta sobre características existentes que no sean necesarias
+- Confirma cualquier modificación en la generación de problemas
+- Valida cambios en la validación de respuestas
+
+ESTRUCTURA A SEGUIR:
+- client/src/operations/[nombre]/Exercise.tsx
+- Mismo patrón de tipos y interfaces
+- Misma lógica de estado y efectos
+- Integración con el sistema de módulos existente
+
+
+PRESENTAME EL PARA ARQUITETURA INGIENIERIA Y TEGNOLOGIA QUE USARAS 
