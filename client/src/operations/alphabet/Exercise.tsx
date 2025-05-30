@@ -59,16 +59,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     autoAdvance: false,
     celebrateCompletion: true,
     quizFrequency: 'occasionally',
-    language: settings.language === 'spanish' ? 'spanish' : 'english'
+    language: 'english'
   });
 
   // Update language when global settings change
   useEffect(() => {
+    const currentLanguage = globalSettings.language === 'spanish' ? 'spanish' : 'english';
+    console.log('Global settings language:', globalSettings.language, 'Module settings language:', settings.language, 'Alphabet language:', currentLanguage);
     setAlphabetSettings(prev => ({
       ...prev,
-      language: settings.language === 'spanish' ? 'spanish' : 'english'
+      language: currentLanguage
     }));
-  }, [settings.language]);
+  }, [globalSettings.language, settings.language]);
 
   // Translation helper
   const t = (englishText: string, spanishText: string) => {
