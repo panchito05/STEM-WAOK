@@ -130,10 +130,6 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
     return (
       <div className="space-y-6">
         <div className="bg-purple-50 p-6 rounded-lg border-2 border-purple-200">
-          <h3 className="text-lg font-semibold text-purple-800 mb-4">
-            Elige la opción correcta
-          </h3>
-          
           <div className="mb-6 text-center">
             <div className="text-xl font-medium mb-2">¿Cuál es igual a:</div>
             <div className="text-2xl font-bold text-purple-600 bg-purple-100 p-3 rounded-lg inline-block">
