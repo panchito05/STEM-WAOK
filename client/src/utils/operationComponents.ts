@@ -84,6 +84,14 @@ export const operationModules: Module[] = [
     color: "#f59e0b", // Naranja para el módulo del alfabeto
     icon: "BookOpen",
   },
+  {
+    id: "associative-property",
+    displayName: "Associative Property",
+    description: "Practice associative property with various difficulty levels",
+    difficulty: "beginner",
+    color: "#06b6d4", // Cian para distinguir de otros módulos
+    icon: "Parentheses",
+  },
 
 ];
 
@@ -94,4 +102,5 @@ export const operationComponents: Record<string, ModuleComponent> = {
   multiplication: Multiplication, // El módulo de multiplicación
   division: Division, // El módulo de división
   alphabet: Alphabet, // El módulo de aprendizaje del alfabeto
+  "associative-property": AssociativeProperty, // El módulo de propiedad asociativa
 };
