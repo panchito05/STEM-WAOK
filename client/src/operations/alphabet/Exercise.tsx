@@ -189,10 +189,19 @@ const defaultProgress: AlphabetProgress = {
 
 // SVG Images for each letter based on language
 const createLetterImage = (letter: string, language: AlphabetLanguage) => {
-  const data = alphabetData[letter as AlphabetLetter];
-  if (!data) return null;
-  const word = language === 'spanish' ? data.spanish.word : data.english.word;
+  // Find the letter data in the array
+  const data = alphabetData.find(item => item.letter === letter.toUpperCase());
+  console.log('🔍 createLetterImage Debug:', { letter, language, data, alphabetDataLength: alphabetData.length });
+  
+  if (!data) {
+    console.log('❌ No data found for letter:', letter);
+    return <div className="text-red-500">No data for {letter}</div>;
+  }
+  
+  const word = language === 'spanish' ? data.words.spanish : data.words.english;
   const color = data.color;
+  
+  console.log('✅ Found data:', { word, color, letter });
   
   // Get appropriate SVG based on letter and language
   const getSVGContent = () => {
