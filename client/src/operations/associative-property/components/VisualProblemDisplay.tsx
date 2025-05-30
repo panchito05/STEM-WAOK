@@ -66,7 +66,59 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
     if (operands.length < 3) return null;
 
     return (
-      null
+      <div className="bg-blue-50 p-4 rounded-lg mb-4">
+        {/* Forma 1 con agrupación visual */}
+        <div className="mb-3">
+          <div className="flex items-center justify-center gap-2 text-lg">
+            <span className="text-sm font-medium text-blue-800">Forma 1:</span>
+            <span className="px-2 py-1 bg-green-100 border-2 border-green-400 rounded">
+              ({operands[0]} + {operands[1]})
+            </span>
+            <span className="text-gray-600">+</span>
+            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
+              {operands[2]}
+            </span>
+            <span className="text-gray-600">=</span>
+            <span className="px-2 py-1 bg-green-100 border-2 border-green-400 rounded">
+              {operands[0] + operands[1]}
+            </span>
+            <span className="text-gray-600">+</span>
+            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
+              {operands[2]}
+            </span>
+            <span className="text-gray-600">=</span>
+            <span className="font-bold text-blue-600">
+              {operands[0] + operands[1] + operands[2]}
+            </span>
+          </div>
+        </div>
+        
+        {/* Forma 2 con agrupación visual diferente */}
+        <div>
+          <div className="flex items-center justify-center gap-2 text-lg">
+            <span className="text-sm font-medium text-blue-800">Forma 2:</span>
+            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
+              {operands[0]}
+            </span>
+            <span className="text-gray-600">+</span>
+            <span className="px-2 py-1 bg-purple-100 border-2 border-purple-400 rounded">
+              ({operands[1]} + {operands[2]})
+            </span>
+            <span className="text-gray-600">=</span>
+            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
+              {operands[0]}
+            </span>
+            <span className="text-gray-600">+</span>
+            <span className="px-2 py-1 bg-purple-100 border-2 border-purple-400 rounded">
+              {operands[1] + operands[2]}
+            </span>
+            <span className="text-gray-600">=</span>
+            <span className="font-bold text-blue-600">
+              {operands[0] + operands[1] + operands[2]}
+            </span>
+          </div>
+        </div>
+      </div>
     );
   };
 
