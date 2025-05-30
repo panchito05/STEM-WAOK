@@ -2685,6 +2685,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {settings.difficulty === 'intermediate' && (
             <InteractiveExercise 
               operands={currentProblem.operands}
+              interactiveAnswers={interactiveAnswers}
+              setInteractiveAnswers={setInteractiveAnswers}
+              activeInteractiveField={activeInteractiveField}
+              setActiveInteractiveField={setActiveInteractiveField}
               onAnswer={(answers) => {
                 // Verificar todas las respuestas del ejercicio interactivo
                 const correctSum = currentProblem.correctAnswer;

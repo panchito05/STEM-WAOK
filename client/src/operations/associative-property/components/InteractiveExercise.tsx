@@ -71,11 +71,11 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
             <span>(</span>
             <div
               className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
-                focusedInput === 'blank1' 
+                activeInteractiveField === 'blank1' 
                   ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
                   : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
               }`}
-              onClick={() => setFocusedInput('blank1')}
+              onClick={() => handleFieldClick('blank1')}
             >
               {interactiveAnswers.blank1 || <span className="text-gray-400">?</span>}
             </div>
@@ -112,7 +112,7 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
           <Button 
             onClick={handleFillBlankSubmit}
             className="bg-blue-600 hover:bg-blue-700"
-            disabled={!digitAnswers.blank1 || !digitAnswers.blank2 || !digitAnswers.blank3}
+            disabled={!interactiveAnswers.blank1 || !interactiveAnswers.blank2 || !interactiveAnswers.blank3}
           >
             Verificar Respuesta
           </Button>
