@@ -3,7 +3,7 @@
 
 export type RewardRarity = 'common' | 'rare' | 'epic' | 'legendary';
 export type RewardCategory = 'achievement' | 'milestone' | 'streak' | 'level_up' | 'collection' | 'special';
-export type RewardTheme = 'addition' | 'subtraction' | 'multiplication' | 'division' | 'alphabet' | 'general' | 'seasonal';
+export type RewardTheme = 'addition' | 'subtraction' | 'multiplication' | 'division' | 'general' | 'seasonal';
 
 // Interfaz base para todas las recompensas
 export interface BaseReward {

@@ -926,8 +926,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Rutas para el módulo Alphabet Journey (alphabet2)
-  app.use('/alphabet2', alphabet2Routes);
+
 
   const httpServer = createServer(app);
   return httpServer;
