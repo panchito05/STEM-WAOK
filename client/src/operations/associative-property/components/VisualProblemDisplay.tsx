@@ -152,9 +152,7 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
     return (
       <div className="w-full">
         <div className="text-center mb-4">
-          <p className="text-lg font-medium text-gray-700">
-            Observa cómo cambia la agrupación automáticamente
-          </p>
+          <p className="text-lg font-medium text-gray-700">Observa cómo cambia la agrupación automáticamente y el resultado siempre será el mismo</p>
         </div>
         {renderAnimatedGrouping()}
       </div>
