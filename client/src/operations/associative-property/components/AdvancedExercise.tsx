@@ -44,9 +44,23 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   // Handle validation trigger from main "Check Answer" button
   useEffect(() => {
     if (validationTrigger > 0) {
-      handleVerify();
+      handleValidation();
     }
   }, [validationTrigger]);
+
+  const handleValidation = () => {
+    switch (exercise) {
+      case 'fill-blank':
+        handleFillBlankSubmit();
+        break;
+      case 'verification':
+        handleVerificationSubmit();
+        break;
+      case 'multiple-choice':
+        handleMultipleChoiceSubmit();
+        break;
+    }
+  };
 
   const handleFieldClick = (fieldName: string) => {
     setActiveInteractiveField(fieldName);
