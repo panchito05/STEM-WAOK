@@ -188,8 +188,9 @@ const defaultProgress: AlphabetProgress = {
 };
 
 // SVG Images for each letter based on language
-const createLetterImage = (letter: AlphabetLetter, language: AlphabetLanguage) => {
-  const data = alphabetData[letter];
+const createLetterImage = (letter: string, language: AlphabetLanguage) => {
+  const data = alphabetData[letter as AlphabetLetter];
+  if (!data) return null;
   const word = language === 'spanish' ? data.spanish.word : data.english.word;
   const color = data.color;
   
@@ -489,21 +490,21 @@ const Level1Component: React.FC<{
                       <div className="text-center space-y-2">
                         {createLetterImage(currentLetter.letter, 'spanish')}
                         <Badge variant="secondary" className="text-sm">
-                          🇪🇸 {currentLetter.words.spanish}
+                          🇪🇸 {alphabetData[currentLetter.letter]?.spanish.word}
                         </Badge>
                       </div>
                       <div className="text-center space-y-2">
-                        {createLetterImage(currentLetter.id, 'english')}
+                        {createLetterImage(currentLetter.letter, 'english')}
                         <Badge variant="secondary" className="text-sm">
-                          🇺🇸 {currentLetter.words.english}
+                          🇺🇸 {alphabetData[currentLetter.letter]?.english.word}
                         </Badge>
                       </div>
                     </>
                   ) : (
                     <div className="text-center space-y-2">
-                      {createLetterImage(currentLetter.id, settings.language)}
+                      {createLetterImage(currentLetter.letter, settings.language)}
                       <Badge variant="secondary" className="text-sm">
-                        {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {currentLetter.words[settings.language]}
+                        {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {alphabetData[currentLetter.letter]?.[settings.language].word}
                       </Badge>
                     </div>
                   )}
