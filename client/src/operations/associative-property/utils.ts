@@ -131,27 +131,25 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
       break;
       
     case "advanced": 
-      // NIVEL AVANZADO: Problemas verbales y cálculo mental estratégico
-      // Enfoque en usar la propiedad asociativa para facilitar cálculos mentales
-      // Ejemplos: 8 + 2 + 5 (agrupa 8+2=10 primero), problemas con contexto verbal
+      // NIVEL AVANZADO: Práctica directa con números de 2-3 dígitos y decimales ocasionales
+      // Enfoque en identificación y aplicación directa de la propiedad asociativa
+      // Ejemplo: (47 + 23) + 15 → 47 + (23 + 15) = 85
       layout = 'horizontal';
       
-      // Generar números que permitan agrupaciones estratégicas
-      // Patrón 1: Un número que se acerque a 10, 20, 50, etc.
-      const targetNumbers = [10, 20, 50, 100];
-      const target = targetNumbers[getRandomInt(0, targetNumbers.length - 1)];
-      
-      if (getRandomBool(0.6)) {
-        // Patrón: hacer sumas que lleguen a números redondos
-        const complement = getRandomInt(1, 9);
-        const firstNum = target - complement;
-        operands = [firstNum, complement, getRandomInt(3, 15)];
-      } else {
-        // Patrón: números que se pueden agrupar para facilitar cálculo mental
+      if (getRandomBool(0.2)) {
+        // 20% de probabilidad: incluir decimales simples
         operands = [
-          getRandomInt(6, 15),  // Primer número
-          getRandomInt(2, 8),   // Segundo número (para agrupar)
-          getRandomInt(3, 12)   // Tercer número
+          parseFloat((getRandomInt(10, 99) + Math.random()).toFixed(1)),
+          parseFloat((getRandomInt(5, 50) + Math.random()).toFixed(1)),
+          parseFloat((getRandomInt(5, 30) + Math.random()).toFixed(1))
+        ];
+        problemMaxDecimals = 1;
+      } else {
+        // 80% de probabilidad: números enteros de 2-3 dígitos
+        operands = [
+          getRandomInt(15, 99),   // Números de 2 dígitos
+          getRandomInt(10, 50),   // Números medianos
+          getRandomInt(5, 40)     // Números menores
         ];
       }
       break;
