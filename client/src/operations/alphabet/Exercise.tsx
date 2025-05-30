@@ -977,7 +977,7 @@ const Level3Component: React.FC<{
           <div className="text-center space-y-6">
             {/* Image placeholder */}
             <div className="flex justify-center">
-              {createImagePlaceholder('', wordCompletion.word, '#4F46E5')}
+              {createLetterImage(wordCompletion.word[0], settings.language)}
             </div>
 
             {/* Word with missing letters */}
@@ -1200,7 +1200,7 @@ const Level4Component: React.FC<{
             ) : (
               <div className="space-y-4">
                 <div className="flex justify-center">
-                  {createImagePlaceholder('', 'Imagen', '#8B5CF6')}
+                  {createLetterImage('A', settings.language)}
                 </div>
                 <p className="text-lg text-gray-600">
                   ¿Qué letra comienza esta palabra?
@@ -1422,7 +1422,7 @@ const Level5Component: React.FC<{
         <CardContent className="p-6">
           <div className="text-center space-y-4">
             <div className="flex justify-center">
-              {createImagePlaceholder('', currentActivity.targetWord, '#10B981')}
+              {createLetterImage(currentActivity.targetWord[0], settings.language)}
             </div>
             <p className="text-lg text-gray-600">
               Forma esta palabra: <span className="font-bold text-2xl">
