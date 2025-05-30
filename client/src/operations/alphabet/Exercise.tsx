@@ -481,42 +481,61 @@ const Level1Component: React.FC<{
               transition={{ duration: 0.5 }}
               className="text-center space-y-6"
             >
-              {/* Letter Display */}
-              <div 
-                className="text-9xl font-bold mb-4"
-                style={{ color: currentLetter.color }}
-              >
-                {currentLetter.letter}
-                <div className="text-6xl mt-2 opacity-70">
-                  {currentLetter.lowercase}
-                </div>
-              </div>
-
-              {/* Image Display - Always show */}
-              <div className="flex justify-center space-x-4">
-                {settings.showBothLanguages ? (
-                  <>
-                    <div className="text-center space-y-2">
-                      {createLetterImage(currentLetter.letter, 'spanish')}
-                      <Badge variant="secondary" className="text-sm">
-                        🇪🇸 {alphabetData[currentLetter.letter]?.spanish.word}
-                      </Badge>
+              {/* New Layout: Uppercase (left), Image (center), Lowercase (right) */}
+              <div className="flex items-center justify-center space-x-8 mb-6">
+                {/* Uppercase Letter - Left Circle */}
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-full border-4 border-red-500 flex items-center justify-center bg-white shadow-lg">
+                    <div 
+                      className="text-6xl font-bold"
+                      style={{ color: currentLetter.color }}
+                    >
+                      {currentLetter.letter}
                     </div>
-                    <div className="text-center space-y-2">
-                      {createLetterImage(currentLetter.letter, 'english')}
-                      <Badge variant="secondary" className="text-sm">
-                        🇺🇸 {alphabetData[currentLetter.letter]?.english.word}
-                      </Badge>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center space-y-2">
-                    {createLetterImage(currentLetter.letter, settings.language)}
-                    <Badge variant="secondary" className="text-sm">
-                      {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {alphabetData[currentLetter.letter]?.[settings.language].word}
-                    </Badge>
                   </div>
-                )}
+                </div>
+
+                {/* Central Image Container */}
+                <div className="relative">
+                  <div className="w-80 h-64 border-4 border-blue-500 rounded-xl bg-white shadow-lg flex flex-col items-center justify-center p-4">
+                    {/* Image Display */}
+                    {settings.showBothLanguages ? (
+                      <div className="flex justify-center space-x-4">
+                        <div className="text-center space-y-2">
+                          {createLetterImage(currentLetter.letter, 'spanish')}
+                          <Badge variant="secondary" className="text-xs">
+                            🇪🇸 {alphabetData[currentLetter.letter]?.spanish.word}
+                          </Badge>
+                        </div>
+                        <div className="text-center space-y-2">
+                          {createLetterImage(currentLetter.letter, 'english')}
+                          <Badge variant="secondary" className="text-xs">
+                            🇺🇸 {alphabetData[currentLetter.letter]?.english.word}
+                          </Badge>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center space-y-2">
+                        {createLetterImage(currentLetter.letter, settings.language)}
+                        <Badge variant="secondary" className="text-sm">
+                          {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {alphabetData[currentLetter.letter]?.[settings.language].word}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Lowercase Letter - Right Circle */}
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-full border-4 border-red-500 flex items-center justify-center bg-white shadow-lg">
+                    <div 
+                      className="text-6xl font-bold"
+                      style={{ color: currentLetter.color }}
+                    >
+                      {currentLetter.lowercase}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Pronunciation Display */}
