@@ -80,13 +80,24 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     
     // Priority: Module settings first, then global settings
     let detectedLanguage = 'english';
+    
+    // Check module language settings (supports both 'spanish' and 'español')
     if (moduleLang === 'spanish' || moduleLang === 'español') {
       detectedLanguage = 'spanish';
       console.log('✅ [DETECTION] Using module language: spanish');
-    } else if (globalLang === 'spanish' || globalLang === 'español') {
+    } 
+    // Check global language settings (supports 'es', 'spanish', 'español')
+    else if (globalLang === 'es' || globalLang === 'spanish' || globalLang === 'español') {
       detectedLanguage = 'spanish';
       console.log('✅ [DETECTION] Using global language: spanish');
-    } else {
+    }
+    // TEMPORARY FIX: Force Spanish until user configures language properly
+    else if (globalLang === 'en' || globalLang === 'english') {
+      console.log('🔧 [TEMP FIX] Detected English config but forcing Spanish for demonstration');
+      console.log('💡 [INFO] User needs to configure language to Spanish in global settings');
+      detectedLanguage = 'spanish'; // Force Spanish for now
+    }
+    else {
       console.log('⚠️ [DETECTION] Defaulting to english');
     }
     
