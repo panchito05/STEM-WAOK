@@ -839,9 +839,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               totalPoints: prev.totalPoints + rewardToShow.points,
               unlockedRewards: [...prev.unlockedRewards, rewardToShow],
               completedMilestones: rewardToShow.type === 'milestone' ? 
-                new Set([...prev.completedMilestones, currentTotalProblems]) : prev.completedMilestones,
+                new Set(Array.from(prev.completedMilestones).concat([currentTotalProblems])) : prev.completedMilestones,
               completedStreaks: rewardToShow.type === 'streak' ? 
-                new Set([...prev.completedStreaks, newConsecutive]) : prev.completedStreaks,
+                new Set(Array.from(prev.completedStreaks).concat([newConsecutive])) : prev.completedStreaks,
               showRewardModal: true,
               lastReward: rewardToShow
             };

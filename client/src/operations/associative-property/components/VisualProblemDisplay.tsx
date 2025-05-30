@@ -199,7 +199,11 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
       <div className="w-full">
         <InteractiveExercise 
           operands={operands} 
-          onAnswer={onAnswer || (() => {})} 
+          onAnswer={onAnswer || (() => {})}
+          interactiveAnswers={{}}
+          setInteractiveAnswers={() => {}}
+          activeInteractiveField={''}
+          setActiveInteractiveField={() => {}}
         />
       </div>
     );

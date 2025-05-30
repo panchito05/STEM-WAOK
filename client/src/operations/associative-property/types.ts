@@ -31,6 +31,11 @@ export interface AssociativePropertyProblem {
   showVisualMode?: boolean; // Si debe mostrar modo visual
   interactiveMode?: boolean; // Si debe mostrar campos de entrada interactivos (nivel intermedio)
   blankPositions?: number[]; // Posiciones de los espacios en blanco para completar
+  // Propiedades de compatibilidad con Problem
+  displayFormat?: string;
+  difficulty?: DifficultyLevel;
+  allowDecimals?: boolean;
+  maxAttempts?: number;
 }
 
 // Tipo genérico para un operando
