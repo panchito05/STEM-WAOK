@@ -75,7 +75,7 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
 
     return (
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border-2 border-blue-200">
-        <div className="flex items-center justify-center gap-3 text-2xl transition-all duration-1000 ease-in-out">
+        <div className="flex items-center justify-center gap-3 text-2xl">
           {currentGrouping === 'first' ? (
             <>
               <span className="px-3 py-2 bg-green-100 border-3 border-green-400 rounded-lg font-bold transform scale-105 shadow-md">
