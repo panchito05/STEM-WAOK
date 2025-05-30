@@ -78,7 +78,7 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
             </span>
             <span className="text-gray-600">=</span>
             <span className="font-bold text-blue-600">
-              {operands[0] + operands[1] + operands[2]}
+              ?
             </span>
           </div>
         </div>
@@ -104,7 +104,7 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
             </span>
             <span className="text-gray-600">=</span>
             <span className="font-bold text-blue-600">
-              {operands[0] + operands[1] + operands[2]}
+              ?
             </span>
           </div>
         </div>
