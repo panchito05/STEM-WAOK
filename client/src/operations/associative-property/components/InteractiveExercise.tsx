@@ -9,7 +9,11 @@ interface InteractiveExerciseProps {
 
 const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onAnswer }) => {
   const [exercise] = useState(() => Math.random() > 0.5 ? 'fill-blank' : 'multiple-choice');
-  const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
+  const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({
+    blank1: '',
+    blank2: '',
+    blank3: ''
+  });
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [showResult, setShowResult] = useState(false);
 
@@ -56,47 +60,41 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
             <span>(</span>
             <input
               type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
               className="w-16 h-12 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500 rounded-md focus:outline-none"
-              value={userAnswers.blank1 || ''}
+              value={userAnswers.blank1}
               onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, '');
-                setUserAnswers(prev => ({ ...prev, blank1: value }));
+                console.log('Input 1 changed:', e.target.value);
+                setUserAnswers(prev => ({ ...prev, blank1: e.target.value }));
               }}
               disabled={showResult}
               placeholder="?"
-              autoComplete="off"
+              maxLength={2}
             />
             <span>+</span>
             <input
               type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
               className="w-16 h-12 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500 rounded-md focus:outline-none"
-              value={userAnswers.blank2 || ''}
+              value={userAnswers.blank2}
               onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, '');
-                setUserAnswers(prev => ({ ...prev, blank2: value }));
+                console.log('Input 2 changed:', e.target.value);
+                setUserAnswers(prev => ({ ...prev, blank2: e.target.value }));
               }}
               disabled={showResult}
               placeholder="?"
-              autoComplete="off"
+              maxLength={2}
             />
             <span>) =</span>
             <input
               type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
               className="w-20 h-12 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500 rounded-md focus:outline-none"
-              value={userAnswers.blank3 || ''}
+              value={userAnswers.blank3}
               onChange={(e) => {
-                const value = e.target.value.replace(/[^0-9]/g, '');
-                setUserAnswers(prev => ({ ...prev, blank3: value }));
+                console.log('Input 3 changed:', e.target.value);
+                setUserAnswers(prev => ({ ...prev, blank3: e.target.value }));
               }}
               disabled={showResult}
               placeholder="?"
-              autoComplete="off"
+              maxLength={3}
             />
           </div>
         </div>
