@@ -62,13 +62,21 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
       let expression: string;
       
       if (isCorrectExpression) {
-        // Expresión correcta: otra forma válida de agrupar
+        // Expresión correcta: otra forma válida de agrupar (propiedad asociativa)
         expression = `${operands[0]} + (${operands[1]} + ${operands[2]})`;
       } else {
-        // Expresión incorrecta: cambiar uno de los números
-        const wrongOperands = [...operands];
-        wrongOperands[Math.floor(Math.random() * wrongOperands.length)] += Math.floor(Math.random() * 5) + 1;
-        expression = `${wrongOperands[0]} + (${wrongOperands[1]} + ${wrongOperands[2]})`;
+        // Expresión incorrecta: cambiar uno de los números o usar operación diferente
+        const wrongType = Math.random();
+        if (wrongType < 0.5) {
+          // Cambiar uno de los números
+          const wrongOperands = [...operands];
+          const indexToChange = Math.floor(Math.random() * wrongOperands.length);
+          wrongOperands[indexToChange] += Math.floor(Math.random() * 10) + 1;
+          expression = `${wrongOperands[0]} + (${wrongOperands[1]} + ${wrongOperands[2]})`;
+        } else {
+          // Usar multiplicación en lugar de suma (operación incorrecta)
+          expression = `${operands[0]} × (${operands[1]} + ${operands[2]})`;
+        }
       }
       
       setVerificationExpression({ expression, isCorrect: isCorrectExpression });
