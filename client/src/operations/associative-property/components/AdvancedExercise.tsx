@@ -102,6 +102,33 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     }
   };
 
+  const handleNumberInput = (number: string) => {
+    if (activeInteractiveField && exerciseStarted) {
+      setInteractiveAnswers(prev => ({
+        ...prev,
+        [activeInteractiveField]: prev[activeInteractiveField] + number
+      }));
+    }
+  };
+
+  const handleBackspace = () => {
+    if (activeInteractiveField && exerciseStarted) {
+      setInteractiveAnswers(prev => ({
+        ...prev,
+        [activeInteractiveField]: prev[activeInteractiveField].slice(0, -1)
+      }));
+    }
+  };
+
+  const handleClear = () => {
+    if (activeInteractiveField && exerciseStarted) {
+      setInteractiveAnswers(prev => ({
+        ...prev,
+        [activeInteractiveField]: ''
+      }));
+    }
+  };
+
   const handleFillBlankSubmit = () => {
     const blank1Correct = parseInt(interactiveAnswers.blank1) === operands[1];
     const blank2Correct = parseInt(interactiveAnswers.blank2) === operands[2];
@@ -192,6 +219,45 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
           </div>
         </div>
 
+        {/* Number Pad */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto">
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '<'].map((btn) => (
+              <button
+                key={btn}
+                onClick={() => {
+                  if (btn === '<') {
+                    handleBackspace();
+                  } else {
+                    handleNumberInput(btn);
+                  }
+                }}
+                disabled={!exerciseStarted || !activeInteractiveField}
+                className={`h-12 rounded-lg font-semibold text-lg transition-all duration-200 ${
+                  !exerciseStarted || !activeInteractiveField
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : btn === '<'
+                      ? 'bg-red-100 text-red-600 hover:bg-red-200 active:bg-red-300'
+                      : 'bg-blue-100 text-blue-700 hover:bg-blue-200 active:bg-blue-300'
+                } shadow-sm hover:shadow-md`}
+              >
+                {btn === '<' ? '←' : btn}
+              </button>
+            ))}
+          </div>
+          
+          {activeInteractiveField && (
+            <div className="mt-3 text-center">
+              <button
+                onClick={handleClear}
+                disabled={!exerciseStarted}
+                className="px-4 py-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 active:bg-orange-300 font-medium transition-all duration-200"
+              >
+                Limpiar
+              </button>
+            </div>
+          )}
+        </div>
 
       </div>
     );
