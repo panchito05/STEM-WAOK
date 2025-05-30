@@ -504,13 +504,13 @@ const Level1Component: React.FC<{
                         <div className="text-center space-y-2">
                           {createLetterImage(currentLetter.letter, 'spanish')}
                           <Badge variant="secondary" className="text-xs">
-                            🇪🇸 {alphabetData[currentLetter.letter]?.spanish.word}
+                            🇪🇸 {currentLetter.words.spanish}
                           </Badge>
                         </div>
                         <div className="text-center space-y-2">
                           {createLetterImage(currentLetter.letter, 'english')}
                           <Badge variant="secondary" className="text-xs">
-                            🇺🇸 {alphabetData[currentLetter.letter]?.english.word}
+                            🇺🇸 {currentLetter.words.english}
                           </Badge>
                         </div>
                       </div>
@@ -518,7 +518,7 @@ const Level1Component: React.FC<{
                       <div className="text-center space-y-2">
                         {createLetterImage(currentLetter.letter, settings.language)}
                         <Badge variant="secondary" className="text-sm">
-                          {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {alphabetData[currentLetter.letter]?.[settings.language].word}
+                          {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {currentLetter.words[settings.language]}
                         </Badge>
                       </div>
                     )}
