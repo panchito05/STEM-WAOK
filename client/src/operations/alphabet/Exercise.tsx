@@ -492,34 +492,32 @@ const Level1Component: React.FC<{
                 </div>
               </div>
 
-              {/* Image Display */}
-              {settings.showImages && (
-                <div className="flex justify-center space-x-4">
-                  {settings.showBothLanguages ? (
-                    <>
-                      <div className="text-center space-y-2">
-                        {createLetterImage(currentLetter.letter, 'spanish')}
-                        <Badge variant="secondary" className="text-sm">
-                          🇪🇸 {alphabetData[currentLetter.letter]?.spanish.word}
-                        </Badge>
-                      </div>
-                      <div className="text-center space-y-2">
-                        {createLetterImage(currentLetter.letter, 'english')}
-                        <Badge variant="secondary" className="text-sm">
-                          🇺🇸 {alphabetData[currentLetter.letter]?.english.word}
-                        </Badge>
-                      </div>
-                    </>
-                  ) : (
+              {/* Image Display - Always show */}
+              <div className="flex justify-center space-x-4">
+                {settings.showBothLanguages ? (
+                  <>
                     <div className="text-center space-y-2">
-                      {createLetterImage(currentLetter.letter, settings.language)}
+                      {createLetterImage(currentLetter.letter, 'spanish')}
                       <Badge variant="secondary" className="text-sm">
-                        {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {alphabetData[currentLetter.letter]?.[settings.language].word}
+                        🇪🇸 {alphabetData[currentLetter.letter]?.spanish.word}
                       </Badge>
                     </div>
-                  )}
-                </div>
-              )}
+                    <div className="text-center space-y-2">
+                      {createLetterImage(currentLetter.letter, 'english')}
+                      <Badge variant="secondary" className="text-sm">
+                        🇺🇸 {alphabetData[currentLetter.letter]?.english.word}
+                      </Badge>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center space-y-2">
+                    {createLetterImage(currentLetter.letter, settings.language)}
+                    <Badge variant="secondary" className="text-sm">
+                      {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {alphabetData[currentLetter.letter]?.[settings.language].word}
+                    </Badge>
+                  </div>
+                )}
+              </div>
 
               {/* Pronunciation Display */}
               <div className="text-center space-y-2">
