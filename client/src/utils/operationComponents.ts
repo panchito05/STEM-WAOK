@@ -3,7 +3,6 @@ import * as Subtraction from "../operations/subtraction";
 import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
 import * as AssociativeProperty from "../operations/associative-property";
-import * as RatiosFractionsPercentsDecimals from "../operations/ratios-fractions-percents-decimals";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -84,14 +83,6 @@ export const operationModules: Module[] = [
     color: "#f97316", // Naranja para distinguir de otros módulos
     icon: "Shuffle",
   },
-  {
-    id: "ratios-fractions-percents-decimals",
-    displayName: "Ratios, Fractions, Percents, Decimals",
-    description: "Practice ratios, fractions, percentages and decimals",
-    difficulty: "beginner",
-    color: "#06b6d4", // Cyan para distinguir de otros módulos
-    icon: "Percent",
-  },
 
 ];
 
@@ -102,5 +93,4 @@ export const operationComponents: Record<string, ModuleComponent> = {
   multiplication: Multiplication, // El módulo de multiplicación
   division: Division, // El módulo de división
   "associative-property": AssociativeProperty, // El módulo de propiedad asociativa de división
-  "ratios-fractions-percents-decimals": RatiosFractionsPercentsDecimals, // El módulo de ratios, fracciones, porcentajes y decimales
 };
