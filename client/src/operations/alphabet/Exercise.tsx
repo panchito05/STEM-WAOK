@@ -1512,9 +1512,9 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
           {/* Images */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="images">Mostrar Imágenes</Label>
+              <Label htmlFor="images">{t('showImages')}</Label>
               <div className="text-sm text-gray-500">
-                Muestra imágenes representativas de cada letra
+                {t('showImagesDesc')}
               </div>
             </div>
             <Switch
@@ -1529,9 +1529,9 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
           {/* Celebrations */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="celebrate">Celebrar Logros</Label>
+              <Label htmlFor="celebrate">{t('celebrateAchievements')}</Label>
               <div className="text-sm text-gray-500">
-                Efectos visuales al completar el alfabeto
+                {t('celebrateAchievementsDesc')}
               </div>
             </div>
             <Switch
@@ -1548,7 +1548,7 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
           {/* Auto-advance delay (if enabled) */}
           {localSettings.autoAdvance && (
             <div className="space-y-2">
-              <Label htmlFor="delay">Tiempo de Avance Automático</Label>
+              <Label htmlFor="delay">{t('autoAdvanceTime')}</Label>
               <Select 
                 value={localSettings.autoAdvanceDelay.toString()} 
                 onValueChange={(value) => 
@@ -1559,10 +1559,10 @@ const AlphabetSettingsComponent: React.FC<AlphabetSettingsProps> = ({ settings, 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2000">2 segundos</SelectItem>
-                  <SelectItem value="3000">3 segundos</SelectItem>
-                  <SelectItem value="5000">5 segundos</SelectItem>
-                  <SelectItem value="10000">10 segundos</SelectItem>
+                  <SelectItem value="1000">{t('time1s')}</SelectItem>
+                  <SelectItem value="2000">{t('time2s')}</SelectItem>
+                  <SelectItem value="3000">{t('time3s')}</SelectItem>
+                  <SelectItem value="5000">{t('time5s')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1613,6 +1613,9 @@ const AlphabetExercise: React.FC<AlphabetExerciseProps> = ({ settings: initialSe
     localStorage.setItem('alphabet_progress', JSON.stringify(resetProgress));
   }, []);
 
+  // Get current language for translations
+  const t = (key: string) => getTranslation(settings.language, key);
+
   if (showSettings) {
     return (
       <AlphabetSettingsComponent
@@ -1630,15 +1633,15 @@ const AlphabetExercise: React.FC<AlphabetExerciseProps> = ({ settings: initialSe
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">
-              🔤 Aprendizaje del Alfabeto
+              🔤 {t('alphabetLearning')}
             </h1>
             <p className="text-gray-600 mt-1">
-              Nivel {settings.level}: {
-                settings.level === 1 ? 'Reconocimiento Visual y Auditivo' :
-                settings.level === 2 ? 'Ordenar Letras' :
-                settings.level === 3 ? 'Completar Palabras' :
-                settings.level === 4 ? 'Asociación de Sonidos' :
-                'Formar Palabras'
+              {t('currentLevel')} {settings.level}: {
+                settings.level === 1 ? t('level1') :
+                settings.level === 2 ? t('level2') :
+                settings.level === 3 ? t('level3') :
+                settings.level === 4 ? t('level4') :
+                t('level5')
               }
             </p>
           </div>
@@ -1649,7 +1652,7 @@ const AlphabetExercise: React.FC<AlphabetExerciseProps> = ({ settings: initialSe
               className="flex items-center space-x-2"
             >
               <RotateCcw className="h-4 w-4" />
-              <span>Reiniciar</span>
+              <span>{t('resetProgress')}</span>
             </Button>
             <Button
               variant="outline"
@@ -1657,7 +1660,7 @@ const AlphabetExercise: React.FC<AlphabetExerciseProps> = ({ settings: initialSe
               className="flex items-center space-x-2"
             >
               <Settings className="h-4 w-4" />
-              <span>Configuración</span>
+              <span>{t('settings')}</span>
             </Button>
           </div>
         </div>
