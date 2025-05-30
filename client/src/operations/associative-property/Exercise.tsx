@@ -2643,11 +2643,12 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         {/* Problem Display Area - Compact Design */}
         <div className="p-4 rounded-lg mb-4 shadow-sm bg-gray-50 border">
-          {/* Visualización con frutas para nivel principiante */}
-          {currentProblem.showVisualMode && currentProblem.visualObjects && (
+          {/* Visualización para diferentes niveles de dificultad */}
+          {(settings.difficulty === 'beginner' || settings.difficulty === 'elementary' || settings.difficulty === 'intermediate') && (
             <VisualProblemDisplay 
-              visualObjects={currentProblem.visualObjects}
+              visualObjects={currentProblem.visualObjects || []}
               operands={currentProblem.operands}
+              difficulty={settings.difficulty}
             />
           )}
           
