@@ -539,18 +539,21 @@ const Level1Component: React.FC<{
               </div>
 
               {/* Pronunciation Display */}
-              <div className="text-center space-y-2">
-                <div className="text-2xl font-semibold text-gray-700">
-                  {settings.showBothLanguages ? (
-                    <div className="space-y-1">
-                      <div>🇪🇸 {currentLetter.pronunciation.spanish}</div>
-                      <div>🇺🇸 {currentLetter.pronunciation.english}</div>
-                    </div>
-                  ) : (
-                    <div>
-                      {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {currentLetter.pronunciation[settings.language]}
-                    </div>
-                  )}
+              <div className="text-center">
+                <div className="bg-gray-100 rounded-lg p-4 inline-block">
+                  <h3 className="text-sm font-medium text-gray-600 mb-2">Pronunciación:</h3>
+                  <div className="text-2xl font-bold text-gray-800">
+                    {settings.showBothLanguages ? (
+                      <div className="space-y-1">
+                        <div>🇪🇸 {currentLetter.pronunciation.spanish}</div>
+                        <div>🇺🇸 {currentLetter.pronunciation.english}</div>
+                      </div>
+                    ) : (
+                      <div>
+                        {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {currentLetter.pronunciation[settings.language]}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
