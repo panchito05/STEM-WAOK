@@ -189,19 +189,10 @@ const defaultProgress: AlphabetProgress = {
 
 // SVG Images for each letter based on language
 const createLetterImage = (letter: string, language: AlphabetLanguage) => {
-  // Find the letter data in the array
-  const data = alphabetData.find(item => item.letter === letter.toUpperCase());
-  console.log('🔍 createLetterImage Debug:', { letter, language, data, alphabetDataLength: alphabetData.length });
-  
-  if (!data) {
-    console.log('❌ No data found for letter:', letter);
-    return <div className="text-red-500">No data for {letter}</div>;
-  }
-  
-  const word = language === 'spanish' ? data.words.spanish : data.words.english;
+  const data = alphabetData[letter as AlphabetLetter];
+  if (!data) return null;
+  const word = language === 'spanish' ? data.spanish.word : data.english.word;
   const color = data.color;
-  
-  console.log('✅ Found data:', { word, color, letter });
   
   // Get appropriate SVG based on letter and language
   const getSVGContent = () => {
@@ -349,18 +340,13 @@ const createLetterImage = (letter: string, language: AlphabetLanguage) => {
     }
   };
 
-  console.log('🎨 Rendering SVG for:', { letter, language, word, color });
-  
   return (
-    <div className="border-2 border-green-500 p-2 rounded">
-      <div className="text-xs mb-1">SVG: {letter} - {word}</div>
-      <svg width="120" height="120" viewBox="0 0 200 200" className="rounded-lg border-2 border-gray-200 bg-white shadow-sm">
-        {getSVGContent()}
-        <text x="100" y="185" textAnchor="middle" fontSize="14" fontWeight="bold" fill={color}>
-          {word}
-        </text>
-      </svg>
-    </div>
+    <svg width="200" height="200" viewBox="0 0 200 200" className="rounded-lg border-2 border-gray-200 bg-white shadow-sm">
+      {getSVGContent()}
+      <text x="100" y="185" textAnchor="middle" fontSize="14" fontWeight="bold" fill={color}>
+        {word}
+      </text>
+    </svg>
   );
 };
 
@@ -495,50 +481,61 @@ const Level1Component: React.FC<{
               transition={{ duration: 0.5 }}
               className="text-center space-y-6"
             >
-              {/* New Layout: Uppercase (left), Image (center), Lowercase (right) */}
-              <div className="flex items-center justify-center space-x-8 mb-6">
-                {/* Uppercase Letter - Left Circle */}
-                <div className="relative">
-                  <div className="w-32 h-32 rounded-full border-4 border-red-500 flex items-center justify-center bg-white shadow-lg">
-                    <div 
-                      className="text-6xl font-bold"
-                      style={{ color: currentLetter.color }}
-                    >
-                      {currentLetter.letter}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Central Image Container */}
-                <div className="relative">
-                  <div className="w-80 h-64 border-4 border-blue-500 rounded-xl bg-white shadow-lg flex flex-col items-center justify-center p-4">
-                    {/* Image Display */}
-                    <div className="text-center space-y-2">
-                      <div className="text-lg font-bold text-blue-600 mb-2">
-                        Debug: Letter {currentLetter.letter} - {settings.language}
-                      </div>
-                      {createLetterImage(currentLetter.letter, settings.language)}
-                      <Badge variant="secondary" className="text-sm">
-                        {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {currentLetter.words[settings.language]}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Lowercase Letter - Right Circle */}
-                <div className="relative">
-                  <div className="w-32 h-32 rounded-full border-4 border-red-500 flex items-center justify-center bg-white shadow-lg">
-                    <div 
-                      className="text-6xl font-bold"
-                      style={{ color: currentLetter.color }}
-                    >
-                      {currentLetter.lowercase}
-                    </div>
-                  </div>
+              {/* Letter Display */}
+              <div 
+                className="text-9xl font-bold mb-4"
+                style={{ color: currentLetter.color }}
+              >
+                {currentLetter.letter}
+                <div className="text-6xl mt-2 opacity-70">
+                  {currentLetter.lowercase}
                 </div>
               </div>
 
+              {/* Image Display */}
+              {settings.showImages && (
+                <div className="flex justify-center space-x-4">
+                  {settings.showBothLanguages ? (
+                    <>
+                      <div className="text-center space-y-2">
+                        {createLetterImage(currentLetter.letter, 'spanish')}
+                        <Badge variant="secondary" className="text-sm">
+                          🇪🇸 {alphabetData[currentLetter.letter]?.spanish.word}
+                        </Badge>
+                      </div>
+                      <div className="text-center space-y-2">
+                        {createLetterImage(currentLetter.letter, 'english')}
+                        <Badge variant="secondary" className="text-sm">
+                          🇺🇸 {alphabetData[currentLetter.letter]?.english.word}
+                        </Badge>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center space-y-2">
+                      {createLetterImage(currentLetter.letter, settings.language)}
+                      <Badge variant="secondary" className="text-sm">
+                        {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {alphabetData[currentLetter.letter]?.[settings.language].word}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              )}
 
+              {/* Pronunciation Display */}
+              <div className="text-center space-y-2">
+                <div className="text-2xl font-semibold text-gray-700">
+                  {settings.showBothLanguages ? (
+                    <div className="space-y-1">
+                      <div>🇪🇸 {currentLetter.pronunciation.spanish}</div>
+                      <div>🇺🇸 {currentLetter.pronunciation.english}</div>
+                    </div>
+                  ) : (
+                    <div>
+                      {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {currentLetter.pronunciation[settings.language]}
+                    </div>
+                  )}
+                </div>
+              </div>
             </motion.div>
           </AnimatePresence>
         </CardContent>

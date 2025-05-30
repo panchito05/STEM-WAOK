@@ -3,7 +3,6 @@ import * as Subtraction from "../operations/subtraction";
 import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
 import * as Alphabet from "../operations/alphabet";
-import * as AssociativeProperty from "../operations/associative-property";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -40,12 +39,6 @@ export const defaultModuleSettings: ModuleSettings = {
   enableCompensation: true, // Añade problemas adicionales por respuestas incorrectas/reveladas
   enableRewards: true, // Activar sistema de recompensas/premios
   rewardType: "stars", // Tipo de premio a mostrar (medals, trophies, stars)
-};
-
-// Configuración específica para el módulo de Propiedad Asociativa
-export const associativePropertySettings: ModuleSettings & { currentLevel: number } = {
-  ...defaultModuleSettings,
-  currentLevel: 1, // Nivel específico para propiedad asociativa
 };
 
 // List of all operation modules
@@ -90,14 +83,6 @@ export const operationModules: Module[] = [
     color: "#f59e0b", // Naranja para el módulo del alfabeto
     icon: "BookOpen",
   },
-  {
-    id: "associative-property",
-    displayName: "Associative Property",
-    description: "Practice associative property with various difficulty levels",
-    difficulty: "beginner",
-    color: "#06b6d4", // Cian para distinguir de otros módulos
-    icon: "Parentheses",
-  },
 
 ];
 
@@ -108,5 +93,4 @@ export const operationComponents: Record<string, ModuleComponent> = {
   multiplication: Multiplication, // El módulo de multiplicación
   division: Division, // El módulo de división
   alphabet: Alphabet, // El módulo de aprendizaje del alfabeto
-  "associative-property": AssociativeProperty, // El módulo de propiedad asociativa
 };
