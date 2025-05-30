@@ -2,6 +2,7 @@ import * as Addition from "../operations/addition";
 import * as Subtraction from "../operations/subtraction";
 import * as Multiplication from "../operations/multiplication";
 import * as Division from "../operations/division";
+import * as AssociativeProperty from "../operations/associative-property";
 import { ModuleSettings } from "@/context/SettingsContext";
 
 export interface Module {
@@ -74,6 +75,14 @@ export const operationModules: Module[] = [
     color: "#8b5cf6", // Violeta para distinguir de otros módulos
     icon: "DivideIcon",
   },
+  {
+    id: "associative-property",
+    displayName: "Associative Property",
+    description: "Practice associative property with various difficulty levels",
+    difficulty: "beginner",
+    color: "#f97316", // Naranja para distinguir de otros módulos
+    icon: "Shuffle",
+  },
 
 ];
 
@@ -83,4 +92,5 @@ export const operationComponents: Record<string, ModuleComponent> = {
   subtraction: Subtraction, // El módulo de resta
   multiplication: Multiplication, // El módulo de multiplicación
   division: Division, // El módulo de división
+  "associative-property": AssociativeProperty, // El módulo de propiedad asociativa de división
 };
