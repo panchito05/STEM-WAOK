@@ -2789,6 +2789,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               activeInteractiveField={activeInteractiveField}
               setActiveInteractiveField={setActiveInteractiveField}
               validationTrigger={advancedValidationTrigger}
+              exerciseStarted={exerciseStarted}
               onAnswer={(isCorrect) => {
                 if (isCorrect) {
                   setFeedbackMessage("¡Excelente! Has demostrado tu comprensión de la propiedad asociativa con números más complejos.");

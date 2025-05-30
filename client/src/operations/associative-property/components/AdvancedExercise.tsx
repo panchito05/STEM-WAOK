@@ -9,6 +9,7 @@ interface AdvancedExerciseProps {
   activeInteractiveField: string | null;
   setActiveInteractiveField: React.Dispatch<React.SetStateAction<string | null>>;
   validationTrigger: number;
+  exerciseStarted: boolean;
 }
 
 type ExerciseType = 'fill-blank' | 'verification' | 'multiple-choice';
@@ -20,12 +21,14 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   setInteractiveAnswers,
   activeInteractiveField,
   setActiveInteractiveField,
-  validationTrigger
+  validationTrigger,
+  exerciseStarted
 }) => {
   const [exercise, setExercise] = useState<ExerciseType>('fill-blank');
   const [showResult, setShowResult] = useState(false);
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [verificationAnswer, setVerificationAnswer] = useState<string>('');
+  const [shuffledChoices, setShuffledChoices] = useState<any[]>([]);
 
   useEffect(() => {
     // Reiniciar estado cuando cambian los operandos
@@ -39,6 +42,18 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     const exercises: ExerciseType[] = ['fill-blank', 'verification', 'multiple-choice'];
     const randomExercise = exercises[Math.floor(Math.random() * exercises.length)];
     setExercise(randomExercise);
+
+    // Generar opciones para multiple choice una sola vez
+    if (randomExercise === 'multiple-choice') {
+      const choices = [
+        { id: 'a', text: `${operands[0]} + (${operands[1]} + ${operands[2]})`, correct: true },
+        { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: true },
+        { id: 'c', text: `${operands[0]} × (${operands[1]} + ${operands[2]})`, correct: false }
+      ];
+      // Mezclar una sola vez
+      const shuffled = [...choices].sort(() => Math.random() - 0.5);
+      setShuffledChoices(shuffled);
+    }
   }, [operands, setInteractiveAnswers, setActiveInteractiveField]);
 
   // Handle validation trigger from main "Check Answer" button
