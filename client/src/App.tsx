@@ -42,7 +42,6 @@ function Router() {
       <Route path="/multi-operations" component={MultiOperationsPage} />
       <Route path="/multi-operations/summary" component={MultiOperationsSummaryPage} />
       <Route path="/operation/:operation" component={OperationPage} />
-      <Route path="/operations/:operation" component={OperationPage} />
       <Route path="/progress" component={ProtectedRoute(ProgressPage)} />
       <Route path="/settings" component={ProtectedRoute(SettingsPage)} />
       <Route path="/profile" component={ProtectedRoute(ProfilePage)} />
