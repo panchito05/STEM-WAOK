@@ -187,19 +187,157 @@ const defaultProgress: AlphabetProgress = {
   lastActivity: new Date()
 };
 
-// SVG placeholders for images (to be replaced with actual images)
-const createImagePlaceholder = (letter: string, word: string, color: string) => (
-  <svg width="200" height="200" viewBox="0 0 200 200" className="rounded-lg border-2 border-gray-200">
-    <rect width="200" height="200" fill={`${color}20`} />
-    <circle cx="100" cy="80" r="30" fill={color} opacity="0.3" />
-    <text x="100" y="140" textAnchor="middle" fontSize="16" fontWeight="bold" fill={color}>
-      {word}
-    </text>
-    <text x="100" y="160" textAnchor="middle" fontSize="12" fill="#666">
-      ({letter})
-    </text>
-  </svg>
-);
+// SVG Images for each letter based on language
+const createLetterImage = (letter: AlphabetLetter, language: AlphabetLanguage) => {
+  const data = alphabetData[letter];
+  const word = language === 'spanish' ? data.spanish.word : data.english.word;
+  const color = data.color;
+  
+  // Get appropriate SVG based on letter and language
+  const getSVGContent = () => {
+    switch (letter.toLowerCase()) {
+      case 'a':
+        // Airplane for both languages
+        return (
+          <g>
+            <path d="M100 50 L120 90 L170 95 L120 105 L100 130 L80 105 L30 95 L80 90 Z" fill={color} />
+            <circle cx="100" cy="90" r="6" fill="white" />
+            <rect x="95" y="75" width="10" height="8" fill="white" rx="2" />
+            <path d="M85 85 L75 80 L85 75" fill={color} />
+            <path d="M115 85 L125 80 L115 75" fill={color} />
+          </g>
+        );
+      
+      case 'b':
+        // Ball for English, Whale for Spanish
+        return language === 'spanish' ? (
+          <g>
+            <ellipse cx="100" cy="100" rx="55" ry="25" fill={color} />
+            <ellipse cx="140" cy="85" rx="15" ry="8" fill={color} />
+            <path d="M45 100 Q30 85 45 75 Q35 90 45 100" fill={color} />
+            <circle cx="125" cy="90" r="3" fill="white" />
+            <path d="M100 75 L105 65 L95 65 Z" fill={color} />
+            <path d="M110 75 L115 65 L105 65 Z" fill={color} />
+          </g>
+        ) : (
+          <g>
+            <circle cx="100" cy="100" r="35" fill={color} />
+            <path d="M75 75 Q65 65 75 55 Q85 65 75 75" fill="white" />
+            <path d="M125 75 Q135 65 125 55 Q115 65 125 75" fill="white" />
+            <path d="M85 110 Q100 120 115 110" stroke="white" strokeWidth="2" fill="none" />
+          </g>
+        );
+      
+      case 'c':
+        // Cat for English, House for Spanish
+        return language === 'spanish' ? (
+          <g>
+            <rect x="65" y="110" width="70" height="50" fill={color} />
+            <polygon points="65,110 100,80 135,110" fill={color} />
+            <rect x="80" y="125" width="12" height="20" fill="white" />
+            <rect x="108" y="125" width="12" height="20" fill="white" />
+            <rect x="92" y="140" width="16" height="20" fill="#8B4513" />
+            <circle cx="98" cy="150" r="2" fill="gold" />
+          </g>
+        ) : (
+          <g>
+            <ellipse cx="100" cy="110" rx="30" ry="20" fill={color} />
+            <circle cx="100" cy="85" r="18" fill={color} />
+            <polygon points="88,75 93,65 98,75" fill={color} />
+            <polygon points="102,75 107,65 112,75" fill={color} />
+            <circle cx="93" cy="80" r="2" fill="white" />
+            <circle cx="107" cy="80" r="2" fill="white" />
+            <path d="M100 88 L100 93 L105 98" stroke="white" strokeWidth="2" fill="none" />
+            <path d="M85 90 L75 85" stroke={color} strokeWidth="2" />
+            <path d="M115 90 L125 85" stroke={color} strokeWidth="2" />
+          </g>
+        );
+      
+      case 'd':
+        // Dog for English, Dolphin for Spanish
+        return language === 'spanish' ? (
+          <g>
+            <ellipse cx="100" cy="100" rx="45" ry="18" fill={color} />
+            <ellipse cx="125" cy="88" rx="18" ry="12" fill={color} />
+            <path d="M55 100 Q45 85 60 80" fill={color} />
+            <circle cx="115" cy="88" r="3" fill="white" />
+            <path d="M90 85 Q85 75 95 70" fill={color} />
+            <path d="M100 82 L105 75 L95 75 Z" fill={color} />
+          </g>
+        ) : (
+          <g>
+            <ellipse cx="100" cy="110" rx="30" ry="22" fill={color} />
+            <circle cx="100" cy="85" r="18" fill={color} />
+            <ellipse cx="78" cy="85" rx="6" ry="12" fill={color} />
+            <ellipse cx="122" cy="85" rx="6" ry="12" fill={color} />
+            <circle cx="93" cy="80" r="2" fill="white" />
+            <circle cx="107" cy="80" r="2" fill="white" />
+            <ellipse cx="100" cy="88" rx="4" ry="2" fill="black" />
+            <path d="M118 115 Q128 125 133 120" stroke={color} strokeWidth="3" fill="none" />
+          </g>
+        );
+      
+      case 'e':
+        // Elephant for both languages
+        return (
+          <g>
+            <ellipse cx="100" cy="110" rx="35" ry="25" fill={color} />
+            <circle cx="100" cy="80" r="22" fill={color} />
+            <ellipse cx="88" cy="70" rx="6" ry="10" fill={color} />
+            <ellipse cx="112" cy="70" rx="6" ry="10" fill={color} />
+            <circle cx="93" cy="75" r="2" fill="white" />
+            <circle cx="107" cy="75" r="2" fill="white" />
+            <ellipse cx="100" cy="95" rx="12" ry="20" fill={color} />
+            <path d="M88 135 L88 145 M95 135 L95 145 M105 135 L105 145 M112 135 L112 145" stroke={color} strokeWidth="3" />
+          </g>
+        );
+      
+      case 'f':
+        // Fish for English, Flower for Spanish
+        return language === 'spanish' ? (
+          <g>
+            <circle cx="100" cy="100" r="12" fill="yellow" />
+            <ellipse cx="88" cy="88" rx="10" ry="16" fill={color} transform="rotate(-30 88 88)" />
+            <ellipse cx="112" cy="88" rx="10" ry="16" fill={color} transform="rotate(30 112 88)" />
+            <ellipse cx="88" cy="112" rx="10" ry="16" fill={color} transform="rotate(30 88 112)" />
+            <ellipse cx="112" cy="112" rx="10" ry="16" fill={color} transform="rotate(-30 112 112)" />
+            <ellipse cx="100" cy="76" rx="10" ry="16" fill={color} />
+            <rect x="97" y="115" width="6" height="25" fill="green" />
+          </g>
+        ) : (
+          <g>
+            <ellipse cx="100" cy="100" rx="35" ry="18" fill={color} />
+            <polygon points="135,100 150,92 150,108" fill={color} />
+            <circle cx="88" cy="95" r="3" fill="white" />
+            <path d="M100 82 Q108 75 116 82" fill={color} />
+            <path d="M100 118 Q108 125 116 118" fill={color} />
+            <path d="M85 88 Q75 82 85 78" fill={color} />
+          </g>
+        );
+      
+      default:
+        // Generic image for other letters
+        return (
+          <g>
+            <rect x="70" y="70" width="60" height="60" rx="8" fill={`${color}60`} />
+            <circle cx="100" cy="100" r="18" fill={color} />
+            <text x="100" y="108" textAnchor="middle" fontSize="14" fontWeight="bold" fill="white">
+              {letter}
+            </text>
+          </g>
+        );
+    }
+  };
+
+  return (
+    <svg width="200" height="200" viewBox="0 0 200 200" className="rounded-lg border-2 border-gray-200 bg-white shadow-sm">
+      {getSVGContent()}
+      <text x="100" y="185" textAnchor="middle" fontSize="14" fontWeight="bold" fill={color}>
+        {word}
+      </text>
+    </svg>
+  );
+};
 
 // Audio pronunciation simulation (to be replaced with actual audio)
 const pronounceLetter = (letter: AlphabetLetter, language: AlphabetLanguage) => {
@@ -349,13 +487,13 @@ const Level1Component: React.FC<{
                   {settings.showBothLanguages ? (
                     <>
                       <div className="text-center space-y-2">
-                        {createImagePlaceholder(currentLetter.letter, currentLetter.words.spanish, currentLetter.color)}
+                        {createLetterImage(currentLetter.letter, 'spanish')}
                         <Badge variant="secondary" className="text-sm">
                           🇪🇸 {currentLetter.words.spanish}
                         </Badge>
                       </div>
                       <div className="text-center space-y-2">
-                        {createImagePlaceholder(currentLetter.letter, currentLetter.words.english, currentLetter.color)}
+                        {createLetterImage(currentLetter.id, 'english')}
                         <Badge variant="secondary" className="text-sm">
                           🇺🇸 {currentLetter.words.english}
                         </Badge>
@@ -363,11 +501,7 @@ const Level1Component: React.FC<{
                     </>
                   ) : (
                     <div className="text-center space-y-2">
-                      {createImagePlaceholder(
-                        currentLetter.letter, 
-                        currentLetter.words[settings.language], 
-                        currentLetter.color
-                      )}
+                      {createLetterImage(currentLetter.id, settings.language)}
                       <Badge variant="secondary" className="text-sm">
                         {settings.language === 'spanish' ? '🇪🇸' : '🇺🇸'} {currentLetter.words[settings.language]}
                       </Badge>
