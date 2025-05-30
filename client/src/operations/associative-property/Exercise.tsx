@@ -2871,8 +2871,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </>
           )}
         </div>
-        {/* Number Keypad - Full Width Design - Hide for advanced level */}
-        {settings.difficulty !== 'advanced' && (
+        {/* Number Keypad - Full Width Design */}
         <div className="grid grid-cols-3 gap-3 w-full px-4">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9", ">", "0", "<"].map((key, idx) => (
             <Button
@@ -2910,7 +2909,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>
           ))}
         </div>
-        )}
         {/* Bottom Control Buttons - Responsive: Optimized for all screen sizes */}
         <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
           {/* Mobile/Tablet: Previous and Show Answer in same row */}
