@@ -78,7 +78,9 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   };
 
   const handleFieldClick = (fieldName: string) => {
-    setActiveInteractiveField(fieldName);
+    if (exerciseStarted) {
+      setActiveInteractiveField(fieldName);
+    }
   };
 
   const handleFillBlankSubmit = () => {
@@ -127,10 +129,12 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
               <span>{operands[0]} +</span>
               <span>(</span>
               <div
-                className={`w-20 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
-                  activeInteractiveField === 'blank1' 
-                    ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
-                    : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
+                className={`w-20 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold transition-all duration-200 ${
+                  !exerciseStarted 
+                    ? 'border-gray-300 bg-gray-100 cursor-not-allowed opacity-50'
+                    : activeInteractiveField === 'blank1' 
+                      ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200 cursor-pointer' 
+                      : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md cursor-pointer'
                 }`}
                 onClick={() => handleFieldClick('blank1')}
               >
@@ -138,10 +142,12 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
               </div>
               <span>+</span>
               <div
-                className={`w-20 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
-                  activeInteractiveField === 'blank2' 
-                    ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
-                    : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
+                className={`w-20 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold transition-all duration-200 ${
+                  !exerciseStarted 
+                    ? 'border-gray-300 bg-gray-100 cursor-not-allowed opacity-50'
+                    : activeInteractiveField === 'blank2' 
+                      ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200 cursor-pointer' 
+                      : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md cursor-pointer'
                 }`}
                 onClick={() => handleFieldClick('blank2')}
               >
@@ -149,10 +155,12 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
               </div>
               <span>) =</span>
               <div
-                className={`w-24 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
-                  activeInteractiveField === 'blank3' 
-                    ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
-                    : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
+                className={`w-24 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold transition-all duration-200 ${
+                  !exerciseStarted 
+                    ? 'border-gray-300 bg-gray-100 cursor-not-allowed opacity-50'
+                    : activeInteractiveField === 'blank3' 
+                      ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200 cursor-pointer' 
+                      : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md cursor-pointer'
                 }`}
                 onClick={() => handleFieldClick('blank3')}
               >
@@ -203,16 +211,16 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
 
           <div className="mt-6 flex justify-center gap-4">
             <Button
-              onClick={() => setVerificationAnswer('verdadero')}
+              onClick={() => exerciseStarted ? setVerificationAnswer('verdadero') : null}
               className={`px-6 py-3 ${verificationAnswer === 'verdadero' ? 'bg-green-600' : 'bg-gray-300'}`}
-              disabled={showResult}
+              disabled={showResult || !exerciseStarted}
             >
               Verdadero
             </Button>
             <Button
-              onClick={() => setVerificationAnswer('falso')}
+              onClick={() => exerciseStarted ? setVerificationAnswer('falso') : null}
               className={`px-6 py-3 ${verificationAnswer === 'falso' ? 'bg-red-600' : 'bg-gray-300'}`}
-              disabled={showResult}
+              disabled={showResult || !exerciseStarted}
             >
               Falso
             </Button>
@@ -261,9 +269,9 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
                   name="choice"
                   value={choice.id}
                   checked={selectedChoice === choice.id}
-                  onChange={(e) => setSelectedChoice(e.target.value)}
+                  onChange={(e) => exerciseStarted ? setSelectedChoice(e.target.value) : null}
                   className="mr-3"
-                  disabled={showResult}
+                  disabled={showResult || !exerciseStarted}
                 />
                 <span className="text-lg font-medium">
                   {String.fromCharCode(65 + index)}) {choice.text}
