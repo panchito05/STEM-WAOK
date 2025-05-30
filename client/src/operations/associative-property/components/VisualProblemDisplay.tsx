@@ -74,37 +74,43 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
     if (operands.length < 3) return null;
 
     return (
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border-2 border-blue-200">
-        <div className="flex items-center justify-center gap-3 text-2xl transition-all duration-1000 ease-in-out">
+      <div className={`p-6 rounded-xl border-3 transition-all duration-1000 ease-in-out ${
+        currentGrouping === 'first' 
+          ? 'bg-gradient-to-r from-green-100 to-emerald-50 border-green-400 shadow-green-200/50' 
+          : 'bg-gradient-to-r from-purple-100 to-violet-50 border-purple-400 shadow-purple-200/50'
+      } shadow-xl`}>
+        <div className="flex items-center justify-center gap-4 text-2xl transition-all duration-1000 ease-in-out">
           {currentGrouping === 'first' ? (
             <>
-              <span className="px-3 py-2 bg-green-100 border-3 border-green-400 rounded-lg font-bold transform scale-105 shadow-md">
+              <span className="px-4 py-3 bg-green-200 border-3 border-green-500 rounded-xl font-bold transform scale-110 shadow-lg text-green-800">
                 ({operands[0]} + {operands[1]})
               </span>
-              <span className="text-gray-600 font-bold">+</span>
-              <span className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg">
+              <span className="text-green-700 font-bold text-3xl">+</span>
+              <span className="px-4 py-3 bg-green-50 border-2 border-green-300 rounded-lg text-green-700">
                 {operands[2]}
               </span>
-              <span className="text-gray-600 font-bold">=</span>
-              <span className="text-gray-400 font-bold">?</span>
+              <span className="text-green-700 font-bold text-3xl">=</span>
+              <span className="text-green-600 font-bold text-3xl">?</span>
             </>
           ) : (
             <>
-              <span className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg">
+              <span className="px-4 py-3 bg-purple-50 border-2 border-purple-300 rounded-lg text-purple-700">
                 {operands[0]}
               </span>
-              <span className="text-gray-600 font-bold">+</span>
-              <span className="px-3 py-2 bg-purple-100 border-3 border-purple-400 rounded-lg font-bold transform scale-105 shadow-md">
+              <span className="text-purple-700 font-bold text-3xl">+</span>
+              <span className="px-4 py-3 bg-purple-200 border-3 border-purple-500 rounded-xl font-bold transform scale-110 shadow-lg text-purple-800">
                 ({operands[1]} + {operands[2]})
               </span>
-              <span className="text-gray-600 font-bold">=</span>
-              <span className="text-gray-400 font-bold">?</span>
+              <span className="text-purple-700 font-bold text-3xl">=</span>
+              <span className="text-purple-600 font-bold text-3xl">?</span>
             </>
           )}
         </div>
         
         <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
+          <p className={`text-sm font-medium ${
+            currentGrouping === 'first' ? 'text-green-700' : 'text-purple-700'
+          }`}>
             Ciclo {shuffleCount + 1} de 4 - Próximo cambio en {currentGrouping === 'first' ? '10' : '20'} segundos
           </p>
         </div>
