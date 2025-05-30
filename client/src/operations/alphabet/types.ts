@@ -23,14 +23,11 @@ export interface AlphabetLetter {
 
 export interface AlphabetSettings {
   language: AlphabetLanguage;
-  level: AlphabetLevel;
-  showBothLanguages: boolean;
-  autoAdvance: boolean;
-  autoAdvanceDelay: number;
+  difficultyLevel: 'beginner' | 'intermediate' | 'advanced';
   audioEnabled: boolean;
-  showImages: boolean;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  celebrateCompletion: boolean;
+  showBothLanguages: boolean;
+  autoContinue: boolean;
+  letterDisplay: 'uppercase' | 'lowercase' | 'both';
 }
 
 export interface AlphabetProgress {

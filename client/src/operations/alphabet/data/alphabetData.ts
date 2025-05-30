@@ -470,3 +470,23 @@ export const alphabetData: AlphabetLetter[] = [
     color: '#2C3E50'
   }
 ];
+
+// Helper functions
+export const getLetterByIndex = (index: number): AlphabetLetter => {
+  return alphabetData[index % alphabetData.length];
+};
+
+export const getRandomLetters = (count: number, exclude: string[] = []): AlphabetLetter[] => {
+  const availableLetters = alphabetData.filter(letter => !exclude.includes(letter.letter));
+  const shuffled = [...availableLetters].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+};
+
+export const shuffleArray = <T>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
