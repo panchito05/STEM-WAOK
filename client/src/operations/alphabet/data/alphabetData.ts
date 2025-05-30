@@ -403,11 +403,11 @@ export const alphabetData: AlphabetLetter[] = [
     lowercase: 'w',
     words: {
       spanish: 'Wafle',
-      english: 'Whale'
+      english: 'Waffle'
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/doble ve/',
@@ -421,11 +421,11 @@ export const alphabetData: AlphabetLetter[] = [
     lowercase: 'x',
     words: {
       spanish: 'Xilófono',
-      english: 'X-ray'
+      english: 'Xylophone'
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/equis/',
