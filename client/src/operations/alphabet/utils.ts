@@ -2,32 +2,32 @@ import { AlphabetProblem, AlphabetSettings, LetterData } from './types';
 
 // Complete alphabet data with associated words and colors
 export const ALPHABET_DATA: LetterData[] = [
-  { letter: 'A', words: { english: 'Apple', spanish: 'Abeja' }, color: '#FF6B6B', svgPath: 'M12 2L13.5 8.5L20 8.5L15 13L16.5 20L12 16L7.5 20L9 13L4 8.5L10.5 8.5Z' },
-  { letter: 'B', words: { english: 'Ball', spanish: 'Barco' }, color: '#4ECDC4', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22H14C16 22 18 20 18 18C18 17 17.5 16 16.5 15.5C17.5 15 18 14 18 13C18 11 16 9 14 9H6V2Z' },
-  { letter: 'C', words: { english: 'Cat', spanish: 'Casa' }, color: '#45B7D1', svgPath: 'M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2Z' },
-  { letter: 'D', words: { english: 'Dog', spanish: 'Delfín' }, color: '#96CEB4', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22H14C18 22 22 18 22 14V10C22 6 18 2 14 2H6Z' },
-  { letter: 'E', words: { english: 'Elephant', spanish: 'Estrella' }, color: '#FECA57', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22H18C19 22 20 21 20 20C20 19 19 18 18 18H8V14H16V10H8V6H18C19 6 20 5 20 4C20 3 19 2 18 2H6Z' },
-  { letter: 'F', words: { english: 'Fish', spanish: 'Flor' }, color: '#FF9FF3', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22C7 22 8 21 8 20V14H16V10H8V6H18C19 6 20 5 20 4C20 3 19 2 18 2H6Z' },
-  { letter: 'G', words: { english: 'Giraffe', spanish: 'Gato' }, color: '#F0932B', svgPath: 'M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C15.18 22 18.07 20.37 19.78 17.78L17.95 16.64C16.74 18.48 14.5 19.5 12 19.5C8.42 19.5 5.5 16.58 5.5 13H15V10H12C8.42 10 5.5 7.08 5.5 3.5C7.24 2.58 9.54 2 12 2Z' },
-  { letter: 'H', words: { english: 'Horse', spanish: 'Hormiga' }, color: '#EB4D4B', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22C7 22 8 21 8 20V14H16V20C16 21 17 22 18 22C19 22 20 21 20 20V4C20 3 19 2 18 2C17 2 16 3 16 4V10H8V4C8 3 7 2 6 2Z' },
-  { letter: 'I', words: { english: 'Ice cream', spanish: 'Iguana' }, color: '#6C5CE7', svgPath: 'M12 2C11 2 10 3 10 4V6H8C7 6 6 7 6 8C6 9 7 10 8 10H10V18H8C7 18 6 19 6 20C6 21 7 22 8 22H16C17 22 18 21 18 20C18 19 17 18 16 18H14V10H16C17 10 18 9 18 8C18 7 17 6 16 6H14V4C14 3 13 2 12 2Z' },
-  { letter: 'J', words: { english: 'Jellyfish', spanish: 'Jirafa' }, color: '#A29BFE', svgPath: 'M16 2C17 2 18 3 18 4C18 5 17 6 16 6H14V16C14 19 11 22 8 22C5 22 2 19 2 16C2 15 3 14 4 14C5 14 6 15 6 16C6 17 7 18 8 18C9 18 10 17 10 16V6H8C7 6 6 5 6 4C6 3 7 2 8 2H16Z' },
-  { letter: 'K', words: { english: 'Kite', spanish: 'Koala' }, color: '#FD79A8', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22C7 22 8 21 8 20V14L14 20C15 21 16 21 17 20C18 19 18 18 17 17L12 12L17 7C18 6 18 5 17 4C16 3 15 3 14 4L8 10V4C8 3 7 2 6 2Z' },
-  { letter: 'L', words: { english: 'Lion', spanish: 'Luna' }, color: '#00B894', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22H18C19 22 20 21 20 20C20 19 19 18 18 18H8V4C8 3 7 2 6 2Z' },
-  { letter: 'M', words: { english: 'Mouse', spanish: 'Mariposa' }, color: '#E17055', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22C7 22 8 21 8 20V13L10 11L12 13V20C12 21 13 22 14 22C15 22 16 21 16 20V13L18 11L20 13V20C20 21 21 22 22 22C23 22 24 21 24 20V4C24 3 23 2 22 2C21 2 20 3 20 4V9L16 5L12 9L8 5L4 9V4C4 3 5 2 6 2Z' },
-  { letter: 'N', words: { english: 'Nest', spanish: 'Naranja' }, color: '#81ECEC', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22C7 22 8 21 8 20V8L16 16V20C16 21 17 22 18 22C19 22 20 21 20 20V4C20 3 19 2 18 2C17 2 16 3 16 4V16L8 8V4C8 3 7 2 6 2Z' },
-  { letter: 'O', words: { english: 'Ocean', spanish: 'Oso' }, color: '#74B9FF', svgPath: 'M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 18C8.42 18 5.5 15.08 5.5 11.5C5.5 7.92 8.42 5 12 5C15.58 5 18.5 7.92 18.5 11.5C18.5 15.08 15.58 18 12 18Z' },
-  { letter: 'P', words: { english: 'Penguin', spanish: 'Pez' }, color: '#55A3FF', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22C7 22 8 21 8 20V14H14C17 14 20 11 20 8C20 5 17 2 14 2H6ZM8 6H14C15 6 16 7 16 8C16 9 15 10 14 10H8V6Z' },
-  { letter: 'Q', words: { english: 'Queen', spanish: 'Queso' }, color: '#A55EEA', svgPath: 'M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C14.69 22 17.07 20.86 18.72 19.14L20.14 20.56C20.73 21.15 21.67 21.15 22.26 20.56C22.85 19.97 22.85 19.03 22.26 18.44L20.84 17.02C21.57 15.37 22 13.53 22 12C22 6.48 17.52 2 12 2ZM12 18C8.42 18 5.5 15.08 5.5 11.5C5.5 7.92 8.42 5 12 5C15.58 5 18.5 7.92 18.5 11.5C18.5 15.08 15.58 18 12 18Z' },
-  { letter: 'R', words: { english: 'Rainbow', spanish: 'Ratón' }, color: '#FD6C6C', svgPath: 'M6 2C5 2 4 3 4 4V20C4 21 5 22 6 22C7 22 8 21 8 20V14H12L16 20C17 21 18 21 19 20C20 19 20 18 19 17L15 12C17 11 19 9 19 7C19 4 16 2 13 2H6ZM8 6H13C14 6 15 7 15 8C15 9 14 10 13 10H8V6Z' },
-  { letter: 'S', words: { english: 'Sun', spanish: 'Sol' }, color: '#FDCB6E', svgPath: 'M6 2C4 2 2 4 2 6C2 8 4 10 6 10H8C9 10 10 9 10 8C10 7 9 6 8 6H6C5 6 4 5 4 4C4 3 5 2 6 2H14C15 2 16 3 16 4C16 5 15 6 14 6H12C11 6 10 7 10 8C10 9 11 10 12 10H18C20 10 22 12 22 14C22 16 20 18 18 18H16C15 18 14 19 14 20C14 21 15 22 16 22H18C19 22 20 21 20 20C20 19 19 18 18 18C19 18 20 17 20 16C20 15 19 14 18 14H12C11 14 10 15 10 16C10 17 11 18 12 18H14C15 18 16 19 16 20C16 21 15 22 14 22H6C4 22 2 20 2 18C2 16 4 14 6 14H8C9 14 10 15 10 16C10 17 9 18 8 18H6C5 18 4 19 4 20C4 21 5 22 6 22Z' },
-  { letter: 'T', words: { english: 'Tiger', spanish: 'Tortuga' }, color: '#E84393', svgPath: 'M12 2C11 2 10 3 10 4V6H4C3 6 2 7 2 8C2 9 3 10 4 10H10V20C10 21 11 22 12 22C13 22 14 21 14 20V10H20C21 10 22 9 22 8C22 7 21 6 20 6H14V4C14 3 13 2 12 2Z' },
-  { letter: 'U', words: { english: 'Umbrella', spanish: 'Uva' }, color: '#00CEC9', svgPath: 'M6 2C5 2 4 3 4 4V14C4 18 7 22 12 22C17 22 20 18 20 14V4C20 3 19 2 18 2C17 2 16 3 16 4V14C16 16 14 18 12 18C10 18 8 16 8 14V4C8 3 7 2 6 2Z' },
-  { letter: 'V', words: { english: 'Violin', spanish: 'Vaca' }, color: '#2D3436', svgPath: 'M6 2C5 2 4 3 4 4C4 5 5 6 6 6L10 14L12 18L14 14L18 6C19 6 20 5 20 4C20 3 19 2 18 2C17 2 16 3 16 4L12 12L8 4C8 3 7 2 6 2Z' },
-  { letter: 'W', words: { english: 'Whale', spanish: 'Waffles' }, color: '#636E72', svgPath: 'M4 2C3 2 2 3 2 4C2 5 3 6 4 6L6 14L8 18L10 14L12 16L14 14L16 18L18 14L20 6C21 6 22 5 22 4C22 3 21 2 20 2C19 2 18 3 18 4L16 12L14 8L12 12L10 8L8 12L6 4C6 3 5 2 4 2Z' },
-  { letter: 'X', words: { english: 'Xylophone', spanish: 'Xilófono' }, color: '#DDA0DD', svgPath: 'M6 2C5 2 4 3 4 4C4 5 5 6 6 6L10 10L6 14C5 15 5 16 6 17C7 18 8 18 9 17L12 14L15 17C16 18 17 18 18 17C19 16 19 15 18 14L14 10L18 6C19 5 19 4 18 3C17 2 16 2 15 3L12 6L9 3C8 2 7 2 6 2Z' },
-  { letter: 'Y', words: { english: 'Yacht', spanish: 'Yogur' }, color: '#FDCB6E', svgPath: 'M6 2C5 2 4 3 4 4C4 5 5 6 6 6L10 10L12 12V20C12 21 13 22 14 22C15 22 16 21 16 20V12L18 10L22 6C23 6 24 5 24 4C24 3 23 2 22 2C21 2 20 3 20 4L16 8L12 4C12 3 11 2 10 2C9 2 8 3 8 4L10 6L6 2Z' },
-  { letter: 'Z', words: { english: 'Zebra', spanish: 'Zapato' }, color: '#F39C12', svgPath: 'M6 2C5 2 4 3 4 4C4 5 5 6 6 6H14L6 16C5 17 5 18 6 19C7 20 8 20 9 19L18 6C19 6 20 5 20 4C20 3 19 2 18 2H6Z' }
+  { letter: 'A', words: { english: 'Apple', spanish: 'Abeja' }, color: '#FF6B6B', svgPath: 'apple' },
+  { letter: 'B', words: { english: 'Ball', spanish: 'Barco' }, color: '#4ECDC4', svgPath: 'ball' },
+  { letter: 'C', words: { english: 'Cat', spanish: 'Casa' }, color: '#45B7D1', svgPath: 'cat' },
+  { letter: 'D', words: { english: 'Dog', spanish: 'Delfín' }, color: '#96CEB4', svgPath: 'dog' },
+  { letter: 'E', words: { english: 'Elephant', spanish: 'Estrella' }, color: '#FECA57', svgPath: 'elephant' },
+  { letter: 'F', words: { english: 'Fish', spanish: 'Flor' }, color: '#FF9FF3', svgPath: 'fish' },
+  { letter: 'G', words: { english: 'Giraffe', spanish: 'Gato' }, color: '#F0932B', svgPath: 'giraffe' },
+  { letter: 'H', words: { english: 'Horse', spanish: 'Hormiga' }, color: '#EB4D4B', svgPath: 'horse' },
+  { letter: 'I', words: { english: 'Ice cream', spanish: 'Iguana' }, color: '#6C5CE7', svgPath: 'icecream' },
+  { letter: 'J', words: { english: 'Jellyfish', spanish: 'Jirafa' }, color: '#A29BFE', svgPath: 'jellyfish' },
+  { letter: 'K', words: { english: 'Kite', spanish: 'Koala' }, color: '#FD79A8', svgPath: 'kite' },
+  { letter: 'L', words: { english: 'Lion', spanish: 'Luna' }, color: '#00B894', svgPath: 'lion' },
+  { letter: 'M', words: { english: 'Mouse', spanish: 'Mariposa' }, color: '#E17055', svgPath: 'mouse' },
+  { letter: 'N', words: { english: 'Nest', spanish: 'Naranja' }, color: '#81ECEC', svgPath: 'nest' },
+  { letter: 'O', words: { english: 'Ocean', spanish: 'Oso' }, color: '#74B9FF', svgPath: 'ocean' },
+  { letter: 'P', words: { english: 'Penguin', spanish: 'Pez' }, color: '#55A3FF', svgPath: 'penguin' },
+  { letter: 'Q', words: { english: 'Queen', spanish: 'Queso' }, color: '#A55EEA', svgPath: 'queen' },
+  { letter: 'R', words: { english: 'Rainbow', spanish: 'Ratón' }, color: '#FD6C6C', svgPath: 'rainbow' },
+  { letter: 'S', words: { english: 'Sun', spanish: 'Sol' }, color: '#FDCB6E', svgPath: 'sun' },
+  { letter: 'T', words: { english: 'Tiger', spanish: 'Tortuga' }, color: '#E84393', svgPath: 'tiger' },
+  { letter: 'U', words: { english: 'Umbrella', spanish: 'Uva' }, color: '#00CEC9', svgPath: 'umbrella' },
+  { letter: 'V', words: { english: 'Violin', spanish: 'Vaca' }, color: '#2D3436', svgPath: 'violin' },
+  { letter: 'W', words: { english: 'Whale', spanish: 'Waffles' }, color: '#636E72', svgPath: 'whale' },
+  { letter: 'X', words: { english: 'Xylophone', spanish: 'Xilófono' }, color: '#DDA0DD', svgPath: 'xylophone' },
+  { letter: 'Y', words: { english: 'Yacht', spanish: 'Yogur' }, color: '#FDCB6E', svgPath: 'yacht' },
+  { letter: 'Z', words: { english: 'Zebra', spanish: 'Zapato' }, color: '#F39C12', svgPath: 'zebra' }
 ];
 
 // Generate alphabet problems based on difficulty
@@ -75,18 +75,182 @@ export function generateAlphabetProblem(
   return problem;
 }
 
+// SVG definitions for educational images
+const SVG_IMAGES = {
+  apple: `<circle cx="12" cy="14" r="8" fill="#FF6B6B" stroke="#FF3B3B" stroke-width="2"/>
+          <path d="M12 6 Q10 4 8 6 Q10 8 12 6" fill="#4CAF50"/>
+          <circle cx="10" cy="12" r="1" fill="#FFF" opacity="0.7"/>`,
+  
+  ball: `<circle cx="12" cy="12" r="9" fill="#4ECDC4" stroke="#2EAAA8" stroke-width="2"/>
+         <path d="M6 12 Q12 8 18 12" stroke="#FFF" stroke-width="2" fill="none"/>
+         <path d="M6 12 Q12 16 18 12" stroke="#FFF" stroke-width="2" fill="none"/>`,
+  
+  cat: `<ellipse cx="12" cy="15" rx="8" ry="6" fill="#FF9800"/>
+        <circle cx="9" cy="12" r="2" fill="#333"/>
+        <circle cx="15" cy="12" r="2" fill="#333"/>
+        <path d="M7 8 L9 4 M17 8 L15 4" stroke="#FF9800" stroke-width="3"/>
+        <path d="M12 16 Q10 18 8 16 M12 16 Q14 18 16 16" stroke="#333" stroke-width="2" fill="none"/>`,
+  
+  dog: `<ellipse cx="12" cy="16" rx="9" ry="5" fill="#8D6E63"/>
+        <circle cx="9" cy="12" r="2" fill="#333"/>
+        <circle cx="15" cy="12" r="2" fill="#333"/>
+        <ellipse cx="6" cy="10" rx="3" ry="5" fill="#8D6E63"/>
+        <ellipse cx="18" cy="10" rx="3" ry="5" fill="#8D6E63"/>
+        <circle cx="12" cy="15" r="1" fill="#333"/>`,
+  
+  elephant: `<ellipse cx="12" cy="16" rx="10" ry="6" fill="#9E9E9E"/>
+             <circle cx="12" cy="10" r="6" fill="#9E9E9E"/>
+             <circle cx="10" cy="8" r="1" fill="#333"/>
+             <circle cx="14" cy="8" r="1" fill="#333"/>
+             <path d="M12 12 Q8 20 6 22" stroke="#9E9E9E" stroke-width="4" fill="none"/>
+             <circle cx="5" cy="6" r="2" fill="#FFF"/>
+             <circle cx="19" cy="6" r="2" fill="#FFF"/>`,
+  
+  fish: `<ellipse cx="12" cy="12" rx="8" ry="4" fill="#03A9F4"/>
+         <path d="M4 12 L8 8 L8 16 Z" fill="#03A9F4"/>
+         <circle cx="16" cy="10" r="1" fill="#333"/>
+         <path d="M20 8 L22 12 L20 16 Z" fill="#03A9F4"/>`,
+  
+  giraffe: `<ellipse cx="12" cy="18" rx="6" ry="4" fill="#FFB74D"/>
+            <rect x="10" y="6" width="4" height="12" fill="#FFB74D"/>
+            <circle cx="12" cy="6" r="3" fill="#FFB74D"/>
+            <circle cx="10" cy="5" r="0.5" fill="#333"/>
+            <circle cx="14" cy="5" r="0.5" fill="#333"/>
+            <circle cx="8" cy="15" r="1" fill="#D84315"/>
+            <circle cx="16" cy="10" r="1" fill="#D84315"/>
+            <circle cx="10" cy="8" r="0.5" fill="#D84315"/>`,
+  
+  horse: `<ellipse cx="12" cy="17" rx="8" ry="5" fill="#8D4E2A"/>
+          <ellipse cx="12" cy="10" rx="5" ry="4" fill="#8D4E2A"/>
+          <circle cx="10" cy="9" r="1" fill="#333"/>
+          <circle cx="14" cy="9" r="1" fill="#333"/>
+          <path d="M9 6 Q12 2 15 6" stroke="#654321" stroke-width="2" fill="none"/>
+          <rect x="8" y="20" width="2" height="3" fill="#333"/>
+          <rect x="14" y="20" width="2" height="3" fill="#333"/>`,
+  
+  icecream: `<path d="M12 20 L8 12 L16 12 Z" fill="#F4A261"/>
+             <circle cx="12" cy="10" r="4" fill="#E76F51"/>
+             <circle cx="12" cy="6" r="3" fill="#F4A261"/>
+             <circle cx="12" cy="4" r="2" fill="#E9C46A"/>`,
+  
+  jellyfish: `<ellipse cx="12" cy="8" rx="8" ry="4" fill="#E1BEE7"/>
+              <path d="M8 12 Q6 18 8 20 M10 12 Q8 18 10 20 M14 12 Q16 18 14 20 M16 12 Q18 18 16 20" 
+                    stroke="#E1BEE7" stroke-width="2" fill="none"/>
+              <circle cx="10" cy="7" r="1" fill="#9C27B0"/>
+              <circle cx="14" cy="7" r="1" fill="#9C27B0"/>`,
+  
+  kite: `<path d="M12 2 L18 8 L12 12 L6 8 Z" fill="#E91E63"/>
+         <path d="M12 12 Q14 16 12 20" stroke="#333" stroke-width="2" fill="none"/>
+         <circle cx="13" cy="16" r="1" fill="#FFC107"/>
+         <circle cx="11" cy="18" r="1" fill="#4CAF50"/>`,
+  
+  lion: `<circle cx="12" cy="12" r="9" fill="#FFB74D"/>
+         <circle cx="12" cy="12" r="6" fill="#FFA726"/>
+         <circle cx="9" cy="10" r="1" fill="#333"/>
+         <circle cx="15" cy="10" r="1" fill="#333"/>
+         <path d="M12 14 Q10 16 8 14 M12 14 Q14 16 16 14" stroke="#333" stroke-width="2" fill="none"/>
+         <circle cx="12" cy="13" r="0.5" fill="#333"/>`,
+  
+  mouse: `<ellipse cx="12" cy="15" rx="6" ry="4" fill="#9E9E9E"/>
+          <circle cx="12" cy="10" r="4" fill="#9E9E9E"/>
+          <circle cx="10" cy="9" r="1" fill="#333"/>
+          <circle cx="14" cy="9" r="1" fill="#333"/>
+          <circle cx="6" cy="8" r="2" fill="#FFB6C1"/>
+          <circle cx="18" cy="8" r="2" fill="#FFB6C1"/>
+          <path d="M16 10 Q20 12 22 8" stroke="#9E9E9E" stroke-width="2" fill="none"/>`,
+  
+  nest: `<ellipse cx="12" cy="16" rx="8" ry="3" fill="#8D6E63"/>
+         <path d="M6 16 Q8 12 10 16 M10 16 Q12 12 14 16 M14 16 Q16 12 18 16" stroke="#8D6E63" stroke-width="2" fill="none"/>
+         <circle cx="10" cy="14" r="2" fill="#87CEEB"/>
+         <circle cx="14" cy="14" r="2" fill="#87CEEB"/>
+         <circle cx="12" cy="12" r="1.5" fill="#87CEEB"/>`,
+  
+  ocean: `<rect x="0" y="12" width="24" height="12" fill="#1976D2"/>
+          <path d="M0 14 Q6 10 12 14 Q18 18 24 14" fill="#42A5F5"/>
+          <path d="M0 16 Q8 12 16 16 Q20 18 24 16" fill="#64B5F6"/>
+          <circle cx="6" cy="8" r="2" fill="#FFD54F"/>`,
+  
+  penguin: `<ellipse cx="12" cy="16" rx="5" ry="6" fill="#333"/>
+            <ellipse cx="12" cy="16" rx="3" ry="5" fill="#FFF"/>
+            <circle cx="12" cy="8" r="3" fill="#333"/>
+            <circle cx="10" cy="7" r="0.5" fill="#FFF"/>
+            <circle cx="14" cy="7" r="0.5" fill="#FFF"/>
+            <path d="M12 9 L10 10 L12 11" fill="#FF9800"/>`,
+  
+  queen: `<circle cx="12" cy="16" r="6" fill="#FFB6C1"/>
+          <circle cx="12" cy="10" r="4" fill="#FFCDD2"/>
+          <circle cx="10" cy="9" r="0.5" fill="#333"/>
+          <circle cx="14" cy="9" r="0.5" fill="#333"/>
+          <path d="M8 6 L10 4 L12 6 L14 4 L16 6" stroke="#FFD700" stroke-width="2" fill="none"/>
+          <circle cx="8" cy="6" r="1" fill="#FFD700"/>
+          <circle cx="12" cy="6" r="1" fill="#FFD700"/>
+          <circle cx="16" cy="6" r="1" fill="#FFD700"/>`,
+  
+  rainbow: `<path d="M4 18 Q12 8 20 18" stroke="#FF0000" stroke-width="2" fill="none"/>
+            <path d="M5 18 Q12 9 19 18" stroke="#FF9800" stroke-width="2" fill="none"/>
+            <path d="M6 18 Q12 10 18 18" stroke="#FFEB3B" stroke-width="2" fill="none"/>
+            <path d="M7 18 Q12 11 17 18" stroke="#4CAF50" stroke-width="2" fill="none"/>
+            <path d="M8 18 Q12 12 16 18" stroke="#2196F3" stroke-width="2" fill="none"/>
+            <path d="M9 18 Q12 13 15 18" stroke="#9C27B0" stroke-width="2" fill="none"/>`,
+  
+  sun: `<circle cx="12" cy="12" r="6" fill="#FFD54F"/>
+        <path d="M12 2 L12 6 M12 18 L12 22 M22 12 L18 12 M6 12 L2 12" stroke="#FFD54F" stroke-width="2"/>
+        <path d="M18.4 5.6 L16 8 M8 16 L5.6 18.4 M18.4 18.4 L16 16 M8 8 L5.6 5.6" stroke="#FFD54F" stroke-width="2"/>`,
+  
+  tiger: `<ellipse cx="12" cy="16" rx="8" ry="5" fill="#FF9800"/>
+          <circle cx="12" cy="10" r="5" fill="#FF9800"/>
+          <circle cx="9" cy="9" r="1" fill="#333"/>
+          <circle cx="15" cy="9" r="1" fill="#333"/>
+          <path d="M8 12 L8 14 M10 11 L10 13 M14 11 L14 13 M16 12 L16 14" stroke="#333" stroke-width="2"/>
+          <path d="M12 12 Q10 14 8 12 M12 12 Q14 14 16 12" stroke="#333" stroke-width="2" fill="none"/>`,
+  
+  umbrella: `<path d="M4 12 Q12 4 20 12 L20 14 Q12 8 4 14 Z" fill="#E91E63"/>
+             <rect x="11" y="12" width="2" height="8" fill="#8D6E63"/>
+             <path d="M13 20 Q15 20 15 18" stroke="#8D6E63" stroke-width="2" fill="none"/>`,
+  
+  violin: `<ellipse cx="12" cy="16" rx="5" ry="6" fill="#8D6E63"/>
+           <ellipse cx="12" cy="16" rx="2" ry="3" fill="#333"/>
+           <rect x="11" y="4" width="2" height="12" fill="#654321"/>
+           <path d="M9 6 L15 6 M9 8 L15 8 M9 10 L15 10 M9 12 L15 12" stroke="#333" stroke-width="1"/>`,
+  
+  whale: `<ellipse cx="12" cy="14" rx="10" ry="5" fill="#607D8B"/>
+          <circle cx="12" cy="10" r="6" fill="#607D8B"/>
+          <circle cx="8" cy="9" r="1" fill="#333"/>
+          <path d="M2 14 Q4 8 6 12" stroke="#607D8B" stroke-width="3" fill="none"/>
+          <path d="M12 6 L10 2 L12 4 L14 2" stroke="#87CEEB" stroke-width="2" fill="none"/>`,
+  
+  xylophone: `<rect x="4" y="12" width="16" height="6" fill="#8D6E63"/>
+              <rect x="6" y="10" width="2" height="4" fill="#F44336"/>
+              <rect x="9" y="10" width="2" height="4" fill="#FF9800"/>
+              <rect x="12" y="10" width="2" height="4" fill="#FFEB3B"/>
+              <rect x="15" y="10" width="2" height="4" fill="#4CAF50"/>
+              <rect x="18" y="10" width="2" height="4" fill="#2196F3"/>`,
+  
+  yacht: `<path d="M6 18 L18 18 L16 14 L8 14 Z" fill="#FFF"/>
+          <rect x="11" y="6" width="2" height="8" fill="#8D6E63"/>
+          <path d="M13 6 L18 8 L13 12 Z" fill="#F44336"/>
+          <path d="M4 18 Q6 20 8 18 M16 18 Q18 20 20 18" stroke="#2196F3" stroke-width="2" fill="none"/>`,
+  
+  zebra: `<ellipse cx="12" cy="16" rx="8" ry="5" fill="#FFF"/>
+          <ellipse cx="12" cy="10" rx="5" ry="4" fill="#FFF"/>
+          <circle cx="10" cy="9" r="1" fill="#333"/>
+          <circle cx="14" cy="9" r="1" fill="#333"/>
+          <path d="M8 12 L8 14 M10 11 L10 13 M14 11 L14 13 M16 12 L16 14" stroke="#333" stroke-width="3"/>
+          <path d="M8 16 L16 16 M9 18 L15 18" stroke="#333" stroke-width="3"/>`
+};
+
 // Generate SVG image for letter
 export function generateSVGImage(letter: string, color: string): string {
   const letterData = ALPHABET_DATA.find(l => l.letter === letter);
   if (!letterData) return '';
 
+  const imageName = letterData.svgPath;
+  const svgContent = SVG_IMAGES[imageName as keyof typeof SVG_IMAGES] || '';
+
   return `
     <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="11" fill="${color}20" stroke="${color}" stroke-width="2"/>
-      <path d="${letterData.svgPath}" fill="${color}"/>
-      <text x="12" y="20" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="${color}">
-        ${letter}
-      </text>
+      <rect x="1" y="1" width="22" height="22" rx="4" fill="${color}15" stroke="${color}40" stroke-width="1"/>
+      ${svgContent}
     </svg>
   `.trim();
 }
