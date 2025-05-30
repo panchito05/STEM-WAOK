@@ -10,6 +10,7 @@ interface VisualProblemDisplayProps {
 const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjects, operands, difficulty = 'beginner' }) => {
   const [shuffledObjects, setShuffledObjects] = useState<VisualObject[]>(visualObjects);
   const [shuffleCount, setShuffleCount] = useState(0);
+  const [currentGrouping, setCurrentGrouping] = useState<'first' | 'second'>('first');
 
   // Función para mezclar el array
   const shuffleArray = (array: VisualObject[]) => {
@@ -21,24 +22,31 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
     return newArray;
   };
 
-  // Efecto para cambiar posiciones cada 5 segundos, máximo 4 veces
+  // Efecto para cambiar posiciones con intervalos crecientes: 10s, 20s, 30s, 40s
   useEffect(() => {
     setShuffledObjects(visualObjects);
     setShuffleCount(0);
+    setCurrentGrouping('first');
     
-    const interval = setInterval(() => {
-      setShuffleCount(prevCount => {
-        if (prevCount >= 4) {
-          clearInterval(interval);
-          return prevCount;
+    const scheduleNextShuffle = (count: number) => {
+      if (count >= 4) return;
+      
+      // Intervalos: 10s, 20s, 30s, 40s
+      const intervals = [10000, 20000, 30000, 40000];
+      const delay = intervals[count];
+      
+      setTimeout(() => {
+        setShuffleCount(count + 1);
+        setCurrentGrouping(prev => prev === 'first' ? 'second' : 'first');
+        if (difficulty === 'beginner') {
+          setShuffledObjects(prev => shuffleArray(prev));
         }
-        setShuffledObjects(prev => shuffleArray(prev));
-        return prevCount + 1;
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [visualObjects]);
+        scheduleNextShuffle(count + 1);
+      }, delay);
+    };
+    
+    scheduleNextShuffle(0);
+  }, [visualObjects, difficulty]);
   const renderFruitGroup = (visual: VisualObject, index: number) => {
     const fruits = Array.from({ length: visual.count }, (_, i) => (
       <span key={i} className="text-3xl mr-1">
@@ -62,61 +70,43 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
     );
   };
 
-  const renderAssociativeExplanation = () => {
+  const renderAnimatedGrouping = () => {
     if (operands.length < 3) return null;
 
     return (
-      <div className="bg-blue-50 p-4 rounded-lg mb-4">
-        {/* Forma 1 con agrupación visual */}
-        <div className="mb-3">
-          <div className="flex items-center justify-center gap-2 text-lg">
-            <span className="text-sm font-medium text-blue-800">Forma 1:</span>
-            <span className="px-2 py-1 bg-green-100 border-2 border-green-400 rounded">
-              ({operands[0]} + {operands[1]})
-            </span>
-            <span className="text-gray-600">+</span>
-            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
-              {operands[2]}
-            </span>
-            <span className="text-gray-600">=</span>
-            <span className="px-2 py-1 bg-green-100 border-2 border-green-400 rounded">
-              {operands[0] + operands[1]}
-            </span>
-            <span className="text-gray-600">+</span>
-            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
-              {operands[2]}
-            </span>
-            <span className="text-gray-600">=</span>
-            <span className="font-bold text-blue-600">
-              {operands[0] + operands[1] + operands[2]}
-            </span>
-          </div>
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border-2 border-blue-200">
+        <div className="flex items-center justify-center gap-3 text-2xl transition-all duration-1000 ease-in-out">
+          {currentGrouping === 'first' ? (
+            <>
+              <span className="px-3 py-2 bg-green-100 border-3 border-green-400 rounded-lg font-bold transform scale-105 shadow-md">
+                ({operands[0]} + {operands[1]})
+              </span>
+              <span className="text-gray-600 font-bold">+</span>
+              <span className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg">
+                {operands[2]}
+              </span>
+              <span className="text-gray-600 font-bold">=</span>
+              <span className="text-gray-400 font-bold">?</span>
+            </>
+          ) : (
+            <>
+              <span className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg">
+                {operands[0]}
+              </span>
+              <span className="text-gray-600 font-bold">+</span>
+              <span className="px-3 py-2 bg-purple-100 border-3 border-purple-400 rounded-lg font-bold transform scale-105 shadow-md">
+                ({operands[1]} + {operands[2]})
+              </span>
+              <span className="text-gray-600 font-bold">=</span>
+              <span className="text-gray-400 font-bold">?</span>
+            </>
+          )}
         </div>
         
-        {/* Forma 2 con agrupación visual diferente */}
-        <div>
-          <div className="flex items-center justify-center gap-2 text-lg">
-            <span className="text-sm font-medium text-blue-800">Forma 2:</span>
-            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
-              {operands[0]}
-            </span>
-            <span className="text-gray-600">+</span>
-            <span className="px-2 py-1 bg-purple-100 border-2 border-purple-400 rounded">
-              ({operands[1]} + {operands[2]})
-            </span>
-            <span className="text-gray-600">=</span>
-            <span className="px-2 py-1 bg-yellow-100 border border-gray-300 rounded">
-              {operands[0]}
-            </span>
-            <span className="text-gray-600">+</span>
-            <span className="px-2 py-1 bg-purple-100 border-2 border-purple-400 rounded">
-              {operands[1] + operands[2]}
-            </span>
-            <span className="text-gray-600">=</span>
-            <span className="font-bold text-blue-600">
-              {operands[0] + operands[1] + operands[2]}
-            </span>
-          </div>
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-600">
+            Ciclo {shuffleCount + 1} de 4 - Próximo cambio en {currentGrouping === 'first' ? '10' : '20'} segundos
+          </p>
         </div>
       </div>
     );
@@ -151,7 +141,9 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
             ?
           </div>
         </div>
-        {renderAssociativeExplanation()}
+        <div className="text-center text-gray-600">
+          Resultado: {operands.reduce((sum, op) => sum + op, 0)}
+        </div>
       </div>
     );
   }
@@ -159,17 +151,12 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
   if (difficulty === 'elementary') {
     return (
       <div className="w-full">
-        <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-          <div className="text-center mb-4">
-            <h4 className="text-lg font-semibold text-green-800 mb-2">
-              🔢 Nivel Elemental: Introducción Numérica con Sumas
-            </h4>
-            <p className="text-sm text-green-700">
-              Observa cómo el resultado es el mismo aunque cambie el agrupamiento
-            </p>
-          </div>
-          {renderAssociativeExplanation()}
+        <div className="text-center mb-4">
+          <p className="text-lg font-medium text-gray-700">
+            Observa cómo cambia la agrupación automáticamente
+          </p>
         </div>
+        {renderAnimatedGrouping()}
       </div>
     );
   }
@@ -177,23 +164,28 @@ const VisualProblemDisplay: React.FC<VisualProblemDisplayProps> = ({ visualObjec
   if (difficulty === 'intermediate') {
     return (
       <div className="w-full">
-        <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-          <div className="text-center mb-4">
-            <h4 className="text-lg font-semibold text-purple-800 mb-2">
-              🎯 Nivel Intermedio: Aplicar la Propiedad en Ejercicios Guiados
-            </h4>
-            <p className="text-sm text-purple-700">
-              Completa los espacios usando diferentes agrupaciones
-            </p>
+        <div className="text-center mb-4">
+          <p className="text-lg font-medium text-gray-700">
+            Completa las ecuaciones con la propiedad asociativa
+          </p>
+        </div>
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <div className="text-lg text-center">
+            ({operands[0]} + {operands[1]}) + {operands[2]} = ? y {operands[0]} + ({operands[1]} + {operands[2]}) = ?
           </div>
-          {renderAssociativeExplanation()}
         </div>
       </div>
     );
   }
 
-  // Para niveles avanzados, no mostrar visualización
-  return null;
+  // Para otros niveles, mostrar una versión básica
+  return (
+    <div className="w-full">
+      <div className="text-center text-lg">
+        ({operands[0]} + {operands[1]}) + {operands[2]} = {operands[0]} + ({operands[1]} + {operands[2]})
+      </div>
+    </div>
+  );
 };
 
 export default VisualProblemDisplay;
