@@ -57,7 +57,6 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
         
         {/* Expresión dada */}
         <div className="mb-4 text-center">
-          <div className="text-xl font-medium mb-2">Se muestra:</div>
           <div className="text-2xl font-bold text-green-600 bg-green-50 p-3 rounded-lg inline-block">
             ({operands[0]} + {operands[1]}) + {operands[2]} = {operands[0] + operands[1] + operands[2]}
           </div>
