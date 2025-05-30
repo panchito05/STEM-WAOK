@@ -1,6 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { ModuleSettings } from "@/context/SettingsContext";
 import { useSettings } from "@/context/SettingsContext";
+
+// Extender ModuleSettings para incluir currentLevel específico para Propiedad Asociativa
+interface AssociativePropertySettings extends ModuleSettings {
+  currentLevel?: number;
+}
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +24,10 @@ interface SettingsProps {
 
 export default function Settings({ settings, onBack }: SettingsProps) {
   const { updateModuleSettings, resetModuleSettings } = useSettings();
-  const [localSettings, setLocalSettings] = useState<ModuleSettings>({ ...settings });
+  const [localSettings, setLocalSettings] = useState<AssociativePropertySettings>({ 
+    ...settings, 
+    currentLevel: (settings as any).currentLevel || 1 
+  });
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   
   // Referencia a la función debounced para guardar la configuración
@@ -33,7 +41,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
   );
   
   // Guardar automáticamente cada vez que cambia un ajuste
-  const handleUpdateSetting = <K extends keyof ModuleSettings>(key: K, value: ModuleSettings[K]) => {
+  const handleUpdateSetting = <K extends keyof AssociativePropertySettings>(key: K, value: AssociativePropertySettings[K]) => {
     const updatedSettings = { ...localSettings, [key]: value };
     setLocalSettings(updatedSettings);
     
@@ -265,6 +273,70 @@ export default function Settings({ settings, onBack }: SettingsProps) {
               <span className="font-bold">{isEnglish ? "Expert:" : "Experto:"}</span> {isEnglish ? "Very large number additions (70960+11650, 28730+59436)" : "Sumas con números muy grandes (70960+11650, 28730+59436)"}
             </p>
           </div>
+        </div>
+
+        <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>
+          <h3 className={`text-lg font-bold ${theme.text} flex items-center`}>
+            <span className="mr-2">📚</span>{isEnglish ? "Activity Level" : "Nivel de Actividad"}
+          </h3>
+          <p className={`text-sm ${theme.textSecondary} mb-4`}>
+            {isEnglish ? "Choose the type of associative property exercise:" : "Elige el tipo de ejercicio de propiedad asociativa:"}
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5].map((level) => {
+              const levelNames = {
+                1: isEnglish ? "Visual Grouping" : "Agrupación Visual",
+                2: isEnglish ? "Numeric Introduction" : "Introducción Numérica", 
+                3: isEnglish ? "Guided Exercises" : "Ejercicios Guiados",
+                4: isEnglish ? "Word Problems" : "Problemas Verbales",
+                5: isEnglish ? "Create & Justify" : "Crear y Justificar"
+              };
+              
+              const levelDescriptions = {
+                1: isEnglish ? "Group objects visually" : "Agrupar objetos visualmente",
+                2: isEnglish ? "Sums with parentheses" : "Sumas con paréntesis",
+                3: isEnglish ? "Complete expressions" : "Completar expresiones", 
+                4: isEnglish ? "Mental calculation" : "Cálculo mental",
+                5: isEnglish ? "Advanced expressions" : "Expresiones avanzadas"
+              };
+              
+              const isSelected = (localSettings as any).currentLevel === level;
+              
+              return (
+                <button
+                  key={level}
+                  onClick={() => {
+                    const updatedSettings = { ...localSettings, currentLevel: level };
+                    setLocalSettings(updatedSettings);
+                    updateModuleSettings("associative-property", updatedSettings);
+                  }}
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 text-left ${
+                    isSelected 
+                      ? `${theme.bgLight} ${theme.border} ring-2 ring-offset-1 ring-${theme.text.split('-')[1]}-300` 
+                      : `bg-white border-gray-200 hover:${theme.bgContainer}`
+                  }`}
+                >
+                  <div className={`font-bold text-sm ${isSelected ? theme.text : 'text-gray-700'}`}>
+                    {isEnglish ? "Level" : "Nivel"} {level}
+                  </div>
+                  <div className={`font-medium text-xs ${isSelected ? theme.accent : 'text-gray-600'}`}>
+                    {levelNames[level as keyof typeof levelNames]}
+                  </div>
+                  <div className={`text-xs mt-1 ${isSelected ? theme.textSecondary : 'text-gray-500'}`}>
+                    {levelDescriptions[level as keyof typeof levelDescriptions]}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          
+          <p className={`mt-3 text-sm ${theme.accent} bg-white/50 p-2 rounded-md border ${theme.border}`}>
+            <span className="font-medium">{isEnglish ? "Current level:" : "Nivel actual:"}</span> 
+            <span className={`font-bold ${theme.text} ml-1`}>
+              {(localSettings as any).currentLevel || 1}
+            </span>
+          </p>
         </div>
 
         <div className={`p-4 rounded-lg shadow-sm ${theme.bgContainer} border ${theme.border}`}>

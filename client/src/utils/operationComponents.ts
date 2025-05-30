@@ -42,6 +42,12 @@ export const defaultModuleSettings: ModuleSettings = {
   rewardType: "stars", // Tipo de premio a mostrar (medals, trophies, stars)
 };
 
+// Configuración específica para el módulo de Propiedad Asociativa
+export const associativePropertySettings: ModuleSettings & { currentLevel: number } = {
+  ...defaultModuleSettings,
+  currentLevel: 1, // Nivel específico para propiedad asociativa
+};
+
 // List of all operation modules
 export const operationModules: Module[] = [
   {
