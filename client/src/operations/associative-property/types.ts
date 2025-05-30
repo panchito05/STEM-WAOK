@@ -53,7 +53,20 @@ export interface Problem {
   maxAttempts: number;
 }
 
-// Respuesta del usuario a un problema
+// Respuesta del usuario a un problema de propiedad asociativa
+export interface AssociativePropertyUserAnswer {
+  problemId: string;
+  problem: AssociativePropertyProblem;
+  userAnswer: number;
+  isCorrect: boolean;
+  status: string;          // 'correct', 'incorrect', 'skipped', etc.
+  attempts: number;
+  timestamp: number;
+  timeTaken?: number;      // Tiempo que le tomó al usuario responder
+  mistakes?: number[];     // Lista de respuestas incorrectas
+}
+
+// Respuesta del usuario a un problema genérico
 export interface UserAnswer {
   problemId: string;
   problem: Problem;

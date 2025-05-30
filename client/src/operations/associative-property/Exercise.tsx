@@ -5,7 +5,7 @@ import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateAssociativePropertyProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
-import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, DifficultyLevel } from "./types";
+import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, AssociativePropertyUserAnswer, DifficultyLevel } from "./types";
 import VisualProblemDisplay from "./components/VisualProblemDisplay";
 import InteractiveExercise from "./components/InteractiveExercise";
 import AdvancedExercise from "./components/AdvancedExercise";
@@ -405,7 +405,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Referencia para mantener el arreglo de referencias actualizadas
   const boxRefsArrayRef = useRef<HTMLDivElement[]>([]);
 
-  const [userAnswersHistory, setUserAnswersHistory] = useState<UserAnswerType[]>([]);
+  const [userAnswersHistory, setUserAnswersHistory] = useState<AssociativePropertyUserAnswer[]>([]);
   const [timer, setTimer] = useState(0);
   const [problemTimerValue, setProblemTimerValue] = useState(settings.timeValue);
   const [exerciseStarted, setExerciseStarted] = useState(false);
@@ -1774,8 +1774,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           operandoB = problema.operands[1];
         } else {
           // Alternativa para modelos antiguos
-          operandoA = (problema.operand1 !== undefined) ? problema.operand1 : 0;
-          operandoB = (problema.operand2 !== undefined) ? problema.operand2 : 0;
+          operandoA = (problema.operands && problema.operands[0] !== undefined) ? problema.operands[0] : 0;
+          operandoB = (problema.operands && problema.operands[1] !== undefined) ? problema.operands[1] : 0;
         }
         
         // Usar la respuesta correcta del problema o calcularla

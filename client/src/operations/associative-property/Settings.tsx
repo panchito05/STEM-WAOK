@@ -79,7 +79,7 @@ export default function Settings({ settings, onBack }: SettingsProps) {
             const parsed = JSON.parse(currentSettings);
             const updated = {
               ...parsed,
-              addition: localSettings
+              "associative-property": localSettings
             };
             localStorage.setItem(key, JSON.stringify(updated));
             console.log("[ASSOCIATIVE-PROPERTY] Forzando actualización en localStorage:", updated);
