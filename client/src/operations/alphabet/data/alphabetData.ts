@@ -29,7 +29,7 @@ export const alphabetData: AlphabetLetter[] = [
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/be/',
@@ -191,7 +191,7 @@ export const alphabetData: AlphabetLetter[] = [
     },
     images: {
       spanish: 'https://images.unsplash.com/photo-1459262838948-3e2de6c1ec80?w=200&h=200&fit=crop',
-      english: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop'
+      english: 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=200&h=200&fit=crop'
     },
     pronunciation: {
       spanish: '/ka/',
