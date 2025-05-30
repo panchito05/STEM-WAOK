@@ -2800,13 +2800,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   setConsecutiveCorrectAnswers(newConsecutive);
                   setConsecutiveIncorrectAnswers(0);
                   
-                  setTimeout(() => {
-                    if (currentProblemIndex < problemsList.length - 1) {
-                      setCurrentProblemIndex(prev => prev + 1);
-                    } else {
-                      completeExercise();
-                    }
-                  }, 2000);
+                  // Mostrar botón de continuar en lugar de avance automático
+                  setWaitingForContinue(true);
                 } else {
                   setFeedbackMessage("Revisa tu respuesta. La propiedad asociativa mantiene el mismo resultado independientemente de la agrupación.");
                   setFeedbackColor("red");
@@ -2814,6 +2809,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   // Incrementar contador de respuestas incorrectas consecutivas
                   setConsecutiveIncorrectAnswers(prev => prev + 1);
                   setConsecutiveCorrectAnswers(0);
+                  
+                  // Mostrar botón de continuar también para respuestas incorrectas
+                  setWaitingForContinue(true);
                 }
               }}
             />
