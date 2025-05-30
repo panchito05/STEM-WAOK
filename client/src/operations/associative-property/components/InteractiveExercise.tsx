@@ -54,11 +54,11 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
           <div className="text-2xl font-bold flex items-center justify-center gap-2">
             <span>{operands[0]} +</span>
             <span>(</span>
-            <Input
+            <input
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              className="w-16 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500"
+              className="w-16 h-12 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500 rounded-md focus:outline-none"
               value={userAnswers.blank1 || ''}
               onChange={(e) => {
                 const value = e.target.value.replace(/[^0-9]/g, '');
@@ -69,11 +69,11 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
               autoComplete="off"
             />
             <span>+</span>
-            <Input
+            <input
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              className="w-16 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500"
+              className="w-16 h-12 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500 rounded-md focus:outline-none"
               value={userAnswers.blank2 || ''}
               onChange={(e) => {
                 const value = e.target.value.replace(/[^0-9]/g, '');
@@ -84,11 +84,11 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
               autoComplete="off"
             />
             <span>) =</span>
-            <Input
+            <input
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              className="w-20 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500"
+              className="w-20 h-12 text-center text-xl font-bold border-2 border-blue-300 focus:border-blue-500 rounded-md focus:outline-none"
               value={userAnswers.blank3 || ''}
               onChange={(e) => {
                 const value = e.target.value.replace(/[^0-9]/g, '');
