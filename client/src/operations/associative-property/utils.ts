@@ -1,5 +1,5 @@
 // utils.ts
-import { AssociativePropertyProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat } from "./types";
+import { AssociativePropertyProblem, DifficultyLevel, ExerciseLayout, Problem, Operand, DisplayFormat, VisualObject } from "./types";
 
 // --- Funciones auxiliares ---
 const getRandomInt = (min: number, max: number): number => {
@@ -24,6 +24,18 @@ function getRandomDecimal(min: number, max: number, maxDecimals: 0 | 1 | 2): num
 
 function generateUniqueId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
+// Función para generar objetos visuales para el nivel principiante
+function generateVisualObjects(operands: number[]): VisualObject[] {
+  const fruits = ['🍎', '🍊', '🍌'];
+  const colors = ['#ffebee', '#e8f5e8', '#fff9c4'];
+  
+  return operands.map((count, index) => ({
+    emoji: fruits[index % fruits.length],
+    count,
+    color: colors[index % colors.length]
+  }));
 }
 
 /**
@@ -199,6 +211,10 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
     answerDecimalPosition = decimalPartOfSumStr.length;
   }
 
+  // Crear objetos visuales para el nivel principiante
+  const visualObjects = difficulty === 'beginner' ? generateVisualObjects(operands) : undefined;
+  const showVisualMode = difficulty === 'beginner';
+
   return {
     id,
     num1: operands[0], // Mantener por compatibilidad o uso simple
@@ -208,6 +224,8 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
     layout,
     answerMaxDigits,
     answerDecimalPosition,
+    visualObjects,
+    showVisualMode,
   };
 }
 

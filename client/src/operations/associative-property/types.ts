@@ -7,6 +7,13 @@ export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'adva
 export type ExerciseLayout = 'horizontal' | 'vertical';
 export type DisplayFormat = 'horizontal' | 'vertical' | 'word';
 
+// Objeto visual para representar cantidades
+export interface VisualObject {
+  emoji: string;            // Emoji del objeto (🍎, 🍊, 🍌, etc.)
+  count: number;            // Cantidad de este objeto
+  color: string;            // Color de fondo para agrupación
+}
+
 // Definición de un problema de propiedad asociativa específico
 // La propiedad asociativa establece que: (a + b) + c = a + (b + c)
 export interface AssociativePropertyProblem {
@@ -20,6 +27,8 @@ export interface AssociativePropertyProblem {
   answerDecimalPosition?: number; // Posición del decimal en la respuesta (si aplica)
   index?: number;           // Índice del problema en la secuencia (para mostrar Problema X de Y)
   total?: number;           // Total de problemas en el ejercicio
+  visualObjects?: VisualObject[]; // Objetos visuales para nivel principiante
+  showVisualMode?: boolean; // Si debe mostrar modo visual
 }
 
 // Tipo genérico para un operando

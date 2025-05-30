@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateAssociativePropertyProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
 import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, DifficultyLevel } from "./types";
+import VisualProblemDisplay from "./components/VisualProblemDisplay";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
