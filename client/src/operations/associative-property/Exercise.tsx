@@ -5,8 +5,8 @@ import { ChevronLeft, ChevronRight, Settings, Lightbulb } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AssociativePropertyProblem, type ModuleSettings } from './types';
 import { generateProblems } from './utils';
-import { useProgress } from "@/context/ProgressContext";
-import ProfessorMode from './ProfessorMode';
+// import { useProgress } from "@/context/ProgressContext";
+// import ProfessorMode from './ProfessorMode';
 
 // Animales para el Nivel 1
 const ANIMALS = [
@@ -742,7 +742,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const digitBoxRefs = useRef<(HTMLDivElement | null)[]>([]);
   const boxRefsArrayRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  const { updateProgress } = useProgress();
+  // const { updateProgress } = useProgress();
 
   const currentProblem = problems[problemIndex] || null;
   const currentTranslations = {
@@ -839,7 +839,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (isCorrect) {
         setAnswerFeedback(currentTranslations.correctShort);
         setExerciseCompleted(true);
-        updateProgress('associative-property', problemIndex + 1, problems.length);
+        // updateProgress('associative-property', problemIndex + 1, problems.length);
       } else {
         setAnswerFeedback(`Incorrecto. La respuesta es ${currentProblem.correctAnswer}`);
       }
@@ -1008,16 +1008,40 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
       {/* Professor Mode */}
       {showProfessorMode && (
-        <ProfessorMode
-          problem={currentProblem}
-          onClose={() => setShowProfessorMode(false)}
-          onCorrectAnswer={(wasCorrect: boolean) => {
-            if (wasCorrect && !exerciseCompleted) {
-              setExerciseCompleted(true);
-              updateProgress('associative-property', problemIndex + 1, problems.length);
-            }
-          }}
-        />
+        <div className="professor-mode bg-purple-50 border border-purple-200 rounded-lg p-6 mt-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-purple-700">Modo Profesor</h3>
+            <button
+              onClick={() => setShowProfessorMode(false)}
+              className="text-purple-600 hover:text-purple-800 text-xl font-bold"
+            >
+              ×
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg p-4 border border-purple-200">
+              <h4 className="font-semibold text-purple-700 mb-2">Explicación de la Propiedad Asociativa:</h4>
+              <p className="text-gray-700 mb-3">
+                La propiedad asociativa dice que cuando sumamos tres o más números, 
+                podemos agruparlos de diferentes maneras sin cambiar el resultado.
+              </p>
+              
+              <div className="space-y-2">
+                <div className="text-lg">
+                  <span className="font-semibold">Primera forma:</span> ({currentProblem.operands[0]} + {currentProblem.operands[1]}) + {currentProblem.operands[2]} = {currentProblem.operands[0] + currentProblem.operands[1]} + {currentProblem.operands[2]} = {currentProblem.correctAnswer}
+                </div>
+                <div className="text-lg">
+                  <span className="font-semibold">Segunda forma:</span> {currentProblem.operands[0]} + ({currentProblem.operands[1]} + {currentProblem.operands[2]}) = {currentProblem.operands[0]} + {currentProblem.operands[1] + currentProblem.operands[2]} = {currentProblem.correctAnswer}
+                </div>
+              </div>
+              
+              <p className="text-gray-600 mt-3 text-sm">
+                ¡Ambas formas dan el mismo resultado! Esto es lo que nos enseña la propiedad asociativa.
+              </p>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -207,3 +207,17 @@ export function getVerticalAlignmentInfo(
 
     return { maxIntLength, maxDecLength, operandsFormatted, sumLineTotalCharWidth };
 }
+
+// --- Generación de múltiples problemas ---
+export function generateProblems(settings: any): AssociativePropertyProblem[] {
+  const problems: AssociativePropertyProblem[] = [];
+  const numberOfProblems = settings.numberOfProblems || settings.problemCount || 10;
+  const difficulty = settings.difficulty || 'beginner';
+  
+  for (let i = 0; i < numberOfProblems; i++) {
+    const problem = generateAssociativePropertyProblem(difficulty);
+    problems.push(problem);
+  }
+  
+  return problems;
+}

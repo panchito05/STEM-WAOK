@@ -77,23 +77,30 @@ export interface ExerciseResult {
   };
 }
 
+// Configuración del módulo
+export interface ModuleSettings {
+  numberOfProblems: number;
+  difficulty: DifficultyLevel;
+  enableAdaptiveDifficulty: boolean;
+  enableTimer: boolean;
+  timerDuration: number;
+  enableHints: boolean;
+  language: 'en' | 'es';
+  problemCount: number;
+  timeValue: number;
+  hasTimerEnabled: boolean;
+  timeLimit?: string;
+  maxAttempts: number;
+  showImmediateFeedback: boolean;
+  enableSoundEffects: boolean;
+  showAnswerWithExplanation: boolean;
+  enableCompensation: boolean;
+  enableRewards: boolean;
+  rewardType: string;
+}
+
 // Props para el componente Exercise
 export interface ExerciseProps {
-  settings: {
-    difficulty: string;
-    problemCount: number;
-    timeValue: number;
-    hasTimerEnabled: boolean;
-    timeLimit?: string;
-    maxAttempts: number;
-    showImmediateFeedback: boolean;
-    enableSoundEffects: boolean;
-    showAnswerWithExplanation: boolean;
-    enableAdaptiveDifficulty: boolean;
-    enableCompensation: boolean;
-    enableRewards: boolean;
-    rewardType: string;
-    language: string;
-  };
+  settings: ModuleSettings;
   onOpenSettings: () => void;
 }
