@@ -30,6 +30,7 @@ export interface AssociativePropertyProblem {
   visualObjects?: VisualObject[]; // Objetos visuales para nivel principiante
   showVisualMode?: boolean; // Si debe mostrar modo visual
   interactiveMode?: boolean; // Si debe mostrar campos de entrada interactivos (nivel intermedio)
+  verbalMode?: boolean; // Si debe mostrar problemas verbales y cálculo mental (nivel avanzado)
   blankPositions?: number[]; // Posiciones de los espacios en blanco para completar
 }
 

@@ -131,33 +131,28 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
       break;
       
     case "advanced": 
-      // NIVEL AVANZADO: Números más grandes con posibles decimales
-      // Ejemplo: 25.5 + 34.2 + 18.7 = 78.4 (agrupación estratégica para facilitar cálculo)
-      // Enfoque en estrategias de agrupación para simplificar operaciones
-      layout = getRandomBool(0.7) ? 'vertical' : 'horizontal';
-      problemMaxDecimals = getRandomBool(0.4) ? 1 : 0; // 40% chance de decimales
+      // NIVEL AVANZADO: Problemas verbales y cálculo mental estratégico
+      // Enfoque en usar la propiedad asociativa para facilitar cálculos mentales
+      // Ejemplos: 8 + 2 + 5 (agrupa 8+2=10 primero), problemas con contexto verbal
+      layout = 'horizontal';
       
-      if (problemMaxDecimals > 0) {
-        operands = [
-          getRandomDecimal(10, 50, problemMaxDecimals),
-          getRandomDecimal(10, 50, problemMaxDecimals),
-          getRandomDecimal(10, 50, problemMaxDecimals)
-        ];
+      // Generar números que permitan agrupaciones estratégicas
+      // Patrón 1: Un número que se acerque a 10, 20, 50, etc.
+      const targetNumbers = [10, 20, 50, 100];
+      const target = targetNumbers[getRandomInt(0, targetNumbers.length - 1)];
+      
+      if (getRandomBool(0.6)) {
+        // Patrón: hacer sumas que lleguen a números redondos
+        const complement = getRandomInt(1, 9);
+        const firstNum = target - complement;
+        operands = [firstNum, complement, getRandomInt(3, 15)];
       } else {
+        // Patrón: números que se pueden agrupar para facilitar cálculo mental
         operands = [
-          getRandomInt(15, 75),
-          getRandomInt(15, 75),
-          getRandomInt(15, 75)
+          getRandomInt(6, 15),  // Primer número
+          getRandomInt(2, 8),   // Segundo número (para agrupar)
+          getRandomInt(3, 12)   // Tercer número
         ];
-      }
-      
-      // 50% de probabilidad de cuarto operando para demostrar agrupaciones múltiples
-      if (getRandomBool(0.5)) {
-        if (problemMaxDecimals > 0) {
-          operands.push(getRandomDecimal(10, 30, problemMaxDecimals));
-        } else {
-          operands.push(getRandomInt(10, 40));
-        }
       }
       break;
       
@@ -210,6 +205,7 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
   const visualObjects = difficulty === 'beginner' ? generateVisualObjects(operands) : undefined;
   const showVisualMode = difficulty === 'beginner';
   const interactiveMode = difficulty === 'intermediate';
+  const verbalMode = difficulty === 'advanced';
 
   return {
     id,
@@ -223,6 +219,7 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
     visualObjects,
     showVisualMode,
     interactiveMode,
+    verbalMode,
   };
 }
 

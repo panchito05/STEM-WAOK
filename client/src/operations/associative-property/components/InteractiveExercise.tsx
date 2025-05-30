@@ -51,10 +51,6 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
   const renderFillBlankExercise = () => (
     <div className="space-y-6">
       <div className="bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
-        <h3 className="text-lg font-semibold text-blue-800 mb-4">
-          Completa la expresión equivalente
-        </h3>
-        
         {/* Expresión dada */}
         <div className="mb-4 text-center">
           <div className="text-2xl font-bold text-green-600 bg-green-50 p-3 rounded-lg inline-block">
