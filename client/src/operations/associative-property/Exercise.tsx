@@ -1946,8 +1946,19 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   // Función para manejar el retroceso simple
   const handleBackspace = () => {
-    if (waitingRef.current || focusedDigitIndex === null || !currentProblem || exerciseCompleted || viewingPrevious) return;
+    if (waitingRef.current || exerciseCompleted || viewingPrevious) return;
     if (!exerciseStarted) startExercise();
+
+    // Si estamos en nivel intermediate y hay un campo activo, manejar el borrado para ese campo
+    if (settings.difficulty === 'intermediate' && activeInteractiveField) {
+      setInteractiveAnswers(prev => ({
+        ...prev,
+        [activeInteractiveField]: prev[activeInteractiveField].slice(0, -1)
+      }));
+      return;
+    }
+
+    if (focusedDigitIndex === null || !currentProblem) return;
     
     let newAnswers = [...digitAnswers];
     let currentFocus = focusedDigitIndex;
@@ -2016,6 +2027,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const handleDigitInput = (value: string) => {
     if (waitingRef.current || !currentProblem || exerciseCompleted || viewingPrevious) return;
     if (!exerciseStarted) startExercise();
+
+    // Si estamos en nivel intermediate y hay un campo activo, manejar la entrada para ese campo
+    if (settings.difficulty === 'intermediate' && activeInteractiveField) {
+      setInteractiveAnswers(prev => ({
+        ...prev,
+        [activeInteractiveField]: prev[activeInteractiveField] + value
+      }));
+      return;
+    }
 
     let newAnswers = [...digitAnswers];
     let currentFocus = focusedDigitIndex;

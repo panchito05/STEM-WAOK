@@ -4,37 +4,28 @@ import { Button } from '@/components/ui/button';
 interface InteractiveExerciseProps {
   operands: number[];
   onAnswer: (isCorrect: boolean) => void;
-  onDigitInput?: (digit: string, fieldId: string) => void;
-  onBackspace?: (fieldId: string) => void;
-  onFieldFocus?: (fieldId: string) => void;
+  interactiveAnswers: { [key: string]: string };
+  setInteractiveAnswers: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
+  activeInteractiveField: string | null;
+  setActiveInteractiveField: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onAnswer }) => {
+const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ 
+  operands, 
+  onAnswer,
+  interactiveAnswers,
+  setInteractiveAnswers,
+  activeInteractiveField,
+  setActiveInteractiveField
+}) => {
   const [exercise] = useState(() => Math.random() > 0.5 ? 'fill-blank' : 'multiple-choice');
-  const [digitAnswers, setDigitAnswers] = useState<{ [key: string]: string }>({
-    blank1: '',
-    blank2: '',
-    blank3: ''
-  });
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [showResult, setShowResult] = useState(false);
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
-  // Funciones para manejar la entrada de dígitos
-  const handleDigitInput = (digit: string, fieldName: string) => {
+  // Función para manejar el clic en un campo
+  const handleFieldClick = (fieldName: string) => {
     if (showResult) return;
-    setDigitAnswers(prev => ({
-      ...prev,
-      [fieldName]: digit
-    }));
-  };
-
-  const handleBackspace = (fieldName: string) => {
-    if (showResult) return;
-    setDigitAnswers(prev => ({
-      ...prev,
-      [fieldName]: ''
-    }));
+    setActiveInteractiveField(fieldName);
   };
 
   const handleFillBlankSubmit = () => {
@@ -43,9 +34,9 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
     const correctAnswer3 = operands[0] + operands[1] + operands[2];
 
     const isCorrect = 
-      parseInt(digitAnswers.blank1) === correctAnswer1 &&
-      parseInt(digitAnswers.blank2) === correctAnswer2 &&
-      parseInt(digitAnswers.blank3) === correctAnswer3;
+      parseInt(interactiveAnswers.blank1) === correctAnswer1 &&
+      parseInt(interactiveAnswers.blank2) === correctAnswer2 &&
+      parseInt(interactiveAnswers.blank3) === correctAnswer3;
 
     setShowResult(true);
     onAnswer(isCorrect);
@@ -86,29 +77,29 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ operands, onA
               }`}
               onClick={() => setFocusedInput('blank1')}
             >
-              {digitAnswers.blank1 || <span className="text-gray-400">?</span>}
+              {interactiveAnswers.blank1 || <span className="text-gray-400">?</span>}
             </div>
             <span>+</span>
             <div
               className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
-                focusedInput === 'blank2' 
+                activeInteractiveField === 'blank2' 
                   ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
                   : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
               }`}
-              onClick={() => setFocusedInput('blank2')}
+              onClick={() => handleFieldClick('blank2')}
             >
-              {digitAnswers.blank2 || <span className="text-gray-400">?</span>}
+              {interactiveAnswers.blank2 || <span className="text-gray-400">?</span>}
             </div>
             <span>) =</span>
             <div
               className={`w-20 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${
-                focusedInput === 'blank3' 
+                activeInteractiveField === 'blank3' 
                   ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
                   : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md'
               }`}
-              onClick={() => setFocusedInput('blank3')}
+              onClick={() => handleFieldClick('blank3')}
             >
-              {digitAnswers.blank3 || <span className="text-gray-400">?</span>}
+              {interactiveAnswers.blank3 || <span className="text-gray-400">?</span>}
             </div>
           </div>
         </div>
