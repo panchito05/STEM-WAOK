@@ -609,7 +609,8 @@ export function DrawingCanvas({
       const blank1Y = expr1Y + lineSpacing * 2;
       // Eliminar el signo de interrogación y agregar solo el símbolo +
       context.fillText('+', leftColumnCenterX - baseFontSize * 0.5, blank1Y);
-      context.fillText(`${c}`, leftColumnCenterX + baseFontSize * 1, blank1Y);
+      // Alinear el número ${c} con el rectángulo del resultado final
+      context.fillText(`${c}`, leftColumnCenterX + baseFontSize * 0.8, blank1Y);
       
       // Rectángulo más grande para el espacio en blanco (doble tamaño)
       context.strokeStyle = '#9ca3af'; // gray-400
@@ -662,7 +663,8 @@ export function DrawingCanvas({
       // Campo en blanco para 13 + ?
       context.fillStyle = '#000000';
       context.font = contentFont;
-      context.fillText(`${a}`, rightColumnCenterX - baseFontSize * 1.5, blank1Y);
+      // Alinear el número ${a} con el rectángulo del resultado final
+      context.fillText(`${a}`, rightColumnCenterX - baseFontSize * 1.2, blank1Y);
       context.fillText('+', rightColumnCenterX - baseFontSize * 0.5, blank1Y);
       
       // Rectángulo más grande para el espacio en blanco (doble tamaño)
