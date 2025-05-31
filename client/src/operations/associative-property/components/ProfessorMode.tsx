@@ -598,19 +598,21 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
               </div>
             </div>
             
-            {/* Problema matemático */}
+            {/* Problema matemático - Formato de Propiedad Asociativa */}
             <div className="bg-gray-50 p-3 rounded border-2 border-dashed border-gray-200">
-              <div className="font-mono text-4xl font-bold whitespace-pre select-none text-center">
-                {problem.operands.map((op, index) => (
-                  <span key={index}>
-                    <span className="mx-1">{typeof op === 'number' ? op : parseFloat(op.toString())}</span>
-                    {index < problem.operands.length - 1 && (
-                      <span className="mx-2 text-blue-600 font-bold">+</span>
-                    )}
-                  </span>
-                ))}
-                <span className="mx-2">=</span>
-                <span className="text-gray-400 italic">?</span>
+              <div className="font-mono text-lg font-bold select-none text-center space-y-2">
+                {/* Primera línea: título */}
+                <div className="text-sm text-gray-600 mb-2">Completa la expresión equivalente</div>
+                
+                {/* Segunda línea: primera agrupación */}
+                <div className="text-blue-700">
+                  ({problem.operands[0]} + {problem.operands[1]}) + {problem.operands[2]} = ?
+                </div>
+                
+                {/* Tercera línea: segunda agrupación con espacios en blanco */}
+                <div className="text-green-700 mt-4">
+                  {problem.operands[0]} + (_____ + _____) = _____
+                </div>
               </div>
             </div>
           </div>

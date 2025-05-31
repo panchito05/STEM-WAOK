@@ -6,38 +6,10 @@ interface ProblemViewerProps {
   onClose: () => void;
 }
 
-// Componente para mostrar los números del problema de suma en grande y centrado
+// Componente para mostrar el problema de propiedad asociativa en grande y centrado
 export const ProblemViewer: React.FC<ProblemViewerProps> = ({ problem, onClose }) => {
   // Extraer los operandos del problema
   const { operands } = problem;
-  const operator = '+';
-
-  // Función para formatear los números con el punto decimal alineado
-  const formatNumberWithAlignment = (num: number) => {
-    // Convertir a string para manipulación
-    const numStr = num.toString();
-    
-    // Dividir en parte entera y decimal
-    const parts = numStr.split('.');
-    const integerPart = parts[0] || '0';
-    const decimalPart = parts[1] || '';
-    
-    return {
-      integerPart,
-      decimalPart,
-      hasDecimal: parts.length > 1
-    };
-  };
-
-  // Procesar los números para alinearlos correctamente
-  const processedOperands = operands.map(num => formatNumberWithAlignment(num));
-  
-  // Encontrar la longitud máxima de la parte entera y decimal para alineación
-  const maxIntegerLength = Math.max(...processedOperands.map(op => op.integerPart.length));
-  const maxDecimalLength = Math.max(...processedOperands.map(op => op.decimalPart.length));
-  
-  // Para saber si cualquier número tiene decimales
-  const hasAnyDecimal = processedOperands.some(op => op.hasDecimal);
 
   return (
     <div 
@@ -57,41 +29,18 @@ export const ProblemViewer: React.FC<ProblemViewerProps> = ({ problem, onClose }
             ×
           </button>
           
-          <div className="font-mono text-4xl">
-            {/* Operandos con alineación decimal */}
-            <div className="flex flex-col items-end mb-2">
-              {processedOperands.map((op, index) => (
-                <div key={index} className="flex items-center">
-                  {/* Mostrar el operador antes del segundo operando */}
-                  {index === 1 && (
-                    <span className="mr-4">{operator}</span>
-                  )}
-                  
-                  {/* Parte entera con espaciado para alineación */}
-                  <span className="inline-block text-right" style={{ minWidth: `${maxIntegerLength * 0.6}em` }}>
-                    {op.integerPart}
-                  </span>
-                  
-                  {/* Punto decimal y parte decimal (si corresponde) */}
-                  {hasAnyDecimal && (
-                    <>
-                      <span className="mx-1">{op.hasDecimal ? '.' : ''}</span>
-                      <span className="inline-block" style={{ minWidth: `${maxDecimalLength * 0.6}em` }}>
-                        {op.decimalPart}
-                      </span>
-                    </>
-                  )}
-                </div>
-              ))}
+          <div className="font-mono text-2xl text-center space-y-4">
+            {/* Título */}
+            <div className="text-lg text-gray-600 mb-4">Completa la expresión equivalente</div>
+            
+            {/* Primera agrupación */}
+            <div className="text-blue-700 font-bold">
+              ({operands[0]} + {operands[1]}) + {operands[2]} = ?
             </div>
             
-            {/* Línea horizontal */}
-            <div className="border-t-2 border-black dark:border-white mb-2" style={{ width: '100%' }}></div>
-            
-            {/* Espacio para el resultado (sin mostrar el valor) */}
-            <div className="flex items-center">
-              <span className="mr-4">=</span>
-              <span className="inline-block" style={{ minWidth: `${(maxIntegerLength + maxDecimalLength + 1) * 0.6}em` }}>&nbsp;</span>
+            {/* Segunda agrupación con espacios en blanco */}
+            <div className="text-green-700 font-bold mt-6">
+              {operands[0]} + (_____ + _____) = _____
             </div>
           </div>
         </div>
