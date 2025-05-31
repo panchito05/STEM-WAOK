@@ -135,13 +135,12 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="text-gray-600 mb-2 text-sm">Primero resuelve el paréntesis:</div>
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       value={answers.leftSum1}
                       onChange={(e) => handleAnswerChange('leftSum1', e.target.value)}
-                      className="w-16 h-12 text-center text-xl font-bold border-2 border-green-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="w-16 h-12 text-center text-xl font-bold border-2 border-green-400"
                       placeholder="?"
-                      min="0"
-                      max="999"
                     />
                     <span className="text-xl">+</span>
                     <span className="bg-blue-200 px-3 py-2 rounded font-bold">{c}</span>
@@ -154,13 +153,12 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <span className="text-xl">=</span>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       value={answers.final1}
                       onChange={(e) => handleAnswerChange('final1', e.target.value)}
-                      className="w-20 h-12 text-center text-xl font-bold border-2 border-green-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="w-20 h-12 text-center text-xl font-bold border-2 border-green-400"
                       placeholder="?"
-                      min="0"
-                      max="999"
                     />
                   </div>
                 </div>
@@ -202,13 +200,12 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                     <span className="bg-blue-200 px-3 py-2 rounded font-bold">{a}</span>
                     <span className="text-xl">+</span>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       value={answers.rightSum2}
                       onChange={(e) => handleAnswerChange('rightSum2', e.target.value)}
-                      className="w-16 h-12 text-center text-xl font-bold border-2 border-purple-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="w-16 h-12 text-center text-xl font-bold border-2 border-purple-400"
                       placeholder="?"
-                      min="0"
-                      max="999"
                     />
                   </div>
                 </div>
@@ -219,13 +216,12 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <span className="text-xl">=</span>
                     <Input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       value={answers.final2}
                       onChange={(e) => handleAnswerChange('final2', e.target.value)}
-                      className="w-20 h-12 text-center text-xl font-bold border-2 border-purple-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                      className="w-20 h-12 text-center text-xl font-bold border-2 border-purple-400"
                       placeholder="?"
-                      min="0"
-                      max="999"
                     />
                   </div>
                 </div>
