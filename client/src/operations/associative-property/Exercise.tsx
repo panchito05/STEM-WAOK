@@ -1339,8 +1339,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
             const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
             setProblemsList(prev => [...prev, compensationProblem]);
-            // Agregamos null al historial para que coincida con el nuevo problema añadido
-            setUserAnswersHistory(prev => [...prev, null]);
+            // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
+            setUserAnswersHistory(prev => [...prev, {
+              problemId: compensationProblem.id,
+              problem: compensationProblem,
+              userAnswer: 0,
+              isCorrect: false,
+              status: 'pending',
+              attempts: 0,
+              timestamp: Date.now()
+            }]);
             console.log("[ASSOCIATIVE-PROPERTY] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
           }
 
@@ -1392,8 +1400,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
           const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
-          // Agregamos null al historial para que coincida con el nuevo problema añadido
-          setUserAnswersHistory(prev => [...prev, null]);
+          // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
+          setUserAnswersHistory(prev => [...prev, {
+            problemId: compensationProblem.id,
+            problem: compensationProblem,
+            userAnswer: 0,
+            isCorrect: false,
+            status: 'pending',
+            attempts: 0,
+            timestamp: Date.now()
+          }]);
           console.log("[ASSOCIATIVE-PROPERTY] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
         }
 
@@ -3239,8 +3255,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
                                       const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
                                       setProblemsList(prev => [...prev, compensationProblem]);
-                                      // Agregamos null al historial para que coincida con el nuevo problema añadido
-                                      setUserAnswersHistory(prev => [...prev, null]);
+                                      // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
+                                      setUserAnswersHistory(prev => [...prev, {
+                                        problemId: compensationProblem.id,
+                                        problem: compensationProblem,
+                                        userAnswer: 0,
+                                        isCorrect: false,
+                                        status: 'pending',
+                                        attempts: 0,
+                                        timestamp: Date.now()
+                                      }]);
                                       console.log("[ASSOCIATIVE-PROPERTY] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
                                   }
                               }
@@ -3530,7 +3554,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                         problem: currentProblem,
                                         userAnswer: NaN,
                                         isCorrect: false,
-                                        status: 'revealed'
+                                        status: 'revealed',
+                                        attempts: currentAttempts,
+                                        timestamp: Date.now()
                                     };
                                     return newHistory;
                                 });
@@ -3544,8 +3570,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
                                     const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
                                     setProblemsList(prev => [...prev, compensationProblem]);
-                                    // Agregamos null al historial para que coincida con el nuevo problema añadido
-                                    setUserAnswersHistory(prev => [...prev, null]);
+                                    // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
+                                    setUserAnswersHistory(prev => [...prev, {
+                                      problemId: compensationProblem.id,
+                                      problem: compensationProblem,
+                                      userAnswer: 0,
+                                      isCorrect: false,
+                                      status: 'pending',
+                                      attempts: 0,
+                                      timestamp: Date.now()
+                                    }]);
                                     console.log("[ASSOCIATIVE-PROPERTY] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
                                 }
                             }
@@ -3609,8 +3643,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
               const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
               setProblemsList(prev => [...prev, compensationProblem]);
-              // Agregamos null al historial para que coincida con el nuevo problema añadido
-              setUserAnswersHistory(prev => [...prev, null]);
+              // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
+              setUserAnswersHistory(prev => [...prev, {
+                problemId: compensationProblem.id,
+                problem: compensationProblem,
+                userAnswer: 0,
+                isCorrect: false,
+                status: 'pending',
+                attempts: 0,
+                timestamp: Date.now()
+              }]);
             }
             
             // Generar un nuevo problema
