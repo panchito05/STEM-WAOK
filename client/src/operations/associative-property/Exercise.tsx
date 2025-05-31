@@ -719,20 +719,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setConsecutiveCorrectAnswers(newConsecutive);
         setConsecutiveIncorrectAnswers(0);
         
-        // Activar el modo de espera
+        // Activar el modo de espera para mostrar el botón "Continue"
         setWaitingForContinue(true);
-        
-        setTimeout(() => {
-          if (currentProblemIndex < problemsList.length - 1) {
-            setCurrentProblemIndex(prev => prev + 1);
-            // Limpiar campos para el siguiente problema
-            setInteractiveAnswers({});
-            setActiveInteractiveField(null);
-            setWaitingForContinue(false);
-          } else {
-            completeExercise();
-          }
-        }, 2000);
       } else {
         // Proporcionar feedback específico sobre qué parte está incorrecta
         let specificError = "";
