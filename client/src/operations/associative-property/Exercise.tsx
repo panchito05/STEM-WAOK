@@ -3233,42 +3233,42 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                               setWaitingForContinue(true); // Pone waitingRef.current = true
                               const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
                               const answerEntry = userAnswersHistory[problemIdxForHistory];
-                              if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
-                                  setUserAnswersHistory(prev => {
-                                      const newHistory = [...prev];
-                                      newHistory[problemIdxForHistory] = {
-                                          problemId: currentProblem.id,
-                                          problem: currentProblem,
-                                          userAnswer: NaN,
-                                          isCorrect: false,
-                                          status: 'revealed',
-                                          attempts: 1,
-                                          timestamp: Date.now()
-                                      };
-                                      return newHistory;
-                                  });
+                              
+                              // Siempre actualizar el historial cuando se revela una respuesta
+                              setUserAnswersHistory(prev => {
+                                  const newHistory = [...prev];
+                                  newHistory[problemIdxForHistory] = {
+                                      problemId: currentProblem.id,
+                                      problem: currentProblem,
+                                      userAnswer: NaN,
+                                      isCorrect: false,
+                                      status: 'revealed',
+                                      attempts: currentAttempts,
+                                      timestamp: Date.now()
+                                  };
+                                  return newHistory;
+                              });
 
-                                  // Añadir problema de compensación cuando se revela la respuesta
-                                  if (settings.enableCompensation) {
-                                      console.log("[ASSOCIATIVE-PROPERTY] Agregando problema de compensación por respuesta revelada");
-                                      const difficultyForCompensation = settings.enableAdaptiveDifficulty
-                                          ? adaptiveDifficulty
-                                          : (settings.difficulty as DifficultyLevel);
+                              // Siempre añadir problema de compensación cuando se revela la respuesta (si está habilitado)
+                              if (settings.enableCompensation && (!answerEntry || answerEntry.status !== 'revealed')) {
+                                  console.log("[ASSOCIATIVE-PROPERTY] Agregando problema de compensación por respuesta revelada");
+                                  const difficultyForCompensation = settings.enableAdaptiveDifficulty
+                                      ? adaptiveDifficulty
+                                      : (settings.difficulty as DifficultyLevel);
 
-                                      const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
-                                      setProblemsList(prev => [...prev, compensationProblem]);
-                                      // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
-                                      setUserAnswersHistory(prev => [...prev, {
-                                        problemId: compensationProblem.id,
-                                        problem: compensationProblem,
-                                        userAnswer: 0,
-                                        isCorrect: false,
-                                        status: 'pending',
-                                        attempts: 0,
-                                        timestamp: Date.now()
-                                      }]);
-                                      console.log("[ASSOCIATIVE-PROPERTY] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
-                                  }
+                                  const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
+                                  setProblemsList(prev => [...prev, compensationProblem]);
+                                  // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
+                                  setUserAnswersHistory(prev => [...prev, {
+                                    problemId: compensationProblem.id,
+                                    problem: compensationProblem,
+                                    userAnswer: 0,
+                                    isCorrect: false,
+                                    status: 'pending',
+                                    attempts: 0,
+                                    timestamp: Date.now()
+                                  }]);
+                                  console.log("[ASSOCIATIVE-PROPERTY] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
                               }
                               if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
                                   setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
@@ -3548,42 +3548,42 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             setWaitingForContinue(true); // Pone waitingRef.current = true
                             const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
                             const answerEntry = userAnswersHistory[problemIdxForHistory];
-                            if (!answerEntry || (!answerEntry.isCorrect && answerEntry.status !== 'revealed')) {
-                                setUserAnswersHistory(prev => {
-                                    const newHistory = [...prev];
-                                    newHistory[problemIdxForHistory] = {
-                                        problemId: currentProblem.id,
-                                        problem: currentProblem,
-                                        userAnswer: NaN,
-                                        isCorrect: false,
-                                        status: 'revealed',
-                                        attempts: currentAttempts,
-                                        timestamp: Date.now()
-                                    };
-                                    return newHistory;
-                                });
+                            
+                            // Siempre actualizar el historial cuando se revela una respuesta
+                            setUserAnswersHistory(prev => {
+                                const newHistory = [...prev];
+                                newHistory[problemIdxForHistory] = {
+                                    problemId: currentProblem.id,
+                                    problem: currentProblem,
+                                    userAnswer: NaN,
+                                    isCorrect: false,
+                                    status: 'revealed',
+                                    attempts: currentAttempts,
+                                    timestamp: Date.now()
+                                };
+                                return newHistory;
+                            });
 
-                                // Añadir problema de compensación cuando se revela la respuesta
-                                if (settings.enableCompensation) {
-                                    console.log("[ASSOCIATIVE-PROPERTY] Agregando problema de compensación por respuesta revelada");
-                                    const difficultyForCompensation = settings.enableAdaptiveDifficulty
-                                        ? adaptiveDifficulty
-                                        : (settings.difficulty as DifficultyLevel);
+                            // Siempre añadir problema de compensación cuando se revela la respuesta (si está habilitado)
+                            if (settings.enableCompensation && (!answerEntry || answerEntry.status !== 'revealed')) {
+                                console.log("[ASSOCIATIVE-PROPERTY] Agregando problema de compensación por respuesta revelada");
+                                const difficultyForCompensation = settings.enableAdaptiveDifficulty
+                                    ? adaptiveDifficulty
+                                    : (settings.difficulty as DifficultyLevel);
 
-                                    const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
-                                    setProblemsList(prev => [...prev, compensationProblem]);
-                                    // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
-                                    setUserAnswersHistory(prev => [...prev, {
-                                      problemId: compensationProblem.id,
-                                      problem: compensationProblem,
-                                      userAnswer: 0,
-                                      isCorrect: false,
-                                      status: 'pending',
-                                      attempts: 0,
-                                      timestamp: Date.now()
-                                    }]);
-                                    console.log("[ASSOCIATIVE-PROPERTY] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
-                                }
+                                const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
+                                setProblemsList(prev => [...prev, compensationProblem]);
+                                // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
+                                setUserAnswersHistory(prev => [...prev, {
+                                  problemId: compensationProblem.id,
+                                  problem: compensationProblem,
+                                  userAnswer: 0,
+                                  isCorrect: false,
+                                  status: 'pending',
+                                  attempts: 0,
+                                  timestamp: Date.now()
+                                }]);
+                                console.log("[ASSOCIATIVE-PROPERTY] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
                             }
                             if (settings.maxAttempts > 0 && currentAttempts < settings.maxAttempts) {
                                 setCurrentAttempts(prev => prev + 1); // Contar como un intento si se revela
