@@ -8,13 +8,12 @@ import { DifficultyLevel } from '../types';
 describe('Associative Property Utils', () => {
   describe('generateAssociativePropertyProblem', () => {
     test('should generate valid problems for beginner difficulty', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       
       expect(problem).toBeDefined();
       expect(problem.id).toBeDefined();
       expect(problem.operands).toHaveLength(3);
       expect(problem.difficulty).toBe('beginner');
-      expect(problem.maxAttempts).toBe(3);
       expect(problem.correctAnswer).toBe(
         problem.operands.reduce((sum, op) => sum + op, 0)
       );
