@@ -460,6 +460,8 @@ export function DrawingCanvas({
     }
   };
   
+
+
   // Función para dibujar los números del problema en el canvas
   const drawProblemNumbers = () => {
     if (!currentProblem || !contextRef.current || !canvasRef.current) return;
@@ -524,79 +526,102 @@ export function DrawingCanvas({
     // Posición para alinear el signo + a la izquierda
     const signXPosition = centerX - (maxIntLength * charWidth) - charWidth;
     
-    // Detectar si es un problema avanzado (más de 2 operandos)
-    const isAdvancedProblem = operands.length > 2;
+    // RENDERIZADO ESPECÍFICO PARA PROPIEDAD ASOCIATIVA
+    // Detectar el nivel de dificultad basado en el problema
+    const difficulty: 'beginner' | 'elementary' | 'intermediate' | 'advanced' = (() => {
+      if (currentProblem.operands && currentProblem.operands.length >= 4) {
+        return 'advanced';
+      } else if (currentProblem.operands && currentProblem.operands.length === 3) {
+        return 'intermediate';
+      }
+      return 'beginner';
+    })();
     
-    // Calcular la altura total necesaria para todos los números
-    const totalOperandsHeight = lineHeight * (parts.length + 0.5); // +0.5 para la línea final
+    // Función para renderizar formato principiante - Agrupación visual simple
+    const drawBeginnerFormat = () => {
+      const spacing = baseFontSize * 1.5;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      
+      const text1 = `(${operands[0]} + ${operands[1]}) + ${operands[2]}`;
+      const text2 = `= ?`;
+      
+      context.fillText(text1, centerX, centerY - spacing/2);
+      context.fillText(text2, centerX, centerY + spacing/2);
+    };
+
+    // Función para renderizar formato elemental - Completar espacios básico
+    const drawElementaryFormat = () => {
+      const spacing = baseFontSize * 1.2;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      
+      const line1 = `(${operands[0]} + ${operands[1]}) + ${operands[2]} = ?`;
+      const line2 = `Completa la otra forma:`;
+      const line3 = `${operands[0]} + (_____ + _____) = ?`;
+      
+      context.fillText(line1, centerX, centerY - spacing);
+      context.fillText(line2, centerX, centerY);
+      context.fillText(line3, centerX, centerY + spacing);
+    };
+
+    // Función para renderizar formato intermedio - Verificación
+    const drawIntermediateFormat = () => {
+      const spacing = baseFontSize * 1.2;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      
+      const line1 = `¿Son estas expresiones equivalentes?`;
+      const line2 = `(${operands[0]} + ${operands[1]}) + ${operands[2]}`;
+      const line3 = `${operands[0]} + (${operands[1]} + ${operands[2]})`;
+      
+      context.fillText(line1, centerX, centerY - spacing * 1.5);
+      context.fillText(line2, centerX, centerY - spacing/2);
+      context.fillText(line3, centerX, centerY + spacing/2);
+    };
+
+    // Función para renderizar formato avanzado - Completar espacios completo
+    const drawAdvancedFormat = () => {
+      const spacing = baseFontSize * 1.2;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      
+      const line1 = `Completa la expresión equivalente`;
+      const line2 = `(${operands[0]} + ${operands[1]}) + ${operands[2]} = ?`;
+      const line3 = `Completa la otra forma:`;
+      const line4 = `${operands[0]} + (_____ + _____) = _____`;
+      
+      // Usar un fontSize más pequeño para que quepa todo
+      const smallFont = baseFontSize * 0.8;
+      const originalFont = context.font;
+      context.font = `${smallFont}px Arial`;
+      
+      context.fillText(line1, centerX, centerY - spacing * 1.5);
+      context.fillText(line2, centerX, centerY - spacing/2);
+      context.fillText(line3, centerX, centerY + spacing/2);
+      context.fillText(line4, centerX, centerY + spacing * 1.5);
+      
+      // Restaurar font original
+      context.font = originalFont;
+    };
     
-    // Posición inicial vertical (centrada)
-    let yPosition = centerY - (totalOperandsHeight / 2);
-    
-    // Dibujar todos los operandos, tanto para problemas básicos como avanzados
-    for (let i = 0; i < parts.length - 1; i++) {
-      // Dibujar la parte entera alineada a la derecha
-      context.fillText(
-        parts[i].intPart.padStart(maxIntLength, ' '), 
-        centerX, 
-        yPosition
-      );
-      
-      // Dibujar el punto decimal
-      context.fillText(
-        '.', 
-        centerX + decimalOffset, 
-        yPosition
-      );
-      
-      // Dibujar la parte decimal
-      context.fillText(
-        parts[i].decPart, 
-        centerX + decimalOffset + decimalPartOffset, 
-        yPosition
-      );
-      
-      // Avanzar a la siguiente posición vertical
-      yPosition += lineHeight;
+    // Renderizar según el nivel de dificultad
+    switch(difficulty) {
+      case 'beginner':
+        drawBeginnerFormat();
+        break;
+      case 'elementary':
+        drawElementaryFormat();
+        break;
+      case 'intermediate':
+        drawIntermediateFormat();
+        break;
+      case 'advanced':
+        drawAdvancedFormat();
+        break;
+      default:
+        drawAdvancedFormat();
     }
-    
-    // Dibujar el signo + para el último operando
-    context.fillText(
-      '+', 
-      signXPosition, 
-      yPosition
-    );
-    
-    // Dibujar el último operando
-    context.fillText(
-      parts[parts.length - 1].intPart.padStart(maxIntLength, ' '), 
-      centerX, 
-      yPosition
-    );
-    
-    context.fillText(
-      '.', 
-      centerX + decimalOffset, 
-      yPosition
-    );
-    
-    context.fillText(
-      parts[parts.length - 1].decPart, 
-      centerX + decimalOffset + decimalPartOffset, 
-      yPosition
-    );
-    
-    // Dibujar línea debajo
-    yPosition += lineHeight * 0.6;
-    
-    context.beginPath();
-    // La línea se extiende desde antes del signo + hasta después de la parte decimal
-    const lineStartX = signXPosition - charWidth;
-    const lineEndX = centerX + decimalOffset + decimalPartOffset + charWidth * 2;
-    
-    context.moveTo(lineStartX, yPosition);
-    context.lineTo(lineEndX, yPosition);
-    context.stroke();
     
     // Restaurar configuraciones originales
     context.strokeStyle = originalStrokeStyle;
