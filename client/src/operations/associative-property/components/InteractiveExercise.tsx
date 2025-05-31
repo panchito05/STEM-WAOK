@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 
 interface InteractiveExerciseProps {
   operands: number[];
-  onAnswer: (isCorrect: boolean) => void;
+  onAnswer: (answers: number[]) => void;
   interactiveAnswers: { [key: string]: string };
   setInteractiveAnswers: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
   activeInteractiveField: string | null;
@@ -131,23 +131,33 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
   };
 
   const handleFillBlankSubmit = () => {
-    const correctAnswer1 = operands[1];
-    const correctAnswer2 = operands[2];
-    const correctAnswer3 = operands[0] + operands[1] + operands[2];
-
-    const isCorrect = 
-      parseInt(interactiveAnswers.blank1) === correctAnswer1 &&
-      parseInt(interactiveAnswers.blank2) === correctAnswer2 &&
-      parseInt(interactiveAnswers.blank3) === correctAnswer3;
+    const correctSum = operands[0] + operands[1] + operands[2];
+    
+    // Formato que espera el componente padre: [form1Result, blank1, blank2, form2Result]
+    const answers = [
+      correctSum, // form1 result
+      parseInt(interactiveAnswers.blank1) || 0, // blank1
+      parseInt(interactiveAnswers.blank2) || 0, // blank2  
+      parseInt(interactiveAnswers.blank3) || 0  // form2 result
+    ];
 
     setShowResult(true);
-    onAnswer(isCorrect);
+    onAnswer(answers);
   };
 
   const handleMultipleChoiceSubmit = () => {
-    const isCorrect = selectedChoice === 'a';
+    const correctSum = operands[0] + operands[1] + operands[2];
+    
+    // Formato que espera el componente padre: [form1Result, blank1, blank2, form2Result]
+    const answers = [
+      correctSum, // form1 result
+      operands[1], // blank1 - valor correcto
+      operands[2], // blank2 - valor correcto
+      correctSum  // form2 result
+    ];
+    
     setShowResult(true);
-    onAnswer(isCorrect);
+    onAnswer(answers);
   };
 
   const renderFillBlankExercise = () => (
@@ -245,17 +255,7 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
           </div>
         </div>
 
-        {!showResult && (
-          <div className="text-center">
-            <Button 
-              onClick={handleMultipleChoiceSubmit}
-              className="bg-purple-600 hover:bg-purple-700"
-              disabled={!selectedChoice}
-            >
-              Verificar Respuesta
-            </Button>
-          </div>
-        )}
+
       </div>
     );
   };
