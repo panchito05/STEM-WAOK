@@ -64,7 +64,7 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
     const hasDecimals = parts.some(p => p.decPart);
 
     return (
-      <div className="font-mono text-xl whitespace-pre select-none" aria-label="Problema de suma vertical">
+      <div className="font-mono text-xl whitespace-pre select-none" aria-label="Problema de propiedad asociativa vertical">
         {/* Mostrar todos los operandos excepto el último */}
         {parts.slice(0, -1).map((part, idx) => (
           <div key={idx} className="text-right leading-relaxed">
@@ -111,7 +111,7 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
     }
 
     return (
-      <div className="font-mono text-xl text-center select-none" aria-label="Problema de suma horizontal">
+      <div className="font-mono text-xl text-center select-none" aria-label="Problema de propiedad asociativa horizontal">
         {formattedOperands.map((op, index) => (
           <React.Fragment key={index}>
             <span className="mx-1">{op}</span>
