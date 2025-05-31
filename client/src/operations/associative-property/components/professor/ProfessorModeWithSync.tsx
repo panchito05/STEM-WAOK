@@ -44,6 +44,21 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
     revealedAnswers: 0
   });
   const [isPanelCollapsed, setIsPanelCollapsed] = React.useState(false);
+  
+  // Estados para los inputs interactivos
+  const [answers, setAnswers] = React.useState<{
+    leftSum1: string;
+    final1: string;
+    rightSum2: string;
+    final2: string;
+  }>({
+    leftSum1: '',
+    final1: '',
+    rightSum2: '',
+    final2: ''
+  });
+  const [focusedField, setFocusedField] = React.useState<keyof typeof answers | null>(null);
+  const inputRefs = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Usar el contexto sincronizado - NUEVA ARQUITECTURA
   const { 
@@ -53,6 +68,36 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
     getColorPosition,
     getCurrentLayoutId 
   } = useSynchronizedLayout();
+
+  // Manejo de entrada de teclado para los inputs
+  React.useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!focusedField) return;
+      
+      if (e.key >= '0' && e.key <= '9') {
+        setAnswers(prev => ({
+          ...prev,
+          [focusedField]: prev[focusedField] + e.key
+        }));
+      } else if (e.key === 'Backspace') {
+        setAnswers(prev => ({
+          ...prev,
+          [focusedField]: prev[focusedField].slice(0, -1)
+        }));
+      } else if (e.key === 'Enter' || e.key === 'Tab') {
+        // Mover al siguiente campo
+        const fields: (keyof typeof answers)[] = ['leftSum1', 'final1', 'rightSum2', 'final2'];
+        const currentIndex = fields.indexOf(focusedField);
+        const nextIndex = (currentIndex + 1) % fields.length;
+        const nextField = fields[nextIndex] as keyof typeof answers;
+        setFocusedField(nextField);
+        inputRefs.current[nextField]?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [focusedField]);
 
   // Inicializar ejercicio
   React.useEffect(() => {
@@ -268,11 +313,37 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                     {/* Instrucción con campos */}
                     <div className="flex items-center justify-center space-x-2 text-green-700">
                       <span className="text-sm">Primero resuelve el paréntesis:</span>
-                      <span className="bg-white border-2 border-green-300 rounded px-2 py-1 min-w-[50px] text-center">___</span>
+                      <div
+                        ref={el => inputRefs.current['leftSum1'] = el}
+                        data-field="leftSum1"
+                        tabIndex={0}
+                        className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all ${
+                          focusedField === 'leftSum1' 
+                            ? 'border-green-500 bg-green-50 ring-2 ring-green-200' 
+                            : 'border-green-300 hover:border-green-500'
+                        }`}
+                        onClick={() => setFocusedField('leftSum1')}
+                        onFocus={() => setFocusedField('leftSum1')}
+                      >
+                        {answers.leftSum1 || <span className="text-gray-400">___</span>}
+                      </div>
                       <span>+</span>
                       <span>{problem.operands[2]}</span>
                       <span>=</span>
-                      <span className="bg-white border-2 border-green-300 rounded px-2 py-1 min-w-[50px] text-center">___</span>
+                      <div
+                        ref={el => inputRefs.current['final1'] = el}
+                        data-field="final1"
+                        tabIndex={0}
+                        className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all ${
+                          focusedField === 'final1' 
+                            ? 'border-green-500 bg-green-50 ring-2 ring-green-200' 
+                            : 'border-green-300 hover:border-green-500'
+                        }`}
+                        onClick={() => setFocusedField('final1')}
+                        onFocus={() => setFocusedField('final1')}
+                      >
+                        {answers.final1 || <span className="text-gray-400">___</span>}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -290,9 +361,35 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                       <span className="text-sm">Primero resuelve el paréntesis:</span>
                       <span>{problem.operands[0]}</span>
                       <span>+</span>
-                      <span className="bg-white border-2 border-purple-300 rounded px-2 py-1 min-w-[50px] text-center">___</span>
+                      <div
+                        ref={el => inputRefs.current['rightSum2'] = el}
+                        data-field="rightSum2"
+                        tabIndex={0}
+                        className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all ${
+                          focusedField === 'rightSum2' 
+                            ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200' 
+                            : 'border-purple-300 hover:border-purple-500'
+                        }`}
+                        onClick={() => setFocusedField('rightSum2')}
+                        onFocus={() => setFocusedField('rightSum2')}
+                      >
+                        {answers.rightSum2 || <span className="text-gray-400">___</span>}
+                      </div>
                       <span>=</span>
-                      <span className="bg-white border-2 border-purple-300 rounded px-2 py-1 min-w-[50px] text-center">___</span>
+                      <div
+                        ref={el => inputRefs.current['final2'] = el}
+                        data-field="final2"
+                        tabIndex={0}
+                        className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all ${
+                          focusedField === 'final2' 
+                            ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200' 
+                            : 'border-purple-300 hover:border-purple-500'
+                        }`}
+                        onClick={() => setFocusedField('final2')}
+                        onFocus={() => setFocusedField('final2')}
+                      >
+                        {answers.final2 || <span className="text-gray-400">___</span>}
+                      </div>
                     </div>
                   </div>
                 </div>
