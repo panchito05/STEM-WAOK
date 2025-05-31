@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { AssociativeGrouping } from '../types';
 
 interface InteractiveExerciseProps {
@@ -8,10 +7,10 @@ interface InteractiveExerciseProps {
   grouping1?: AssociativeGrouping;
   grouping2?: AssociativeGrouping;
   onAnswer: (answers: number[]) => void;
-  interactiveAnswers: string[];
-  setInteractiveAnswers: React.Dispatch<React.SetStateAction<string[]>>;
-  activeInteractiveField: number;
-  setActiveInteractiveField: React.Dispatch<React.SetStateAction<number>>;
+  interactiveAnswers: { [key: string]: string };
+  setInteractiveAnswers: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
+  activeInteractiveField: string | null;
+  setActiveInteractiveField: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({ 
@@ -35,17 +34,10 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
     );
   }
 
-  // Inicializar respuestas si está vacío
-  useEffect(() => {
-    if (interactiveAnswers.length === 0) {
-      setInteractiveAnswers(new Array(6).fill(''));
-    }
-  }, [interactiveAnswers.length, setInteractiveAnswers]);
-
   // Auto-seleccionar el primer campo al inicializar
   useEffect(() => {
-    if (activeInteractiveField === -1 && !showResult) {
-      setActiveInteractiveField(0);
+    if (!activeInteractiveField && !showResult) {
+      setActiveInteractiveField('leftSum1');
     }
   }, [activeInteractiveField, showResult, setActiveInteractiveField]);
 
@@ -54,160 +46,215 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
     if (showResult) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (activeInteractiveField === -1) return;
+      if (!activeInteractiveField) return;
 
       const key = event.key;
       
-      if (key >= '0' && key <= '9') {
-        event.preventDefault();
-        const newAnswers = [...interactiveAnswers];
-        newAnswers[activeInteractiveField] = (newAnswers[activeInteractiveField] || '') + key;
-        setInteractiveAnswers(newAnswers);
-      } else if (key === 'Backspace') {
-        event.preventDefault();
-        const newAnswers = [...interactiveAnswers];
-        newAnswers[activeInteractiveField] = (newAnswers[activeInteractiveField] || '').slice(0, -1);
-        setInteractiveAnswers(newAnswers);
-      } else if (key === 'Tab' || key === 'Enter') {
-        event.preventDefault();
-        const nextField = activeInteractiveField + 1;
-        if (nextField < 6) {
-          setActiveInteractiveField(nextField);
-        }
+      // Solo permitir números y algunas teclas especiales
+      if (!/^[0-9]$/.test(key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (key === 'Backspace' || key === 'Delete') {
+        // Limpiar el campo activo
+        setInteractiveAnswers(prev => ({
+          ...prev,
+          [activeInteractiveField]: ''
+        }));
+      } else if (/^[0-9]$/.test(key)) {
+        // Agregar dígito al campo activo
+        setInteractiveAnswers(prev => {
+          const currentValue = prev[activeInteractiveField] || '';
+          const newValue = currentValue + key;
+          
+          // Verificar si el nuevo valor es correcto y avanzar si es necesario
+          setTimeout(() => checkAndAdvanceField(activeInteractiveField, newValue), 0);
+          
+          return {
+            ...prev,
+            [activeInteractiveField]: newValue
+          };
+        });
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeInteractiveField, interactiveAnswers, setInteractiveAnswers, setActiveInteractiveField, showResult]);
+  }, [showResult, activeInteractiveField, setInteractiveAnswers]);
 
-  // Manejar cambio en campo de entrada
-  const handleFieldChange = (index: number, value: string) => {
-    const newAnswers = [...interactiveAnswers];
-    newAnswers[index] = value;
-    setInteractiveAnswers(newAnswers);
+  // Función para manejar el clic en un campo
+  const handleFieldClick = (fieldName: string) => {
+    if (showResult) return;
+    setActiveInteractiveField(fieldName);
   };
 
-  // Manejar clic en campo
-  const handleFieldClick = (index: number) => {
-    setActiveInteractiveField(index);
-  };
-
-  // Verificar respuestas
-  const handleCheckAnswers = () => {
-    const answers = interactiveAnswers.map(answer => parseFloat(answer) || 0);
-    const expectedAnswers = [
-      grouping1.leftSum,    // (a + b)
-      grouping1.totalSum,   // (a + b) + c
-      operands[0],          // a
-      grouping2.rightSum,   // (b + c)
-      grouping2.totalSum,   // a + (b + c)
-      grouping1.totalSum    // Resultado final
-    ];
-
-    const allCorrect = answers.every((answer, index) => Math.abs(answer - expectedAnswers[index]) < 0.001);
+  // Función para verificar si un valor es correcto y decidir si avanzar
+  const checkAndAdvanceField = (fieldName: string, value: string) => {
+    if (!value || isNaN(parseInt(value))) return;
     
-    if (allCorrect) {
-      setShowResult(true);
-      onAnswer(answers);
-    } else {
-      alert('Algunas respuestas son incorrectas. Revisa tus cálculos.');
+    let isFieldCorrect = false;
+    const intValue = parseInt(value);
+    
+    // Validar según la nueva lógica de la propiedad asociativa
+    if (fieldName === 'leftSum1' && intValue === grouping1.leftSum) {
+      isFieldCorrect = true;
+    } else if (fieldName === 'leftSum2' && intValue === grouping2.leftSum) {
+      isFieldCorrect = true;
+    } else if (fieldName === 'rightSum2' && intValue === grouping2.rightSum) {
+      isFieldCorrect = true;
+    } else if (fieldName === 'final1' && intValue === grouping1.totalSum) {
+      isFieldCorrect = true;
+    } else if (fieldName === 'final2' && intValue === grouping2.totalSum) {
+      isFieldCorrect = true;
+    }
+
+    // Solo avanzar al siguiente campo si el valor es correcto
+    if (isFieldCorrect) {
+      if (fieldName === 'leftSum1') {
+        setActiveInteractiveField('final1');
+      } else if (fieldName === 'final1') {
+        setActiveInteractiveField('leftSum2');
+      } else if (fieldName === 'leftSum2') {
+        setActiveInteractiveField('rightSum2');
+      } else if (fieldName === 'rightSum2') {
+        setActiveInteractiveField('final2');
+      }
+      // Si es final2, mantener el foco ahí
     }
   };
 
-  const renderInputField = (index: number, placeholder: string) => {
-    return (
-      <Input
-        type="number"
-        value={interactiveAnswers[index] || ''}
-        onChange={(e) => handleFieldChange(index, e.target.value)}
-        onClick={() => handleFieldClick(index)}
-        placeholder={placeholder}
-        className={`w-16 h-10 text-center font-bold border-2 ${
-          activeInteractiveField === index 
-            ? 'border-blue-500 ring-2 ring-blue-300' 
-            : 'border-gray-300'
-        }`}
-      />
-    );
+  // Función para obtener el estilo del campo (sin mostrar colores de validación)
+  const getFieldStyle = (fieldName: string) => {
+    const value = interactiveAnswers[fieldName];
+    
+    if (activeInteractiveField === fieldName) {
+      return 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200';
+    }
+    
+    if (value) {
+      return 'border-gray-400 bg-gray-50';
+    }
+    
+    return 'border-gray-300 bg-white hover:border-gray-400 hover:shadow-md';
   };
 
-  return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-6">
-      <h3 className="text-xl font-semibold mb-6 text-center text-gray-800 dark:text-white">
-        Ejercicio Interactivo: Propiedad Asociativa
-      </h3>
-      
-      <div className="space-y-8">
+  const handleFillBlankSubmit = () => {
+    const correctSum = operands[0] + operands[1] + operands[2];
+    
+    // Formato que espera el componente padre: [form1Result, blank1, blank2, form2Result]
+    const answers = [
+      correctSum, // form1 result
+      parseInt(interactiveAnswers.blank1) || 0, // blank1
+      parseInt(interactiveAnswers.blank2) || 0, // blank2  
+      parseInt(interactiveAnswers.blank3) || 0  // form2 result
+    ];
+
+    setShowResult(true);
+    onAnswer(answers);
+  };
+
+  const handleMultipleChoiceSubmit = () => {
+    const correctSum = operands[0] + operands[1] + operands[2];
+    
+    // Formato que espera el componente padre: [form1Result, blank1, blank2, form2Result]
+    const answers = [
+      correctSum, // form1 result
+      operands[1], // blank1 - valor correcto
+      operands[2], // blank2 - valor correcto
+      correctSum  // form2 result
+    ];
+    
+    setShowResult(true);
+    onAnswer(answers);
+  };
+
+  const renderAssociativePropertyExercise = () => (
+    <div className="space-y-8">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border-2 border-blue-200">
+        <h3 className="text-lg font-semibold text-blue-800 mb-6 text-center">
+          Demuestra que la Propiedad Asociativa funciona
+        </h3>
+        
         {/* Primera agrupación: (a + b) + c */}
-        <div className="border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20">
-          <h4 className="font-semibold mb-4 text-blue-800 dark:text-blue-200">
-            Primera agrupación: ({operands[0]} + {operands[1]}) + {operands[2]}
-          </h4>
-          
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <span className="text-lg">({operands[0]} + {operands[1]}) =</span>
-            {renderInputField(0, '?')}
-          </div>
-          
-          <div className="flex items-center justify-center gap-4">
-            {renderInputField(0, '?')} + {operands[2]} = {renderInputField(1, '?')}
+        <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+          <div className="text-lg font-medium text-green-700 mb-3">Primera agrupación:</div>
+          <div className="flex items-center justify-center gap-2 text-xl font-bold">
+            <span>(</span>
+            <span>{grouping1.leftGroup[0]}</span>
+            <span>+</span>
+            <span>{grouping1.leftGroup[1]}</span>
+            <span>) +</span>
+            <span>{grouping1.rightGroup[0]}</span>
+            <span>=</span>
+            <div
+              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${getFieldStyle('leftSum1')}`}
+              onClick={() => handleFieldClick('leftSum1')}
+            >
+              {interactiveAnswers.leftSum1 || <span className="text-gray-400">?</span>}
+            </div>
+            <span>+</span>
+            <span>{grouping1.rightGroup[0]}</span>
+            <span>=</span>
+            <div
+              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${getFieldStyle('final1')}`}
+              onClick={() => handleFieldClick('final1')}
+            >
+              {interactiveAnswers.final1 || <span className="text-gray-400">?</span>}
+            </div>
           </div>
         </div>
 
         {/* Segunda agrupación: a + (b + c) */}
-        <div className="border-2 border-green-200 dark:border-green-800 rounded-lg p-4 bg-green-50 dark:bg-green-900/20">
-          <h4 className="font-semibold mb-4 text-green-800 dark:text-green-200">
-            Segunda agrupación: {operands[0]} + ({operands[1]} + {operands[2]})
-          </h4>
-          
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <span className="text-lg">({operands[1]} + {operands[2]}) =</span>
-            {renderInputField(3, '?')}
-          </div>
-          
-          <div className="flex items-center justify-center gap-4">
-            {operands[0]} + {renderInputField(3, '?')} = {renderInputField(4, '?')}
+        <div className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="text-lg font-medium text-purple-700 mb-3">Segunda agrupación:</div>
+          <div className="flex items-center justify-center gap-2 text-xl font-bold">
+            <span>{grouping2.leftGroup[0]}</span>
+            <span>+ (</span>
+            <span>{grouping2.rightGroup[0]}</span>
+            <span>+</span>
+            <span>{grouping2.rightGroup[1]}</span>
+            <span>) =</span>
+            <div
+              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${getFieldStyle('leftSum2')}`}
+              onClick={() => handleFieldClick('leftSum2')}
+            >
+              {interactiveAnswers.leftSum2 || <span className="text-gray-400">?</span>}
+            </div>
+            <span>+</span>
+            <div
+              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${getFieldStyle('rightSum2')}`}
+              onClick={() => handleFieldClick('rightSum2')}
+            >
+              {interactiveAnswers.rightSum2 || <span className="text-gray-400">?</span>}
+            </div>
+            <span>=</span>
+            <div
+              className={`w-16 h-12 border-2 rounded-md flex items-center justify-center text-xl font-bold cursor-pointer transition-all duration-200 ${getFieldStyle('final2')}`}
+              onClick={() => handleFieldClick('final2')}
+            >
+              {interactiveAnswers.final2 || <span className="text-gray-400">?</span>}
+            </div>
           </div>
         </div>
 
-        {/* Verificación de la propiedad */}
-        <div className="border-2 border-purple-200 dark:border-purple-800 rounded-lg p-4 bg-purple-50 dark:bg-purple-900/20">
-          <h4 className="font-semibold mb-4 text-purple-800 dark:text-purple-200">
-            Verificación: ¿Son iguales ambos resultados?
-          </h4>
-          
-          <div className="flex items-center justify-center gap-4">
-            {renderInputField(1, '?')} = {renderInputField(4, '?')} = {renderInputField(5, '?')}
+        {/* Demostración de equivalencia */}
+        <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+          <div className="text-lg font-medium text-yellow-700 mb-2">¿Los resultados son iguales?</div>
+          <div className="text-xl font-bold text-yellow-800">
+            {interactiveAnswers.final1 && interactiveAnswers.final2 
+              ? `${interactiveAnswers.final1} ${interactiveAnswers.final1 === interactiveAnswers.final2 ? '=' : '≠'} ${interactiveAnswers.final2}`
+              : "Completa ambas agrupaciones para ver"}
           </div>
         </div>
       </div>
+    </div>
+  );
 
-      {!showResult && (
-        <div className="text-center mt-6">
-          <Button 
-            onClick={handleCheckAnswers}
-            disabled={interactiveAnswers.some(answer => !answer)}
-            className="px-8 py-2"
-          >
-            Verificar Respuestas
-          </Button>
-        </div>
-      )}
-
-      {showResult && (
-        <div className="text-center mt-6 p-4 bg-green-100 dark:bg-green-900/20 rounded-lg">
-          <h4 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
-            ¡Excelente trabajo!
-          </h4>
-          <p className="text-green-700 dark:text-green-300">
-            Has demostrado correctamente que la propiedad asociativa se cumple:
-          </p>
-          <p className="text-lg font-mono mt-2">
-            ({operands[0]} + {operands[1]}) + {operands[2]} = {operands[0]} + ({operands[1]} + {operands[2]}) = {grouping1.totalSum}
-          </p>
-        </div>
-      )}
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      {renderAssociativePropertyExercise()}
     </div>
   );
 };
