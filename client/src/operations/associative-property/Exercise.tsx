@@ -736,6 +736,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setConsecutiveCorrectAnswers(newConsecutive);
         setConsecutiveIncorrectAnswers(0);
         
+        // Actualizar récord máximo si es necesario
+        if (newConsecutive > maxConsecutiveStreak) {
+          setMaxConsecutiveStreak(newConsecutive);
+        }
+        
         // Activar el modo de espera para mostrar el botón "Continue"
         setWaitingForContinue(true);
       } else {
@@ -2829,6 +2834,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 setConsecutiveCorrectAnswers(newConsecutive);
                 setConsecutiveIncorrectAnswers(0);
                 
+                // Actualizar récord máximo si es necesario
+                if (newConsecutive > maxConsecutiveStreak) {
+                  setMaxConsecutiveStreak(newConsecutive);
+                }
+                
                 // Mostrar botón de continuar
                 setWaitingForContinue(true);
               }}
@@ -2874,6 +2884,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   const newConsecutive = consecutiveCorrectAnswers + 1;
                   setConsecutiveCorrectAnswers(newConsecutive);
                   setConsecutiveIncorrectAnswers(0);
+                  
+                  // Actualizar récord máximo si es necesario
+                  if (newConsecutive > maxConsecutiveStreak) {
+                    setMaxConsecutiveStreak(newConsecutive);
+                  }
                   
                   // Mostrar botón de continuar en lugar de avance automático
                   setWaitingForContinue(true);
@@ -3227,6 +3242,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               const newConsecutive = consecutiveCorrectAnswers + 1;
               setConsecutiveCorrectAnswers(newConsecutive);
               setConsecutiveIncorrectAnswers(0);
+              
+              // Actualizar récord máximo si es necesario
+              if (newConsecutive > maxConsecutiveStreak) {
+                setMaxConsecutiveStreak(newConsecutive);
+              }
               
               // Verificar posible subida de nivel si se alcanza el umbral
               if (newConsecutive >= CORRECT_ANSWERS_FOR_LEVEL_UP && settings.enableAdaptiveDifficulty) {
