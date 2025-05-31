@@ -254,20 +254,78 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
               </div>
             </div>
             
-            {/* Problema matemático - Formato de Propiedad Asociativa */}
+            {/* Problema matemático - Formato de Propiedad Asociativa con dos columnas */}
             <div className="bg-gray-50 p-3 rounded border-2 border-dashed border-gray-200">
-              <div className="font-mono text-lg font-bold select-none text-center space-y-2">
-                {/* Primera línea: título */}
-                <div className="text-sm text-gray-600 mb-2">Completa la expresión equivalente</div>
+              <div className="font-mono text-lg font-bold select-none text-center space-y-4">
+                {/* Título */}
+                <div className="text-sm text-gray-600 mb-3">Completa ambas agrupaciones para demostrar la propiedad asociativa</div>
                 
-                {/* Segunda línea: primera agrupación */}
-                <div className="text-blue-700">
-                  ({problem.operands[0]} + {problem.operands[1]}) + {problem.operands[2]} = ?
+                {/* Dos columnas para mostrar ambas agrupaciones */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Primera agrupación (verde) */}
+                  <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                    <div className="text-green-800 font-semibold text-sm mb-3 text-center">Primera agrupación</div>
+                    <div className="space-y-3">
+                      {/* Expresión original */}
+                      <div className="text-center text-green-700">
+                        ({problem.operands[0]} + {problem.operands[1]}) + {problem.operands[2]}
+                      </div>
+                      
+                      {/* Instrucción */}
+                      <div className="text-xs text-green-600 text-center">
+                        Primero resuelve el paréntesis:
+                      </div>
+                      
+                      {/* Campo para resultado del paréntesis */}
+                      <div className="text-center text-green-700 flex items-center justify-center space-x-1">
+                        <span className="bg-white border-2 border-green-300 rounded px-2 py-1 min-w-[40px] text-center">___</span>
+                        <span>+</span>
+                        <span>{problem.operands[2]}</span>
+                      </div>
+                      
+                      {/* Resultado final */}
+                      <div className="text-xs text-green-600 text-center">Resultado final:</div>
+                      <div className="text-center text-green-700 flex items-center justify-center space-x-1">
+                        <span>=</span>
+                        <span className="bg-white border-2 border-green-300 rounded px-2 py-1 min-w-[40px] text-center">___</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Segunda agrupación (púrpura) */}
+                  <div className="bg-purple-50 p-4 rounded-lg border-2 border-purple-200">
+                    <div className="text-purple-800 font-semibold text-sm mb-3 text-center">Segunda agrupación</div>
+                    <div className="space-y-3">
+                      {/* Expresión original */}
+                      <div className="text-center text-purple-700">
+                        {problem.operands[0]} + ({problem.operands[1]} + {problem.operands[2]})
+                      </div>
+                      
+                      {/* Instrucción */}
+                      <div className="text-xs text-purple-600 text-center">
+                        Primero resuelve el paréntesis:
+                      </div>
+                      
+                      {/* Campo para resultado del paréntesis */}
+                      <div className="text-center text-purple-700 flex items-center justify-center space-x-1">
+                        <span>{problem.operands[0]}</span>
+                        <span>+</span>
+                        <span className="bg-white border-2 border-purple-300 rounded px-2 py-1 min-w-[40px] text-center">___</span>
+                      </div>
+                      
+                      {/* Resultado final */}
+                      <div className="text-xs text-purple-600 text-center">Resultado final:</div>
+                      <div className="text-center text-purple-700 flex items-center justify-center space-x-1">
+                        <span>=</span>
+                        <span className="bg-white border-2 border-purple-300 rounded px-2 py-1 min-w-[40px] text-center">___</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
-                {/* Tercera línea: segunda agrupación con espacios en blanco */}
-                <div className="text-green-700 mt-4">
-                  {problem.operands[0]} + (_____ + _____) = _____
+                {/* Mensaje final */}
+                <div className="text-xs text-gray-600 mt-4 text-center">
+                  Ambos resultados finales deben ser iguales para demostrar la propiedad asociativa
                 </div>
               </div>
             </div>
