@@ -69,64 +69,83 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
     getCurrentLayoutId 
   } = useSynchronizedLayout();
 
-  // Manejo de entrada de teclado para los inputs
-  React.useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      console.log('🔍 [INPUT-DEBUG] Key pressed:', e.key, 'Focused field:', focusedField);
+  // Función para manejar input directo en contentEditable
+  const handleInput = (fieldName: keyof typeof answers, e: React.FormEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    let value = target.textContent || '';
+    
+    console.log('📝 [INPUT-DEBUG] Input event on', fieldName, 'raw value:', value);
+    
+    // Filtrar solo números
+    value = value.replace(/[^0-9]/g, '');
+    console.log('📝 [INPUT-DEBUG] Filtered value:', value);
+    
+    // Limitar longitud
+    if (value.length > 3) {
+      value = value.slice(0, 3);
+    }
+    
+    // Actualizar estado
+    setAnswers(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+    
+    // Actualizar el contenido del div si es diferente
+    if (target.textContent !== value) {
+      target.textContent = value;
       
-      if (!focusedField) {
-        console.log('⚠️ [INPUT-DEBUG] No focused field, ignoring keypress');
-        return;
-      }
-      
-      // Prevenir comportamiento por defecto para teclas que manejamos
-      if ((e.key >= '0' && e.key <= '9') || e.key === 'Backspace' || e.key === 'Enter' || e.key === 'Tab') {
-        e.preventDefault();
-        console.log('🚫 [INPUT-DEBUG] Prevented default behavior for:', e.key);
-      }
-      
-      if (e.key >= '0' && e.key <= '9') {
-        console.log('✅ [INPUT-DEBUG] Adding digit:', e.key, 'to field:', focusedField);
-        setAnswers(prev => {
-          const newValue = prev[focusedField] + e.key;
-          console.log('📝 [INPUT-DEBUG] New value for', focusedField, ':', newValue);
-          return {
-            ...prev,
-            [focusedField]: newValue
-          };
-        });
-      } else if (e.key === 'Backspace') {
-        console.log('⬅️ [INPUT-DEBUG] Backspace pressed for field:', focusedField);
-        setAnswers(prev => {
-          const newValue = prev[focusedField].slice(0, -1);
-          console.log('📝 [INPUT-DEBUG] New value after backspace:', newValue);
-          return {
-            ...prev,
-            [focusedField]: newValue
-          };
-        });
-      } else if (e.key === 'Enter' || e.key === 'Tab') {
-        console.log('➡️ [INPUT-DEBUG] Moving to next field from:', focusedField);
-        // Mover al siguiente campo
-        const fields: (keyof typeof answers)[] = ['leftSum1', 'final1', 'rightSum2', 'final2'];
-        const currentIndex = fields.indexOf(focusedField);
-        const nextIndex = (currentIndex + 1) % fields.length;
-        const nextField = fields[nextIndex] as keyof typeof answers;
-        console.log('🎯 [INPUT-DEBUG] Next field:', nextField);
-        setFocusedField(nextField);
-        setTimeout(() => {
-          inputRefs.current[nextField]?.focus();
-        }, 0);
-      }
-    };
+      // Mantener cursor al final
+      const range = document.createRange();
+      const selection = window.getSelection();
+      range.selectNodeContents(target);
+      range.collapse(false);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  };
 
-    console.log('🎮 [INPUT-DEBUG] Adding keydown listener, focused field:', focusedField);
-    document.addEventListener('keydown', handleKeyPress);
-    return () => {
-      console.log('🗑️ [INPUT-DEBUG] Removing keydown listener');
-      document.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [focusedField]);
+  // Función para manejar teclas especiales
+  const handleKeyDown = (fieldName: keyof typeof answers, e: React.KeyboardEvent<HTMLDivElement>) => {
+    console.log('🔍 [INPUT-DEBUG] Key pressed:', e.key, 'on field:', fieldName);
+    
+    // Permitir solo números, backspace, delete, arrows, tab, enter
+    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'];
+    const isNumber = e.key >= '0' && e.key <= '9';
+    
+    if (!isNumber && !allowedKeys.includes(e.key)) {
+      console.log('🚫 [INPUT-DEBUG] Blocking key:', e.key);
+      e.preventDefault();
+      return;
+    }
+    
+    // Manejar Tab y Enter para navegación
+    if (e.key === 'Tab' || e.key === 'Enter') {
+      e.preventDefault();
+      console.log('➡️ [INPUT-DEBUG] Moving to next field from:', fieldName);
+      
+      const fields: (keyof typeof answers)[] = ['leftSum1', 'final1', 'rightSum2', 'final2'];
+      const currentIndex = fields.indexOf(fieldName);
+      const nextIndex = (currentIndex + 1) % fields.length;
+      const nextField = fields[nextIndex];
+      
+      console.log('🎯 [INPUT-DEBUG] Next field:', nextField);
+      setFocusedField(nextField);
+      
+      setTimeout(() => {
+        const nextElement = inputRefs.current[nextField];
+        if (nextElement) {
+          nextElement.focus();
+          // Seleccionar todo el contenido
+          const range = document.createRange();
+          const selection = window.getSelection();
+          range.selectNodeContents(nextElement);
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+        }
+      }, 0);
+    }
+  };
 
   // Log cuando cambia el estado de respuestas
   React.useEffect(() => {
@@ -355,7 +374,8 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                       <div
                         ref={el => inputRefs.current['leftSum1'] = el}
                         data-field="leftSum1"
-                        tabIndex={0}
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
                         className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all outline-none ${
                           focusedField === 'leftSum1' 
                             ? 'border-green-500 bg-green-50 ring-2 ring-green-200' 
@@ -363,7 +383,6 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                         }`}
                         onClick={(e) => {
                           console.log('🖱️ [INPUT-DEBUG] Clicked leftSum1');
-                          e.preventDefault();
                           setFocusedField('leftSum1');
                           e.currentTarget.focus();
                         }}
@@ -374,8 +393,10 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                         onBlur={() => {
                           console.log('👋 [INPUT-DEBUG] Blurred leftSum1');
                         }}
+                        onInput={(e) => handleInput('leftSum1', e)}
+                        onKeyDown={(e) => handleKeyDown('leftSum1', e)}
                       >
-                        {answers.leftSum1 || <span className="text-gray-400">___</span>}
+                        {answers.leftSum1 || '___'}
                       </div>
                       <span>+</span>
                       <span>{problem.operands[2]}</span>
