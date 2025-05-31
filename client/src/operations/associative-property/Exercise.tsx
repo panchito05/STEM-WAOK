@@ -1325,6 +1325,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setTimer(0);
     setExerciseStarted(false);
     setExerciseCompleted(false);
+    setShowAnswersInIntermediate(false); // Reset show answers state
     setFeedbackMessage(null);
     setWaitingForContinue(false); // Esto actualizará waitingRef.current
     setBlockAutoAdvance(false);
@@ -1351,6 +1352,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setDigitAnswers(Array(problemsList[nextActiveIdx].answerMaxDigits).fill("")); // Limpiar cajones para nuevo problema
       setCurrentAttempts(0); // Resetear intentos para el nuevo problema
       setProblemTimerValue(settings.timeValue); // Resetear timer para el nuevo problema
+      setShowAnswersInIntermediate(false); // Reset show answers state for new problem
       setWaitingForContinue(false); // Permitir que el nuevo problema inicie su timer
     } else {
       // ÚLTIMA RESPUESTA - SOLUCIÓN FINAL
@@ -2817,6 +2819,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {settings.difficulty === 'intermediate' && exerciseStarted && (
             <ProgressiveGroupingDisplay 
               problem={currentProblem}
+              showAnswers={showAnswersInIntermediate}
               onComplete={(finalAnswer) => {
                 setFeedbackMessage("¡Excelente! Has demostrado que ambas agrupaciones dan el mismo resultado. Esto es la propiedad asociativa.");
                 setFeedbackColor("green");
@@ -3037,8 +3040,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                               setConsecutiveCorrectAnswers(0);
                               console.log("[ASSOCIATIVE-PROPERTY] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
                               
-                              // Usamos la respuesta correcta del problema directamente
-                              setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                              // Lógica específica por nivel de dificultad
+                              if (settings.difficulty === 'intermediate') {
+                                  // Activar respuestas automáticas para nivel intermedio
+                                  setShowAnswersInIntermediate(true);
+                                  setFeedbackMessage("Respuestas mostradas automáticamente en los espacios en blanco.");
+                              } else {
+                                  // Usamos la respuesta correcta del problema directamente para otros niveles
+                                  setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                              }
                               setFeedbackColor("blue");
                               setWaitingForContinue(true); // Pone waitingRef.current = true
                               const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
@@ -3189,6 +3199,10 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                     }));
                                 }
                                 setFeedbackMessage("Respuestas mostradas en los campos");
+                            } else if (settings.difficulty === 'intermediate') {
+                                // Activar respuestas automáticas para nivel intermedio
+                                setShowAnswersInIntermediate(true);
+                                setFeedbackMessage("Respuestas mostradas automáticamente en los espacios en blanco.");
                             } else {
                                 // Usamos la respuesta correcta del problema directamente para otros niveles
                                 setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
