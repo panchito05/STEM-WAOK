@@ -649,15 +649,28 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   }, [exerciseStarted, exerciseCompleted]);
 
   const checkCurrentAnswer = useCallback(() => {
-    if (!currentProblem || waitingRef.current || exerciseCompleted || viewingPrevious) return false;
+    console.log('🔍 [CHECK-DEBUG] checkCurrentAnswer called');
+    console.log('🔍 [CHECK-DEBUG] currentProblem:', currentProblem);
+    console.log('🔍 [CHECK-DEBUG] waitingRef.current:', waitingRef.current);
+    console.log('🔍 [CHECK-DEBUG] exerciseCompleted:', exerciseCompleted);
+    console.log('🔍 [CHECK-DEBUG] viewingPrevious:', viewingPrevious);
+    console.log('🔍 [CHECK-DEBUG] exerciseStarted:', exerciseStarted);
+    console.log('🔍 [CHECK-DEBUG] settings.difficulty:', settings.difficulty);
+    
+    if (!currentProblem || waitingRef.current || exerciseCompleted || viewingPrevious) {
+      console.log('🚫 [CHECK-DEBUG] Early return - conditions not met');
+      return false;
+    }
 
     if (!exerciseStarted) {
+      console.log('🚫 [CHECK-DEBUG] Exercise not started, calling startExercise');
       startExercise();
       return false; // No cuenta como intento, no está "resuelto"
     }
 
     // Manejar niveles intermediate y advanced con sus propios componentes
     if (settings.difficulty === 'intermediate') {
+      console.log('✅ [CHECK-DEBUG] Processing intermediate level validation');
       // Verificar que tenemos las agrupaciones matemáticas
       if (!currentProblem.grouping1 || !currentProblem.grouping2) {
         setFeedbackMessage("Error: No se pudieron generar las agrupaciones matemáticas.");
