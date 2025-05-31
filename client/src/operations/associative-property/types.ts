@@ -26,29 +26,24 @@ export interface AssociativeGrouping {
 
 // Definición de un problema de propiedad asociativa específico
 // La propiedad asociativa establece que: (a + b) + c = a + (b + c)
-export interface AssociativePropertyProblem {
-  id: string;
+export interface AssociativePropertyProblem extends BaseProblem {
   operands: number[];       // Operandos para demostrar la propiedad asociativa (mínimo 3 números)
-  num1?: number;            // Campo legacy para compatibilidad
-  num2?: number;            // Campo legacy para compatibilidad
-  correctAnswer: number;    // Respuesta correcta (suma de todos los operandos)
   layout: ExerciseLayout;   // Formato de visualización
   answerMaxDigits: number;  // Número máximo de dígitos en la respuesta
   answerDecimalPosition?: number; // Posición del decimal en la respuesta (si aplica)
-  index?: number;           // Índice del problema en la secuencia (para mostrar Problema X de Y)
-  total?: number;           // Total de problemas en el ejercicio
   visualObjects?: VisualObject[]; // Objetos visuales para nivel principiante
   showVisualMode?: boolean; // Si debe mostrar modo visual
   interactiveMode?: boolean; // Si debe mostrar campos de entrada interactivos (nivel intermedio)
   blankPositions?: number[]; // Posiciones de los espacios en blanco para completar
-  // Nuevas propiedades para enseñar correctamente la propiedad asociativa
+  // Propiedades específicas para enseñar la propiedad asociativa
   grouping1?: AssociativeGrouping; // Primera agrupación: (a + b) + c
   grouping2?: AssociativeGrouping; // Segunda agrupación: a + (b + c)
   // Propiedades de compatibilidad con Problem
   displayFormat?: string;
-  difficulty?: DifficultyLevel;
   allowDecimals?: boolean;
-  maxAttempts?: number;
+  // Campos legacy para compatibilidad
+  num1?: number;
+  num2?: number;
 }
 
 // Tipo genérico para un operando
@@ -59,42 +54,44 @@ export interface Operand {
   // displayType?: string;
 }
 
-// Tipo genérico para cualquier problema matemático
-export interface Problem {
+// Tipo base para cualquier problema matemático
+export interface BaseProblem {
   id: string;
-  operands: Operand[];
-  operator?: string;       // El operador matemático (no usado en suma, pero útil para otros módulos)
   correctAnswer: number;
-  displayFormat: string;   // Cómo mostrar el problema (horizontal, vertical, word)
   difficulty: DifficultyLevel;
-  allowDecimals: boolean;
   maxAttempts: number;
+  index?: number;
+  total?: number;
+}
+
+// Tipo genérico para problemas simples (compatibilidad)
+export interface Problem extends BaseProblem {
+  operands: Operand[];
+  operator?: string;
+  displayFormat: string;
+  allowDecimals: boolean;
+}
+
+// Tipo base para respuestas de usuario
+export interface BaseUserAnswer {
+  problemId: string;
+  userAnswer: number;
+  isCorrect: boolean;
+  status: string;          // 'correct', 'incorrect', 'skipped', etc.
+  attempts: number;
+  timestamp: number;
+  timeTaken?: number;      // Tiempo que le tomó al usuario responder
+  mistakes?: number[];     // Lista de respuestas incorrectas
 }
 
 // Respuesta del usuario a un problema de propiedad asociativa
-export interface AssociativePropertyUserAnswer {
-  problemId: string;
+export interface AssociativePropertyUserAnswer extends BaseUserAnswer {
   problem: AssociativePropertyProblem;
-  userAnswer: number;
-  isCorrect: boolean;
-  status: string;          // 'correct', 'incorrect', 'skipped', etc.
-  attempts: number;
-  timestamp: number;
-  timeTaken?: number;      // Tiempo que le tomó al usuario responder
-  mistakes?: number[];     // Lista de respuestas incorrectas
 }
 
-// Respuesta del usuario a un problema genérico
-export interface UserAnswer {
-  problemId: string;
+// Respuesta del usuario a un problema genérico (compatibilidad)
+export interface UserAnswer extends BaseUserAnswer {
   problem: Problem;
-  userAnswer: number;
-  isCorrect: boolean;
-  status: string;          // 'correct', 'incorrect', 'skipped', etc.
-  attempts: number;
-  timestamp: number;
-  timeTaken?: number;      // Tiempo que le tomó al usuario responder
-  mistakes?: number[];     // Lista de respuestas incorrectas
 }
 
 // Resultado de un ejercicio completo

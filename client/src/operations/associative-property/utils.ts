@@ -83,6 +83,8 @@ export function problemToAssociativePropertyProblem(problem: Problem): Associati
     num2: operands[1] || 0,
     operands,
     correctAnswer: problem.correctAnswer,
+    difficulty: problem.difficulty,
+    maxAttempts: problem.maxAttempts,
     layout: problem.displayFormat as ExerciseLayout, // Solo horizontal o vertical, no 'word'
     answerMaxDigits: problem.correctAnswer.toString().replace('.', '').length,
     answerDecimalPosition
@@ -271,6 +273,8 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
     num2: operands.length > 1 ? operands[1] : 0, // Mantener por compatibilidad
     operands,
     correctAnswer,
+    difficulty,
+    maxAttempts,
     layout,
     answerMaxDigits,
     answerDecimalPosition,
