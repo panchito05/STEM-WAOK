@@ -374,27 +374,23 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                       <div
                         ref={el => inputRefs.current['leftSum1'] = el}
                         data-field="leftSum1"
-                        contentEditable={true}
-                        suppressContentEditableWarning={true}
+                        tabIndex={0}
                         className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all outline-none ${
                           focusedField === 'leftSum1' 
                             ? 'border-green-500 bg-green-50 ring-2 ring-green-200' 
                             : 'border-green-300 hover:border-green-500'
                         }`}
-                        onClick={(e) => {
+                        onClick={() => {
                           console.log('🖱️ [INPUT-DEBUG] Clicked leftSum1');
                           setFocusedField('leftSum1');
-                          e.currentTarget.focus();
                         }}
-                        onFocus={(e) => {
+                        onFocus={() => {
                           console.log('🎯 [INPUT-DEBUG] Focused leftSum1');
                           setFocusedField('leftSum1');
                         }}
                         onBlur={() => {
                           console.log('👋 [INPUT-DEBUG] Blurred leftSum1');
                         }}
-                        onInput={(e) => handleInput('leftSum1', e)}
-                        onKeyDown={(e) => handleKeyDown('leftSum1', e)}
                       >
                         {answers.leftSum1 || '___'}
                       </div>
@@ -404,27 +400,23 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                       <div
                         ref={el => inputRefs.current['final1'] = el}
                         data-field="final1"
-                        contentEditable={true}
-                        suppressContentEditableWarning={true}
+                        tabIndex={0}
                         className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all outline-none ${
                           focusedField === 'final1' 
                             ? 'border-green-500 bg-green-50 ring-2 ring-green-200' 
                             : 'border-green-300 hover:border-green-500'
                         }`}
-                        onClick={(e) => {
+                        onClick={() => {
                           console.log('🖱️ [INPUT-DEBUG] Clicked final1');
                           setFocusedField('final1');
-                          e.currentTarget.focus();
                         }}
-                        onFocus={(e) => {
+                        onFocus={() => {
                           console.log('🎯 [INPUT-DEBUG] Focused final1');
                           setFocusedField('final1');
                         }}
                         onBlur={() => {
                           console.log('👋 [INPUT-DEBUG] Blurred final1');
                         }}
-                        onInput={(e) => handleInput('final1', e)}
-                        onKeyDown={(e) => handleKeyDown('final1', e)}
                       >
                         {answers.final1 || '___'}
                       </div>
@@ -448,27 +440,23 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                       <div
                         ref={el => inputRefs.current['rightSum2'] = el}
                         data-field="rightSum2"
-                        contentEditable={true}
-                        suppressContentEditableWarning={true}
+                        tabIndex={0}
                         className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all outline-none ${
                           focusedField === 'rightSum2' 
                             ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200' 
                             : 'border-purple-300 hover:border-purple-500'
                         }`}
-                        onClick={(e) => {
+                        onClick={() => {
                           console.log('🖱️ [INPUT-DEBUG] Clicked rightSum2');
                           setFocusedField('rightSum2');
-                          e.currentTarget.focus();
                         }}
-                        onFocus={(e) => {
+                        onFocus={() => {
                           console.log('🎯 [INPUT-DEBUG] Focused rightSum2');
                           setFocusedField('rightSum2');
                         }}
                         onBlur={() => {
                           console.log('👋 [INPUT-DEBUG] Blurred rightSum2');
                         }}
-                        onInput={(e) => handleInput('rightSum2', e)}
-                        onKeyDown={(e) => handleKeyDown('rightSum2', e)}
                       >
                         {answers.rightSum2 || '___'}
                       </div>
@@ -476,27 +464,23 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                       <div
                         ref={el => inputRefs.current['final2'] = el}
                         data-field="final2"
-                        contentEditable={true}
-                        suppressContentEditableWarning={true}
+                        tabIndex={0}
                         className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all outline-none ${
                           focusedField === 'final2' 
                             ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200' 
                             : 'border-purple-300 hover:border-purple-500'
                         }`}
-                        onClick={(e) => {
+                        onClick={() => {
                           console.log('🖱️ [INPUT-DEBUG] Clicked final2');
                           setFocusedField('final2');
-                          e.currentTarget.focus();
                         }}
-                        onFocus={(e) => {
+                        onFocus={() => {
                           console.log('🎯 [INPUT-DEBUG] Focused final2');
                           setFocusedField('final2');
                         }}
                         onBlur={() => {
                           console.log('👋 [INPUT-DEBUG] Blurred final2');
                         }}
-                        onInput={(e) => handleInput('final2', e)}
-                        onKeyDown={(e) => handleKeyDown('final2', e)}
                       >
                         {answers.final2 || '___'}
                       </div>
