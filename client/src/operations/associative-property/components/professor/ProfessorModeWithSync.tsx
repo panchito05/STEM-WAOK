@@ -143,6 +143,19 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
     return () => document.removeEventListener('keydown', handlePhysicalKeyDown);
   }, [focusedField, answers, handleDigitInput, handleBackspace]);
 
+  // Resetear respuestas cuando cambia el problema (copiado de Addition)
+  React.useEffect(() => {
+    console.log('🔄 [INPUT-DEBUG] Problem changed, resetting answers');
+    setAnswers({
+      leftSum1: '',
+      final1: '',
+      rightSum2: '',
+      final2: ''
+    });
+    // También resetear el campo enfocado
+    setFocusedField('leftSum1');
+  }, [problem.operands, problem.id]);
+
   // Log cuando cambia el estado de respuestas
   React.useEffect(() => {
     console.log('📊 [INPUT-DEBUG] Answers state updated:', answers);
