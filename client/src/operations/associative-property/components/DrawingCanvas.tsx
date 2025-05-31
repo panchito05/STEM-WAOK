@@ -527,12 +527,10 @@ export function DrawingCanvas({
     const signXPosition = centerX - (maxIntLength * charWidth) - charWidth;
     
     // RENDERIZADO ESPECÍFICO PARA PROPIEDAD ASOCIATIVA
-    // Detectar el nivel de dificultad basado en el problema
-    const difficulty: 'beginner' | 'elementary' | 'intermediate' | 'advanced' = (() => {
-      if (currentProblem.operands && currentProblem.operands.length >= 4) {
+    // Detectar el nivel de dificultad basado en el problema (por ahora solo advanced/beginner)
+    const difficulty: 'beginner' | 'advanced' = (() => {
+      if (currentProblem.operands && currentProblem.operands.length >= 3) {
         return 'advanced';
-      } else if (currentProblem.operands && currentProblem.operands.length === 3) {
-        return 'intermediate';
       }
       return 'beginner';
     })();
@@ -550,35 +548,7 @@ export function DrawingCanvas({
       context.fillText(text2, centerX, centerY + spacing/2);
     };
 
-    // Función para renderizar formato elemental - Completar espacios básico
-    const drawElementaryFormat = () => {
-      const spacing = baseFontSize * 1.2;
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      
-      const line1 = `(${operands[0]} + ${operands[1]}) + ${operands[2]} = ?`;
-      const line2 = `Completa la otra forma:`;
-      const line3 = `${operands[0]} + (_____ + _____) = ?`;
-      
-      context.fillText(line1, centerX, centerY - spacing);
-      context.fillText(line2, centerX, centerY);
-      context.fillText(line3, centerX, centerY + spacing);
-    };
 
-    // Función para renderizar formato intermedio - Verificación
-    const drawIntermediateFormat = () => {
-      const spacing = baseFontSize * 1.2;
-      context.textAlign = 'center';
-      context.textBaseline = 'middle';
-      
-      const line1 = `¿Son estas expresiones equivalentes?`;
-      const line2 = `(${operands[0]} + ${operands[1]}) + ${operands[2]}`;
-      const line3 = `${operands[0]} + (${operands[1]} + ${operands[2]})`;
-      
-      context.fillText(line1, centerX, centerY - spacing * 1.5);
-      context.fillText(line2, centerX, centerY - spacing/2);
-      context.fillText(line3, centerX, centerY + spacing/2);
-    };
 
     // Función para renderizar formato avanzado - Completar espacios completo
     const drawAdvancedFormat = () => {
@@ -609,12 +579,6 @@ export function DrawingCanvas({
     switch(difficulty) {
       case 'beginner':
         drawBeginnerFormat();
-        break;
-      case 'elementary':
-        drawElementaryFormat();
-        break;
-      case 'intermediate':
-        drawIntermediateFormat();
         break;
       case 'advanced':
         drawAdvancedFormat();
