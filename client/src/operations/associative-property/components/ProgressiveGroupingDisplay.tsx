@@ -174,6 +174,7 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <div
                       ref={el => inputRefs.current['leftSum1'] = el}
+                      data-field="leftSum1"
                       tabIndex={0}
                       className={`w-16 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
                         focusedField === 'leftSum1' 
@@ -197,6 +198,7 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                     <span className="text-xl">=</span>
                     <div
                       ref={el => inputRefs.current['final1'] = el}
+                      data-field="final1"
                       tabIndex={0}
                       className={`w-20 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
                         focusedField === 'final1' 
@@ -249,6 +251,7 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                     <span className="text-xl">+</span>
                     <div
                       ref={el => inputRefs.current['rightSum2'] = el}
+                      data-field="rightSum2"
                       tabIndex={0}
                       className={`w-16 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
                         focusedField === 'rightSum2' 
@@ -270,6 +273,7 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                     <span className="text-xl">=</span>
                     <div
                       ref={el => inputRefs.current['final2'] = el}
+                      data-field="final2"
                       tabIndex={0}
                       className={`w-20 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
                         focusedField === 'final2' 
