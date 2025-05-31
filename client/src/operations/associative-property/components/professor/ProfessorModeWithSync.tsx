@@ -404,7 +404,8 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                       <div
                         ref={el => inputRefs.current['final1'] = el}
                         data-field="final1"
-                        tabIndex={0}
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
                         className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all outline-none ${
                           focusedField === 'final1' 
                             ? 'border-green-500 bg-green-50 ring-2 ring-green-200' 
@@ -412,7 +413,6 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                         }`}
                         onClick={(e) => {
                           console.log('🖱️ [INPUT-DEBUG] Clicked final1');
-                          e.preventDefault();
                           setFocusedField('final1');
                           e.currentTarget.focus();
                         }}
@@ -423,8 +423,10 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                         onBlur={() => {
                           console.log('👋 [INPUT-DEBUG] Blurred final1');
                         }}
+                        onInput={(e) => handleInput('final1', e)}
+                        onKeyDown={(e) => handleKeyDown('final1', e)}
                       >
-                        {answers.final1 || <span className="text-gray-400">___</span>}
+                        {answers.final1 || '___'}
                       </div>
                     </div>
                   </div>
@@ -446,7 +448,8 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                       <div
                         ref={el => inputRefs.current['rightSum2'] = el}
                         data-field="rightSum2"
-                        tabIndex={0}
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
                         className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all outline-none ${
                           focusedField === 'rightSum2' 
                             ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200' 
@@ -454,7 +457,6 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                         }`}
                         onClick={(e) => {
                           console.log('🖱️ [INPUT-DEBUG] Clicked rightSum2');
-                          e.preventDefault();
                           setFocusedField('rightSum2');
                           e.currentTarget.focus();
                         }}
@@ -465,14 +467,17 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                         onBlur={() => {
                           console.log('👋 [INPUT-DEBUG] Blurred rightSum2');
                         }}
+                        onInput={(e) => handleInput('rightSum2', e)}
+                        onKeyDown={(e) => handleKeyDown('rightSum2', e)}
                       >
-                        {answers.rightSum2 || <span className="text-gray-400">___</span>}
+                        {answers.rightSum2 || '___'}
                       </div>
                       <span>=</span>
                       <div
                         ref={el => inputRefs.current['final2'] = el}
                         data-field="final2"
-                        tabIndex={0}
+                        contentEditable={true}
+                        suppressContentEditableWarning={true}
                         className={`bg-white border-2 rounded px-2 py-1 min-w-[50px] text-center cursor-text transition-all outline-none ${
                           focusedField === 'final2' 
                             ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200' 
@@ -480,7 +485,6 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                         }`}
                         onClick={(e) => {
                           console.log('🖱️ [INPUT-DEBUG] Clicked final2');
-                          e.preventDefault();
                           setFocusedField('final2');
                           e.currentTarget.focus();
                         }}
@@ -491,8 +495,10 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                         onBlur={() => {
                           console.log('👋 [INPUT-DEBUG] Blurred final2');
                         }}
+                        onInput={(e) => handleInput('final2', e)}
+                        onKeyDown={(e) => handleKeyDown('final2', e)}
                       >
-                        {answers.final2 || <span className="text-gray-400">___</span>}
+                        {answers.final2 || '___'}
                       </div>
                     </div>
                   </div>
