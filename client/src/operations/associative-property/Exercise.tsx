@@ -2808,32 +2808,35 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           {settings.difficulty === 'intermediate' && exerciseStarted && (
             <InteractiveExercise 
               operands={currentProblem.operands}
+              grouping1={currentProblem.grouping1}
+              grouping2={currentProblem.grouping2}
               interactiveAnswers={interactiveAnswers}
               setInteractiveAnswers={setInteractiveAnswers}
               activeInteractiveField={activeInteractiveField}
               setActiveInteractiveField={setActiveInteractiveField}
               onAnswer={(answers) => {
-                // Verificar todas las respuestas del ejercicio interactivo
-                const correctSum = currentProblem.correctAnswer;
-                const form1Correct = answers[0] === correctSum;
-                const form2Blanks = answers[1] === currentProblem.operands[1] && answers[2] === currentProblem.operands[2];
-                const form2Answer = answers[3] === correctSum;
+                // Verificar todas las respuestas del ejercicio interactivo de propiedad asociativa
+                const leftSum1 = parseInt(interactiveAnswers.leftSum1 || '0');
+                const final1 = parseInt(interactiveAnswers.final1 || '0');
+                const leftSum2 = parseInt(interactiveAnswers.leftSum2 || '0');
+                const rightSum2 = parseInt(interactiveAnswers.rightSum2 || '0');
+                const final2 = parseInt(interactiveAnswers.final2 || '0');
                 
-                if (form1Correct && form2Blanks && form2Answer) {
-                  // Simular respuesta correcta
-                  setFeedbackMessage("¡Excelente! Has completado correctamente ambas formas de la propiedad asociativa.");
+                const allCorrect = 
+                  leftSum1 === (currentProblem.grouping1?.leftSum || 0) &&
+                  final1 === (currentProblem.grouping1?.totalSum || 0) &&
+                  leftSum2 === (currentProblem.grouping2?.leftSum || 0) &&
+                  rightSum2 === (currentProblem.grouping2?.rightSum || 0) &&
+                  final2 === (currentProblem.grouping2?.totalSum || 0);
+                
+                if (allCorrect) {
+                  setFeedbackMessage("¡Excelente! Has demostrado que ambas agrupaciones dan el mismo resultado. Esto es la propiedad asociativa.");
                   setFeedbackColor("green");
-                  setTimeout(() => {
-                    if (currentProblemIndex < problemsList.length - 1) {
-                      setCurrentProblemIndex(prev => prev + 1);
-                    } else {
-                      completeExercise();
-                    }
-                  }, 2000);
+                  handleCorrectAnswer();
                 } else {
-                  // Simular respuesta incorrecta
-                  setFeedbackMessage("Revisa tus respuestas. Recuerda que ambas formas deben dar el mismo resultado.");
+                  setFeedbackMessage("Revisa tus cálculos. Recuerda que la propiedad asociativa dice que (a + b) + c = a + (b + c).");
                   setFeedbackColor("red");
+                  handleIncorrectAnswer();
                 }
               }}
             />
