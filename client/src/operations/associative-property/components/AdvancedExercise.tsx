@@ -46,14 +46,21 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
 
     // Generar opciones para multiple choice una sola vez
     if (randomExercise === 'multiple-choice') {
+      const correctAnswer = operands[0] + operands[1] + operands[2]; // Resultado correcto
+      
       const choices = [
         { id: 'a', text: `${operands[0]} + (${operands[1]} + ${operands[2]})`, correct: true },
-        { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: false },
+        { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: false }, // Esta opción cambia el orden de los operandos, NO es propiedad asociativa
         { id: 'c', text: `${operands[0]} × (${operands[1]} + ${operands[2]})`, correct: false }
       ];
+      
       // Mezclar una sola vez
       const shuffled = [...choices].sort(() => Math.random() - 0.5);
       setShuffledChoices(shuffled);
+      
+      console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Opciones generadas:', choices);
+      console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Expresión original: (' + operands[0] + ' + ' + operands[1] + ') + ' + operands[2]);
+      console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Resultado correcto esperado:', correctAnswer);
     }
 
     // Generar expresión de verificación una sola vez
@@ -168,6 +175,13 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     // Find the selected choice from the shuffled choices
     const selectedChoiceData = shuffledChoices.find(choice => choice.id === selectedChoice);
     const isCorrect = selectedChoiceData?.correct || false;
+    
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Validación de opción múltiple:');
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Opción seleccionada:', selectedChoice);
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Datos de la opción:', selectedChoiceData);
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Es correcta:', isCorrect);
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Todas las opciones disponibles:', shuffledChoices);
+    
     setShowResult(true);
     onAnswer(isCorrect);
   };
@@ -293,7 +307,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     // Usar las opciones estables guardadas en el estado
     const choicesToUse = shuffledChoices.length > 0 ? shuffledChoices : [
       { id: 'a', text: `${operands[0]} + (${operands[1]} + ${operands[2]})`, correct: true },
-      { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: true },
+      { id: 'b', text: `(${operands[0]} + ${operands[2]}) + ${operands[1]}`, correct: false }, // CORREGIDO: Esta opción cambia el orden, NO es propiedad asociativa
       { id: 'c', text: `${operands[0]} × (${operands[1]} + ${operands[2]})`, correct: false }
     ];
 
@@ -366,7 +380,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
                 parseInt(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0)
               : exercise === 'verification'
               ? (verificationAnswer.toLowerCase() === 'verdadero' || verificationAnswer.toLowerCase() === 'true') === (verificationExpression?.isCorrect ?? true)
-              : selectedChoice === 'a' || selectedChoice === 'b' // Múltiples respuestas correctas
+              : shuffledChoices.find(choice => choice.id === selectedChoice)?.correct || false // CORREGIDO: Usar la validación correcta basada en los datos del estado
             ) ? 'text-green-600' : 'text-red-600'
           }`}>
             {(exercise === 'fill-blank' 
@@ -375,7 +389,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
                 parseInt(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0)
               : exercise === 'verification'
               ? (verificationAnswer.toLowerCase() === 'verdadero' || verificationAnswer.toLowerCase() === 'true') === (verificationExpression?.isCorrect ?? true)
-              : selectedChoice === 'a' || selectedChoice === 'b'
+              : shuffledChoices.find(choice => choice.id === selectedChoice)?.correct || false // CORREGIDO: Usar la validación correcta
             ) ? '¡Correcto!' : 'Incorrecto. La propiedad asociativa permite cambiar la agrupación manteniendo el mismo resultado.'}
           </div>
         </div>
