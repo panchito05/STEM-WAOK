@@ -3129,6 +3129,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                     variant="outline" size="sm"
                     disabled={(!settings.showAnswerWithExplanation && !viewingPrevious) || viewingPrevious || exerciseCompleted || waitingRef.current || !exerciseStarted}
                     onClick={() => {
+                        console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Show Answer clicked:');
+                        console.log('[ASSOCIATIVE-PROPERTY-DEBUG] settings.showAnswerWithExplanation:', settings.showAnswerWithExplanation);
+                        console.log('[ASSOCIATIVE-PROPERTY-DEBUG] viewingPrevious:', viewingPrevious);
+                        console.log('[ASSOCIATIVE-PROPERTY-DEBUG] exerciseCompleted:', exerciseCompleted);
+                        console.log('[ASSOCIATIVE-PROPERTY-DEBUG] waitingRef.current:', waitingRef.current);
+                        console.log('[ASSOCIATIVE-PROPERTY-DEBUG] exerciseStarted:', exerciseStarted);
+                        console.log('[ASSOCIATIVE-PROPERTY-DEBUG] currentProblem:', currentProblem);
+                        
                         if(currentProblem && !viewingPrevious && !exerciseCompleted && !waitingRef.current) {
                             if (singleProblemTimerRef.current) clearInterval(singleProblemTimerRef.current);
                             
@@ -3137,8 +3145,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             localStorage.setItem('associative-property_consecutiveCorrectAnswers', '0');
                             console.log("[ASSOCIATIVE-PROPERTY] Reiniciando contador de respuestas correctas consecutivas por respuesta revelada");
                             
-                            // Usamos la respuesta correcta del problema directamente
-                            setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                            // Para nivel avanzado, mostrar las respuestas específicas del ejercicio
+                            if (settings.difficulty === 'advanced') {
+                                // Llenar automáticamente las respuestas correctas para ejercicios de completar espacios
+                                if (currentProblem.operands && currentProblem.operands.length === 3) {
+                                    setInteractiveAnswers({
+                                        blank1: currentProblem.operands[1].toString(),
+                                        blank2: currentProblem.operands[2].toString(), 
+                                        blank3: currentProblem.operands.reduce((sum, val) => sum + val, 0).toString(),
+                                        blank4: ''
+                                    });
+                                }
+                                setFeedbackMessage("Respuestas completadas automáticamente");
+                            } else {
+                                // Usamos la respuesta correcta del problema directamente para otros niveles
+                                setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
+                            }
                             setFeedbackColor("blue");
                             setWaitingForContinue(true); // Pone waitingRef.current = true
                             const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
