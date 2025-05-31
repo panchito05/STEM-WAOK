@@ -648,45 +648,366 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     return () => { if (generalTimerRef.current) clearInterval(generalTimerRef.current); };
   }, [exerciseStarted, exerciseCompleted]);
 
-  const checkCurrentAnswer = useCallback(() => {
-    console.log('🔍 [CHECK-DEBUG] checkCurrentAnswer called');
-    console.log('🔍 [CHECK-DEBUG] currentProblem:', currentProblem);
-    console.log('🔍 [CHECK-DEBUG] waitingRef.current:', waitingRef.current);
-    console.log('🔍 [CHECK-DEBUG] exerciseCompleted:', exerciseCompleted);
-    console.log('🔍 [CHECK-DEBUG] viewingPrevious:', viewingPrevious);
-    console.log('🔍 [CHECK-DEBUG] exerciseStarted:', exerciseStarted);
-    console.log('🔍 [CHECK-DEBUG] settings.difficulty:', settings.difficulty);
+  // SISTEMA DE VALIDACIÓN NUEVA ARQUITECTURA
+  const executeValidation = useCallback(() => {
+    console.log('🔥 [VALIDATION-SYSTEM] Starting validation');
     
-    if (!currentProblem || waitingRef.current || exerciseCompleted || viewingPrevious) {
-      console.log('🚫 [CHECK-DEBUG] Early return - conditions not met');
+    if (!currentProblem || waitingForContinue || exerciseCompleted || viewingPrevious) {
+      console.log('❌ [VALIDATION-SYSTEM] Invalid state for validation');
       return false;
     }
 
     if (!exerciseStarted) {
-      console.log('🚫 [CHECK-DEBUG] Exercise not started, calling startExercise');
       startExercise();
-      return false; // No cuenta como intento, no está "resuelto"
+      return false;
     }
 
-    // Manejar niveles intermediate y advanced con sus propios componentes
-    if (settings.difficulty === 'intermediate') {
-      console.log('✅ [CHECK-DEBUG] Processing intermediate level validation');
-      // Verificar que tenemos las agrupaciones matemáticas
+    // Para niveles elementary e intermediate: validar los input boxes de la propiedad asociativa
+    if (settings.difficulty === 'elementary' || settings.difficulty === 'intermediate') {
+      console.log('🔍 [VALIDATION-SYSTEM] Validating associative property inputs');
+      
       if (!currentProblem.grouping1 || !currentProblem.grouping2) {
         setFeedbackMessage("Error: No se pudieron generar las agrupaciones matemáticas.");
         setFeedbackColor("red");
         return false;
       }
 
-      // Obtener las respuestas del componente ProgressiveGroupingDisplay
-      const leftSum1Input = document.querySelector('[data-field="leftSum1"]') as HTMLDivElement;
-      const final1Input = document.querySelector('[data-field="final1"]') as HTMLDivElement;
-      const rightSum2Input = document.querySelector('[data-field="rightSum2"]') as HTMLDivElement;
-      const final2Input = document.querySelector('[data-field="final2"]') as HTMLDivElement;
+      // Obtener valores de los input boxes
+      const leftSum1 = document.querySelector('[data-field="leftSum1"]')?.textContent || '';
+      const final1 = document.querySelector('[data-field="final1"]')?.textContent || '';
+      const rightSum2 = document.querySelector('[data-field="rightSum2"]')?.textContent || '';
+      const final2 = document.querySelector('[data-field="final2"]')?.textContent || '';
 
-      if (!leftSum1Input || !final1Input || !rightSum2Input || !final2Input) {
-        setFeedbackMessage("Error: No se pueden encontrar los campos de entrada.");
+      if (!leftSum1 || !final1 || !rightSum2 || !final2) {
+        setFeedbackMessage("Por favor completa todos los campos antes de verificar.");
         setFeedbackColor("red");
+        return false;
+      }
+
+      // Validar respuestas
+      const userAnswers = {
+        leftSum1: parseInt(leftSum1) || 0,
+        final1: parseInt(final1) || 0,
+        rightSum2: parseInt(rightSum2) || 0,
+        final2: parseInt(final2) || 0
+      };
+
+      const correctAnswers = {
+        leftSum1: currentProblem.grouping1.leftSum,
+        final1: currentProblem.grouping1.totalSum,
+        rightSum2: currentProblem.grouping2.rightSum,
+        final2: currentProblem.grouping2.totalSum
+      };
+
+      const isCorrect = 
+        userAnswers.leftSum1 === correctAnswers.leftSum1 &&
+        userAnswers.final1 === correctAnswers.final1 &&
+        userAnswers.rightSum2 === correctAnswers.rightSum2 &&
+        userAnswers.final2 === correctAnswers.final2;
+
+      // Actualizar historial
+      const newAttempts = currentAttempts + 1;
+      setCurrentAttempts(newAttempts);
+      
+      setUserAnswersHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[actualActiveProblemIndexBeforeViewingPrevious] = {
+          problemId: currentProblem.id,
+          problem: currentProblem,
+          userAnswer: currentProblem.correctAnswer,
+          isCorrect: isCorrect,
+          status: isCorrect ? 'correct' : 'incorrect',
+          attempts: newAttempts,
+          timestamp: Date.now()
+        };
+        return newHistory;
+      });
+
+      if (isCorrect) {
+        setFeedbackMessage(`¡Excelente! Has demostrado que ${currentProblem.grouping1.expression} = ${currentProblem.grouping2.expression} = ${currentProblem.grouping1.totalSum}. ¡La propiedad asociativa funciona!`);
+        setFeedbackColor("green");
+        setWaitingForContinue(true);
+        
+        const newConsecutive = consecutiveCorrectAnswers + 1;
+        setConsecutiveCorrectAnswers(newConsecutive);
+        setConsecutiveIncorrectAnswers(0);
+        
+        if (newConsecutive > maxConsecutiveStreak) {
+          setMaxConsecutiveStreak(newConsecutive);
+        }
+      } else {
+        setFeedbackMessage("Revisa tus cálculos. Recuerda que la propiedad asociativa dice que (a + b) + c = a + (b + c).");
+        setFeedbackColor("red");
+        setConsecutiveIncorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(0);
+      }
+
+      return isCorrect;
+    }
+
+    // Para nivel advanced
+    if (settings.difficulty === 'advanced') {
+      setAdvancedValidationTrigger(prev => prev + 1);
+      return false;
+    }
+
+    // Para nivel beginner (usando digits)
+    let userAnswerString = "";
+    const decPosInAnswer = currentProblem.answerDecimalPosition;
+    const totalDigitBoxes = currentProblem.answerMaxDigits;
+    const integerBoxesCount = totalDigitBoxes - (decPosInAnswer || 0);
+
+    if (decPosInAnswer !== undefined && decPosInAnswer > 0) {
+      const integerPart = digitAnswers.slice(0, integerBoxesCount).join('');
+      const decimalPart = digitAnswers.slice(integerBoxesCount).join('');
+      userAnswerString = `${integerPart || '0'}.${decimalPart.padEnd(decPosInAnswer, '0')}`;
+    } else {
+      userAnswerString = digitAnswers.join('') || '0';
+    }
+
+    const userNumericAnswer = parseFloat(userAnswerString);
+
+    if (isNaN(userNumericAnswer) && digitAnswers.some(d => d && d.trim() !== "")) {
+      setFeedbackMessage(t('exercises.invalidAnswer'));
+      setFeedbackColor("red");
+      return false;
+    }
+
+    const newAttempts = currentAttempts + 1;
+    setCurrentAttempts(newAttempts);
+    const isCorrect = checkAnswer(currentProblem, userNumericAnswer);
+
+    setUserAnswersHistory(prev => {
+      const newHistory = [...prev];
+      newHistory[currentProblemIndex] = {
+        problemId: currentProblem.id,
+        problem: currentProblem,
+        userAnswer: userNumericAnswer,
+        isCorrect: isCorrect,
+        status: isCorrect ? 'correct' : 'incorrect',
+        attempts: newAttempts,
+        timestamp: Date.now()
+      };
+      return newHistory;
+    });
+
+    if (isCorrect) {
+      setFeedbackMessage(t('exercises.correct'));
+      setFeedbackColor("green");
+      setWaitingForContinue(true);
+    } else {
+      setFeedbackMessage(t('exercises.incorrect'));
+      setFeedbackColor("red");
+    }
+
+    return isCorrect;
+  }, [currentProblem, waitingForContinue, exerciseCompleted, viewingPrevious, exerciseStarted, settings.difficulty, currentAttempts, digitAnswers, consecutiveCorrectAnswers, maxConsecutiveStreak, actualActiveProblemIndexBeforeViewingPrevious, currentProblemIndex, t, checkAnswer]);
+
+  // Función específica para validar niveles elementary e intermediate
+  const validateAssociativePropertyInputs = useCallback(() => {
+    console.log('🔍 [VALIDATION-SYSTEM] Validating associative property inputs');
+    
+    // Verificar que tenemos las agrupaciones matemáticas
+    if (!currentProblem.grouping1 || !currentProblem.grouping2) {
+      setFeedbackMessage("Error: No se pudieron generar las agrupaciones matemáticas.");
+      setFeedbackColor("red");
+      return false;
+    }
+
+    // Obtener las respuestas de los campos de entrada
+    const leftSum1Input = document.querySelector('[data-field="leftSum1"]') as HTMLDivElement;
+    const final1Input = document.querySelector('[data-field="final1"]') as HTMLDivElement;
+    const rightSum2Input = document.querySelector('[data-field="rightSum2"]') as HTMLDivElement;
+    const final2Input = document.querySelector('[data-field="final2"]') as HTMLDivElement;
+
+    console.log('🔍 [VALIDATION-SYSTEM] Input elements found:', {
+      leftSum1Input: !!leftSum1Input,
+      final1Input: !!final1Input,
+      rightSum2Input: !!rightSum2Input,
+      final2Input: !!final2Input
+    });
+
+    if (!leftSum1Input || !final1Input || !rightSum2Input || !final2Input) {
+      setFeedbackMessage("Error: No se pueden encontrar los campos de entrada.");
+      setFeedbackColor("red");
+      return false;
+    }
+
+    const answers = {
+      leftSum1: leftSum1Input.textContent || '',
+      final1: final1Input.textContent || '',
+      rightSum2: rightSum2Input.textContent || '',
+      final2: final2Input.textContent || ''
+    };
+
+    console.log('🔍 [VALIDATION-SYSTEM] User answers extracted:', answers);
+
+    // Verificar que todos los campos estén llenos
+    if (!answers.leftSum1 || !answers.final1 || !answers.rightSum2 || !answers.final2) {
+      setFeedbackMessage("Por favor completa todos los campos antes de verificar.");
+      setFeedbackColor("red");
+      return false;
+    }
+
+    // Calcular respuestas correctas
+    const { operands, grouping1, grouping2 } = currentProblem;
+    const [a, b, c] = operands;
+
+    const userAnswers = {
+      leftSum1: parseInt(answers.leftSum1) || 0,
+      final1: parseInt(answers.final1) || 0,
+      rightSum2: parseInt(answers.rightSum2) || 0,
+      final2: parseInt(answers.final2) || 0
+    };
+
+    const correctAnswers = {
+      leftSum1: grouping1?.leftSum || 0,
+      final1: grouping1?.totalSum || 0,
+      rightSum2: grouping2?.rightSum || 0,
+      final2: grouping2?.totalSum || 0
+    };
+
+    console.log('🔍 [VALIDATION-SYSTEM] Answer comparison:', {
+      userAnswers,
+      correctAnswers
+    });
+
+    const isCorrect = 
+      userAnswers.leftSum1 === correctAnswers.leftSum1 &&
+      userAnswers.final1 === correctAnswers.final1 &&
+      userAnswers.rightSum2 === correctAnswers.rightSum2 &&
+      userAnswers.final2 === correctAnswers.final2;
+
+    // Actualizar historial de respuestas
+    const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+    setUserAnswersHistory(prev => {
+      const newHistory = [...prev];
+      newHistory[problemIdxForHistory] = {
+        problemId: currentProblem.id,
+        problem: currentProblem,
+        userAnswer: currentProblem.correctAnswer,
+        isCorrect: isCorrect,
+        status: isCorrect ? 'correct' : 'incorrect',
+        attempts: currentAttempts + 1,
+        timestamp: Date.now()
+      };
+      return newHistory;
+    });
+
+    // Mostrar feedback
+    if (isCorrect) {
+      const { grouping1, grouping2 } = currentProblem;
+      setFeedbackMessage(`¡Excelente! Has demostrado que ${grouping1.expression} = ${grouping2.expression} = ${grouping1.totalSum}. ¡La propiedad asociativa funciona!`);
+      setFeedbackColor("green");
+      
+      // Incrementar contador de respuestas correctas consecutivas
+      const newConsecutive = consecutiveCorrectAnswers + 1;
+      setConsecutiveCorrectAnswers(newConsecutive);
+      setConsecutiveIncorrectAnswers(0);
+      
+      // Actualizar récord máximo si es necesario
+      if (newConsecutive > maxConsecutiveStreak) {
+        setMaxConsecutiveStreak(newConsecutive);
+      }
+      
+      // Activar modo de espera para continuar
+      setWaitingForContinue(true);
+    } else {
+      // Proporcionar feedback específico sobre qué cálculos están incorrectos
+      let feedback = "Revisa tus cálculos: ";
+      const errors = [];
+      
+      if (userAnswers.leftSum1 !== correctAnswers.leftSum1) 
+        errors.push(`(${a} + ${b}) = ${correctAnswers.leftSum1}`);
+      if (userAnswers.final1 !== correctAnswers.final1) 
+        errors.push(`primera agrupación = ${correctAnswers.final1}`);
+      if (userAnswers.rightSum2 !== correctAnswers.rightSum2) 
+        errors.push(`(${b} + ${c}) = ${correctAnswers.rightSum2}`);
+      if (userAnswers.final2 !== correctAnswers.final2) 
+        errors.push(`segunda agrupación = ${correctAnswers.final2}`);
+      
+      if (errors.length > 0) {
+        feedback += errors.join(", ");
+      } else {
+        feedback = "Los resultados finales deben ser iguales. Recuerda: la propiedad asociativa dice que (a + b) + c = a + (b + c).";
+      }
+      
+      setFeedbackMessage(feedback);
+      setFeedbackColor("red");
+      
+      // Incrementar contadores
+      setConsecutiveIncorrectAnswers(prev => prev + 1);
+      setConsecutiveCorrectAnswers(0);
+      setCurrentAttempts(prev => prev + 1);
+    }
+
+    console.log('✅ [VALIDATION-SYSTEM] Validation completed:', isCorrect);
+    return isCorrect;
+  }, [currentProblem, currentAttempts, consecutiveCorrectAnswers, maxConsecutiveStreak, actualActiveProblemIndexBeforeViewingPrevious]);
+
+  // Función para validar nivel beginner (mantiene lógica original)
+  const validateBeginnerLevel = useCallback(() => {
+    console.log('🔍 [VALIDATION-SYSTEM] Validating beginner level');
+    
+    let userAnswerString = "";
+    const decPosInAnswer = currentProblem.answerDecimalPosition;
+    const totalDigitBoxes = currentProblem.answerMaxDigits;
+    const integerBoxesCount = totalDigitBoxes - (decPosInAnswer || 0);
+
+    if (decPosInAnswer !== undefined && decPosInAnswer > 0) {
+        const integerPart = digitAnswers.slice(0, integerBoxesCount).join('');
+        const decimalPart = digitAnswers.slice(integerBoxesCount).join('');
+        userAnswerString = `${integerPart || '0'}.${decimalPart.padEnd(decPosInAnswer, '0')}`;
+    } else {
+        userAnswerString = digitAnswers.join('') || '0';
+    }
+
+    const userNumericAnswer = parseFloat(userAnswerString);
+
+    if (isNaN(userNumericAnswer) && digitAnswers.some(d => d && d.trim() !== "")) {
+        setFeedbackMessage(t('exercises.invalidAnswer'));
+        setFeedbackColor("red");
+        return false;
+    }
+
+    const newAttempts = currentAttempts + 1;
+    setCurrentAttempts(newAttempts);
+    const isCorrect = checkAnswer(currentProblem, userNumericAnswer);
+
+    // Actualizar historial de respuestas
+    const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+    setUserAnswersHistory(prev => {
+      const newHistory = [...prev];
+      newHistory[problemIdxForHistory] = {
+        problemId: currentProblem.id,
+        problem: currentProblem,
+        userAnswer: userNumericAnswer,
+        isCorrect: isCorrect,
+        status: isCorrect ? 'correct' : 'incorrect',
+        attempts: newAttempts,
+        timestamp: Date.now()
+      };
+      return newHistory;
+    });
+
+    // Mostrar feedback apropiado
+    if (isCorrect) {
+      setFeedbackMessage("¡Correcto!");
+      setFeedbackColor("green");
+      setWaitingForContinue(true);
+    } else {
+      setFeedbackMessage("Incorrecto. Intenta de nuevo.");
+      setFeedbackColor("red");
+    }
+
+    console.log('✅ [VALIDATION-SYSTEM] Beginner validation completed:', isCorrect);
+    return isCorrect;
+  }, [currentProblem, currentAttempts, digitAnswers, actualActiveProblemIndexBeforeViewingPrevious, t, checkAnswer]);
+
+  const checkCurrentAnswer = useCallback(() => {
+    console.log('🔍 [VALIDATION-REDIRECT] checkCurrentAnswer called - redirecting to executeValidation');
+    return executeValidation();
+  }, [executeValidation]);
         return false;
       }
 
@@ -3256,26 +3577,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
           </Button>
 
-          {(() => {
-            console.log('🔍 [RENDER-DEBUG] Button condition check:');
-            console.log('🔍 [RENDER-DEBUG] viewingPrevious:', viewingPrevious);
-            console.log('🔍 [RENDER-DEBUG] waitingRef.current:', waitingRef.current);
-            console.log('🔍 [RENDER-DEBUG] exerciseStarted:', exerciseStarted);
-            console.log('🔍 [RENDER-DEBUG] exerciseCompleted:', exerciseCompleted);
-            return null;
-          })()}
+          {/* NUEVA ARQUITECTURA DE VALIDACIÓN - Sistema simplificado y robusto */}
           {viewingPrevious ? (
+            // Estado 1: Viendo problema anterior
             <Button 
               onClick={returnToActiveProblem} 
               className="w-full sm:w-auto px-4 sm:px-5 text-sm sm:text-base md:text-lg bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 order-2 sm:order-2"
             >
-                <RotateCcw className="mr-1 h-4 w-4" /> {settings.language === 'spanish' ? 'Volver al Activo' : 'Return to Active'}
+              <RotateCcw className="mr-1 h-4 w-4" /> {settings.language === 'spanish' ? 'Volver al Activo' : 'Return to Active'}
             </Button>
-          ) : waitingRef.current ? ( // Usar waitingRef.current para la UI
-            (<Button
-                ref={continueButtonRef}
-                onClick={handleContinue}
-                className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-2.5 text-base sm:text-lg md:text-xl animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center h-12 sm:h-10 order-2 sm:order-2"
+          ) : waitingForContinue ? (
+            // Estado 2: Esperando continuar (después de respuesta correcta o mostrar respuesta)
+            <Button
+              ref={continueButtonRef}
+              onClick={handleContinue}
+              className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-2.5 text-base sm:text-lg md:text-xl animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center h-12 sm:h-10 order-2 sm:order-2"
             >
               <span className="flex-grow text-center font-medium">{t('Continue')}</span>
               <TooltipProvider delayDuration={300}>
@@ -3299,20 +3615,30 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-            </Button>)
+            </Button>
           ) : (
+            // Estado 3: Modo activo - Botón de validación principal
             <Button 
               onClick={() => {
-                console.log('🔥 [BUTTON-DEBUG] Button clicked!');
-                console.log('🔥 [BUTTON-DEBUG] exerciseCompleted:', exerciseCompleted);
-                console.log('🔥 [BUTTON-DEBUG] waitingRef.current:', waitingRef.current);
-                console.log('🔥 [BUTTON-DEBUG] exerciseStarted:', exerciseStarted);
-                console.log('🔥 [BUTTON-DEBUG] disabled state check:', exerciseCompleted || waitingRef.current);
-                console.log('🔥 [BUTTON-DEBUG] Calling checkCurrentAnswer...');
-                const result = checkCurrentAnswer();
-                console.log('🔥 [BUTTON-DEBUG] checkCurrentAnswer result:', result);
+                console.log('🔥 [VALIDATION-SYSTEM] Validation button clicked');
+                console.log('🔥 [VALIDATION-SYSTEM] Current state:', {
+                  exerciseStarted,
+                  exerciseCompleted,
+                  currentProblem: !!currentProblem,
+                  difficulty: settings.difficulty
+                });
+                
+                if (!exerciseStarted) {
+                  console.log('🔥 [VALIDATION-SYSTEM] Starting exercise...');
+                  startExercise();
+                  return;
+                }
+                
+                console.log('🔥 [VALIDATION-SYSTEM] Executing validation...');
+                const result = executeValidation();
+                console.log('🔥 [VALIDATION-SYSTEM] Validation result:', result);
               }} 
-              disabled={false}
+              disabled={exerciseCompleted}
               className="w-full sm:w-auto px-5 sm:px-6 text-sm sm:text-base md:text-lg bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 order-2 sm:order-2"
             >
               {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
