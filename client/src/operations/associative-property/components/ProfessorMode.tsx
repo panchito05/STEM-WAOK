@@ -100,7 +100,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
           version: "4.0",
           timestamp: Date.now(),
           exerciseId: `professor_mode_${Date.now()}`,
-          exerciseType: "professor_mode_addition",
+          exerciseType: "professor_mode_associative_property",
           source: "profesor_mode",
           
           // Almacenar los problemas en TODAS las ubicaciones posibles para máxima compatibilidad

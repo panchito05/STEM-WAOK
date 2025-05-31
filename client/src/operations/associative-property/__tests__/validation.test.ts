@@ -105,7 +105,7 @@ describe('Input Validation', () => {
       
       const result = validateAssociativePropertyProblem(problem);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(expect.stringContaining('no coincide con la suma de operandos'));
+      expect(result.errors).toContain(expect.stringContaining('no coincide con la propiedad asociativa'));
     });
 
     test('should reject problems with invalid difficulty', () => {

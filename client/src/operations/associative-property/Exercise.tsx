@@ -2006,7 +2006,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           id: problema.id || `problema-${i}`,
           tipo: "associative-property",
           
-          // Datos específicos del problema de suma
+          // Datos específicos del problema de propiedad asociativa
           operands: [operandoA, operandoB],
           operacion: "+",
           correctAnswer: respuestaCorrecta.toString(),
@@ -2166,11 +2166,11 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     console.log('🔄 Verificando modo multi-operaciones:', { isMultiMode });
     
     if (isMultiMode) {
-      console.log('🔄 Estamos en modo multi-operaciones, completando módulo addition...');
+      console.log('🔄 Estamos en modo multi-operaciones, completando módulo associative-property...');
       
       // Preparar datos del módulo para la sesión multi-operaciones
       const moduleResults = {
-        moduleId: 'addition',
+        moduleId: 'associative-property',
         completed: true,
         correctAnswers: scoreFinal,
         totalAnswers: problemsList.length,
@@ -2184,7 +2184,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         }))
       };
       
-      console.log('🔄 Datos del módulo addition preparados:', moduleResults);
+      console.log('🔄 Datos del módulo associative-property preparados:', moduleResults);
       
       // Llamar al hook para completar el módulo actual y continuar
       completeCurrentModule(moduleResults);
