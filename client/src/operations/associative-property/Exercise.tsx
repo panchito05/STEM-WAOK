@@ -2556,7 +2556,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   return (
     <div className="relative">
       <LevelUpHandler />
-
       {/* Diálogo para gestionar videos explicativos */}
       <YoutubeVideoDialog
         isOpen={showVideoDialog}
@@ -2641,15 +2640,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   <TooltipProvider delayDuration={300}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className={`font-medium p-1 rounded border-2 ${
-                          consecutiveCorrectAnswers >= 8 
-                            ? "bg-green-100 text-green-800 border-green-400 animate-pulse" 
-                            : consecutiveCorrectAnswers >= 5 
-                            ? "bg-blue-100 text-blue-800 border-blue-400" 
-                            : consecutiveCorrectAnswers >= 3
-                            ? "bg-purple-100 text-purple-800 border-purple-400"
-                            : "bg-gray-100 text-gray-700 border-gray-300"
-                        }`}>
+                        <span className="font-medium p-1 rounded border-2 bg-gray-100 text-gray-700 border-gray-300 pl-[0px] pr-[0px]">
                           🔥 Racha: {consecutiveCorrectAnswers} ({maxConsecutiveStreak})
                         </span>
                       </TooltipTrigger>
@@ -3319,7 +3310,6 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           }}
         />
       )}
-
       {/* 🎯 Modal de Recompensas Simplificado */}
       {rewardStats.showRewardModal && rewardStats.lastReward && (
         <Dialog open={rewardStats.showRewardModal} onOpenChange={(open) => {
