@@ -234,7 +234,7 @@ describe('Input Validation', () => {
 
   describe('Cross-validation Tests', () => {
     test('should validate problem-answer consistency', () => {
-      const problem = generateAssociativePropertyProblem('intermediate', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('intermediate');
       
       // Validate the problem itself
       const problemValidation = validateAssociativePropertyProblem(problem);
@@ -250,7 +250,7 @@ describe('Input Validation', () => {
     });
 
     test('should validate associative property demonstration', () => {
-      const problem = generateAssociativePropertyProblem('intermediate', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('intermediate');
       
       if (problem.grouping1 && problem.grouping2) {
         // Both groupings should be valid and equal

@@ -547,7 +547,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       <div className="h-full w-full flex flex-col lg:flex-row overflow-hidden">
         {/* Área de dibujo - Ocupa todo el espacio en móvil/tablet */}
         <div className="flex-1 relative overflow-hidden">
-          <DrawingArea problem={problem} />
+          <DrawingArea problem={problem} colorPosition="left" />
         </div>
         
         {/* Panel de control - Responsivo */}

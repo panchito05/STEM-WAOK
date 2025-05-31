@@ -98,7 +98,7 @@ export function validateAssociativePropertyProblem(problem: AssociativePropertyP
     const expectedSum = problem.operands.reduce((sum, operand) => sum + operand, 0);
     if (Math.abs(problem.correctAnswer - expectedSum) > 0.001) {
       result.isValid = false;
-      result.errors.push(`La respuesta correcta (${problem.correctAnswer}) no coincide con la suma de operandos (${expectedSum})`);
+      result.errors.push(`La respuesta correcta (${problem.correctAnswer}) no coincide con el resultado de operandos (${expectedSum})`);
     }
   }
 
