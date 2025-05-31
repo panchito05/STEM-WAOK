@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { AssociativePropertyProblem } from '../types';
+import { DrawingFactory, DrawingConfig } from '../drawing';
 
 // Definir los diferentes modos de herramientas
 type ToolMode = 'pen' | 'eraser';
@@ -472,19 +473,39 @@ export function DrawingCanvas({
     const context = contextRef.current;
     const canvas = canvasRef.current;
     
-    // Guardar las configuraciones actuales del contexto
-    const originalStrokeStyle = context.strokeStyle;
-    const originalLineWidth = context.lineWidth;
-    const originalFont = context.font;
-    const originalTextAlign = context.textAlign;
-    const originalTextBaseline = context.textBaseline;
-    const originalGlobalCompositeOperation = context.globalCompositeOperation;
+    // Obtener el nivel de dificultad actual desde localStorage (debe coincidir con Exercise.tsx)
+    let currentDifficulty = 'beginner'; // fallback por defecto
+    try {
+      const storedSettings = localStorage.getItem('moduleSettings');
+      if (storedSettings) {
+        const parsedSettings = JSON.parse(storedSettings);
+        const associativeSettings = parsedSettings["associative-property"];
+        if (associativeSettings) {
+          const enableAdaptive = associativeSettings.enableAdaptiveDifficulty;
+          const adaptiveDiff = localStorage.getItem('associative-property_adaptiveDifficulty');
+          const settingsDiff = associativeSettings.difficulty;
+          
+          currentDifficulty = enableAdaptive && adaptiveDiff ? adaptiveDiff : (settingsDiff || 'beginner');
+        }
+      }
+    } catch (e) {
+      console.error('[CANVAS] Error al obtener nivel de dificultad:', e);
+    }
     
-    // Configurar el contexto para dibujar texto con alta calidad
-    context.globalCompositeOperation = 'source-over';
-    context.strokeStyle = darkMode ? '#ffffff' : '#000000';
-    context.fillStyle = darkMode ? '#ffffff' : '#000000';
-    context.lineWidth = 3; // Línea más gruesa para mejor visibilidad
+    // Crear configuración para el sistema de dibujo
+    const config: DrawingConfig = {
+      canvas: canvas,
+      dpr: window.devicePixelRatio || 1,
+      centerX: canvas.width / (window.devicePixelRatio || 1) / 2,
+      centerY: canvas.height / (window.devicePixelRatio || 1) / 2,
+      baseFontSize: Math.min(canvas.width, canvas.height) / (window.devicePixelRatio || 1) / 20,
+      operands: currentProblem.operands,
+      darkMode: darkMode
+    };
+    
+    // Usar el factory para obtener el drawer apropiado y dibujar
+    const drawer = DrawingFactory.create(currentDifficulty);
+    drawer.draw(context, currentProblem, config);
     
     // Usar un DPR mejorado para mejor calidad
     const dpr = Math.max(window.devicePixelRatio || 1, 2);
