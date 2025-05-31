@@ -398,6 +398,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     blank2: '',
     blank3: ''
   });
+  const [showAnswersInIntermediate, setShowAnswersInIntermediate] = useState(false);
   const [advancedValidationTrigger, setAdvancedValidationTrigger] = useState<number>(0);
   const [activeInteractiveField, setActiveInteractiveField] = useState<string | null>(null);
   const [inputDirection, setInputDirection] = useState<'ltr' | 'rtl'>('rtl');

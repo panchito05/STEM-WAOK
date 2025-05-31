@@ -9,6 +9,7 @@ interface ProgressiveGroupingDisplayProps {
   problem: AssociativePropertyProblem;
   onComplete: (finalAnswer: number) => void;
   onCheckAnswers?: () => void;
+  showAnswers?: boolean;
 }
 
 interface PracticeAnswers {
@@ -20,7 +21,8 @@ interface PracticeAnswers {
 
 const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
   problem,
-  onComplete
+  onComplete,
+  showAnswers = false
 }) => {
   const [answers, setAnswers] = useState<PracticeAnswers>({
     leftSum1: '',
@@ -56,6 +58,18 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [focusedField, isComplete]);
+
+  // Llenar automáticamente las respuestas cuando showAnswers es true
+  useEffect(() => {
+    if (showAnswers && grouping1 && grouping2) {
+      setAnswers({
+        leftSum1: grouping1.leftSum.toString(),
+        final1: grouping1.totalSum.toString(),
+        rightSum2: grouping2.rightSum.toString(),
+        final2: grouping2.totalSum.toString()
+      });
+    }
+  }, [showAnswers, grouping1, grouping2]);
 
   const handleAnswerChange = (field: keyof PracticeAnswers, newDigit: string) => {
     if (newDigit === '') {
