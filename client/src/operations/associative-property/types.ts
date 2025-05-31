@@ -43,9 +43,10 @@ export interface AssociativePropertyProblem extends BaseProblem {
   grouping2?: AssociativeGrouping; // Segunda agrupación: a + (b + c)
   // Tipo de ejercicio para nivel avanzado
   advancedExerciseType?: AdvancedExerciseType;
-  // Propiedades de compatibilidad con Problem
-  displayFormat?: string;
-  allowDecimals?: boolean;
+  // Propiedades de compatibilidad con Problem - REQUIRED
+  displayFormat: string;
+  allowDecimals: boolean;
+  operator?: string;
   // Campos legacy para compatibilidad
   num1?: number;
   num2?: number;

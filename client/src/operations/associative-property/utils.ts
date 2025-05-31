@@ -49,11 +49,11 @@ export function associativePropertyProblemToProblem(problem: AssociativeProperty
   return {
     id: problem.id,
     operands,
-    displayFormat: problem.layout, // El layout de AssociativePropertyProblem es el displayFormat de Problem
+    displayFormat: problem.displayFormat,
     correctAnswer: problem.correctAnswer,
-    difficulty, // Usamos el parámetro de dificultad o el predeterminado
-    allowDecimals: problem.answerDecimalPosition !== undefined && problem.answerDecimalPosition > 0,
-    maxAttempts: 3 // Por defecto permitimos 3 intentos
+    difficulty,
+    allowDecimals: problem.allowDecimals,
+    maxAttempts: problem.maxAttempts
   };
 }
 
@@ -85,9 +85,11 @@ export function problemToAssociativePropertyProblem(problem: Problem): Associati
     correctAnswer: problem.correctAnswer,
     difficulty: problem.difficulty,
     maxAttempts: problem.maxAttempts,
-    layout: problem.displayFormat as ExerciseLayout, // Solo horizontal o vertical, no 'word'
+    layout: problem.displayFormat as ExerciseLayout,
     answerMaxDigits: problem.correctAnswer.toString().replace('.', '').length,
-    answerDecimalPosition
+    answerDecimalPosition,
+    displayFormat: problem.displayFormat,
+    allowDecimals: problem.allowDecimals
   };
 }
 
@@ -270,8 +272,8 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
 
   return {
     id,
-    num1: operands[0], // Mantener por compatibilidad o uso simple
-    num2: operands.length > 1 ? operands[1] : 0, // Mantener por compatibilidad
+    num1: operands[0],
+    num2: operands.length > 1 ? operands[1] : 0,
     operands,
     correctAnswer,
     difficulty,
@@ -284,6 +286,8 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
     interactiveMode,
     grouping1,
     grouping2,
+    displayFormat: layout,
+    allowDecimals: answerDecimalPosition !== undefined && answerDecimalPosition > 0
   };
 }
 

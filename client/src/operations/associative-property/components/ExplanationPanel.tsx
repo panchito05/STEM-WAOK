@@ -39,93 +39,87 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
     // Para más de dos operandos, mostrar explicación más detallada
     return (
       <p className="text-lg mb-4">
-        {t('explanationMultipleOperands')} {t('explanationStepByStep')}
+        Este problema tiene múltiples operandos. Veamos paso a paso cómo resolverlo.
       </p>
     );
   };
   
-  // Crear pasos detallados de la solución
-  const renderSolutionSteps = () => {
-    // Array para acumular resultados parciales
+  // Crear explicación detallada paso a paso
+  const renderDetailedExplanation = () => {
     const steps = [];
     let runningSum = 0;
     
-    // Crear pasos acumulativos
-    for (let i = 0; i < problem.operands.length; i++) {
-      const operand = problem.operands[i];
-      
-      // Actualizar resultado acumulado
+    problem.operands.forEach((operand, index) => {
       runningSum += operand.value;
-      
-      // Texto para paso actual
-      let stepText = '';
-      
-      if (i === 0) {
-        // Primer paso, simplemente iniciar con el valor
-        stepText = `${formatNumber(operand.value)}`;
+      if (index === 0) {
+        steps.push(
+          <div key={index} className="mb-2">
+            <span className="font-semibold">Paso {index + 1}:</span> Comenzamos con {formatNumber(operand.value)}
+          </div>
+        );
       } else {
-        // Pasos siguientes, mostrar acumulación
-        stepText = `${formatNumber(runningSum - operand.value)} + ${formatNumber(operand.value)} = ${formatNumber(runningSum)}`;
+        steps.push(
+          <div key={index} className="mb-2">
+            <span className="font-semibold">Paso {index + 1}:</span> {formatNumber(runningSum - operand.value)} + {formatNumber(operand.value)} = {formatNumber(runningSum)}
+          </div>
+        );
       }
-      
-      steps.push(
-        <div key={i} className="mb-2 text-lg">
-          {i > 0 && <span className="font-medium">Paso {i}: </span>}
-          <span>{stepText}</span>
+    });
+    
+    return (
+      <div className="bg-gray-50 dark:bg-slate-700 p-4 rounded-lg mb-4">
+        <h4 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">Solución paso a paso:</h4>
+        {steps}
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-600">
+          <span className="font-bold text-lg text-blue-600 dark:text-blue-400">
+            Respuesta final: {formatNumber(problem.correctAnswer)}
+          </span>
+        </div>
+      </div>
+    );
+  };
+  
+  // Crear mensaje de retroalimentación
+  const renderFeedback = () => {
+    if (isCorrect) {
+      return (
+        <div className="flex items-center mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+          <CheckCircle className="text-green-600 dark:text-green-400 mr-3" size={24} />
+          <div>
+            <h3 className="font-semibold text-green-800 dark:text-green-200 mb-1">¡Correcto!</h3>
+            <p className="text-green-700 dark:text-green-300">Tu respuesta {formatNumber(Number(userAnswer))} es correcta.</p>
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center mb-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+          <XCircle className="text-red-600 dark:text-red-400 mr-3" size={24} />
+          <div>
+            <h3 className="font-semibold text-red-800 dark:text-red-200 mb-1">Respuesta incorrecta</h3>
+            <p className="text-red-700 dark:text-red-300">
+              Tu respuesta fue {formatNumber(Number(userAnswer))}, pero la respuesta correcta es {formatNumber(problem.correctAnswer)}.
+            </p>
+          </div>
         </div>
       );
     }
-    
-    return steps;
   };
   
   return (
-    <div className="bg-white dark:bg-slate-800 p-5 rounded-lg shadow-md">
-      {/* Encabezado con resultado correcto/incorrecto */}
-      <div className="flex items-center mb-4">
-        {isCorrect ? (
-          <div className="flex items-center text-green-600 dark:text-green-400">
-            <CheckCircle className="w-6 h-6 mr-2" />
-            <span className="text-xl font-semibold">{t('correct')}</span>
-          </div>
-        ) : (
-          <div className="flex items-center text-red-600 dark:text-red-400">
-            <XCircle className="w-6 h-6 mr-2" />
-            <span className="text-xl font-semibold">{t('incorrect')}</span>
-          </div>
-        )}
-      </div>
-      
-      {/* Mostrar respuesta del usuario si fue incorrecta */}
-      {!isCorrect && (
-        <div className="mb-4 p-3 bg-gray-100 dark:bg-slate-700 rounded-md">
-          <p className="text-red-600 dark:text-red-400">
-            {t('explanationWrong', { values: { answer: userAnswer || '?' } })}
-          </p>
-          <p className="font-semibold mt-1">
-            {t('answer')}: {formatNumber(problem.correctAnswer)}
-          </p>
-        </div>
-      )}
-      
-      {/* Explicación básica */}
+    <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700">
+      {renderFeedback()}
       {renderBasicExplanation()}
+      {renderDetailedExplanation()}
       
-      {/* Pasos detallados */}
-      <div className="bg-gray-50 dark:bg-slate-700 p-3 rounded-md mb-4">
-        {renderSolutionSteps()}
-        <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600 font-bold text-lg">
-          {t('answer')}: {formatNumber(problem.correctAnswer)}
-        </div>
+      <div className="flex justify-center mt-6">
+        <Button 
+          onClick={onContinue}
+          className="px-8 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors"
+        >
+          Continuar
+        </Button>
       </div>
-      
-      {/* Botón para continuar */}
-      <Button 
-        className="w-full mt-2" 
-        onClick={onContinue}
-      >
-        {t('continue')}
-      </Button>
     </div>
   );
 };
