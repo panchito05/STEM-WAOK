@@ -2948,7 +2948,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         {/* Number Keypad - Full Width Design */}
         <div className="grid grid-cols-3 gap-3 w-full px-4">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", ">", "0", ".", "<"].map((key, idx) => (
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "<"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
@@ -2956,18 +2956,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 h-12 text-lg font-semibold
                 transition-all duration-200
                 ${
-                key === ">" 
-                  ? "bg-white hover:bg-red-50 text-red-600 active:bg-red-100 shadow-sm border-red-200 hover:border-red-300" 
-                  : key === "<" 
-                    ? "bg-white hover:bg-blue-50 text-blue-600 active:bg-blue-100 shadow-sm border-blue-200 hover:border-blue-300"
-                    : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100 border-gray-300 hover:border-gray-400 hover:shadow-md"
+                key === "<" 
+                  ? "bg-white hover:bg-blue-50 text-blue-600 active:bg-blue-100 shadow-sm border-blue-200 hover:border-blue-300"
+                  : "bg-white hover:bg-gray-50 shadow-sm active:bg-gray-100 border-gray-300 hover:border-gray-400 hover:shadow-md"
               }`}
               onClick={() => {
                 if (viewingPrevious || exerciseCompleted || waitingRef.current || !key || key === "") return;
                 
-                if (key === ">" || key === "sequential_backspace") {
-                  handleSequentialBackspace();
-                } else if (key === "<" || key === "backspace") {
+                if (key === "<" || key === "backspace") {
                   handleBackspace();
                 } else {
                   handleDigitInput(key);
