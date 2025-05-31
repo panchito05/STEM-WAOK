@@ -3163,7 +3163,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             </Button>)
           ) : (
             <Button 
-              onClick={checkCurrentAnswer} 
+              onClick={() => {
+                console.log('🔥 [BUTTON-DEBUG] Button clicked!');
+                console.log('🔥 [BUTTON-DEBUG] exerciseCompleted:', exerciseCompleted);
+                console.log('🔥 [BUTTON-DEBUG] waitingRef.current:', waitingRef.current);
+                console.log('🔥 [BUTTON-DEBUG] exerciseStarted:', exerciseStarted);
+                console.log('🔥 [BUTTON-DEBUG] Calling checkCurrentAnswer...');
+                const result = checkCurrentAnswer();
+                console.log('🔥 [BUTTON-DEBUG] checkCurrentAnswer result:', result);
+              }} 
               disabled={exerciseCompleted || waitingRef.current} 
               className="w-full sm:w-auto px-5 sm:px-6 text-sm sm:text-base md:text-lg bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 order-2 sm:order-2"
             >
