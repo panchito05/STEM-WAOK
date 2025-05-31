@@ -65,7 +65,7 @@ describe('Input Validation', () => {
 
   describe('validateAssociativePropertyProblem', () => {
     test('should validate correct problems', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       const result = validateAssociativePropertyProblem(problem);
       
       expect(result.isValid).toBe(true);
@@ -73,7 +73,7 @@ describe('Input Validation', () => {
     });
 
     test('should reject problems without ID', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       (problem as any).id = '';
       
       const result = validateAssociativePropertyProblem(problem);
@@ -82,7 +82,7 @@ describe('Input Validation', () => {
     });
 
     test('should reject problems with insufficient operands', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       problem.operands = [1, 2]; // Only 2 operands instead of minimum 3
       
       const result = validateAssociativePropertyProblem(problem);
@@ -91,7 +91,7 @@ describe('Input Validation', () => {
     });
 
     test('should reject problems with invalid operands', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       (problem.operands as any)[0] = 'invalid';
       
       const result = validateAssociativePropertyProblem(problem);
@@ -100,7 +100,7 @@ describe('Input Validation', () => {
     });
 
     test('should reject problems with incorrect answer', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       problem.correctAnswer = 999; // Wrong answer
       
       const result = validateAssociativePropertyProblem(problem);
@@ -109,7 +109,7 @@ describe('Input Validation', () => {
     });
 
     test('should reject problems with invalid difficulty', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       (problem.difficulty as any) = 'invalid-difficulty';
       
       const result = validateAssociativePropertyProblem(problem);
@@ -118,7 +118,7 @@ describe('Input Validation', () => {
     });
 
     test('should reject problems with invalid maxAttempts', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       problem.maxAttempts = 0;
       
       const result = validateAssociativePropertyProblem(problem);
@@ -127,7 +127,7 @@ describe('Input Validation', () => {
     });
 
     test('should reject problems with invalid layout', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       (problem.layout as any) = 'invalid-layout';
       
       const result = validateAssociativePropertyProblem(problem);
@@ -136,7 +136,7 @@ describe('Input Validation', () => {
     });
 
     test('should reject problems with invalid answerMaxDigits', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       problem.answerMaxDigits = 0;
       
       const result = validateAssociativePropertyProblem(problem);
@@ -145,7 +145,7 @@ describe('Input Validation', () => {
     });
 
     test('should handle NaN in correctAnswer', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       problem.correctAnswer = NaN;
       
       const result = validateAssociativePropertyProblem(problem);
@@ -270,7 +270,7 @@ describe('Input Validation', () => {
 
   describe('Edge Case Validation', () => {
     test('should handle validation of problems with zero', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       problem.operands = [0, 5, 3];
       problem.correctAnswer = 8;
       
@@ -279,7 +279,7 @@ describe('Input Validation', () => {
     });
 
     test('should handle validation of problems with negative numbers', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       problem.operands = [-2, 5, -1];
       problem.correctAnswer = 2;
       
@@ -288,7 +288,7 @@ describe('Input Validation', () => {
     });
 
     test('should handle validation with decimal operands', () => {
-      const problem = generateAssociativePropertyProblem('beginner', 3, 0, 10);
+      const problem = generateAssociativePropertyProblem('beginner');
       problem.operands = [1.5, 2.5, 1.0];
       problem.correctAnswer = 5.0;
       
