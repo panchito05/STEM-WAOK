@@ -950,12 +950,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     const isCorrect = checkAnswer(currentProblem, userNumericAnswer);
 
     const problemIndexForHistory = currentProblemIndex;
-    const newHistoryEntry: UserAnswerType = {
+    const newHistoryEntry: AssociativePropertyUserAnswer = {
         problemId: currentProblem.id,
         problem: currentProblem,
         userAnswer: userNumericAnswer,
         isCorrect,
-        status: isCorrect ? 'correct' : 'incorrect' // Añadir status
+        status: isCorrect ? 'correct' : 'incorrect',
+        attempts: 1,
+        timestamp: Date.now()
     };
     setUserAnswersHistory(prev => {
         const newHistory = [...prev];
@@ -1243,7 +1245,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Mostrar mensaje en el formato "Answered (Incorrect!). The correct answer is = X"
         setFeedbackMessage(`Answered (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
         // Actualizar historial para reflejar que la respuesta fue revelada
-        const updatedHistoryEntry: UserAnswerType = { ...newHistoryEntry, status: 'revealed' };
+        const updatedHistoryEntry: AssociativePropertyUserAnswer = { ...newHistoryEntry, status: 'revealed' };
         setUserAnswersHistory(prev => {
             const newHistory = [...prev];
             newHistory[problemIndexForHistory] = updatedHistoryEntry;
@@ -1259,8 +1261,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
           const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
           setProblemsList(prev => [...prev, compensationProblem]);
-          // Agregamos null al historial para que coincida con el nuevo problema añadido
-          setUserAnswersHistory(prev => [...prev, null]);
+          // Agregamos entrada vacía al historial para que coincida con el nuevo problema añadido
+          setUserAnswersHistory(prev => [...prev, {
+            problemId: compensationProblem.id,
+            problem: compensationProblem,
+            userAnswer: 0,
+            isCorrect: false,
+            status: 'pending',
+            attempts: 0,
+            timestamp: Date.now()
+          }]);
           console.log("[ASSOCIATIVE-PROPERTY] Problema de compensación agregado. Total de problemas:", problemsList.length + 1);
         }
 
@@ -1465,7 +1475,15 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
     setActualActiveProblemIndexBeforeViewingPrevious(0);
     setCurrentProblem(newProblemsArray[0]);
 
-    setUserAnswersHistory(Array(newProblemsArray.length).fill(null));
+    setUserAnswersHistory(newProblemsArray.map(problem => ({
+      problemId: problem.id,
+      problem: problem,
+      userAnswer: 0,
+      isCorrect: false,
+      status: 'pending',
+      attempts: 0,
+      timestamp: Date.now()
+    })));
     setTimer(0);
     setExerciseStarted(false);
     setExerciseCompleted(false);

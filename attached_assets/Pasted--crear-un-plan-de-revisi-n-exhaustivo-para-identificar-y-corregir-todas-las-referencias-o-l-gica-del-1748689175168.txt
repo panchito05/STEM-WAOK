@@ -1,0 +1,44 @@
+ crear un plan de revisión exhaustivo para identificar y corregir todas las referencias o lógica del módulo de suma que puedan estar contaminando el módulo de propiedad asociativa.
+
+Plan de Revisión Exhaustivo
+Objetivo:
+Revisar cada archivo y folder del módulo associative-property para:
+
+Identificar referencias o lógica heredada del módulo de suma (addition)
+Determinar si cada archivo es realmente de propiedad asociativa o de suma
+Renombrar archivos/folders o modificar código según corresponda
+Eliminar archivos innecesarios sin perder funcionalidades o estilos
+Metodología:
+Inspección de código línea por línea - Buscar imports, nombres de variables, comentarios, tipos, etc. que referencien "addition" o "suma"
+Análisis de lógica matemática - Verificar si la matemática implementada corresponde a suma o propiedad asociativa
+Revisión de nombres y convenciones - Identificar nombres inconsistentes
+Validación de funcionalidad - Asegurar que cada feature mantenga su propósito
+Lista de Archivos a Revisar:
+Archivos Principales:
+Exercise.tsx ✓ (revisar por lógica de suma)
+ExerciseRefactored.tsx ✓ (determinar si es necesario)
+Settings.tsx ✓ (revisar configuraciones heredadas)
+index.ts ✓ (revisar exports)
+types.ts ✓ (revisar tipos heredados)
+utils.ts ✓ (revisar funciones matemáticas)
+Carpeta components/:
+AdvancedExercise.tsx ✓
+InteractiveExercise.tsx ✓
+ProblemViewer.tsx ✓
+ProgressiveGroupingDisplay.tsx ✓
+VisualProblemDisplay.tsx ✓
+professor/ProfessorMode.tsx ✓
+professor/ProfessorModeWithSync.tsx ✓
+Carpetas adicionales:
+hooks/useExerciseState.ts ✓
+state/ ✓ (revisar contenido)
+validation/ ✓ (revisar contenido)
+__tests__/validation.test.ts ✓
+__tests__/utils.test.ts ✓
+Archivo externo:
+fix_associative_property.js ✓ (en raíz del proyecto)
+Criterios de Evaluación:
+Mantener: Si es genuinamente de propiedad asociativa
+Renombrar: Si tiene nombres de suma pero lógica correcta
+Modificar: Si tiene lógica mixta o referencias incorrectas
+Eliminar: Si es puramente de suma y no aporta a propiedad asociativa
