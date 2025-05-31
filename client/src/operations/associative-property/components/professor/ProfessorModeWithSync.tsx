@@ -260,8 +260,8 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                 {/* Título */}
                 <div className="text-sm text-gray-600 mb-3">Completa ambas agrupaciones para demostrar la propiedad asociativa</div>
                 
-                {/* Dos columnas para mostrar ambas agrupaciones */}
-                <div className="grid grid-cols-2 gap-6">
+                {/* Dos filas para mostrar ambas agrupaciones */}
+                <div className="space-y-4">
                   {/* Primera agrupación (verde) */}
                   <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
                     <div className="text-green-800 font-semibold text-sm mb-3 text-center">Primera agrupación</div>
