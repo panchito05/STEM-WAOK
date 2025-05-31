@@ -288,23 +288,7 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
         </motion.div>
       </div>
 
-      {/* Botón de verificación */}
-      <div className="text-center">
-        <Button
-          onClick={checkAnswers}
-          disabled={!allFieldsFilled || isComplete}
-          className="bg-blue-600 hover:bg-blue-700 px-8 py-3 text-lg font-semibold"
-        >
-          {isComplete ? (
-            <>
-              <Check className="mr-2 h-5 w-5" />
-              ¡Completado!
-            </>
-          ) : (
-            'Verificar Respuestas'
-          )}
-        </Button>
-      </div>
+
 
       {/* Feedback */}
       {feedback && (
