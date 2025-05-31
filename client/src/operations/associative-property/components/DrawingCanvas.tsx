@@ -607,14 +607,14 @@ export function DrawingCanvas({
       context.fillStyle = '#000000';
       context.font = contentFont;
       const blank1Y = expr1Y + lineSpacing * 2;
-      context.fillText('?', leftColumnCenterX - baseFontSize * 1.5, blank1Y);
+      // Eliminar el signo de interrogación y agregar solo el símbolo +
       context.fillText('+', leftColumnCenterX - baseFontSize * 0.5, blank1Y);
-      context.fillText(`${c}`, leftColumnCenterX + baseFontSize * 0.5, blank1Y);
+      context.fillText(`${c}`, leftColumnCenterX + baseFontSize * 1, blank1Y);
       
-      // Rectángulo para el espacio en blanco
+      // Rectángulo más grande para el espacio en blanco (doble tamaño)
       context.strokeStyle = '#9ca3af'; // gray-400
-      context.lineWidth = 1;
-      context.strokeRect(leftColumnCenterX - baseFontSize * 2, blank1Y - baseFontSize * 0.4, baseFontSize * 1, baseFontSize * 0.8);
+      context.lineWidth = 2;
+      context.strokeRect(leftColumnCenterX - baseFontSize * 2.2, blank1Y - baseFontSize * 0.6, baseFontSize * 2, baseFontSize * 1.2);
       
       // Texto "Resultado final:"
       context.font = blankFont;
@@ -625,12 +625,12 @@ export function DrawingCanvas({
       context.fillStyle = '#000000';
       context.font = contentFont;
       const final1Y = blank1Y + lineSpacing * 1.5;
-      context.fillText('=', leftColumnCenterX - baseFontSize * 0.5, final1Y);
-      context.fillText('?', leftColumnCenterX + baseFontSize * 0.5, final1Y);
+      context.fillText('=', leftColumnCenterX - baseFontSize * 1, final1Y);
       
-      // Rectángulo para el resultado final
+      // Rectángulo más grande para el resultado final (doble tamaño)
       context.strokeStyle = '#9ca3af';
-      context.strokeRect(leftColumnCenterX, final1Y - baseFontSize * 0.4, baseFontSize * 1, baseFontSize * 0.8);
+      context.lineWidth = 2;
+      context.strokeRect(leftColumnCenterX - baseFontSize * 0.2, final1Y - baseFontSize * 0.6, baseFontSize * 2, baseFontSize * 1.2);
       
       // COLUMNA DERECHA (Púrpura) - Segunda agrupación
       // Fondo púrpura claro
@@ -664,11 +664,11 @@ export function DrawingCanvas({
       context.font = contentFont;
       context.fillText(`${a}`, rightColumnCenterX - baseFontSize * 1.5, blank1Y);
       context.fillText('+', rightColumnCenterX - baseFontSize * 0.5, blank1Y);
-      context.fillText('?', rightColumnCenterX + baseFontSize * 0.5, blank1Y);
       
-      // Rectángulo para el espacio en blanco
+      // Rectángulo más grande para el espacio en blanco (doble tamaño)
       context.strokeStyle = '#9ca3af';
-      context.strokeRect(rightColumnCenterX, blank1Y - baseFontSize * 0.4, baseFontSize * 1, baseFontSize * 0.8);
+      context.lineWidth = 2;
+      context.strokeRect(rightColumnCenterX + baseFontSize * 0.2, blank1Y - baseFontSize * 0.6, baseFontSize * 2, baseFontSize * 1.2);
       
       // Texto "Resultado final:"
       context.font = blankFont;
@@ -678,12 +678,12 @@ export function DrawingCanvas({
       // Campo final
       context.fillStyle = '#000000';
       context.font = contentFont;
-      context.fillText('=', rightColumnCenterX - baseFontSize * 0.5, final1Y);
-      context.fillText('?', rightColumnCenterX + baseFontSize * 0.5, final1Y);
+      context.fillText('=', rightColumnCenterX - baseFontSize * 1, final1Y);
       
-      // Rectángulo para el resultado final
+      // Rectángulo más grande para el resultado final (doble tamaño)
       context.strokeStyle = '#9ca3af';
-      context.strokeRect(rightColumnCenterX, final1Y - baseFontSize * 0.4, baseFontSize * 1, baseFontSize * 0.8);
+      context.lineWidth = 2;
+      context.strokeRect(rightColumnCenterX - baseFontSize * 0.2, final1Y - baseFontSize * 0.6, baseFontSize * 2, baseFontSize * 1.2);
     };
 
 
