@@ -2750,7 +2750,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
 
           {/* Interactive Exercise para nivel intermedio */}
-          {settings.difficulty === 'intermediate' && (
+          {settings.difficulty === 'intermediate' && exerciseStarted && (
             <InteractiveExercise 
               operands={currentProblem.operands}
               interactiveAnswers={interactiveAnswers}
