@@ -10,6 +10,7 @@ interface AdvancedExerciseProps {
   setActiveInteractiveField: React.Dispatch<React.SetStateAction<string | null>>;
   validationTrigger: number;
   exerciseStarted: boolean;
+  showAnswers?: boolean;
 }
 
 type ExerciseType = 'fill-blank' | 'verification' | 'multiple-choice';
@@ -22,7 +23,8 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   activeInteractiveField,
   setActiveInteractiveField,
   validationTrigger,
-  exerciseStarted
+  exerciseStarted,
+  showAnswers = false
 }) => {
   const [exercise, setExercise] = useState<ExerciseType>('fill-blank');
   const [showResult, setShowResult] = useState(false);

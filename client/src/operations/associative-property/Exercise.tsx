@@ -3148,15 +3148,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             // Para nivel avanzado, mostrar las respuestas específicas del ejercicio
                             if (settings.difficulty === 'advanced') {
                                 // Llenar automáticamente las respuestas correctas para ejercicios de completar espacios
-                                if (currentProblem.operands && currentProblem.operands.length === 3) {
-                                    setInteractiveAnswers({
+                                if (currentProblem.operands && currentProblem.operands.length >= 3) {
+                                    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Llenando respuestas automáticamente:', {
+                                        blank1: currentProblem.operands[1],
+                                        blank2: currentProblem.operands[2], 
+                                        blank3: currentProblem.operands.reduce((sum, val) => sum + val, 0)
+                                    });
+                                    
+                                    setInteractiveAnswers(prev => ({
+                                        ...prev,
                                         blank1: currentProblem.operands[1].toString(),
                                         blank2: currentProblem.operands[2].toString(), 
-                                        blank3: currentProblem.operands.reduce((sum, val) => sum + val, 0).toString(),
-                                        blank4: ''
-                                    });
+                                        blank3: currentProblem.operands.reduce((sum, val) => sum + val, 0).toString()
+                                    }));
                                 }
-                                setFeedbackMessage("Respuestas completadas automáticamente");
+                                setFeedbackMessage("Respuestas mostradas en los campos");
                             } else {
                                 // Usamos la respuesta correcta del problema directamente para otros niveles
                                 setFeedbackMessage(t('exercises.correctAnswerIs', { correctAnswer: currentProblem.correctAnswer }));
