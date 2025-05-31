@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AssociativePropertyProblem } from '../types';
@@ -31,9 +30,31 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
 
   const [feedback, setFeedback] = useState<string>('');
   const [isComplete, setIsComplete] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+  const inputRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const { operands, grouping1, grouping2 } = problem;
   const [a, b, c] = operands;
+
+  // Agregar event listener para el teclado físico
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!focusedField || isComplete) return;
+
+      if (e.key >= '0' && e.key <= '9') {
+        handleAnswerChange(focusedField as keyof PracticeAnswers, e.key);
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleAnswerChange(focusedField as keyof PracticeAnswers, '');
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        checkAnswers();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [focusedField, isComplete]);
 
   const handleAnswerChange = (field: keyof PracticeAnswers, value: string) => {
     // Permitir números y string vacío, sin restricciones de longitud
@@ -134,14 +155,19 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                 <div className="text-center">
                   <div className="text-gray-600 mb-2 text-sm">Primero resuelve el paréntesis:</div>
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      value={answers.leftSum1}
-                      onChange={(e) => handleAnswerChange('leftSum1', e.target.value)}
-                      className="w-16 h-12 text-center text-xl font-bold border-2 border-green-400"
-                      placeholder="?"
-                    />
+                    <div
+                      ref={el => inputRefs.current['leftSum1'] = el}
+                      tabIndex={0}
+                      className={`w-16 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
+                        focusedField === 'leftSum1' 
+                          ? 'border-green-500 bg-green-50 ring-2 ring-green-200' 
+                          : 'border-green-400 bg-white hover:border-green-500'
+                      }`}
+                      onClick={() => setFocusedField('leftSum1')}
+                      onFocus={() => setFocusedField('leftSum1')}
+                    >
+                      {answers.leftSum1 || <span className="text-gray-400">?</span>}
+                    </div>
                     <span className="text-xl">+</span>
                     <span className="bg-blue-200 px-3 py-2 rounded font-bold">{c}</span>
                   </div>
