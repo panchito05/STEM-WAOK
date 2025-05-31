@@ -1,29 +1,12 @@
 // Exercise.tsx - Associative Property Module (Clean Version)
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useProgress } from "@/context/ProgressContext";
-import { ModuleSettings, useSettings } from "@/context/SettingsContext";
+import { ModuleSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
-import { Progress as ProgressBarUI } from "@/components/ui/progress";
 import { generateAssociativePropertyProblem, checkAnswer } from "./utils";
 import { AssociativePropertyProblem, UserAnswer as UserAnswerType, DifficultyLevel } from "./types";
-import { formatTime } from "@/lib/utils";
-import { Settings, ChevronLeft, ChevronRight, Check, Cog, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
-import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Check } from "lucide-react";
 import { useTranslations } from "@/hooks/use-translations";
-import { MathProblem } from '../../components/ProblemRenderer';
-import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
-import eventBus from '@/lib/eventBus';
-import LevelUpHandler from "@/components/LevelUpHandler";
-import { Link } from "wouter";
-import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
-import { useRewards, RewardModal, useRewardQueue, RewardUtils } from '@/rewards';
-import { useMultiOperationsSession } from '@/hooks/useMultiOperationsSession';
 import ProgressiveGroupingDisplay from './components/ProgressiveGroupingDisplay';
-import AdvancedExercise from './components/AdvancedExercise';
 
 interface ExerciseProps {
   settings: ModuleSettings;
@@ -42,8 +25,6 @@ interface YoutubeVideoMetadata {
 
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const { t } = useTranslations();
-  const { trackProgress } = useProgress();
-  const { updateModuleSettings, saveExerciseResult } = useSettings();
   
   // Estados principales
   const [currentProblem, setCurrentProblem] = useState<AssociativePropertyProblem | null>(null);
@@ -72,71 +53,13 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   const [consecutiveIncorrectAnswers, setConsecutiveIncorrectAnswers] = useState(0);
   const [maxConsecutiveStreak, setMaxConsecutiveStreak] = useState(0);
   
-  // Estados de UI
-  const [isCompactMode, setIsCompactMode] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
-  
-  // Referencias
-  const waitingRef = useRef(false);
-  const singleProblemTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const generalTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const autoContinueTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const continueButtonRef = useRef<HTMLButtonElement>(null);
-  
-  // Estados para sistema adaptativo
-  const [adaptiveDifficulty, setAdaptiveDifficulty] = useState<DifficultyLevel>(settings.difficulty);
-  const [showLevelUpReward, setShowLevelUpReward] = useState(false);
-  const [blockAutoAdvance, setBlockAutoAdvance] = useState(false);
-  
-  // Estados para YouTube
-  const [youtubeVideos, setYoutubeVideos] = useState<YoutubeVideoMetadata[]>([]);
-  
   // Estados para advanced mode
   const [advancedValidationTrigger, setAdvancedValidationTrigger] = useState(0);
-  
-  // Hooks de recompensas
-  const { 
-    rewardStats, 
-    setRewardStats, 
-    dailyStreak, 
-    showRewardModal, 
-    setShowRewardModal, 
-    currentReward, 
-    setCurrentReward 
-  } = useRewards();
-  
-  const { processRewardQueue } = useRewardQueue();
-  const { lastRewardShownIndex, setLastRewardShownIndex } = useMultiOperationsSession();
-  
-  // Estados de temporizadores
-  const [timer, setTimer] = useState(0);
-  const [singleProblemTimer, setSingleProblemTimer] = useState(0);
-  const [autoContinue, setAutoContinue] = useState(false);
 
   // Función para iniciar el ejercicio
   const startExercise = useCallback(() => {
     if (!exerciseStarted) {
       setExerciseStarted(true);
-      setTimer(0);
-      setSingleProblemTimer(0);
-      
-      // Limpiar temporizadores existentes
-      if (singleProblemTimerRef.current) {
-        clearInterval(singleProblemTimerRef.current);
-      }
-      if (generalTimerRef.current) {
-        clearInterval(generalTimerRef.current);
-      }
-      
-      // Iniciar temporizadores
-      generalTimerRef.current = setInterval(() => {
-        setTimer(prev => prev + 1);
-      }, 1000);
-      
-      singleProblemTimerRef.current = setInterval(() => {
-        setSingleProblemTimer(prev => prev + 1);
-      }, 1000);
     }
   }, [exerciseStarted]);
 
@@ -303,7 +226,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   useEffect(() => {
     const problems: AssociativePropertyProblem[] = [];
     for (let i = 0; i < settings.problemCount; i++) {
-      problems.push(generateAssociativePropertyProblem(settings));
+      problems.push(generateAssociativePropertyProblem(settings.difficulty));
     }
     setProblemsList(problems);
     setCurrentProblem(problems[0] || null);
@@ -331,22 +254,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
         {currentProblem && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-            {settings.difficulty === 'advanced' ? (
-              <AdvancedExercise 
-                problem={currentProblem}
-                validationTrigger={advancedValidationTrigger}
-                onValidationComplete={(isCorrect) => {
-                  if (isCorrect) {
-                    setFeedbackMessage("¡Correcto! Has aplicado correctamente la propiedad asociativa.");
-                    setFeedbackColor("green");
-                    setWaitingForContinue(true);
-                  } else {
-                    setFeedbackMessage("Revisa tu trabajo. Recuerda que la propiedad asociativa permite reagrupar los sumandos.");
-                    setFeedbackColor("red");
-                  }
-                }}
-              />
-            ) : settings.difficulty === 'elementary' || settings.difficulty === 'intermediate' ? (
+            {settings.difficulty === 'elementary' || settings.difficulty === 'intermediate' ? (
               <ProgressiveGroupingDisplay 
                 problem={currentProblem}
                 onComplete={(finalAnswer) => {
