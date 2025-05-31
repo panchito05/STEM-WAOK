@@ -380,7 +380,7 @@ const YoutubeVideoDialog = ({
 export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Acceder a la información de historial mediante el contexto de progreso
   const { exerciseHistory } = useProgress();
-  const moduleId = "associative-property"; // ID del módulo de suma
+  const moduleId = "associative-property"; // ID del módulo de propiedad asociativa
   
   // Hook para manejar sesiones multi-operaciones
   const { isMultiMode, completeCurrentModule } = useMultiOperationsSession();
@@ -433,7 +433,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       const storedSettings = localStorage.getItem('moduleSettings');
       if (storedSettings) {
         const parsedSettings = JSON.parse(storedSettings);
-        if (parsedSettings.addition && parsedSettings.addition.difficulty) return parsedSettings.addition.difficulty;
+        if (parsedSettings["associative-property"] && parsedSettings["associative-property"].difficulty) return parsedSettings["associative-property"].difficulty;
       }
     } catch (e) { console.error('Error loading adaptive difficulty from localStorage:', e); }
     return settings.difficulty as DifficultyLevel;
@@ -510,7 +510,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   // Traducciones para elementos específicos de la interfaz
   const translations = {
     english: {
-      addition: "Addition",
+      "associative-property": "Associative Property",
       attempts: "Attempts",
       level: "Level",
       settings: "Settings",
@@ -521,7 +521,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       of: "of"
     },
     spanish: {
-      addition: "Suma",
+      "associative-property": "Propiedad Asociativa",
       attempts: "Intentos",
       level: "Nivel",
       settings: "Ajustes",
@@ -1003,7 +1003,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           rewardToShow = {
             id: 'milestone_10',
             title: "¡Aprendiz Dedicado!",
-            description: "Has completado 10 problemas de suma",
+            description: "Has completado 10 problemas de propiedad asociativa",
             points: 50,
             type: "milestone", 
             icon: "🎯",
@@ -2004,7 +2004,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         const problemaCompleto = {
           // Metadatos para identificación
           id: problema.id || `problema-${i}`,
-          tipo: "suma",
+          tipo: "associative-property",
           
           // Datos específicos del problema de suma
           operands: [operandoA, operandoB],

@@ -42,7 +42,7 @@ function generateVisualObjects(operands: number[]): VisualObject[] {
  * Convierte un problema de tipo AssociativePropertyProblem al tipo genérico Problem
  * Este adaptador garantiza la compatibilidad entre los dos tipos
  */
-export function additionProblemToProblem(problem: AssociativePropertyProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
+export function associativePropertyProblemToProblem(problem: AssociativePropertyProblem, difficulty: DifficultyLevel = 'beginner'): Problem {
   // Convertir operandos simples a tipo Operand
   const operands: Operand[] = problem.operands.map(value => ({ value }));
   
