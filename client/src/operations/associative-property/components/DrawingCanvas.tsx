@@ -697,8 +697,8 @@ export function DrawingCanvas({
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       
-      // Usar el tipo de ejercicio del problema actual, con fallback
-      const exerciseType = currentProblem.advancedExerciseType || 'fill-blank';
+      // Usar el tipo de ejercicio desde localStorage (sincronizado con AdvancedExercise)
+      const exerciseType = localStorage.getItem('associative-property-exercise-type') || 'fill-blank';
       
       // Usar un fontSize más pequeño para que quepa todo
       const smallFont = baseFontSize * 0.7;

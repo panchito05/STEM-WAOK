@@ -83,6 +83,9 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     if (onExerciseTypeChange) {
       onExerciseTypeChange(randomExercise);
     }
+    
+    // También guardarlo en localStorage para sincronizar con el modo profesor
+    localStorage.setItem('associative-property-exercise-type', randomExercise);
 
     // Generar opciones para multiple choice una sola vez
     if (randomExercise === 'multiple-choice') {
