@@ -558,7 +558,7 @@ export function DrawingCanvas({
       
       const line1 = `Completa la expresión equivalente`;
       const line2 = `(${operands[0]} + ${operands[1]}) + ${operands[2]} = ?`;
-      const line3 = `Completa la otra forma:`;
+      // Eliminamos line3 pero conservamos el espaciado
       const line4 = `${operands[0]} + (_____ + _____) = _____`;
       
       // Usar un fontSize más pequeño para que quepa todo
@@ -568,7 +568,7 @@ export function DrawingCanvas({
       
       context.fillText(line1, centerX, centerY - spacing * 1.5);
       context.fillText(line2, centerX, centerY - spacing/2);
-      context.fillText(line3, centerX, centerY + spacing/2);
+      // NO renderizamos line3, pero mantenemos el espaciado como si estuviera ahí
       context.fillText(line4, centerX, centerY + spacing * 1.5);
       
       // Restaurar font original
