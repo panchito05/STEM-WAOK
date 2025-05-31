@@ -4,7 +4,7 @@ import { useProgress } from "@/context/ProgressContext";
 import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
-import { generateAssociativePropertyProblem, checkAnswer, getVerticalAlignmentInfo } from "./utils";
+import { generateAssociativePropertyProblem, checkAnswer } from "./utils";
 import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, AssociativePropertyUserAnswer, DifficultyLevel } from "./types";
 import VisualProblemDisplay from "./components/VisualProblemDisplay";
 import InteractiveExercise from "./components/InteractiveExercise";
@@ -17,7 +17,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useTranslations } from "@/hooks/use-translations";
+// Removed import { useTranslations } from "@/hooks/use-translations"; - hook does not exist
 // Importar el tipo MathProblem para el formato estándar de problemas
 import { MathProblem } from '../../components/ProblemRenderer';
 import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
@@ -473,7 +473,18 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
   const { saveExerciseResult } = useProgress();
   const { updateModuleSettings } = useSettings();
-  const { t } = useTranslations();
+  // Removed useTranslations hook - using direct text instead
+  const t = (key: string) => {
+    const translations: { [key: string]: string } = {
+      'common.errorLoadingProblem': 'Error al cargar el problema',
+      'common.loading': 'Cargando...',
+      'exercise.complete': 'Ejercicio completado',
+      'exercise.timeUp': 'Se acabó el tiempo',
+      'exercise.continue': 'Continuar',
+      'exercise.retry': 'Reintentar'
+    };
+    return translations[key] || key;
+  };
 
   // 🎯 Sistema de Recompensas Simplificado (sin hooks problemáticos)
   const [rewardStats, setRewardStats] = useState(() => {
@@ -2717,9 +2728,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
   if (!currentProblem) return <div className="p-8 text-center">{t('common.errorLoadingProblem')}</div>;
 
   const { maxIntLength = 0, maxDecLength = 0, operandsFormatted = [], sumLineTotalCharWidth = 0 } =
-    currentProblem.layout === 'vertical'
-    ? getVerticalAlignmentInfo(currentProblem.operands, currentProblem.answerDecimalPosition)
-    : { operandsFormatted: currentProblem.operands.map(op => ({original: op, intStr: String(op), decStr: ""})), maxIntLength:0, maxDecLength:0, sumLineTotalCharWidth:0 };
+    { operandsFormatted: currentProblem.operands.map(op => ({original: op, intStr: String(op), decStr: ""})), maxIntLength:0, maxDecLength:0, sumLineTotalCharWidth:0 };
 
   const attemptedProblemsCount = userAnswersHistory.filter(a => a !== null).length;
   const progressValue = problemsList.length > 0 ? (attemptedProblemsCount / problemsList.length) * 100 : 0;
