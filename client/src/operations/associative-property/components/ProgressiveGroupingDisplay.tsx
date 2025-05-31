@@ -33,80 +33,31 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
 
   const [feedback, setFeedback] = useState<string>('');
   const [isComplete, setIsComplete] = useState(false);
-  const [focusedField, setFocusedField] = useState<keyof PracticeAnswers | null>(null);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const inputRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const { operands, grouping1, grouping2 } = problem;
   const [a, b, c] = operands;
 
-  // Sistema robusto de manejo de entrada de teclado
+  // Agregar event listener para el teclado físico
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      console.log('🔍 [PROGRESSIVE-DEBUG] Key pressed:', e.key, 'Focused field:', focusedField);
-      
-      if (!focusedField || isComplete) {
-        console.log('⚠️ [PROGRESSIVE-DEBUG] No focused field or complete, ignoring keypress');
-        return;
-      }
-      
-      // Prevenir comportamiento por defecto para teclas que manejamos
-      if ((e.key >= '0' && e.key <= '9') || e.key === 'Backspace' || e.key === 'Enter' || e.key === 'Tab') {
-        e.preventDefault();
-        console.log('🚫 [PROGRESSIVE-DEBUG] Prevented default behavior for:', e.key);
-      }
-      
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!focusedField || isComplete) return;
+
       if (e.key >= '0' && e.key <= '9') {
-        console.log('✅ [PROGRESSIVE-DEBUG] Adding digit:', e.key, 'to field:', focusedField);
-        setAnswers(prev => {
-          const newValue = prev[focusedField] + e.key;
-          console.log('📝 [PROGRESSIVE-DEBUG] New value for', focusedField, ':', newValue);
-          return {
-            ...prev,
-            [focusedField]: newValue
-          };
-        });
+        handleAnswerChange(focusedField as keyof PracticeAnswers, e.key);
       } else if (e.key === 'Backspace') {
-        console.log('⬅️ [PROGRESSIVE-DEBUG] Backspace pressed for field:', focusedField);
-        setAnswers(prev => {
-          const newValue = prev[focusedField].slice(0, -1);
-          console.log('📝 [PROGRESSIVE-DEBUG] New value after backspace:', newValue);
-          return {
-            ...prev,
-            [focusedField]: newValue
-          };
-        });
-      } else if (e.key === 'Enter' || e.key === 'Tab') {
-        console.log('➡️ [PROGRESSIVE-DEBUG] Moving to next field from:', focusedField);
-        // Mover al siguiente campo
-        const fields: (keyof PracticeAnswers)[] = ['leftSum1', 'final1', 'rightSum2', 'final2'];
-        const currentIndex = fields.indexOf(focusedField);
-        const nextIndex = (currentIndex + 1) % fields.length;
-        const nextField = fields[nextIndex];
-        console.log('🎯 [PROGRESSIVE-DEBUG] Next field:', nextField);
-        setFocusedField(nextField);
-        setTimeout(() => {
-          inputRefs.current[nextField]?.focus();
-        }, 0);
+        e.preventDefault();
+        handleAnswerChange(focusedField as keyof PracticeAnswers, '');
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        checkAnswers();
       }
     };
 
-    console.log('🎮 [PROGRESSIVE-DEBUG] Adding keydown listener, focused field:', focusedField);
-    document.addEventListener('keydown', handleKeyPress);
-    return () => {
-      console.log('🗑️ [PROGRESSIVE-DEBUG] Removing keydown listener');
-      document.removeEventListener('keydown', handleKeyPress);
-    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [focusedField, isComplete]);
-
-  // Log cuando cambia el estado de respuestas
-  useEffect(() => {
-    console.log('📊 [PROGRESSIVE-DEBUG] Answers state updated:', answers);
-  }, [answers]);
-
-  // Log cuando cambia el campo enfocado
-  useEffect(() => {
-    console.log('🎯 [PROGRESSIVE-DEBUG] Focused field changed to:', focusedField);
-  }, [focusedField]);
 
   // Llenar automáticamente las respuestas cuando showAnswers es true
   useEffect(() => {
@@ -120,49 +71,91 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
     }
   }, [showAnswers, grouping1, grouping2]);
 
-  const handleAnswerChange = (field: keyof PracticeAnswers, value: string) => {
-    setAnswers(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    setFeedback('');
-  };
-
-  const handleClearInput = (field: keyof PracticeAnswers) => {
-    setAnswers(prev => ({
-      ...prev,
-      [field]: ''
-    }));
-    setFeedback('');
-  };
-
-  const checkAnswers = () => {
-    const leftSum1Num = parseInt(answers.leftSum1);
-    const final1Num = parseInt(answers.final1);
-    const rightSum2Num = parseInt(answers.rightSum2);
-    const final2Num = parseInt(answers.final2);
-
-    const isCorrectLeftSum = leftSum1Num === grouping1?.leftSum;
-    const isCorrectFinal1 = final1Num === grouping1?.totalSum;
-    const isCorrectRightSum = rightSum2Num === grouping2?.rightSum;
-    const isCorrectFinal2 = final2Num === grouping2?.totalSum;
-
-    if (isCorrectLeftSum && isCorrectFinal1 && isCorrectRightSum && isCorrectFinal2) {
-      setFeedback('¡Perfecto! Ambas agrupaciones dan el mismo resultado.');
-      setIsComplete(true);
-      if (onComplete) {
-        onComplete(final1Num);
-      }
-    } else {
-      const a = operands[0], b = operands[1], c = operands[2];
-      const hintMessage = `Pista: (${a} + ${b}) = ${b + c} y (${b} + ${c}) = ${grouping2?.rightSum}`;
-      setFeedback(hintMessage);
+  const handleAnswerChange = (field: keyof PracticeAnswers, newDigit: string) => {
+    if (newDigit === '') {
+      // Limpiar el campo
+      setAnswers(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+      setFeedback('');
+    } else if (/^\d$/.test(newDigit)) {
+      // Agregar el dígito al campo actual
+      setAnswers(prev => {
+        const currentValue = prev[field];
+        const newValue = currentValue + newDigit;
+        
+        // Limitar a máximo 3 dígitos para evitar números muy grandes
+        if (newValue.length <= 3) {
+          setFeedback('');
+          return {
+            ...prev,
+            [field]: newValue
+          };
+        }
+        return prev;
+      });
     }
   };
 
+  const checkAnswers = () => {
+    const leftSum1 = parseInt(answers.leftSum1) || 0;
+    const final1 = parseInt(answers.final1) || 0;
+    const rightSum2 = parseInt(answers.rightSum2) || 0;
+    const final2 = parseInt(answers.final2) || 0;
+
+    const correctLeftSum1 = grouping1?.leftSum || 0;
+    const correctFinal1 = grouping1?.totalSum || 0;
+    const correctRightSum2 = grouping2?.rightSum || 0;
+    const correctFinal2 = grouping2?.totalSum || 0;
+
+    const allCorrect = 
+      leftSum1 === correctLeftSum1 &&
+      final1 === correctFinal1 &&
+      rightSum2 === correctRightSum2 &&
+      final2 === correctFinal2;
+
+    if (allCorrect) {
+      setFeedback("¡Excelente! Has demostrado que ambas agrupaciones dan el mismo resultado.");
+      setIsComplete(true);
+      setTimeout(() => {
+        onComplete(correctFinal1);
+      }, 1500);
+    } else {
+      // Feedback específico por campo
+      let specificFeedback = "Revisa tus cálculos: ";
+      const errors = [];
+      
+      if (leftSum1 !== correctLeftSum1) errors.push(`(${a} + ${b}) = ${correctLeftSum1}`);
+      if (final1 !== correctFinal1) errors.push(`resultado final primera agrupación = ${correctFinal1}`);
+      if (rightSum2 !== correctRightSum2) errors.push(`(${b} + ${c}) = ${correctRightSum2}`);
+      if (final2 !== correctFinal2) errors.push(`resultado final segunda agrupación = ${correctFinal2}`);
+      
+      setFeedback(specificFeedback + errors.join(", "));
+    }
+  };
+
+  const allFieldsFilled = answers.leftSum1 && answers.final1 && answers.rightSum2 && answers.final2;
+
   return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
+      {/* Título */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center"
+      >
+        <h2 className="text-2xl font-bold text-blue-800 mb-2">
+          Practica la Propiedad Asociativa
+        </h2>
+        <p className="text-gray-600">
+          Completa los espacios en blanco para resolver ambas agrupaciones
+        </p>
+      </motion.div>
+
+      {/* Ambas agrupaciones lado a lado */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
         {/* Primera agrupación */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
@@ -197,24 +190,13 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                       ref={el => inputRefs.current['leftSum1'] = el}
                       data-field="leftSum1"
                       tabIndex={0}
-                      className={`w-16 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all outline-none ${
+                      className={`w-16 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
                         focusedField === 'leftSum1' 
                           ? 'border-green-500 bg-green-50 ring-2 ring-green-200' 
                           : 'border-green-400 bg-white hover:border-green-500'
                       }`}
-                      onClick={(e) => {
-                        console.log('🖱️ [PROGRESSIVE-DEBUG] Clicked leftSum1');
-                        e.preventDefault();
-                        setFocusedField('leftSum1');
-                        e.currentTarget.focus();
-                      }}
-                      onFocus={(e) => {
-                        console.log('🎯 [PROGRESSIVE-DEBUG] Focused leftSum1');
-                        setFocusedField('leftSum1');
-                      }}
-                      onBlur={() => {
-                        console.log('👋 [PROGRESSIVE-DEBUG] Blurred leftSum1');
-                      }}
+                      onClick={() => setFocusedField('leftSum1')}
+                      onFocus={() => setFocusedField('leftSum1')}
                     >
                       {answers.leftSum1 || <span className="text-gray-400">?</span>}
                     </div>
@@ -232,24 +214,13 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                       ref={el => inputRefs.current['final1'] = el}
                       data-field="final1"
                       tabIndex={0}
-                      className={`w-20 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all outline-none ${
+                      className={`w-20 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
                         focusedField === 'final1' 
                           ? 'border-green-600 bg-green-50 ring-2 ring-green-200' 
                           : 'border-green-400 bg-white hover:border-green-600'
                       }`}
-                      onClick={(e) => {
-                        console.log('🖱️ [PROGRESSIVE-DEBUG] Clicked final1');
-                        e.preventDefault();
-                        setFocusedField('final1');
-                        e.currentTarget.focus();
-                      }}
-                      onFocus={(e) => {
-                        console.log('🎯 [PROGRESSIVE-DEBUG] Focused final1');
-                        setFocusedField('final1');
-                      }}
-                      onBlur={() => {
-                        console.log('👋 [PROGRESSIVE-DEBUG] Blurred final1');
-                      }}
+                      onClick={() => setFocusedField('final1')}
+                      onFocus={() => setFocusedField('final1')}
                     >
                       {answers.final1 || <span className="text-gray-400">?</span>}
                     </div>
@@ -296,24 +267,13 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                       ref={el => inputRefs.current['rightSum2'] = el}
                       data-field="rightSum2"
                       tabIndex={0}
-                      className={`w-16 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all outline-none ${
+                      className={`w-16 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
                         focusedField === 'rightSum2' 
                           ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200' 
                           : 'border-purple-400 bg-white hover:border-purple-500'
                       }`}
-                      onClick={(e) => {
-                        console.log('🖱️ [PROGRESSIVE-DEBUG] Clicked rightSum2');
-                        e.preventDefault();
-                        setFocusedField('rightSum2');
-                        e.currentTarget.focus();
-                      }}
-                      onFocus={(e) => {
-                        console.log('🎯 [PROGRESSIVE-DEBUG] Focused rightSum2');
-                        setFocusedField('rightSum2');
-                      }}
-                      onBlur={() => {
-                        console.log('👋 [PROGRESSIVE-DEBUG] Blurred rightSum2');
-                      }}
+                      onClick={() => setFocusedField('rightSum2')}
+                      onFocus={() => setFocusedField('rightSum2')}
                     >
                       {answers.rightSum2 || <span className="text-gray-400">?</span>}
                     </div>
@@ -329,24 +289,13 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                       ref={el => inputRefs.current['final2'] = el}
                       data-field="final2"
                       tabIndex={0}
-                      className={`w-20 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all outline-none ${
+                      className={`w-20 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
                         focusedField === 'final2' 
                           ? 'border-purple-600 bg-purple-50 ring-2 ring-purple-200' 
                           : 'border-purple-400 bg-white hover:border-purple-600'
                       }`}
-                      onClick={(e) => {
-                        console.log('🖱️ [PROGRESSIVE-DEBUG] Clicked final2');
-                        e.preventDefault();
-                        setFocusedField('final2');
-                        e.currentTarget.focus();
-                      }}
-                      onFocus={(e) => {
-                        console.log('🎯 [PROGRESSIVE-DEBUG] Focused final2');
-                        setFocusedField('final2');
-                      }}
-                      onBlur={() => {
-                        console.log('👋 [PROGRESSIVE-DEBUG] Blurred final2');
-                      }}
+                      onClick={() => setFocusedField('final2')}
+                      onFocus={() => setFocusedField('final2')}
                     >
                       {answers.final2 || <span className="text-gray-400">?</span>}
                     </div>
@@ -358,19 +307,7 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
         </motion.div>
       </div>
 
-      {/* Botón para verificar respuestas */}
-      {!isComplete && (
-        <div className="text-center">
-          <Button 
-            onClick={checkAnswers}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold"
-            disabled={!answers.leftSum1 || !answers.final1 || !answers.rightSum2 || !answers.final2}
-          >
-            <Check className="w-5 h-5 mr-2" />
-            Verificar Respuestas
-          </Button>
-        </div>
-      )}
+
 
       {/* Feedback */}
       {feedback && (
