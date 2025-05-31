@@ -256,17 +256,18 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
             
             {/* Problema matemático - Formato de Propiedad Asociativa con dos columnas */}
             <div className="bg-gray-50 p-3 rounded border-2 border-dashed border-gray-200">
-              <div className="font-mono text-lg font-bold select-none text-center space-y-4">
-                {/* Título */}
-                <div className="text-sm text-gray-600 mb-3">Completa ambas agrupaciones para demostrar la propiedad asociativa</div>
-                
-                {/* Dos filas compactas para mostrar ambas agrupaciones */}
-                <div className="space-y-3">
-                  {/* Primera agrupación (verde) - línea horizontal compacta */}
-                  <div className="bg-green-50 p-3 rounded-lg border-2 border-green-200">
-                    <div className="text-green-800 font-semibold text-xs mb-2 text-center">Primera agrupación</div>
+              <div className="font-mono text-lg font-bold select-none text-center space-y-3">
+                {/* Primera agrupación (verde) */}
+                <div className="bg-green-50 p-3 rounded-lg border-2 border-green-200">
+                  <div className="text-green-800 font-semibold text-xs mb-2 text-center">Primera agrupación</div>
+                  <div className="space-y-2">
+                    {/* Expresión original */}
+                    <div className="text-center text-green-700 text-lg">
+                      ({problem.operands[0]} + {problem.operands[1]}) + {problem.operands[2]}
+                    </div>
+                    {/* Instrucción con campos */}
                     <div className="flex items-center justify-center space-x-2 text-green-700">
-                      <span>({problem.operands[0]} + {problem.operands[1]}) + {problem.operands[2]} →</span>
+                      <span className="text-sm">Primero resuelve el paréntesis:</span>
                       <span className="bg-white border-2 border-green-300 rounded px-2 py-1 min-w-[50px] text-center">___</span>
                       <span>+</span>
                       <span>{problem.operands[2]}</span>
@@ -274,12 +275,19 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
                       <span className="bg-white border-2 border-green-300 rounded px-2 py-1 min-w-[50px] text-center">___</span>
                     </div>
                   </div>
-                  
-                  {/* Segunda agrupación (púrpura) - línea horizontal compacta */}
-                  <div className="bg-purple-50 p-3 rounded-lg border-2 border-purple-200">
-                    <div className="text-purple-800 font-semibold text-xs mb-2 text-center">Segunda agrupación</div>
+                </div>
+                
+                {/* Segunda agrupación (púrpura) */}
+                <div className="bg-purple-50 p-3 rounded-lg border-2 border-purple-200">
+                  <div className="text-purple-800 font-semibold text-xs mb-2 text-center">Segunda agrupación</div>
+                  <div className="space-y-2">
+                    {/* Expresión original */}
+                    <div className="text-center text-purple-700 text-lg">
+                      {problem.operands[0]} + ({problem.operands[1]} + {problem.operands[2]})
+                    </div>
+                    {/* Instrucción con campos */}
                     <div className="flex items-center justify-center space-x-2 text-purple-700">
-                      <span>{problem.operands[0]} + ({problem.operands[1]} + {problem.operands[2]}) →</span>
+                      <span className="text-sm">Primero resuelve el paréntesis:</span>
                       <span>{problem.operands[0]}</span>
                       <span>+</span>
                       <span className="bg-white border-2 border-purple-300 rounded px-2 py-1 min-w-[50px] text-center">___</span>
