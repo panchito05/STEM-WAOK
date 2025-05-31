@@ -36,7 +36,7 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
   const [a, b, c] = operands;
 
   const handleAnswerChange = (field: keyof PracticeAnswers, value: string) => {
-    // Solo permitir números
+    // Permitir números y string vacío
     if (value === '' || /^\d+$/.test(value)) {
       setAnswers(prev => ({
         ...prev,
@@ -135,11 +135,13 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="text-gray-600 mb-2 text-sm">Primero resuelve el paréntesis:</div>
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <Input
-                      type="text"
+                      type="number"
                       value={answers.leftSum1}
                       onChange={(e) => handleAnswerChange('leftSum1', e.target.value)}
                       className="w-16 h-12 text-center text-xl font-bold border-2 border-green-400"
                       placeholder="?"
+                      min="0"
+                      max="999"
                     />
                     <span className="text-xl">+</span>
                     <span className="bg-blue-200 px-3 py-2 rounded font-bold">{c}</span>
@@ -152,11 +154,13 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <span className="text-xl">=</span>
                     <Input
-                      type="text"
+                      type="number"
                       value={answers.final1}
                       onChange={(e) => handleAnswerChange('final1', e.target.value)}
                       className="w-20 h-12 text-center text-xl font-bold border-2 border-green-400"
                       placeholder="?"
+                      min="0"
+                      max="999"
                     />
                   </div>
                 </div>
@@ -198,11 +202,13 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                     <span className="bg-blue-200 px-3 py-2 rounded font-bold">{a}</span>
                     <span className="text-xl">+</span>
                     <Input
-                      type="text"
+                      type="number"
                       value={answers.rightSum2}
                       onChange={(e) => handleAnswerChange('rightSum2', e.target.value)}
                       className="w-16 h-12 text-center text-xl font-bold border-2 border-purple-400"
                       placeholder="?"
+                      min="0"
+                      max="999"
                     />
                   </div>
                 </div>
@@ -213,11 +219,13 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <span className="text-xl">=</span>
                     <Input
-                      type="text"
+                      type="number"
                       value={answers.final2}
                       onChange={(e) => handleAnswerChange('final2', e.target.value)}
                       className="w-20 h-12 text-center text-xl font-bold border-2 border-purple-400"
                       placeholder="?"
+                      min="0"
+                      max="999"
                     />
                   </div>
                 </div>
