@@ -3223,7 +3223,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                                           problem: currentProblem,
                                           userAnswer: NaN,
                                           isCorrect: false,
-                                          status: 'revealed'
+                                          status: 'revealed',
+                                          attempts: 1,
+                                          timestamp: Date.now()
                                       };
                                       return newHistory;
                                   });
@@ -3294,7 +3296,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   setCurrentProblemIndex(prev => prev + 1);
                   setCurrentAttempts(0);
                   setFeedbackMessage("");
-                  setFeedbackColor("");
+                  setFeedbackColor(null);
                 } else {
                   console.log('📊 [EXERCISE] All problems completed');
                   setExerciseCompleted(true);
@@ -3343,7 +3345,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   setExerciseStarted(true);
                   setProblemStartTime(Date.now());
                   setFeedbackMessage("");
-                  setFeedbackColor("");
+                  setFeedbackColor(null);
                   return;
                 }
                 
