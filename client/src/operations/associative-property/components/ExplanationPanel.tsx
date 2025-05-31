@@ -27,7 +27,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
     return num.toLocaleString();
   };
   
-  // Crear explicación de suma básica
+  // Crear explicación de propiedad asociativa básica
   const renderBasicExplanation = () => {
     // Si solo hay dos operandos, mostrar explicación simple
     if (problem.operands.length === 2) {

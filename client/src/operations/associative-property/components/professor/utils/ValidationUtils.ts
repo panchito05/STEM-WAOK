@@ -58,7 +58,7 @@ export class InputValidator {
       };
     }
 
-    // Verificar rango razonable para problemas de suma
+    // Verificar rango razonable para problemas de propiedad asociativa
     if (Math.abs(numValue) > 1000000) {
       return {
         isValid: false,

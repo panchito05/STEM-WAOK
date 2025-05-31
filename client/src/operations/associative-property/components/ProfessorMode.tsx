@@ -360,7 +360,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
     
     console.log(`🔍 [MOVE-PANEL] Mapeo de posiciones:`, positionToIndex);
     
-    const currentIndex = positionToIndex[position] || 1; // Default a posición 2
+    const currentIndex = (positionToIndex as Record<string, number>)[position] || 1; // Default a posición 2
     console.log(`🔍 [MOVE-PANEL] Índice actual calculado: ${currentIndex} (position: "${position}")`);
     
     const nextIndex = (currentIndex + 1) % synchronizedPositions.length;
@@ -395,7 +395,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       'bottom-right': 'lg:bottom-4 lg:right-4'
     };
     
-    const classes = positionMap[position] || 'lg:top-4 lg:right-4'; // Default seguro
+    const classes = (positionMap as Record<string, string>)[position] || 'lg:top-4 lg:right-4'; // Default seguro
     console.log(`🎯 [DEBUG] getPanelClasses for position: ${position} returning: ${classes}`);
     return classes;
   };
@@ -547,7 +547,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
       <div className="h-full w-full flex flex-col lg:flex-row overflow-hidden">
         {/* Área de dibujo - Ocupa todo el espacio en móvil/tablet */}
         <div className="flex-1 relative overflow-hidden">
-          <DrawingArea position={position} problem={problem} />
+          <DrawingArea problem={problem} />
         </div>
         
         {/* Panel de control - Responsivo */}
