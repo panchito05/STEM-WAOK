@@ -10,6 +10,7 @@ import VisualProblemDisplay from "./components/VisualProblemDisplay";
 import InteractiveExercise from "./components/InteractiveExercise";
 import AdvancedExercise from "./components/AdvancedExercise";
 import ProgressiveGroupingDisplay from "./components/ProgressiveGroupingDisplay";
+import IntermediateProfessorMode from "./components/IntermediateProfessorMode";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
@@ -3261,69 +3262,87 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       </div>
       {/* Modo Profesor - Nueva implementación con canvas para dibujo */}
       {showProfessorMode && (
-        <ProfessorMode
-          problem={currentProblem}
-          onClose={() => setShowProfessorMode(false)}
-          onCorrectAnswer={(wasCorrect: boolean) => {
-            // Actualizar contadores de respuestas consecutivas
-            if (wasCorrect) {
-              const newConsecutive = consecutiveCorrectAnswers + 1;
-              setConsecutiveCorrectAnswers(newConsecutive);
-              setConsecutiveIncorrectAnswers(0);
-              
-              // Actualizar récord máximo si es necesario
-              if (newConsecutive > maxConsecutiveStreak) {
-                setMaxConsecutiveStreak(newConsecutive);
-              }
-              
-              // Verificar posible subida de nivel si se alcanza el umbral
-              if (newConsecutive >= CORRECT_ANSWERS_FOR_LEVEL_UP && settings.enableAdaptiveDifficulty) {
-                const difficultiesOrder: DifficultyLevel[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
-                const currentLevelIdx = difficultiesOrder.indexOf(adaptiveDifficulty);
-                
-                // Solo subir si no estamos ya en el nivel máximo
-                if (currentLevelIdx < difficultiesOrder.length - 1) {
-                  const newLevel = difficultiesOrder[currentLevelIdx + 1];
-                  setAdaptiveDifficulty(newLevel);
-                  setConsecutiveCorrectAnswers(0);
-                  console.log(`[CONTADOR] 🔼 Subiendo nivel a: ${newLevel}`);
-                }
-              }
-            } else if (settings.enableCompensation) {
-              // Agregar problema de compensación cuando se falla
-              console.log("[ASSOCIATIVE-PROPERTY] Agregando problema de compensación por respuesta incorrecta en modo profesor");
-              const difficultyForCompensation = settings.enableAdaptiveDifficulty
-                ? adaptiveDifficulty
-                : (settings.difficulty as DifficultyLevel);
-                
-              const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
-              setProblemsList(prev => [...prev, compensationProblem]);
-              // Agregamos null al historial para que coincida con el nuevo problema añadido
-              setUserAnswersHistory(prev => [...prev, null]);
-            }
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="relative bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <button 
+              onClick={() => setShowProfessorMode(false)}
+              className="absolute top-4 right-4 z-10 p-2 bg-gray-100 hover:bg-gray-200 rounded-full"
+            >
+              <X className="h-5 w-5" />
+            </button>
             
-            // Generar un nuevo problema
-            const newProblem = generateAssociativePropertyProblem(settings.difficulty);
-            // Agregar información sobre la posición y total de problemas
-            newProblem.index = currentProblemIndex;
-            newProblem.total = settings.problemCount;
-            setCurrentProblem(newProblem);
-            
-            // Avanzar el contador de problemas si es necesario
-            if (currentProblemIndex < settings.problemCount - 1) {
-              setCurrentProblemIndex(prev => prev + 1);
-            }
-            
-            // Reiniciar temporizador para el nuevo problema
-            const newStartTime = Date.now();
-            setProblemStartTime(newStartTime);
-          }}
-          showVerticalFormat={true}
-          settings={{
-            maxAttempts: settings.maxAttempts,
-            enableCompensation: settings.enableCompensation
-          }}
-        />
+            {settings.difficulty === 'intermediate' ? (
+              <IntermediateProfessorMode 
+                problem={currentProblem}
+                showAnswers={showAnswersInIntermediate}
+              />
+            ) : (
+              <ProfessorMode
+                problem={currentProblem}
+                onClose={() => setShowProfessorMode(false)}
+                onCorrectAnswer={(wasCorrect: boolean) => {
+                  // Actualizar contadores de respuestas consecutivas
+                  if (wasCorrect) {
+                    const newConsecutive = consecutiveCorrectAnswers + 1;
+                    setConsecutiveCorrectAnswers(newConsecutive);
+                    setConsecutiveIncorrectAnswers(0);
+                    
+                    // Actualizar récord máximo si es necesario
+                    if (newConsecutive > maxConsecutiveStreak) {
+                      setMaxConsecutiveStreak(newConsecutive);
+                    }
+                    
+                    // Verificar posible subida de nivel si se alcanza el umbral
+                    if (newConsecutive >= CORRECT_ANSWERS_FOR_LEVEL_UP && settings.enableAdaptiveDifficulty) {
+                      const difficultiesOrder: DifficultyLevel[] = ["beginner", "elementary", "intermediate", "advanced", "expert"];
+                      const currentLevelIdx = difficultiesOrder.indexOf(adaptiveDifficulty);
+                      
+                      // Solo subir si no estamos ya en el nivel máximo
+                      if (currentLevelIdx < difficultiesOrder.length - 1) {
+                        const newLevel = difficultiesOrder[currentLevelIdx + 1];
+                        setAdaptiveDifficulty(newLevel);
+                        setConsecutiveCorrectAnswers(0);
+                        console.log(`[CONTADOR] 🔼 Subiendo nivel a: ${newLevel}`);
+                      }
+                    }
+                  } else if (settings.enableCompensation) {
+                    // Agregar problema de compensación cuando se falla
+                    console.log("[ASSOCIATIVE-PROPERTY] Agregando problema de compensación por respuesta incorrecta en modo profesor");
+                    const difficultyForCompensation = settings.enableAdaptiveDifficulty
+                      ? adaptiveDifficulty
+                      : (settings.difficulty as DifficultyLevel);
+                      
+                    const compensationProblem = generateAssociativePropertyProblem(difficultyForCompensation);
+                    setProblemsList(prev => [...prev, compensationProblem]);
+                    // Agregamos null al historial para que coincida con el nuevo problema añadido
+                    setUserAnswersHistory(prev => [...prev, null]);
+                  }
+                  
+                  // Generar un nuevo problema
+                  const newProblem = generateAssociativePropertyProblem(settings.difficulty);
+                  // Agregar información sobre la posición y total de problemas
+                  newProblem.index = currentProblemIndex;
+                  newProblem.total = settings.problemCount;
+                  setCurrentProblem(newProblem);
+                  
+                  // Avanzar el contador de problemas si es necesario
+                  if (currentProblemIndex < settings.problemCount - 1) {
+                    setCurrentProblemIndex(prev => prev + 1);
+                  }
+                  
+                  // Reiniciar temporizador para el nuevo problema
+                  const newStartTime = Date.now();
+                  setProblemStartTime(newStartTime);
+                }}
+                showVerticalFormat={true}
+                settings={{
+                  maxAttempts: settings.maxAttempts,
+                  enableCompensation: settings.enableCompensation
+                }}
+              />
+            )}
+          </div>
+        </div>
       )}
       {/* 🎯 Modal de Recompensas Simplificado */}
       {rewardStats.showRewardModal && rewardStats.lastReward && (
