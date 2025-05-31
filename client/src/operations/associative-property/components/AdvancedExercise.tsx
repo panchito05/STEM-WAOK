@@ -11,6 +11,7 @@ interface AdvancedExerciseProps {
   validationTrigger: number;
   exerciseStarted: boolean;
   showAnswers?: boolean;
+  onExerciseTypeChange?: (type: ExerciseType) => void;
 }
 
 type ExerciseType = 'fill-blank' | 'verification' | 'multiple-choice';
@@ -24,7 +25,8 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   setActiveInteractiveField,
   validationTrigger,
   exerciseStarted,
-  showAnswers = false
+  showAnswers = false,
+  onExerciseTypeChange
 }) => {
   const [exercise, setExercise] = useState<ExerciseType>('fill-blank');
   const [showResult, setShowResult] = useState(false);
@@ -76,6 +78,11 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
     const exercises: ExerciseType[] = ['fill-blank', 'verification', 'multiple-choice'];
     const randomExercise = exercises[Math.floor(Math.random() * exercises.length)];
     setExercise(randomExercise);
+    
+    // Notificar al componente padre sobre el tipo de ejercicio
+    if (onExerciseTypeChange) {
+      onExerciseTypeChange(randomExercise);
+    }
 
     // Generar opciones para multiple choice una sola vez
     if (randomExercise === 'multiple-choice') {

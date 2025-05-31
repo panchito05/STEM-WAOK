@@ -3061,6 +3061,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               validationTrigger={advancedValidationTrigger}
               exerciseStarted={exerciseStarted}
               showAnswers={waitingRef.current && feedbackColor === "blue"}
+              onExerciseTypeChange={(type) => {
+                // Actualizar el tipo de ejercicio en el problema actual
+                setCurrentProblem(prev => {
+                  if (!prev) return prev;
+                  return {
+                    ...prev,
+                    advancedExerciseType: type
+                  };
+                });
+              }}
               onAnswer={(isCorrect) => {
                 if (isCorrect) {
                   setFeedbackMessage("¡Excelente! Has demostrado tu comprensión de la propiedad asociativa con números más complejos.");

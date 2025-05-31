@@ -3,6 +3,9 @@
 // Niveles de dificultad estandarizados para todos los módulos
 export type DifficultyLevel = 'beginner' | 'elementary' | 'intermediate' | 'advanced' | 'expert';
 
+// Tipos de ejercicios para el nivel avanzado
+export type AdvancedExerciseType = 'fill-blank' | 'verification' | 'multiple-choice';
+
 // Formatos de visualización para los problemas
 export type ExerciseLayout = 'horizontal' | 'vertical';
 export type DisplayFormat = 'horizontal' | 'vertical' | 'word';
@@ -38,6 +41,8 @@ export interface AssociativePropertyProblem extends BaseProblem {
   // Propiedades específicas para enseñar la propiedad asociativa
   grouping1?: AssociativeGrouping; // Primera agrupación: (a + b) + c
   grouping2?: AssociativeGrouping; // Segunda agrupación: a + (b + c)
+  // Tipo de ejercicio para nivel avanzado
+  advancedExerciseType?: AdvancedExerciseType;
   // Propiedades de compatibilidad con Problem
   displayFormat?: string;
   allowDecimals?: boolean;

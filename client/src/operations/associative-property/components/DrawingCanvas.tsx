@@ -697,11 +697,8 @@ export function DrawingCanvas({
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       
-      // Detectar qué tipo de ejercicio se debe mostrar (aleatorio como en AdvancedExercise)
-      // Simulamos la misma lógica aleatoria que usa AdvancedExercise
-      const exerciseTypes = ['fill-blank', 'verification', 'multiple-choice'];
-      const randomSeed = (operands[0] + operands[1] + operands[2]) % 3; // Determinístico basado en operandos
-      const exerciseType = exerciseTypes[randomSeed];
+      // Usar el tipo de ejercicio del problema actual, con fallback
+      const exerciseType = currentProblem.advancedExerciseType || 'fill-blank';
       
       // Usar un fontSize más pequeño para que quepa todo
       const smallFont = baseFontSize * 0.7;
