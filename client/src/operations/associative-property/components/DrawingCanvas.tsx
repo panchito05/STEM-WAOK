@@ -493,12 +493,15 @@ export function DrawingCanvas({
     }
     
     // Crear configuración para el sistema de dibujo
+    const baseFontSize = Math.min(canvas.width, canvas.height) / (window.devicePixelRatio || 1) / 20;
     const config: DrawingConfig = {
       canvas: canvas,
       dpr: window.devicePixelRatio || 1,
       centerX: canvas.width / (window.devicePixelRatio || 1) / 2,
       centerY: canvas.height / (window.devicePixelRatio || 1) / 2,
-      baseFontSize: Math.min(canvas.width, canvas.height) / (window.devicePixelRatio || 1) / 20,
+      baseFontSize: baseFontSize,
+      charWidth: baseFontSize * 0.6,
+      lineHeight: baseFontSize * 1.5,
       operands: currentProblem.operands,
       darkMode: darkMode
     };
@@ -506,18 +509,96 @@ export function DrawingCanvas({
     // Usar el factory para obtener el drawer apropiado y dibujar
     const drawer = DrawingFactory.create(currentDifficulty);
     drawer.draw(context, currentProblem, config);
-    
-    // Usar un DPR mejorado para mejor calidad
-    const dpr = Math.max(window.devicePixelRatio || 1, 2);
-    
-    // Tamaño de fuente adaptativo basado en el ancho del canvas
-    const baseFontSize = Math.min(Math.max(canvas.width / 40, 36), 48);
-    context.font = `bold ${baseFontSize}px monospace`;
-    context.textAlign = 'right';
-    context.textBaseline = 'middle';
-    
-    // Habilitar suavizado para mejor calidad de texto
-    context.imageSmoothingEnabled = true;
+  };
+  
+  // Automatically draw problem numbers when a new problem is provided
+  useEffect(() => {
+    if (currentProblem && contextRef.current && canvasRef.current) {
+      // Small delay to ensure canvas is ready
+      const timer = setTimeout(() => {
+        // Clear the canvas first before drawing new numbers
+        clearCanvas();
+        // Then draw the new problem numbers
+        drawProblemNumbers();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentProblem]);
+  
+  // Función para alternar entre modo claro y oscuro
+  const toggleDarkMode = () => {
+    saveCanvasState();
+    setDarkMode(!darkMode);
+  };
+
+  return (
+    <div className={`drawing-canvas-container relative ${className}`}>
+      <div className="relative w-full h-full">
+        <canvas
+          ref={canvasRef}
+          className={`drawing-canvas cursor-crosshair ${darkMode ? 'bg-gray-900' : 'bg-white'} w-full h-full`}
+          onMouseDown={startDrawing}
+          onMouseMove={(e) => {
+            draw(e);
+            trackPointer(e);
+          }}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={(e) => {
+            draw(e);
+            trackPointer(e);
+          }}
+          onTouchEnd={stopDrawing}
+        />
+        
+        {/* Controls positioned according to the position prop */}
+        <div className={`absolute top-4 ${position === 'left' ? 'left-4' : 'right-4'} flex ${position === 'left' ? 'flex-row' : 'flex-row-reverse'} gap-2 z-10`}>
+          {/* Clear Button */}
+          <button
+            onClick={clearCanvas}
+            className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Limpiar
+          </button>
+          
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className={`${darkMode ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-gray-700 hover:bg-gray-800'} text-white px-3 py-2 rounded-md text-sm font-medium transition-colors`}
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+          
+          {/* Tool Selection */}
+          <div className="flex bg-white rounded-md shadow-sm border">
+            <button
+              onClick={() => setTool('pen')}
+              className={`px-3 py-2 text-sm font-medium rounded-l-md transition-colors ${
+                currentTool === 'pen' 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              ✏️
+            </button>
+            <button
+              onClick={() => setTool('eraser')}
+              className={`px-3 py-2 text-sm font-medium rounded-r-md border-l transition-colors ${
+                currentTool === 'eraser' 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              🧽
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
     context.imageSmoothingQuality = 'high';
     
     // Calcular posición central ajustada por DPR
