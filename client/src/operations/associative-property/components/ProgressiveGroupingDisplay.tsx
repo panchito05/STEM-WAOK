@@ -56,14 +56,30 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [focusedField, isComplete]);
 
-  const handleAnswerChange = (field: keyof PracticeAnswers, value: string) => {
-    // Permitir números y string vacío, sin restricciones de longitud
-    if (value === '' || /^\d+$/.test(value)) {
+  const handleAnswerChange = (field: keyof PracticeAnswers, newDigit: string) => {
+    if (newDigit === '') {
+      // Limpiar el campo
       setAnswers(prev => ({
         ...prev,
-        [field]: value
+        [field]: ''
       }));
-      setFeedback(''); // Limpiar feedback al cambiar respuesta
+      setFeedback('');
+    } else if (/^\d$/.test(newDigit)) {
+      // Agregar el dígito al campo actual
+      setAnswers(prev => {
+        const currentValue = prev[field];
+        const newValue = currentValue + newDigit;
+        
+        // Limitar a máximo 3 dígitos para evitar números muy grandes
+        if (newValue.length <= 3) {
+          setFeedback('');
+          return {
+            ...prev,
+            [field]: newValue
+          };
+        }
+        return prev;
+      });
     }
   };
 
