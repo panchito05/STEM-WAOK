@@ -3488,7 +3488,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 const result = checkCurrentAnswer();
                 console.log('🏁 [ADVANCED] Validation result:', result);
               }} 
-              disabled={exerciseCompleted}
+              disabled={exerciseCompleted || waitingRef.current}
               className="w-full sm:w-auto px-5 sm:px-6 text-sm sm:text-base md:text-lg bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 order-2 sm:order-2"
             >
               {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
