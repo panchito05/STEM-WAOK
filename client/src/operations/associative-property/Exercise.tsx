@@ -3410,7 +3410,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                       if (isCorrect) {
                         setFeedbackMessage(`¡Excelente! Has demostrado que ${currentProblem.grouping1.expression} = ${currentProblem.grouping2.expression} = ${currentProblem.grouping1.totalSum}. ¡La propiedad asociativa funciona!`);
                         setFeedbackColor("green");
-                        setWaitingForContinue(true);
+                        waitingRef.current = true;
                         
                         // Actualizar contadores
                         const newConsecutive = consecutiveCorrectAnswers + 1;
