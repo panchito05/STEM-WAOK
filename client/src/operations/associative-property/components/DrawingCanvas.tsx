@@ -691,29 +691,89 @@ export function DrawingCanvas({
 
 
 
-    // Función para renderizar formato avanzado - Completar espacios completo
+    // Función para renderizar formato avanzado - Tres tipos de ejercicios
     const drawAdvancedFormat = () => {
       const spacing = baseFontSize * 1.2;
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       
-      const line1 = `Completa la expresión equivalente`;
-      const line2 = `(${operands[0]} + ${operands[1]}) + ${operands[2]} = ?`;
-      // Eliminamos line3 pero conservamos el espaciado
-      const line4 = `${operands[0]} + (_____ + _____) = _____`;
+      // Detectar qué tipo de ejercicio se debe mostrar (aleatorio como en AdvancedExercise)
+      // Simulamos la misma lógica aleatoria que usa AdvancedExercise
+      const exerciseTypes = ['fill-blank', 'verification', 'multiple-choice'];
+      const randomSeed = (operands[0] + operands[1] + operands[2]) % 3; // Determinístico basado en operandos
+      const exerciseType = exerciseTypes[randomSeed];
       
       // Usar un fontSize más pequeño para que quepa todo
-      const smallFont = baseFontSize * 0.8;
+      const smallFont = baseFontSize * 0.7;
+      const mediumFont = baseFontSize * 0.9;
       const originalFont = context.font;
-      context.font = `${smallFont}px Arial`;
       
-      context.fillText(line1, centerX, centerY - spacing * 1.5);
-      context.fillText(line2, centerX, centerY - spacing/2);
-      // NO renderizamos line3, pero mantenemos el espaciado como si estuviera ahí
-      context.fillText(line4, centerX, centerY + spacing * 1.5);
+      if (exerciseType === 'fill-blank') {
+        // Tipo 1: Fill-blank Exercise
+        context.font = `bold ${smallFont}px Arial`;
+        context.fillText('Completa la expresión equivalente', centerX, centerY - spacing * 2);
+        
+        // Expresión dada
+        context.font = `bold ${mediumFont}px Arial`;
+        context.fillStyle = '#059669'; // green-600
+        context.fillText(`(${operands[0]} + ${operands[1]}) + ${operands[2]} = ?`, centerX, centerY - spacing * 0.8);
+        
+        // Texto "Completa la otra forma"
+        context.fillStyle = '#000000';
+        context.font = `${smallFont}px Arial`;
+        context.fillText('Completa la otra forma:', centerX, centerY + spacing * 0.2);
+        
+        // Expresión a completar
+        context.font = `bold ${mediumFont}px Arial`;
+        context.fillText(`${operands[0]} + (_____ + _____) = _____`, centerX, centerY + spacing * 1.2);
+        
+      } else if (exerciseType === 'verification') {
+        // Tipo 2: Verification Exercise
+        context.font = `bold ${smallFont}px Arial`;
+        context.fillStyle = '#7c3aed'; // purple-600
+        context.fillText('¿Son estas expresiones equivalentes?', centerX, centerY - spacing * 1.5);
+        
+        // Primera expresión
+        context.font = `bold ${mediumFont}px Arial`;
+        context.fillStyle = '#7c3aed';
+        context.fillText(`(${operands[0]} + ${operands[1]}) + ${operands[2]}`, centerX, centerY - spacing * 0.5);
+        
+        // Texto "es igual a"
+        context.font = `${smallFont}px Arial`;
+        context.fillStyle = '#6b7280'; // gray-500
+        context.fillText('es igual a', centerX, centerY + spacing * 0.2);
+        
+        // Segunda expresión (forma equivalente)
+        context.font = `bold ${mediumFont}px Arial`;
+        context.fillStyle = '#7c3aed';
+        context.fillText(`${operands[0]} + (${operands[1]} + ${operands[2]})`, centerX, centerY + spacing * 0.9);
+        
+        // Opciones de respuesta
+        context.font = `${smallFont}px Arial`;
+        context.fillStyle = '#000000';
+        context.fillText('[Verdadero]    [Falso]', centerX, centerY + spacing * 1.8);
+        
+      } else {
+        // Tipo 3: Multiple Choice Exercise
+        context.font = `bold ${smallFont}px Arial`;
+        context.fillStyle = '#ea580c'; // orange-600
+        context.fillText('¿Cuál es igual a:', centerX, centerY - spacing * 1.8);
+        
+        // Expresión pregunta
+        context.font = `bold ${mediumFont}px Arial`;
+        context.fillText(`(${operands[0]} + ${operands[1]}) + ${operands[2]}?`, centerX, centerY - spacing * 1);
+        
+        // Opciones de respuesta
+        context.font = `${smallFont}px Arial`;
+        context.fillStyle = '#000000';
+        context.fillText(`A) ${operands[0]} + (${operands[1]} + ${operands[2]})`, centerX, centerY - spacing * 0.2);
+        context.fillText(`B) (${operands[0]} + ${operands[2]}) + ${operands[1]}`, centerX, centerY + spacing * 0.4);
+        context.fillText(`C) ${operands[0]} × (${operands[1]} + ${operands[2]})`, centerX, centerY + spacing * 1);
+      }
       
-      // Restaurar font original
+      // Restaurar font y color originales
       context.font = originalFont;
+      context.fillStyle = darkMode ? '#ffffff' : '#000000';
     };
     
     // Renderizar según el nivel de dificultad
