@@ -2249,7 +2249,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (waitingRef.current || exerciseCompleted || viewingPrevious || showLevelUpReward || !currentProblem) return;
 
       const key = event.key;
-      if (key >= '0' && key <= '9') {
+      if ((key >= '0' && key <= '9') || key === '.') {
           // 🧠 DETECCIÓN INTELIGENTE: Verificar si es el primer dígito ingresado
           const isFirstDigit = digitAnswers.every(digit => digit === "") && focusedDigitIndex === null;
           let currentFocus = focusedDigitIndex;
@@ -2947,7 +2947,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         </div>
         {/* Number Keypad - Full Width Design */}
         <div className="grid grid-cols-3 gap-3 w-full px-4">
-          {["1", "2", "3", "4", "5", "6", "7", "8", "9", ">", "0", "<"].map((key, idx) => (
+          {["1", "2", "3", "4", "5", "6", "7", "8", "9", ">", "0", ".", "<"].map((key, idx) => (
             <Button
               key={key || `empty-key-${idx}`}
               variant="outline"
