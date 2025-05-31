@@ -69,83 +69,79 @@ const ProfessorModeContent: React.FC<ProfessorModeProps> = ({
     getCurrentLayoutId 
   } = useSynchronizedLayout();
 
-  // Función para manejar input directo en contentEditable
-  const handleInput = (fieldName: keyof typeof answers, e: React.FormEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    let value = target.textContent || '';
+  // Función para manejar input de dígitos (copiada exactamente de Addition)
+  const handleDigitInput = (value: string) => {
+    if (!focusedField) return;
     
-    console.log('📝 [INPUT-DEBUG] Input event on', fieldName, 'raw value:', value);
+    console.log(`🔢 [INPUT-DEBUG] Digit input: ${value} for field: ${focusedField}`);
     
-    // Filtrar solo números
-    value = value.replace(/[^0-9]/g, '');
-    console.log('📝 [INPUT-DEBUG] Filtered value:', value);
-    
-    // Limitar longitud
-    if (value.length > 3) {
-      value = value.slice(0, 3);
-    }
-    
-    // Actualizar estado
-    setAnswers(prev => ({
-      ...prev,
-      [fieldName]: value
-    }));
-    
-    // Actualizar el contenido del div si es diferente
-    if (target.textContent !== value) {
-      target.textContent = value;
+    if (/[0-9]/.test(value)) {
+      const currentValue = answers[focusedField] || '';
       
-      // Mantener cursor al final
-      const range = document.createRange();
-      const selection = window.getSelection();
-      range.selectNodeContents(target);
-      range.collapse(false);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
+      // Limitar a máximo 3 dígitos
+      if (currentValue.length < 3) {
+        const newValue = currentValue + value;
+        console.log(`✅ [INPUT-DEBUG] Setting ${focusedField} = ${newValue}`);
+        
+        setAnswers(prev => ({
+          ...prev,
+          [focusedField]: newValue
+        }));
+      }
     }
   };
 
-  // Función para manejar teclas especiales
-  const handleKeyDown = (fieldName: keyof typeof answers, e: React.KeyboardEvent<HTMLDivElement>) => {
-    console.log('🔍 [INPUT-DEBUG] Key pressed:', e.key, 'on field:', fieldName);
+  // Función para manejar backspace (copiada exactamente de Addition)
+  const handleBackspace = () => {
+    if (!focusedField) return;
     
-    // Permitir solo números, backspace, delete, arrows, tab, enter
-    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'];
-    const isNumber = e.key >= '0' && e.key <= '9';
+    console.log(`⌫ [INPUT-DEBUG] Backspace for field: ${focusedField}`);
     
-    if (!isNumber && !allowedKeys.includes(e.key)) {
-      console.log('🚫 [INPUT-DEBUG] Blocking key:', e.key);
-      e.preventDefault();
-      return;
-    }
-    
-    // Manejar Tab y Enter para navegación
-    if (e.key === 'Tab' || e.key === 'Enter') {
-      e.preventDefault();
-      console.log('➡️ [INPUT-DEBUG] Moving to next field from:', fieldName);
+    const currentValue = answers[focusedField] || '';
+    if (currentValue.length > 0) {
+      const newValue = currentValue.slice(0, -1);
+      console.log(`✅ [INPUT-DEBUG] Setting ${focusedField} = ${newValue}`);
       
-      const fields: (keyof typeof answers)[] = ['leftSum1', 'final1', 'rightSum2', 'final2'];
-      const currentIndex = fields.indexOf(fieldName);
-      const nextIndex = (currentIndex + 1) % fields.length;
-      const nextField = fields[nextIndex];
-      
-      console.log('🎯 [INPUT-DEBUG] Next field:', nextField);
-      setFocusedField(nextField);
-      
-      setTimeout(() => {
-        const nextElement = inputRefs.current[nextField];
-        if (nextElement) {
-          nextElement.focus();
-          // Seleccionar todo el contenido
-          const range = document.createRange();
-          const selection = window.getSelection();
-          range.selectNodeContents(nextElement);
-          selection?.removeAllRanges();
-          selection?.addRange(range);
-        }
-      }, 0);
+      setAnswers(prev => ({
+        ...prev,
+        [focusedField]: newValue
+      }));
     }
   };
+
+  // Event listener global para capturar teclas (copiado exactamente de Addition)
+  React.useEffect(() => {
+    const handlePhysicalKeyDown = (event: KeyboardEvent) => {
+      console.log('🌐 [INPUT-DEBUG] Global key pressed:', event.key, 'focusedField:', focusedField);
+      
+      if (!focusedField) return;
+      
+      if (/[0-9]/.test(event.key)) {
+        event.preventDefault();
+        handleDigitInput(event.key);
+      } else if (event.key === 'Backspace') {
+        event.preventDefault();
+        handleBackspace();
+      } else if (event.key === 'Tab' || event.key === 'Enter') {
+        event.preventDefault();
+        
+        const fieldOrder: (keyof typeof answers)[] = ['leftSum1', 'final1', 'rightSum2', 'final2'];
+        const currentIndex = fieldOrder.indexOf(focusedField);
+        const nextIndex = (currentIndex + 1) % fieldOrder.length;
+        const nextField = fieldOrder[nextIndex];
+        
+        console.log('🔄 [INPUT-DEBUG] Navigating from', focusedField, 'to', nextField);
+        setFocusedField(nextField);
+        
+        setTimeout(() => {
+          inputRefs.current[nextField]?.focus();
+        }, 0);
+      }
+    };
+    
+    document.addEventListener('keydown', handlePhysicalKeyDown);
+    return () => document.removeEventListener('keydown', handlePhysicalKeyDown);
+  }, [focusedField, answers, handleDigitInput, handleBackspace]);
 
   // Log cuando cambia el estado de respuestas
   React.useEffect(() => {
