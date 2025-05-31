@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Problem } from '../types';
-import { useTranslation } from '../hooks/useTranslation';
 import { CheckCircle, XCircle } from 'lucide-react';
 
 export interface ExplanationPanelProps {
@@ -20,8 +19,6 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
   isCorrect,
   onContinue
 }) => {
-  const { t } = useTranslation();
-  
   // Función para formatear números
   const formatNumber = (num: number): string => {
     return num.toLocaleString();
@@ -33,12 +30,8 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
     if (problem.operands.length === 2) {
       return (
         <p className="text-lg mb-4">
-          {t('explanationStart', { 
-            values: { 
-              operand1: formatNumber(problem.operands[0].value),
-              operand2: formatNumber(problem.operands[1].value)
-            }
-          })}, {t('explanationStepByStep')}
+          Tienes {formatNumber(problem.operands[0].value)} + {formatNumber(problem.operands[1].value)}. 
+          Vamos paso a paso para resolver este problema.
         </p>
       );
     }

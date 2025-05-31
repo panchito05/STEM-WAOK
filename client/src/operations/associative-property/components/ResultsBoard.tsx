@@ -128,9 +128,10 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
   // Convertir nivel de dificultad a texto en español
   const getDifficultyText = (difficulty: DifficultyLevel) => {
     switch (difficulty) {
-      case 'easy': return 'Fácil';
-      case 'medium': return 'Medio';
-      case 'hard': return 'Difícil';
+      case 'beginner': return 'Principiante';
+      case 'elementary': return 'Elemental';
+      case 'intermediate': return 'Intermedio';
+      case 'advanced': return 'Avanzado';
       case 'expert': return 'Experto';
       default: return 'Desconocido';
     }
@@ -139,9 +140,10 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
   // Obtener color para el badge de dificultad
   const getDifficultyColor = (difficulty: DifficultyLevel) => {
     switch (difficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-blue-100 text-blue-800';
-      case 'hard': return 'bg-orange-100 text-orange-800';
+      case 'beginner': return 'bg-green-100 text-green-800';
+      case 'elementary': return 'bg-blue-100 text-blue-800';
+      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
+      case 'advanced': return 'bg-orange-100 text-orange-800';
       case 'expert': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -158,7 +160,7 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
         return problem.operands.map(op => op.value).join(' + ') + ' = ' + problem.correctAnswer;
         
       case 'word':
-        const label = problem.operands[0].label || 'elementos';
+        const label = 'elementos';
         const description = problem.operands.map(op => `${op.value} ${label}`).join(' y ');
         return `Si tienes ${description}, ¿cuántos ${label} tienes en total?`;
         

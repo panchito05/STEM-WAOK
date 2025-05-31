@@ -82,9 +82,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   const renderWordProblem = () => {
     // Crear una descripción del problema basada en los operandos
     const description = problem.operands.map((op, index) => {
-      return op.label ? 
-        `${formatNumber(op.value)} ${op.label}` : 
-        formatNumber(op.value);
+      return `${formatNumber(op.value)} elementos`;
     }).join(' + ');
     
     return (
