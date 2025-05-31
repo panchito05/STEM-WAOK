@@ -22,6 +22,8 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
   const [selectedChoice, setSelectedChoice] = useState<string>('');
   const [showResult, setShowResult] = useState(false);
 
+
+
   // Auto-seleccionar el primer campo al inicializar
   useEffect(() => {
     if (exercise === 'fill-blank' && !activeInteractiveField && !showResult) {
