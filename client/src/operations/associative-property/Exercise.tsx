@@ -1,25 +1,49 @@
-// Exercise.tsx - Módulo de Propiedades Asociativas Completamente Corregido
+// Exercise.tsx - Módulo de Propiedades Asociativas Corregido
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useProgress } from "@/context/ProgressContext";
 import { ModuleSettings, useSettings } from "@/context/SettingsContext";
 import { Button } from "@/components/ui/button";
 import { Progress as ProgressBarUI } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
 import { generateAssociativePropertyProblem, checkAnswer } from "./utils";
-import { AssociativePropertyProblem, AssociativePropertyUserAnswer, DifficultyLevel } from "./types";
+import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, AssociativePropertyUserAnswer, DifficultyLevel } from "./types";
+import VisualProblemDisplay from "./components/VisualProblemDisplay";
+import InteractiveExercise from "./components/InteractiveExercise";
+import AdvancedExercise from "./components/AdvancedExercise";
+import ProgressiveGroupingDisplay from "./components/ProgressiveGroupingDisplay";
 import { formatTime } from "@/lib/utils";
-import { Settings, Check, X, Trophy, Cog } from "lucide-react";
+import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
+import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { MathProblem } from '../../components/ProblemRenderer';
+import { CORRECT_ANSWERS_FOR_LEVEL_UP } from '@/lib/levelManager';
+import eventBus from '@/lib/eventBus';
+import LevelUpHandler from "@/components/LevelUpHandler";
+import { Link } from "wouter";
+import ExerciseHistoryDialog from "@/components/ExerciseHistoryDialog";
+import { useRewards, RewardModal, useRewardQueue, RewardUtils } from '@/rewards';
+import { useMultiOperationsSession } from '@/hooks/useMultiOperationsSession';
 
 interface ExerciseProps {
   settings: ModuleSettings;
   onOpenSettings: () => void;
 }
 
-interface RewardStats {
-  totalProblems: number;
-  currentStreak: number;
-  showRewardModal: boolean;
-  rewardMessage: string;
+const digitBoxBaseStyle = "w-10 h-12 sm:w-11 sm:h-14 text-xl sm:text-2xl font-bold border-2 rounded-md flex items-center justify-center transition-all select-none";
+const digitBoxFocusStyle = "border-blue-500 ring-2 ring-blue-300 shadow-lg";
+const digitBoxBlurStyle = "border-gray-300";
+const digitBoxDisabledStyle = "bg-gray-100 text-gray-500 border-gray-200 cursor-default";
+const verticalOperandStyle = "font-mono text-2xl sm:text-3xl text-right tracking-wider";
+const plusSignVerticalStyle = "font-mono text-2xl sm:text-3xl text-gray-600 mr-2";
+const sumLineStyle = "border-t-2 border-gray-700 my-1";
+
+interface YoutubeVideoMetadata {
+  url: string;
+  title: string;
+  thumbnailUrl: string;
+  videoId: string;
 }
 
 const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
@@ -30,11 +54,17 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
   const [currentInput, setCurrentInput] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [exerciseState, setExerciseState] = useState<'ready' | 'in-progress' | 'completed'>('ready');
+  const [exerciseState, setExerciseState] = useState<'ready' | 'in-progress' | 'completed' | 'review'>('ready');
   const [startTime, setStartTime] = useState<number>(0);
   const [timeSpent, setTimeSpent] = useState<number>(0);
   const [timeSpentOnCurrentProblem, setTimeSpentOnCurrentProblem] = useState<number>(0);
+  const [isProfessorModeOpen, setIsProfessorModeOpen] = useState(false);
   const [currentAttempts, setCurrentAttempts] = useState(0);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [interactiveAnswers, setInteractiveAnswers] = useState<string[]>([]);
+  const [activeInteractiveField, setActiveInteractiveField] = useState<number>(0);
+  const [digitInputs, setDigitInputs] = useState<string[]>([]);
+  const [currentDigitPosition, setCurrentDigitPosition] = useState(0);
 
   // Referencias
   const inputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +73,8 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
   const autoContinueTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const { saveExerciseResult } = useProgress();
-
+  const { updateModuleSettings } = useSettings();
+  
   // Sistema de traducción simplificado
   const t = (key: string) => {
     const translations: { [key: string]: string } = {
@@ -60,9 +91,9 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
   };
 
   // Sistema de recompensas simplificado
-  const [rewardStats, setRewardStats] = useState<RewardStats>(() => {
+  const [rewardStats, setRewardStats] = useState(() => {
     const saved = localStorage.getItem('associative-property_rewards');
-    const defaultStats: RewardStats = {
+    const defaultStats = {
       totalProblems: 0,
       currentStreak: 0,
       showRewardModal: false,
@@ -93,6 +124,11 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
       setCurrentInput("");
       setShowFeedback(false);
       setCurrentAttempts(0);
+      setShowExplanation(false);
+      setInteractiveAnswers([]);
+      setActiveInteractiveField(0);
+      setDigitInputs([]);
+      setCurrentDigitPosition(0);
       setExerciseState('in-progress');
       setStartTime(Date.now());
       setTimeSpentOnCurrentProblem(0);
@@ -201,7 +237,7 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
 
     // Actualizar estadísticas de recompensas
     if (correct) {
-      setRewardStats((prev: RewardStats) => {
+      setRewardStats(prev => {
         const newStats = {
           ...prev,
           totalProblems: prev.totalProblems + 1,
@@ -218,7 +254,7 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
         return newStats;
       });
     } else {
-      setRewardStats((prev: RewardStats) => {
+      setRewardStats(prev => {
         const newStats = { ...prev, currentStreak: 0 };
         localStorage.setItem('associative-property_rewards', JSON.stringify(newStats));
         return newStats;
@@ -231,13 +267,15 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
       singleProblemTimerRef.current = null;
     }
 
-    // Auto-continuar después de 1.5 segundos si es correcto
-    if (correct) {
+    // Auto-continuar o mostrar explicación según configuración
+    if (settings.showAnswerWithExplanation || !correct) {
+      setShowExplanation(true);
+    } else if (correct) {
       autoContinueTimerRef.current = setTimeout(() => {
         handleNextProblem();
       }, 1500);
     }
-  }, [problemsList, currentProblemIndex, currentInput, showFeedback, currentAttempts, timeSpentOnCurrentProblem]);
+  }, [problemsList, currentProblemIndex, currentInput, showFeedback, currentAttempts, timeSpentOnCurrentProblem, settings]);
 
   // Función para ir al siguiente problema
   const handleNextProblem = useCallback(() => {
@@ -247,24 +285,31 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
     }
 
     setShowFeedback(false);
+    setShowExplanation(false);
     setCurrentInput("");
     setCurrentAttempts(0);
     setTimeSpentOnCurrentProblem(0);
+    setInteractiveAnswers([]);
+    setActiveInteractiveField(0);
+    setDigitInputs([]);
+    setCurrentDigitPosition(0);
 
     if (currentProblemIndex < problemsList.length - 1) {
       setCurrentProblemIndex(prev => prev + 1);
       
       // Iniciar timer para el siguiente problema
-      if (settings.timeLimit && parseInt(settings.timeLimit) > 0) {
+      if (settings.hasTimerEnabled && settings.timeLimit) {
         const timeLimit = parseInt(settings.timeLimit);
-        let timeLeft = timeLimit;
-        singleProblemTimerRef.current = window.setInterval(() => {
-          timeLeft--;
-          setTimeSpentOnCurrentProblem(timeLimit - timeLeft);
-          if (timeLeft <= 0) {
-            handleTimeUp();
-          }
-        }, 1000);
+        if (timeLimit > 0) {
+          let timeLeft = timeLimit;
+          singleProblemTimerRef.current = window.setInterval(() => {
+            timeLeft--;
+            setTimeSpentOnCurrentProblem(timeLimit - timeLeft);
+            if (timeLeft <= 0) {
+              handleTimeUp();
+            }
+          }, 1000);
+        }
       }
     } else {
       // Ejercicio completado
@@ -408,20 +453,23 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Modal de recompensas simplificado */}
+      {/* Modal de recompensas */}
       {rewardStats.showRewardModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-lg p-6 max-w-md mx-4">
-            <h3 className="text-xl font-bold text-center mb-4">¡Felicitaciones!</h3>
-            <p className="text-center mb-6">{rewardStats.rewardMessage}</p>
-            <Button 
-              onClick={() => setRewardStats(prev => ({ ...prev, showRewardModal: false }))}
-              className="w-full"
-            >
-              Continuar
-            </Button>
-          </div>
-        </div>
+        <RewardModal
+          isOpen={rewardStats.showRewardModal}
+          onClose={() => setRewardStats(prev => ({ ...prev, showRewardModal: false }))}
+          message={rewardStats.rewardMessage}
+          type="streak"
+        />
+      )}
+
+      {/* Modo Profesor */}
+      {isProfessorModeOpen && (
+        <ProfessorMode
+          isOpen={isProfessorModeOpen}
+          onClose={() => setIsProfessorModeOpen(false)}
+          problem={currentProblem}
+        />
       )}
 
       <div className="container mx-auto px-4 py-6">
@@ -437,6 +485,14 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
           </div>
           
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsProfessorModeOpen(true)}
+            >
+              <Cog className="h-4 w-4 mr-2" />
+              Modo Profesor
+            </Button>
             <Button variant="outline" size="sm" onClick={onOpenSettings}>
               <Settings className="h-4 w-4" />
             </Button>
@@ -511,7 +567,7 @@ const Exercise: React.FC<ExerciseProps> = ({ settings, onOpenSettings }) => {
                   </Button>
                 </div>
                 
-                {settings.timeLimit && parseInt(settings.timeLimit) > 0 && (
+                {settings.hasTimerEnabled && settings.timeLimit && (
                   <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
                     Tiempo restante: {Math.max(0, parseInt(settings.timeLimit) - timeSpentOnCurrentProblem)}s
                   </div>
