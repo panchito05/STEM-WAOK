@@ -149,7 +149,16 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
 
   const handleVerificationSubmit = () => {
     const userAnsweredTrue = verificationAnswer.toLowerCase() === 'verdadero' || verificationAnswer.toLowerCase() === 'true';
-    const actuallyCorrect = verificationExpression?.isCorrect ?? true;
+    
+    // Si no hay expresión de verificación generada, calcular si es correcta
+    let actuallyCorrect = true;
+    if (verificationExpression) {
+      actuallyCorrect = verificationExpression.isCorrect;
+    } else {
+      // Por defecto, la expresión mostrada es la forma asociativa correcta
+      actuallyCorrect = true;
+    }
+    
     const isCorrect = userAnsweredTrue === actuallyCorrect;
     setShowResult(true);
     onAnswer(isCorrect);
