@@ -146,6 +146,7 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
   let operands: number[] = [];
   let layout: ExerciseLayout = 'horizontal';
   let problemMaxDecimals: 0 | 1 | 2 = 0;
+  const maxAttempts = 3; // Valor por defecto para intentos máximos
 
   switch (difficulty) {
     case "beginner": 
