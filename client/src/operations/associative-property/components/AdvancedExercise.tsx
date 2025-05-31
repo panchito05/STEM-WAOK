@@ -145,11 +145,20 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   };
 
   const handleFillBlankSubmit = () => {
-    const blank1Correct = parseInt(interactiveAnswers.blank1) === operands[1];
-    const blank2Correct = parseInt(interactiveAnswers.blank2) === operands[2];
-    const blank3Correct = parseInt(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0);
+    const blank1Correct = parseFloat(interactiveAnswers.blank1) === operands[1];
+    const blank2Correct = parseFloat(interactiveAnswers.blank2) === operands[2];
+    const blank3Correct = parseFloat(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0);
+    
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Validación de completar espacios:');
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Operandos:', operands);
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Respuestas del usuario:', interactiveAnswers);
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] blank1 correcto:', blank1Correct, `(${parseFloat(interactiveAnswers.blank1)} === ${operands[1]})`);
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] blank2 correcto:', blank2Correct, `(${parseFloat(interactiveAnswers.blank2)} === ${operands[2]})`);
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] blank3 correcto:', blank3Correct, `(${parseFloat(interactiveAnswers.blank3)} === ${operands.reduce((sum, val) => sum + val, 0)})`);
     
     const isCorrect = blank1Correct && blank2Correct && blank3Correct;
+    console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Resultado final:', isCorrect);
+    
     setShowResult(true);
     onAnswer(isCorrect);
   };
@@ -375,18 +384,18 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
         <div className="mt-6 text-center">
           <div className={`text-lg font-semibold ${
             (exercise === 'fill-blank' 
-              ? parseInt(interactiveAnswers.blank1) === operands[1] && 
-                parseInt(interactiveAnswers.blank2) === operands[2] && 
-                parseInt(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0)
+              ? parseFloat(interactiveAnswers.blank1) === operands[1] && 
+                parseFloat(interactiveAnswers.blank2) === operands[2] && 
+                parseFloat(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0)
               : exercise === 'verification'
               ? (verificationAnswer.toLowerCase() === 'verdadero' || verificationAnswer.toLowerCase() === 'true') === (verificationExpression?.isCorrect ?? true)
               : shuffledChoices.find(choice => choice.id === selectedChoice)?.correct || false // CORREGIDO: Usar la validación correcta basada en los datos del estado
             ) ? 'text-green-600' : 'text-red-600'
           }`}>
             {(exercise === 'fill-blank' 
-              ? parseInt(interactiveAnswers.blank1) === operands[1] && 
-                parseInt(interactiveAnswers.blank2) === operands[2] && 
-                parseInt(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0)
+              ? parseFloat(interactiveAnswers.blank1) === operands[1] && 
+                parseFloat(interactiveAnswers.blank2) === operands[2] && 
+                parseFloat(interactiveAnswers.blank3) === operands.reduce((sum, val) => sum + val, 0)
               : exercise === 'verification'
               ? (verificationAnswer.toLowerCase() === 'verdadero' || verificationAnswer.toLowerCase() === 'true') === (verificationExpression?.isCorrect ?? true)
               : shuffledChoices.find(choice => choice.id === selectedChoice)?.correct || false // CORREGIDO: Usar la validación correcta
