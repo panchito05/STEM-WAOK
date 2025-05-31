@@ -9,6 +9,7 @@ import { Problem, UserAnswer as UserAnswerType, AssociativePropertyProblem, Asso
 import VisualProblemDisplay from "./components/VisualProblemDisplay";
 import InteractiveExercise from "./components/InteractiveExercise";
 import AdvancedExercise from "./components/AdvancedExercise";
+import ProgressiveGroupingDisplay from "./components/ProgressiveGroupingDisplay";
 import { formatTime } from "@/lib/utils";
 import { Settings, ChevronLeft, ChevronRight, Check, Cog, Info, Star, Award, Trophy, RotateCcw, History, Youtube, X, Plus, Maximize2, Minimize2, Play } from "lucide-react";
 import { ProfessorModeWithSync as ProfessorMode } from "./components/professor/ProfessorModeWithSync";
@@ -2804,40 +2805,21 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             />
           )}
 
-          {/* Interactive Exercise para nivel intermedio */}
+          {/* Progressive Grouping Display para nivel intermedio */}
           {settings.difficulty === 'intermediate' && exerciseStarted && (
-            <InteractiveExercise 
-              operands={currentProblem.operands}
-              grouping1={currentProblem.grouping1}
-              grouping2={currentProblem.grouping2}
-              interactiveAnswers={interactiveAnswers}
-              setInteractiveAnswers={setInteractiveAnswers}
-              activeInteractiveField={activeInteractiveField}
-              setActiveInteractiveField={setActiveInteractiveField}
-              onAnswer={(answers) => {
-                // Verificar todas las respuestas del ejercicio interactivo de propiedad asociativa
-                const leftSum1 = parseInt(interactiveAnswers.leftSum1 || '0');
-                const final1 = parseInt(interactiveAnswers.final1 || '0');
-                const leftSum2 = parseInt(interactiveAnswers.leftSum2 || '0');
-                const rightSum2 = parseInt(interactiveAnswers.rightSum2 || '0');
-                const final2 = parseInt(interactiveAnswers.final2 || '0');
+            <ProgressiveGroupingDisplay 
+              problem={currentProblem}
+              onComplete={(finalAnswer) => {
+                setFeedbackMessage("¡Excelente! Has demostrado que ambas agrupaciones dan el mismo resultado. Esto es la propiedad asociativa.");
+                setFeedbackColor("green");
                 
-                const allCorrect = 
-                  leftSum1 === (currentProblem.grouping1?.leftSum || 0) &&
-                  final1 === (currentProblem.grouping1?.totalSum || 0) &&
-                  leftSum2 === (currentProblem.grouping2?.leftSum || 0) &&
-                  rightSum2 === (currentProblem.grouping2?.rightSum || 0) &&
-                  final2 === (currentProblem.grouping2?.totalSum || 0);
+                // Incrementar contador de respuestas correctas consecutivas
+                const newConsecutive = consecutiveCorrectAnswers + 1;
+                setConsecutiveCorrectAnswers(newConsecutive);
+                setConsecutiveIncorrectAnswers(0);
                 
-                if (allCorrect) {
-                  setFeedbackMessage("¡Excelente! Has demostrado que ambas agrupaciones dan el mismo resultado. Esto es la propiedad asociativa.");
-                  setFeedbackColor("green");
-                  handleCorrectAnswer();
-                } else {
-                  setFeedbackMessage("Revisa tus cálculos. Recuerda que la propiedad asociativa dice que (a + b) + c = a + (b + c).");
-                  setFeedbackColor("red");
-                  handleIncorrectAnswer();
-                }
+                // Mostrar botón de continuar
+                setWaitingForContinue(true);
               }}
             />
           )}
