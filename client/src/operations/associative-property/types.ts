@@ -14,6 +14,16 @@ export interface VisualObject {
   color: string;            // Color de fondo para agrupación
 }
 
+// Estructura para representar una agrupación en la propiedad asociativa
+export interface AssociativeGrouping {
+  leftGroup: number[];   // Números del grupo izquierdo: (a + b)
+  rightGroup: number[];  // Números del grupo derecho: + c
+  leftSum: number;       // Suma del grupo izquierdo
+  rightSum: number;      // Suma del grupo derecho (si hay más de un número)
+  totalSum: number;      // Suma total de ambos grupos
+  expression: string;    // Expresión matemática: "(2 + 3) + 4"
+}
+
 // Definición de un problema de propiedad asociativa específico
 // La propiedad asociativa establece que: (a + b) + c = a + (b + c)
 export interface AssociativePropertyProblem {
@@ -31,6 +41,9 @@ export interface AssociativePropertyProblem {
   showVisualMode?: boolean; // Si debe mostrar modo visual
   interactiveMode?: boolean; // Si debe mostrar campos de entrada interactivos (nivel intermedio)
   blankPositions?: number[]; // Posiciones de los espacios en blanco para completar
+  // Nuevas propiedades para enseñar correctamente la propiedad asociativa
+  grouping1?: AssociativeGrouping; // Primera agrupación: (a + b) + c
+  grouping2?: AssociativeGrouping; // Segunda agrupación: a + (b + c)
   // Propiedades de compatibilidad con Problem
   displayFormat?: string;
   difficulty?: DifficultyLevel;

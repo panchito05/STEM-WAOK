@@ -656,19 +656,41 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
 
     // Manejar niveles intermediate y advanced con sus propios componentes
     if (settings.difficulty === 'intermediate') {
+      // Verificar que tenemos las agrupaciones matemáticas
+      if (!currentProblem.grouping1 || !currentProblem.grouping2) {
+        setFeedbackMessage("Error: No se pudieron generar las agrupaciones matemáticas.");
+        setFeedbackColor("red");
+        return false;
+      }
+
       // Verificar si todos los campos están completados
-      if (!interactiveAnswers.blank1 || !interactiveAnswers.blank2 || !interactiveAnswers.blank3) {
+      // Para la propiedad asociativa necesitamos:
+      // - leftSum1: suma del primer grupo (a + b)
+      // - leftSum2: suma del segundo grupo solo 'a'
+      // - rightSum2: suma del segundo grupo (b + c)
+      // - final1: resultado de la primera agrupación
+      // - final2: resultado de la segunda agrupación
+      if (!interactiveAnswers.leftSum1 || !interactiveAnswers.leftSum2 || !interactiveAnswers.rightSum2 || 
+          !interactiveAnswers.final1 || !interactiveAnswers.final2) {
         setFeedbackMessage("Por favor completa todos los campos antes de verificar.");
         setFeedbackColor("red");
         return false;
       }
 
-      // Validar respuestas del nivel intermediate
-      const blank1Correct = parseInt(interactiveAnswers.blank1) === currentProblem.operands[1];
-      const blank2Correct = parseInt(interactiveAnswers.blank2) === currentProblem.operands[2];
-      const blank3Correct = parseInt(interactiveAnswers.blank3) === currentProblem.correctAnswer;
+      // Validar respuestas del nivel intermediate - Propiedad Asociativa Real
+      // Primera agrupación: (a + b) + c
+      const leftSum1Correct = parseInt(interactiveAnswers.leftSum1) === currentProblem.grouping1.leftSum;
+      const final1Correct = parseInt(interactiveAnswers.final1) === currentProblem.grouping1.totalSum;
       
-      const isCorrect = blank1Correct && blank2Correct && blank3Correct;
+      // Segunda agrupación: a + (b + c)
+      const leftSum2Correct = parseInt(interactiveAnswers.leftSum2) === currentProblem.grouping2.leftSum;
+      const rightSum2Correct = parseInt(interactiveAnswers.rightSum2) === currentProblem.grouping2.rightSum;
+      const final2Correct = parseInt(interactiveAnswers.final2) === currentProblem.grouping2.totalSum;
+      
+      // Verificar que ambos resultados finales son iguales (esencia de la propiedad asociativa)
+      const finalResultsEqual = parseInt(interactiveAnswers.final1) === parseInt(interactiveAnswers.final2);
+      
+      const isCorrect = leftSum1Correct && final1Correct && leftSum2Correct && rightSum2Correct && final2Correct && finalResultsEqual;
       
       // Actualizar el historial de respuestas
       const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
@@ -687,7 +709,8 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       });
 
       if (isCorrect) {
-        setFeedbackMessage("¡Excelente! Has completado correctamente la propiedad asociativa.");
+        const { grouping1, grouping2 } = currentProblem;
+        setFeedbackMessage(`¡Excelente! Has demostrado que ${grouping1.expression} = ${grouping2.expression} = ${grouping1.totalSum}. ¡La propiedad asociativa funciona!`);
         setFeedbackColor("green");
         
         // Incrementar contador de respuestas correctas consecutivas
@@ -710,7 +733,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           }
         }, 2000);
       } else {
-        setFeedbackMessage("Revisa tu respuesta. La propiedad asociativa mantiene el mismo resultado independientemente de la agrupación.");
+        // Proporcionar feedback específico sobre qué parte está incorrecta
+        let specificError = "";
+        if (!leftSum1Correct) specificError += "Revisa la suma del primer grupo. ";
+        if (!leftSum2Correct) specificError += "Revisa el primer número de la segunda agrupación. ";
+        if (!rightSum2Correct) specificError += "Revisa la suma del segundo grupo. ";
+        if (!final1Correct) specificError += "Revisa el resultado de la primera agrupación. ";
+        if (!final2Correct) specificError += "Revisa el resultado de la segunda agrupación. ";
+        if (!finalResultsEqual) specificError += "Los resultados finales deben ser iguales. ";
+        
+        setFeedbackMessage(`${specificError}Recuerda: la propiedad asociativa dice que (a + b) + c = a + (b + c).`);
         setFeedbackColor("red");
         
         // Incrementar contador de respuestas incorrectas consecutivas

@@ -93,6 +93,52 @@ export function problemToAssociativePropertyProblem(problem: Problem): Associati
 // La Propiedad Asociativa de la Suma establece que:
 // (a + b) + c = a + (b + c)
 // El resultado es el mismo independientemente de cómo se agrupen los números
+
+// Estructura para representar una agrupación en la propiedad asociativa
+export interface AssociativeGrouping {
+  leftGroup: number[];   // Números del grupo izquierdo: (a + b)
+  rightGroup: number[];  // Números del grupo derecho: + c
+  leftSum: number;       // Suma del grupo izquierdo
+  rightSum: number;      // Suma del grupo derecho (si hay más de un número)
+  totalSum: number;      // Suma total de ambos grupos
+  expression: string;    // Expresión matemática: "(2 + 3) + 4"
+}
+
+// Función para generar ambas agrupaciones posibles
+export function generateAssociativeGroupings(operands: number[]): {
+  grouping1: AssociativeGrouping;
+  grouping2: AssociativeGrouping;
+} {
+  if (operands.length < 3) {
+    throw new Error("Se necesitan al menos 3 operandos para demostrar la propiedad asociativa");
+  }
+
+  const [a, b, c] = operands;
+  const totalSum = operands.reduce((sum, num) => sum + num, 0);
+
+  // Primera agrupación: (a + b) + c
+  const grouping1: AssociativeGrouping = {
+    leftGroup: [a, b],
+    rightGroup: [c],
+    leftSum: a + b,
+    rightSum: c,
+    totalSum,
+    expression: `(${a} + ${b}) + ${c}`
+  };
+
+  // Segunda agrupación: a + (b + c)  
+  const grouping2: AssociativeGrouping = {
+    leftGroup: [a],
+    rightGroup: [b, c],
+    leftSum: a,
+    rightSum: b + c,
+    totalSum,
+    expression: `${a} + (${b} + ${c})`
+  };
+
+  return { grouping1, grouping2 };
+}
+
 export function generateAssociativePropertyProblem(difficulty: DifficultyLevel): AssociativePropertyProblem {
   const id = generateUniqueId();
   let operands: number[] = [];
@@ -101,11 +147,9 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
 
   switch (difficulty) {
     case "beginner": 
-      // NIVEL PRINCIPIANTE: Agrupar objetos visuales para entender la propiedad asociativa
-      // Ejemplo: 🍎🍎 + 🍊🍊🍊 + 🍌 = 6 frutas
-      // El niño puede agrupar como (🍎🍎 + 🍊🍊🍊) + 🍌 = 5 + 1 = 6
-      // O como 🍎🍎 + (🍊🍊🍊 + 🍌) = 2 + 4 = 6
-      // Números muy pequeños (1-3) para facilitar la visualización y conteo
+      // NIVEL PRINCIPIANTE: Demostrar visualmente que (a + b) + c = a + (b + c)
+      // Ejemplo: (🍎🍎 + 🍊🍊🍊) + 🍌 = 🍎🍎 + (🍊🍊🍊 + 🍌) = 6 frutas
+      // El niño ve ambas agrupaciones y cuenta que dan el mismo resultado
       operands = [getRandomInt(1, 3), getRandomInt(1, 3), getRandomInt(1, 3)];
       layout = 'horizontal';
       break;
@@ -119,9 +163,9 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
       break;
       
     case "intermediate": 
-      // NIVEL INTERMEDIO: Ejercicios guiados para completar espacios en blanco
-      // Ejemplo: (6 + 1) + 3 = ___ y 6 + (___ + ___) = ___
-      // Los estudiantes deben completar los valores faltantes
+      // NIVEL INTERMEDIO: Demostración guiada de la equivalencia
+      // Ejemplo: (6 + 4) + 3 = 10 + 3 = 13 y 6 + (4 + 3) = 6 + 7 = 13
+      // El estudiante debe completar los pasos de cada agrupación y verificar que son iguales
       layout = 'horizontal';
       operands = [
         getRandomInt(5, 15),
@@ -211,6 +255,16 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
   const showVisualMode = difficulty === 'beginner';
   const interactiveMode = difficulty === 'intermediate';
 
+  // Generar las agrupaciones para demostrar la propiedad asociativa
+  let grouping1: AssociativeGrouping | undefined;
+  let grouping2: AssociativeGrouping | undefined;
+  
+  if (operands.length >= 3) {
+    const groupings = generateAssociativeGroupings(operands);
+    grouping1 = groupings.grouping1;
+    grouping2 = groupings.grouping2;
+  }
+
   return {
     id,
     num1: operands[0], // Mantener por compatibilidad o uso simple
@@ -223,6 +277,8 @@ export function generateAssociativePropertyProblem(difficulty: DifficultyLevel):
     visualObjects,
     showVisualMode,
     interactiveMode,
+    grouping1,
+    grouping2,
   };
 }
 

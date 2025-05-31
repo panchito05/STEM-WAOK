@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { AssociativeGrouping } from '../types';
 
 interface InteractiveExerciseProps {
   operands: number[];
+  grouping1?: AssociativeGrouping;
+  grouping2?: AssociativeGrouping;
   onAnswer: (answers: number[]) => void;
   interactiveAnswers: { [key: string]: string };
   setInteractiveAnswers: React.Dispatch<React.SetStateAction<{ [key: string]: string }>>;
