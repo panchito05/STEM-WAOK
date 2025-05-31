@@ -792,7 +792,138 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       return false; // Let the AdvancedExercise component handle the validation
     }
 
-    // Lógica original para niveles beginner y elementary
+    if (settings.difficulty === 'elementary') {
+      console.log('✅ [CHECK-DEBUG] Processing elementary level validation');
+      // Verificar que tenemos las agrupaciones matemáticas
+      if (!currentProblem.grouping1 || !currentProblem.grouping2) {
+        setFeedbackMessage("Error: No se pudieron generar las agrupaciones matemáticas.");
+        setFeedbackColor("red");
+        return false;
+      }
+
+      // Obtener las respuestas del componente ProgressiveGroupingDisplay para nivel elementary
+      const leftSum1Input = document.querySelector('[data-field="leftSum1"]') as HTMLDivElement;
+      const final1Input = document.querySelector('[data-field="final1"]') as HTMLDivElement;
+      const rightSum2Input = document.querySelector('[data-field="rightSum2"]') as HTMLDivElement;
+      const final2Input = document.querySelector('[data-field="final2"]') as HTMLDivElement;
+
+      console.log('🔍 [CHECK-DEBUG] Found input elements:', {
+        leftSum1Input: !!leftSum1Input,
+        final1Input: !!final1Input,
+        rightSum2Input: !!rightSum2Input,
+        final2Input: !!final2Input
+      });
+
+      if (!leftSum1Input || !final1Input || !rightSum2Input || !final2Input) {
+        setFeedbackMessage("Error: No se pueden encontrar los campos de entrada.");
+        setFeedbackColor("red");
+        return false;
+      }
+
+      const answers = {
+        leftSum1: leftSum1Input.textContent || '',
+        final1: final1Input.textContent || '',
+        rightSum2: rightSum2Input.textContent || '',
+        final2: final2Input.textContent || ''
+      };
+
+      console.log('🔍 [CHECK-DEBUG] Current answers:', answers);
+
+      // Verificar que todos los campos estén llenos
+      if (!answers.leftSum1 || !answers.final1 || !answers.rightSum2 || !answers.final2) {
+        setFeedbackMessage("Por favor completa todos los campos antes de verificar.");
+        setFeedbackColor("red");
+        return false;
+      }
+
+      // Validar respuestas usando la misma lógica que intermediate
+      const { operands, grouping1, grouping2 } = currentProblem;
+      const [a, b, c] = operands;
+
+      const leftSum1 = parseInt(answers.leftSum1) || 0;
+      const final1 = parseInt(answers.final1) || 0;
+      const rightSum2 = parseInt(answers.rightSum2) || 0;
+      const final2 = parseInt(answers.final2) || 0;
+
+      const correctLeftSum1 = grouping1?.leftSum || 0;
+      const correctFinal1 = grouping1?.totalSum || 0;
+      const correctRightSum2 = grouping2?.rightSum || 0;
+      const correctFinal2 = grouping2?.totalSum || 0;
+
+      console.log('🔍 [CHECK-DEBUG] Validation comparison:', {
+        userAnswers: { leftSum1, final1, rightSum2, final2 },
+        correctAnswers: { correctLeftSum1, correctFinal1, correctRightSum2, correctFinal2 }
+      });
+
+      const isCorrect = 
+        leftSum1 === correctLeftSum1 &&
+        final1 === correctFinal1 &&
+        rightSum2 === correctRightSum2 &&
+        final2 === correctFinal2;
+      
+      // Actualizar el historial de respuestas
+      const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+      setUserAnswersHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[problemIdxForHistory] = {
+          problemId: currentProblem.id,
+          problem: currentProblem,
+          userAnswer: currentProblem.correctAnswer,
+          isCorrect: isCorrect,
+          status: isCorrect ? 'correct' : 'incorrect',
+          attempts: currentAttempts + 1,
+          timestamp: Date.now()
+        };
+        return newHistory;
+      });
+
+      if (isCorrect) {
+        const { grouping1, grouping2 } = currentProblem;
+        setFeedbackMessage(`¡Excelente! Has demostrado que ${grouping1.expression} = ${grouping2.expression} = ${grouping1.totalSum}. ¡La propiedad asociativa funciona!`);
+        setFeedbackColor("green");
+        
+        // Incrementar contador de respuestas correctas consecutivas
+        const newConsecutive = consecutiveCorrectAnswers + 1;
+        setConsecutiveCorrectAnswers(newConsecutive);
+        setConsecutiveIncorrectAnswers(0);
+        
+        // Actualizar récord máximo si es necesario
+        if (newConsecutive > maxConsecutiveStreak) {
+          setMaxConsecutiveStreak(newConsecutive);
+        }
+        
+        // Activar el modo de espera para mostrar el botón "Continue"
+        setWaitingForContinue(true);
+      } else {
+        // Proporcionar feedback específico sobre qué cálculos están incorrectos
+        let feedback = "Revisa tus cálculos: ";
+        const errors = [];
+        
+        if (leftSum1 !== correctLeftSum1) errors.push(`(${a} + ${b}) = ${correctLeftSum1}`);
+        if (final1 !== correctFinal1) errors.push(`primera agrupación = ${correctFinal1}`);
+        if (rightSum2 !== correctRightSum2) errors.push(`(${b} + ${c}) = ${correctRightSum2}`);
+        if (final2 !== correctFinal2) errors.push(`segunda agrupación = ${correctFinal2}`);
+        
+        if (errors.length > 0) {
+          feedback += errors.join(", ");
+        } else {
+          feedback = "Los resultados finales deben ser iguales. Recuerda: la propiedad asociativa dice que (a + b) + c = a + (b + c).";
+        }
+        
+        setFeedbackMessage(feedback);
+        setFeedbackColor("red");
+        
+        // Incrementar contador de respuestas incorrectas consecutivas
+        setConsecutiveIncorrectAnswers(prev => prev + 1);
+        setConsecutiveCorrectAnswers(0);
+        
+        // Incrementar intentos
+        setCurrentAttempts(prev => prev + 1);
+      }
+      return isCorrect;
+    }
+
+    // Lógica original para niveles beginner
     let userAnswerString = "";
     const decPosInAnswer = currentProblem.answerDecimalPosition;
     const totalDigitBoxes = currentProblem.answerMaxDigits;
