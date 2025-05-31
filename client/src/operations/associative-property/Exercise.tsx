@@ -3250,7 +3250,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                               });
 
                               // Siempre añadir problema de compensación cuando se revela la respuesta (si está habilitado)
-                              if (settings.enableCompensation && (!answerEntry || answerEntry.status !== 'revealed')) {
+                              if (settings.enableCompensation) {
                                   console.log("[ASSOCIATIVE-PROPERTY] Agregando problema de compensación por respuesta revelada");
                                   const difficultyForCompensation = settings.enableAdaptiveDifficulty
                                       ? adaptiveDifficulty
@@ -3565,7 +3565,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                             });
 
                             // Siempre añadir problema de compensación cuando se revela la respuesta (si está habilitado)
-                            if (settings.enableCompensation && (!answerEntry || answerEntry.status !== 'revealed')) {
+                            if (settings.enableCompensation) {
                                 console.log("[ASSOCIATIVE-PROPERTY] Agregando problema de compensación por respuesta revelada");
                                 const difficultyForCompensation = settings.enableAdaptiveDifficulty
                                     ? adaptiveDifficulty
