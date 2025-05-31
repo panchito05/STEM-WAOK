@@ -527,8 +527,13 @@ export function DrawingCanvas({
     const signXPosition = centerX - (maxIntLength * charWidth) - charWidth;
     
     // RENDERIZADO ESPECÍFICO PARA PROPIEDAD ASOCIATIVA
-    // Detectar el nivel de dificultad basado en el problema (por ahora solo advanced/beginner)
-    const difficulty: 'beginner' | 'advanced' = (() => {
+    // Detectar el nivel de dificultad basado en el problema
+    const difficulty: 'beginner' | 'intermediate' | 'advanced' = (() => {
+      // Si tiene grouping1 y grouping2, es nivel intermedio
+      if (currentProblem.grouping1 && currentProblem.grouping2) {
+        return 'intermediate';
+      }
+      // Si tiene 3 operandos, es avanzado
       if (currentProblem.operands && currentProblem.operands.length >= 3) {
         return 'advanced';
       }
@@ -546,6 +551,139 @@ export function DrawingCanvas({
       
       context.fillText(text1, centerX, centerY - spacing/2);
       context.fillText(text2, centerX, centerY + spacing/2);
+    };
+
+    // Función para renderizar formato intermedio - Dos columnas lado a lado
+    const drawIntermediateFormat = () => {
+      if (!currentProblem.grouping1 || !currentProblem.grouping2) return;
+      
+      const { grouping1, grouping2, operands } = currentProblem;
+      const [a, b, c] = operands;
+      
+      // Configurar espaciado y posiciones
+      const columnWidth = (canvas.width / dpr) * 0.4; // 40% del ancho para cada columna
+      const leftColumnCenterX = centerX - columnWidth / 2 - 20;
+      const rightColumnCenterX = centerX + columnWidth / 2 + 20;
+      const headerY = centerY - baseFontSize * 3;
+      const lineSpacing = baseFontSize * 1.2;
+      
+      // Configurar fuentes
+      const headerFont = `bold ${baseFontSize * 0.9}px Arial`;
+      const contentFont = `${baseFontSize * 0.8}px Arial`;
+      const blankFont = `${baseFontSize * 0.7}px Arial`;
+      
+      // COLUMNA IZQUIERDA (Verde) - Primera agrupación
+      // Fondo verde claro
+      context.fillStyle = 'rgba(134, 239, 172, 0.3)'; // green-300 con transparencia
+      const leftBoxY = headerY - baseFontSize * 0.5;
+      const boxHeight = baseFontSize * 8;
+      context.fillRect(leftColumnCenterX - columnWidth/2, leftBoxY, columnWidth, boxHeight);
+      
+      // Borde verde
+      context.strokeStyle = '#16a34a'; // green-600
+      context.lineWidth = 2;
+      context.strokeRect(leftColumnCenterX - columnWidth/2, leftBoxY, columnWidth, boxHeight);
+      
+      // Texto del encabezado
+      context.fillStyle = '#15803d'; // green-700
+      context.font = headerFont;
+      context.textAlign = 'center';
+      context.fillText('Primera agrupación', leftColumnCenterX, headerY);
+      
+      // Contenido de la primera agrupación
+      context.fillStyle = '#000000';
+      context.font = contentFont;
+      
+      // Expresión con paréntesis: ( 13 + 6 ) + 14
+      const expr1Y = headerY + lineSpacing * 1.5;
+      context.fillText(`( ${a} + ${b} ) + ${c}`, leftColumnCenterX, expr1Y);
+      
+      // Texto explicativo
+      context.font = blankFont;
+      context.fillStyle = '#6b7280'; // gray-500
+      context.fillText('Primero resuelve el paréntesis:', leftColumnCenterX, expr1Y + lineSpacing);
+      
+      // Campo en blanco para la suma interna + 14
+      context.fillStyle = '#000000';
+      context.font = contentFont;
+      const blank1Y = expr1Y + lineSpacing * 2;
+      context.fillText('?', leftColumnCenterX - baseFontSize * 1.5, blank1Y);
+      context.fillText('+', leftColumnCenterX - baseFontSize * 0.5, blank1Y);
+      context.fillText(`${c}`, leftColumnCenterX + baseFontSize * 0.5, blank1Y);
+      
+      // Rectángulo para el espacio en blanco
+      context.strokeStyle = '#9ca3af'; // gray-400
+      context.lineWidth = 1;
+      context.strokeRect(leftColumnCenterX - baseFontSize * 2, blank1Y - baseFontSize * 0.4, baseFontSize * 1, baseFontSize * 0.8);
+      
+      // Texto "Resultado final:"
+      context.font = blankFont;
+      context.fillStyle = '#6b7280';
+      context.fillText('Resultado final:', leftColumnCenterX, blank1Y + lineSpacing);
+      
+      // Campo final
+      context.fillStyle = '#000000';
+      context.font = contentFont;
+      const final1Y = blank1Y + lineSpacing * 1.5;
+      context.fillText('=', leftColumnCenterX - baseFontSize * 0.5, final1Y);
+      context.fillText('?', leftColumnCenterX + baseFontSize * 0.5, final1Y);
+      
+      // Rectángulo para el resultado final
+      context.strokeStyle = '#9ca3af';
+      context.strokeRect(leftColumnCenterX, final1Y - baseFontSize * 0.4, baseFontSize * 1, baseFontSize * 0.8);
+      
+      // COLUMNA DERECHA (Púrpura) - Segunda agrupación
+      // Fondo púrpura claro
+      context.fillStyle = 'rgba(196, 181, 253, 0.3)'; // purple-300 con transparencia
+      context.fillRect(rightColumnCenterX - columnWidth/2, leftBoxY, columnWidth, boxHeight);
+      
+      // Borde púrpura
+      context.strokeStyle = '#9333ea'; // purple-600
+      context.lineWidth = 2;
+      context.strokeRect(rightColumnCenterX - columnWidth/2, leftBoxY, columnWidth, boxHeight);
+      
+      // Texto del encabezado
+      context.fillStyle = '#7c3aed'; // purple-700
+      context.font = headerFont;
+      context.fillText('Segunda agrupación', rightColumnCenterX, headerY);
+      
+      // Contenido de la segunda agrupación
+      context.fillStyle = '#000000';
+      context.font = contentFont;
+      
+      // Expresión con paréntesis: 13 + ( 6 + 14 )
+      context.fillText(`${a} + ( ${b} + ${c} )`, rightColumnCenterX, expr1Y);
+      
+      // Texto explicativo
+      context.font = blankFont;
+      context.fillStyle = '#6b7280';
+      context.fillText('Primero resuelve el paréntesis:', rightColumnCenterX, expr1Y + lineSpacing);
+      
+      // Campo en blanco para 13 + ?
+      context.fillStyle = '#000000';
+      context.font = contentFont;
+      context.fillText(`${a}`, rightColumnCenterX - baseFontSize * 1.5, blank1Y);
+      context.fillText('+', rightColumnCenterX - baseFontSize * 0.5, blank1Y);
+      context.fillText('?', rightColumnCenterX + baseFontSize * 0.5, blank1Y);
+      
+      // Rectángulo para el espacio en blanco
+      context.strokeStyle = '#9ca3af';
+      context.strokeRect(rightColumnCenterX, blank1Y - baseFontSize * 0.4, baseFontSize * 1, baseFontSize * 0.8);
+      
+      // Texto "Resultado final:"
+      context.font = blankFont;
+      context.fillStyle = '#6b7280';
+      context.fillText('Resultado final:', rightColumnCenterX, blank1Y + lineSpacing);
+      
+      // Campo final
+      context.fillStyle = '#000000';
+      context.font = contentFont;
+      context.fillText('=', rightColumnCenterX - baseFontSize * 0.5, final1Y);
+      context.fillText('?', rightColumnCenterX + baseFontSize * 0.5, final1Y);
+      
+      // Rectángulo para el resultado final
+      context.strokeStyle = '#9ca3af';
+      context.strokeRect(rightColumnCenterX, final1Y - baseFontSize * 0.4, baseFontSize * 1, baseFontSize * 0.8);
     };
 
 
@@ -579,6 +717,9 @@ export function DrawingCanvas({
     switch(difficulty) {
       case 'beginner':
         drawBeginnerFormat();
+        break;
+      case 'intermediate':
+        drawIntermediateFormat();
         break;
       case 'advanced':
         drawAdvancedFormat();
