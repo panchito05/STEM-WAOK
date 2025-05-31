@@ -670,6 +670,22 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       
       const isCorrect = blank1Correct && blank2Correct && blank3Correct;
       
+      // Actualizar el historial de respuestas
+      const problemIdxForHistory = actualActiveProblemIndexBeforeViewingPrevious;
+      setUserAnswersHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[problemIdxForHistory] = {
+          problemId: currentProblem.id,
+          problem: currentProblem,
+          userAnswer: currentProblem.correctAnswer, // Para nivel intermedio, guardamos la respuesta correcta
+          isCorrect: isCorrect,
+          status: isCorrect ? 'correct' : 'incorrect',
+          attempts: currentAttempts + 1,
+          timestamp: Date.now()
+        };
+        return newHistory;
+      });
+
       if (isCorrect) {
         setFeedbackMessage("¡Excelente! Has completado correctamente la propiedad asociativa.");
         setFeedbackColor("green");
@@ -679,12 +695,16 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         setConsecutiveCorrectAnswers(newConsecutive);
         setConsecutiveIncorrectAnswers(0);
         
+        // Activar el modo de espera
+        setWaitingForContinue(true);
+        
         setTimeout(() => {
           if (currentProblemIndex < problemsList.length - 1) {
             setCurrentProblemIndex(prev => prev + 1);
             // Limpiar campos para el siguiente problema
             setInteractiveAnswers({});
             setActiveInteractiveField(null);
+            setWaitingForContinue(false);
           } else {
             completeExercise();
           }
@@ -696,6 +716,9 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
         // Incrementar contador de respuestas incorrectas consecutivas
         setConsecutiveIncorrectAnswers(prev => prev + 1);
         setConsecutiveCorrectAnswers(0);
+        
+        // Incrementar intentos
+        setCurrentAttempts(prev => prev + 1);
       }
       return isCorrect;
     }
