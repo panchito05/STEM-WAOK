@@ -2750,7 +2750,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
 
           {/* Interactive Exercise para nivel intermedio */}
-          {settings.difficulty === 'intermediate' && (
+          {settings.difficulty === 'intermediate' && exerciseStarted && (
             <InteractiveExercise 
               operands={currentProblem.operands}
               interactiveAnswers={interactiveAnswers}
@@ -2782,6 +2782,25 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 }
               }}
             />
+          )}
+          
+          {/* Mensaje para iniciar ejercicio en nivel intermedio */}
+          {settings.difficulty === 'intermediate' && !exerciseStarted && (
+            <div className="text-center py-8">
+              <div className="bg-orange-100 border-2 border-orange-200 rounded-lg p-6">
+                <h3 className="text-xl font-bold text-orange-800 mb-2">
+                  {settings.language === 'english' ? 'Interactive Exercise Ready' : 'Ejercicio Interactivo Listo'}
+                </h3>
+                <p className="text-orange-700 mb-4">
+                  {settings.language === 'english' 
+                    ? 'Click "Start Exercise" to begin the interactive associative property exercise.'
+                    : 'Haz clic en "Iniciar Ejercicio" para comenzar el ejercicio interactivo de propiedad asociativa.'}
+                </p>
+                <div className="text-lg font-medium text-orange-600">
+                  ({currentProblem.operands[0]} + {currentProblem.operands[1]}) + {currentProblem.operands[2]} = ?
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Advanced Exercise para nivel avanzado */}
