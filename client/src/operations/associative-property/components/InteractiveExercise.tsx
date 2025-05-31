@@ -105,31 +105,19 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
     }
   };
 
-  // Función para obtener el estilo del campo basado en si es correcto
+  // Función para obtener el estilo del campo (sin mostrar colores de validación)
   const getFieldStyle = (fieldName: string) => {
     const value = interactiveAnswers[fieldName];
-    if (!value) {
-      return activeInteractiveField === fieldName 
-        ? 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200' 
-        : 'border-blue-300 bg-white hover:border-blue-400 hover:shadow-md';
+    
+    if (activeInteractiveField === fieldName) {
+      return 'border-blue-500 bg-blue-50 shadow-lg ring-2 ring-blue-200';
     }
-
-    let isCorrect = false;
-    if (fieldName === 'blank1' && parseInt(value) === operands[1]) {
-      isCorrect = true;
-    } else if (fieldName === 'blank2' && parseInt(value) === operands[2]) {
-      isCorrect = true;
-    } else if (fieldName === 'blank3' && parseInt(value) === (operands[0] + operands[1] + operands[2])) {
-      isCorrect = true;
+    
+    if (value) {
+      return 'border-gray-400 bg-gray-50';
     }
-
-    if (isCorrect) {
-      return 'border-green-500 bg-green-50 text-green-700';
-    } else {
-      return activeInteractiveField === fieldName 
-        ? 'border-red-400 bg-red-50 shadow-lg ring-2 ring-red-200' 
-        : 'border-red-300 bg-red-50 hover:border-red-400';
-    }
+    
+    return 'border-gray-300 bg-white hover:border-gray-400 hover:shadow-md';
   };
 
   const handleFillBlankSubmit = () => {
