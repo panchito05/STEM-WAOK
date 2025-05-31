@@ -3256,212 +3256,198 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
           </Button>
 
-          {/* NUEVA ARQUITECTURA ROBUSTA DE VALIDACIÓN */}
-          {(() => {
-            // Estado unificado para determinar qué botón mostrar
-            if (viewingPrevious) {
-              return (
-                <Button 
-                  onClick={returnToActiveProblem} 
-                  className="w-full sm:w-auto px-4 sm:px-5 text-sm sm:text-base md:text-lg bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 order-2 sm:order-2"
-                >
-                  <RotateCcw className="mr-1 h-4 w-4" /> {settings.language === 'spanish' ? 'Volver al Activo' : 'Return to Active'}
-                </Button>
-              );
-            }
-            
-            if (waitingRef.current) {
-              return (
-                <Button
-                  ref={continueButtonRef}
-                  onClick={handleContinue}
-                  className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-2.5 text-base sm:text-lg md:text-xl animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center h-12 sm:h-10 order-2 sm:order-2"
-                >
-                  <span className="flex-grow text-center font-medium">{t('Continue')}</span>
-                  <TooltipProvider delayDuration={300}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className="ml-2 sm:ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md cursor-pointer"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setAutoContinue(prev => !prev);
-                          }}
-                        >
-                          <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
-                            {autoContinue && <Check className="h-3 w-3 text-green-700" />}
-                          </div>
-                          <span className="text-xs font-medium">{t('Auto')}</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </Button>
-              );
-            }
-            
-            // Botón de validación principal - SIEMPRE disponible cuando no estamos en estados especiales
-            return (
-              <Button 
-                onClick={() => {
-                  console.log('✅ [VALIDATION] Validation button clicked');
-                  console.log('✅ [VALIDATION] Current state:', {
-                    exerciseStarted,
-                    exerciseCompleted,
-                    difficulty: settings.difficulty,
-                    currentProblem: !!currentProblem
+          {/* ARQUITECTURA DE VALIDACIÓN ROBUSTA Y SIMPLIFICADA */}
+          {viewingPrevious ? (
+            <Button 
+              onClick={returnToActiveProblem} 
+              className="w-full sm:w-auto px-4 sm:px-5 text-sm sm:text-base md:text-lg bg-orange-500 hover:bg-orange-600 text-white h-12 sm:h-10 order-2 sm:order-2"
+            >
+              <RotateCcw className="mr-1 h-4 w-4" /> {settings.language === 'spanish' ? 'Volver al Activo' : 'Return to Active'}
+            </Button>
+          ) : waitingForContinue ? (
+            <Button
+              ref={continueButtonRef}
+              onClick={() => {
+                console.log('🔄 [CONTINUE] Continue button clicked');
+                setWaitingForContinue(false);
+                waitingRef.current = false;
+                
+                if (currentProblemIndex < problemsList.length - 1) {
+                  setCurrentProblemIndex(prev => prev + 1);
+                  setCurrentAttempts(0);
+                  setFeedbackMessage("");
+                  setFeedbackColor("");
+                } else {
+                  console.log('📊 [EXERCISE] All problems completed');
+                  setExerciseCompleted(true);
+                }
+              }}
+              className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-2.5 text-base sm:text-lg md:text-xl animate-pulse bg-green-500 hover:bg-green-600 text-white flex items-center justify-center h-12 sm:h-10 order-2 sm:order-2"
+            >
+              <span className="flex-grow text-center font-medium">{t('Continue')}</span>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className="ml-2 sm:ml-3 flex items-center bg-black/20 py-1 px-2 rounded-md cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setAutoContinue(prev => !prev);
+                      }}
+                    >
+                      <div className={`h-4 w-4 border border-white rounded-sm flex items-center justify-center mr-1.5 ${autoContinue ? 'bg-white' : ''}`}>
+                        {autoContinue && <Check className="h-3 w-3 text-green-700" />}
+                      </div>
+                      <span className="text-xs font-medium">{t('Auto')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{autoContinue ? t('tooltips.disableAutoContinue') : t('tooltips.enableAutoContinue')}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => {
+                console.log('🎯 [VALIDATION] Unified validation started');
+                console.log('🎯 [VALIDATION] State:', {
+                  exerciseStarted,
+                  exerciseCompleted,
+                  difficulty: settings.difficulty,
+                  currentProblem: !!currentProblem,
+                  waitingForContinue
+                });
+                
+                // FUNCIÓN DE INICIO DE EJERCICIO
+                if (!exerciseStarted) {
+                  console.log('🚀 [START] Starting exercise');
+                  setExerciseStarted(true);
+                  setProblemStartTime(Date.now());
+                  setFeedbackMessage("");
+                  setFeedbackColor("");
+                  return;
+                }
+                
+                // VALIDACIÓN UNIFICADA PARA TODOS LOS NIVELES
+                if (!currentProblem) {
+                  console.log('❌ [VALIDATION] No current problem');
+                  setFeedbackMessage("Error: No hay problema actual para validar.");
+                  setFeedbackColor("red");
+                  return;
+                }
+                
+                // VALIDACIÓN PARA ELEMENTARY E INTERMEDIATE
+                if (settings.difficulty === 'elementary' || settings.difficulty === 'intermediate') {
+                  console.log('📝 [ELEMENTARY/INTERMEDIATE] Validating answers');
+                  
+                  // Buscar todos los elementos editables en el DOM
+                  const editableElements = document.querySelectorAll('[contenteditable="true"]');
+                  console.log('🔍 [DOM] Found editable elements:', editableElements.length);
+                  
+                  if (editableElements.length < 4) {
+                    setFeedbackMessage("Error: No se pueden encontrar todos los campos de entrada. Actualiza la página.");
+                    setFeedbackColor("red");
+                    return;
+                  }
+                  
+                  // Extraer valores de todos los elementos editables
+                  const values = Array.from(editableElements).map(el => {
+                    const text = el.textContent?.trim() || '';
+                    const num = parseInt(text);
+                    return isNaN(num) ? null : num;
                   });
                   
-                  // Función de validación unificada y robusta
-                  const performValidation = () => {
-                    if (!currentProblem) {
-                      console.log('❌ [VALIDATION] No current problem');
-                      setFeedbackMessage("Error: No hay problema actual para validar.");
-                      setFeedbackColor("red");
-                      return false;
-                    }
-                    
-                    if (!exerciseStarted) {
-                      console.log('⚡ [VALIDATION] Starting exercise');
-                      startExercise();
-                      return false;
-                    }
-                    
-                    // Validación específica para niveles elementary e intermediate
-                    if (settings.difficulty === 'elementary' || settings.difficulty === 'intermediate') {
-                      console.log('✅ [VALIDATION] Processing validation for:', settings.difficulty);
-                      
-                      // Buscar campos de entrada
-                      const inputs = {
-                        leftSum1: document.querySelector('[data-field="leftSum1"]') as HTMLDivElement,
-                        final1: document.querySelector('[data-field="final1"]') as HTMLDivElement,
-                        rightSum2: document.querySelector('[data-field="rightSum2"]') as HTMLDivElement,
-                        final2: document.querySelector('[data-field="final2"]') as HTMLDivElement
-                      };
-                      
-                      console.log('🔍 [VALIDATION] Found inputs:', Object.keys(inputs).reduce((acc, key) => {
-                        acc[key] = !!inputs[key];
-                        return acc;
-                      }, {}));
-                      
-                      // Verificar que todos los campos existen
-                      const missingInputs = Object.keys(inputs).filter(key => !inputs[key]);
-                      if (missingInputs.length > 0) {
-                        console.log('❌ [VALIDATION] Missing inputs:', missingInputs);
-                        setFeedbackMessage("Error: No se pueden encontrar todos los campos de entrada.");
-                        setFeedbackColor("red");
-                        return false;
-                      }
-                      
-                      // Obtener valores de respuestas
-                      const answers = {
-                        leftSum1: inputs.leftSum1.textContent?.trim() || '',
-                        final1: inputs.final1.textContent?.trim() || '',
-                        rightSum2: inputs.rightSum2.textContent?.trim() || '',
-                        final2: inputs.final2.textContent?.trim() || ''
-                      };
-                      
-                      console.log('📝 [VALIDATION] User answers:', answers);
-                      
-                      // Verificar que todos los campos estén llenos
-                      const emptyFields = Object.keys(answers).filter(key => !answers[key]);
-                      if (emptyFields.length > 0) {
-                        console.log('⚠️ [VALIDATION] Empty fields:', emptyFields);
-                        setFeedbackMessage("Por favor completa todos los campos antes de verificar.");
-                        setFeedbackColor("red");
-                        return false;
-                      }
-                      
-                      // Validar respuestas
-                      if (!currentProblem.grouping1 || !currentProblem.grouping2) {
-                        console.log('❌ [VALIDATION] Missing groupings');
-                        setFeedbackMessage("Error: No se pudieron generar las agrupaciones matemáticas.");
-                        setFeedbackColor("red");
-                        return false;
-                      }
-                      
-                      const userValues = {
-                        leftSum1: parseInt(answers.leftSum1) || 0,
-                        final1: parseInt(answers.final1) || 0,
-                        rightSum2: parseInt(answers.rightSum2) || 0,
-                        final2: parseInt(answers.final2) || 0
-                      };
-                      
-                      const correctValues = {
-                        leftSum1: currentProblem.grouping1.leftSum || 0,
-                        final1: currentProblem.grouping1.totalSum || 0,
-                        rightSum2: currentProblem.grouping2.rightSum || 0,
-                        final2: currentProblem.grouping2.totalSum || 0
-                      };
-                      
-                      console.log('🔍 [VALIDATION] Comparison:', { userValues, correctValues });
-                      
-                      const isCorrect = 
-                        userValues.leftSum1 === correctValues.leftSum1 &&
-                        userValues.final1 === correctValues.final1 &&
-                        userValues.rightSum2 === correctValues.rightSum2 &&
-                        userValues.final2 === correctValues.final2;
-                      
-                      console.log('🎯 [VALIDATION] Result:', isCorrect ? 'CORRECT' : 'INCORRECT');
-                      
-                      if (isCorrect) {
-                        setFeedbackMessage(`¡Excelente! Has demostrado que ${currentProblem.grouping1.expression} = ${currentProblem.grouping2.expression} = ${currentProblem.grouping1.totalSum}. ¡La propiedad asociativa funciona!`);
-                        setFeedbackColor("green");
-                        setWaitingForContinue(true);
-                        
-                        // Actualizar contadores
-                        const newConsecutive = consecutiveCorrectAnswers + 1;
-                        setConsecutiveCorrectAnswers(newConsecutive);
-                        setConsecutiveIncorrectAnswers(0);
-                        
-                        if (newConsecutive > maxConsecutiveStreak) {
-                          setMaxConsecutiveStreak(newConsecutive);
-                        }
-                      } else {
-                        const [a, b, c] = currentProblem.operands;
-                        let feedback = "Revisa tus cálculos: ";
-                        const errors = [];
-                        
-                        if (userValues.leftSum1 !== correctValues.leftSum1) errors.push(`(${a} + ${b}) = ${correctValues.leftSum1}`);
-                        if (userValues.final1 !== correctValues.final1) errors.push(`primera agrupación = ${correctValues.final1}`);
-                        if (userValues.rightSum2 !== correctValues.rightSum2) errors.push(`(${b} + ${c}) = ${correctValues.rightSum2}`);
-                        if (userValues.final2 !== correctValues.final2) errors.push(`segunda agrupación = ${correctValues.final2}`);
-                        
-                        if (errors.length > 0) {
-                          feedback += errors.join(", ");
-                        } else {
-                          feedback = "Los resultados finales deben ser iguales. Recuerda: la propiedad asociativa dice que (a + b) + c = a + (b + c).";
-                        }
-                        
-                        setFeedbackMessage(feedback);
-                        setFeedbackColor("red");
-                        
-                        setConsecutiveIncorrectAnswers(prev => prev + 1);
-                        setConsecutiveCorrectAnswers(0);
-                        setCurrentAttempts(prev => prev + 1);
-                      }
-                      
-                      return isCorrect;
-                    }
-                    
-                    // Para otros niveles, usar la lógica original
-                    console.log('⚡ [VALIDATION] Using original validation logic for:', settings.difficulty);
-                    return checkCurrentAnswer();
-                  };
+                  console.log('📊 [VALUES] Extracted values:', values);
                   
-                  const result = performValidation();
-                  console.log('🏁 [VALIDATION] Final result:', result);
-                }} 
-                disabled={exerciseCompleted}
-                className="w-full sm:w-auto px-5 sm:px-6 text-sm sm:text-base md:text-lg bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 order-2 sm:order-2"
-              >
-                {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
-              </Button>
-            );
-          })()}
+                  // Verificar que todos los campos tengan valores válidos
+                  if (values.some(v => v === null)) {
+                    setFeedbackMessage("Por favor completa todos los campos con números válidos.");
+                    setFeedbackColor("red");
+                    return;
+                  }
+                  
+                  // Calcular respuestas correctas
+                  const [a, b, c] = currentProblem.operands;
+                  const correctLeftSum = a + b;    // (a + b)
+                  const correctFinal1 = correctLeftSum + c;  // (a + b) + c
+                  const correctRightSum = b + c;   // (b + c)
+                  const correctFinal2 = a + correctRightSum; // a + (b + c)
+                  
+                  console.log('✅ [CORRECT] Expected values:', {
+                    leftSum: correctLeftSum,
+                    final1: correctFinal1,
+                    rightSum: correctRightSum,
+                    final2: correctFinal2
+                  });
+                  
+                  // Asumir orden: leftSum1, final1, rightSum2, final2
+                  const [userLeftSum, userFinal1, userRightSum, userFinal2] = values;
+                  
+                  // Verificar todas las respuestas
+                  const isLeftSumCorrect = userLeftSum === correctLeftSum;
+                  const isFinal1Correct = userFinal1 === correctFinal1;
+                  const isRightSumCorrect = userRightSum === correctRightSum;
+                  const isFinal2Correct = userFinal2 === correctFinal2;
+                  
+                  const allCorrect = isLeftSumCorrect && isFinal1Correct && isRightSumCorrect && isFinal2Correct;
+                  
+                  console.log('🔍 [COMPARISON]', {
+                    leftSum: { user: userLeftSum, correct: correctLeftSum, match: isLeftSumCorrect },
+                    final1: { user: userFinal1, correct: correctFinal1, match: isFinal1Correct },
+                    rightSum: { user: userRightSum, correct: correctRightSum, match: isRightSumCorrect },
+                    final2: { user: userFinal2, correct: correctFinal2, match: isFinal2Correct },
+                    allCorrect
+                  });
+                  
+                  if (allCorrect) {
+                    setFeedbackMessage(`¡Excelente! Has demostrado que (${a} + ${b}) + ${c} = ${a} + (${b} + ${c}) = ${correctFinal1}. ¡La propiedad asociativa funciona!`);
+                    setFeedbackColor("green");
+                    setWaitingForContinue(true);
+                    waitingRef.current = true;
+                    
+                    // Actualizar contadores
+                    const newConsecutive = consecutiveCorrectAnswers + 1;
+                    setConsecutiveCorrectAnswers(newConsecutive);
+                    setConsecutiveIncorrectAnswers(0);
+                    
+                    if (newConsecutive > maxConsecutiveStreak) {
+                      setMaxConsecutiveStreak(newConsecutive);
+                    }
+                  } else {
+                    // Crear mensaje de error específico
+                    let feedback = "Revisa tus cálculos: ";
+                    const errors = [];
+                    
+                    if (!isLeftSumCorrect) errors.push(`(${a} + ${b}) = ${correctLeftSum}`);
+                    if (!isFinal1Correct) errors.push(`primera agrupación = ${correctFinal1}`);
+                    if (!isRightSumCorrect) errors.push(`(${b} + ${c}) = ${correctRightSum}`);
+                    if (!isFinal2Correct) errors.push(`segunda agrupación = ${correctFinal2}`);
+                    
+                    feedback += errors.join(", ");
+                    
+                    setFeedbackMessage(feedback);
+                    setFeedbackColor("red");
+                    
+                    setConsecutiveIncorrectAnswers(prev => prev + 1);
+                    setConsecutiveCorrectAnswers(0);
+                    setCurrentAttempts(prev => prev + 1);
+                  }
+                  
+                  return;
+                }
+                
+                // PARA NIVEL ADVANCED - usar lógica existente
+                console.log('🔧 [ADVANCED] Using existing validation logic');
+                const result = checkCurrentAnswer();
+                console.log('🏁 [ADVANCED] Validation result:', result);
+              }} 
+              disabled={exerciseCompleted}
+              className="w-full sm:w-auto px-5 sm:px-6 text-sm sm:text-base md:text-lg bg-blue-500 hover:bg-blue-600 text-white h-12 sm:h-10 order-2 sm:order-2"
+            >
+              {!exerciseStarted ? currentTranslations.startExercise : <><Check className="mr-1 h-4 w-4" />{t('exercises.check')}</>}
+            </Button>
+          )}
 
           <TooltipProvider delayDuration={300}>
             <Tooltip>
