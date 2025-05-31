@@ -59,9 +59,41 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [focusedField, isComplete]);
 
+  // RESETEO AUTOMÁTICO: Limpiar respuestas cuando cambia el problema
+  useEffect(() => {
+    console.log('🔄 [RESET-DEBUG] Problem change detected');
+    console.log('🔄 [RESET-DEBUG] Problem operands:', problem.operands);
+    console.log('🔄 [RESET-DEBUG] Problem id:', problem.id);
+    console.log('🔄 [RESET-DEBUG] Current answers before reset:', answers);
+    
+    // Solo resetear si no es la primera carga (evitar reseteo innecesario)
+    const hasAnswers = Object.values(answers).some(answer => answer !== '');
+    
+    if (hasAnswers || !showAnswers) {
+      console.log('🔄 [RESET-DEBUG] Resetting answers to empty state');
+      
+      setAnswers({
+        leftSum1: '',
+        final1: '',
+        rightSum2: '',
+        final2: ''
+      });
+      
+      setFocusedField('leftSum1');
+      setFeedback('');
+      setIsComplete(false);
+      
+      console.log('🔄 [RESET-DEBUG] Reset completed successfully');
+    } else {
+      console.log('🔄 [RESET-DEBUG] Skipping reset - no answers to clear');
+    }
+    
+  }, [problem.operands?.join(','), problem.id, showAnswers]);
+
   // Llenar automáticamente las respuestas cuando showAnswers es true
   useEffect(() => {
     if (showAnswers && grouping1 && grouping2) {
+      console.log('📝 [AUTO-FILL] Filling answers automatically');
       setAnswers({
         leftSum1: grouping1.leftSum.toString(),
         final1: grouping1.totalSum.toString(),
