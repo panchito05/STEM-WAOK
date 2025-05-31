@@ -8,6 +8,7 @@ import { AssociativePropertyProblem } from '../types';
 interface ProgressiveGroupingDisplayProps {
   problem: AssociativePropertyProblem;
   onComplete: (finalAnswer: number) => void;
+  onCheckAnswers?: () => void;
 }
 
 interface PracticeAnswers {
