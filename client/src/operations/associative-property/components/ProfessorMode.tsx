@@ -240,7 +240,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
         setExerciseStats(prev => ({
           ...prev,
           totalProblems: prev.totalProblems + 1,
-          correctAnswers: prev.correctAnswers, // No sumar porque es incorrecto
+          correctAnswers: prev.correctAnswers, // No incrementar porque es incorrecto
           totalAttempts: prev.totalAttempts + currentAttempts,
           totalTime: prev.totalTime + problemTimeSpent
         }));
@@ -254,7 +254,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
             const finalStats = {
               totalTime: Math.floor((Date.now() - exerciseStartTime) / 1000),
               totalProblems: problemHistory.length + 1,
-              correctAnswers: exerciseStats.correctAnswers, // No sumar porque fue incorrecto
+              correctAnswers: exerciseStats.correctAnswers, // No incrementar porque fue incorrecto
               totalAttempts: exerciseStats.totalAttempts + currentAttempts,
               revealedAnswers: 0
             };

@@ -53,7 +53,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
   
   // Crear pasos detallados de la solución
   const renderSolutionSteps = () => {
-    // Array para acumular sumas parciales
+    // Array para acumular resultados parciales
     const steps = [];
     let runningSum = 0;
     
@@ -61,7 +61,7 @@ const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
     for (let i = 0; i < problem.operands.length; i++) {
       const operand = problem.operands[i];
       
-      // Actualizar suma acumulada
+      // Actualizar resultado acumulado
       runningSum += operand.value;
       
       // Texto para paso actual

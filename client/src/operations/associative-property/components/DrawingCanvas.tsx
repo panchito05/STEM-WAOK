@@ -603,7 +603,7 @@ export function DrawingCanvas({
       context.fillStyle = '#6b7280'; // gray-500
       context.fillText('Primero resuelve el paréntesis:', leftColumnCenterX, expr1Y + lineSpacing);
       
-      // Campo en blanco para la suma interna + 14
+      // Campo en blanco para el resultado interno + 14
       context.fillStyle = '#000000';
       context.font = contentFont;
       const blank1Y = expr1Y + lineSpacing * 2;

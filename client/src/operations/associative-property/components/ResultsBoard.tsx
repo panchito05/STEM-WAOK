@@ -79,7 +79,7 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
   useEffect(() => {
     // Crear un objeto con los datos del resultado
     const resultData = {
-      module: 'addition',
+      module: 'associative-property',
       date: new Date().toISOString(),
       score: validScore,
       totalProblems: finalTotalProblems,
@@ -174,7 +174,7 @@ export const ResultsBoard: React.FC<ResultsBoardProps> = ({
           Resultados del Ejercicio
         </CardTitle>
         <CardDescription className="text-center">
-          Has completado el ejercicio de suma
+          Has completado el ejercicio de propiedad asociativa
         </CardDescription>
       </CardHeader>
       

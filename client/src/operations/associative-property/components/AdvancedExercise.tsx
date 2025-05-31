@@ -114,7 +114,7 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
           wrongOperands[indexToChange] += Math.floor(Math.random() * 10) + 1;
           expression = `${wrongOperands[0]} + (${wrongOperands[1]} + ${wrongOperands[2]})`;
         } else {
-          // Usar multiplicación en lugar de suma (operación incorrecta)
+          // Usar multiplicación en lugar de propiedad asociativa (operación incorrecta)
           expression = `${operands[0]} × (${operands[1]} + ${operands[2]})`;
         }
       }

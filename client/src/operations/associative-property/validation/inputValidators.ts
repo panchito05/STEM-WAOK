@@ -94,7 +94,7 @@ export function validateAssociativePropertyProblem(problem: AssociativePropertyP
     result.isValid = false;
     result.errors.push('La respuesta correcta debe ser un número válido');
   } else {
-    // Verificar que la respuesta correcta sea la suma de los operandos
+    // Verificar que la respuesta correcta sea el resultado de los operandos
     const expectedSum = problem.operands.reduce((sum, operand) => sum + operand, 0);
     if (Math.abs(problem.correctAnswer - expectedSum) > 0.001) {
       result.isValid = false;
