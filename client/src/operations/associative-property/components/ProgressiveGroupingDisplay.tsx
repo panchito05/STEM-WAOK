@@ -178,14 +178,19 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="text-gray-600 mb-2 text-sm">Resultado final:</div>
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <span className="text-xl">=</span>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      value={answers.final1}
-                      onChange={(e) => handleAnswerChange('final1', e.target.value)}
-                      className="w-20 h-12 text-center text-xl font-bold border-2 border-green-400"
-                      placeholder="?"
-                    />
+                    <div
+                      ref={el => inputRefs.current['final1'] = el}
+                      tabIndex={0}
+                      className={`w-20 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
+                        focusedField === 'final1' 
+                          ? 'border-green-600 bg-green-50 ring-2 ring-green-200' 
+                          : 'border-green-400 bg-white hover:border-green-600'
+                      }`}
+                      onClick={() => setFocusedField('final1')}
+                      onFocus={() => setFocusedField('final1')}
+                    >
+                      {answers.final1 || <span className="text-gray-400">?</span>}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -225,14 +230,19 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <span className="bg-blue-200 px-3 py-2 rounded font-bold">{a}</span>
                     <span className="text-xl">+</span>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      value={answers.rightSum2}
-                      onChange={(e) => handleAnswerChange('rightSum2', e.target.value)}
-                      className="w-16 h-12 text-center text-xl font-bold border-2 border-purple-400"
-                      placeholder="?"
-                    />
+                    <div
+                      ref={el => inputRefs.current['rightSum2'] = el}
+                      tabIndex={0}
+                      className={`w-16 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
+                        focusedField === 'rightSum2' 
+                          ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200' 
+                          : 'border-purple-400 bg-white hover:border-purple-500'
+                      }`}
+                      onClick={() => setFocusedField('rightSum2')}
+                      onFocus={() => setFocusedField('rightSum2')}
+                    >
+                      {answers.rightSum2 || <span className="text-gray-400">?</span>}
+                    </div>
                   </div>
                 </div>
 
@@ -241,14 +251,19 @@ const ProgressiveGroupingDisplay: React.FC<ProgressiveGroupingDisplayProps> = ({
                   <div className="text-gray-600 mb-2 text-sm">Resultado final:</div>
                   <div className="inline-flex items-center space-x-2 text-2xl font-mono">
                     <span className="text-xl">=</span>
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      value={answers.final2}
-                      onChange={(e) => handleAnswerChange('final2', e.target.value)}
-                      className="w-20 h-12 text-center text-xl font-bold border-2 border-purple-400"
-                      placeholder="?"
-                    />
+                    <div
+                      ref={el => inputRefs.current['final2'] = el}
+                      tabIndex={0}
+                      className={`w-20 h-12 text-center text-xl font-bold border-2 rounded flex items-center justify-center cursor-text transition-all ${
+                        focusedField === 'final2' 
+                          ? 'border-purple-600 bg-purple-50 ring-2 ring-purple-200' 
+                          : 'border-purple-400 bg-white hover:border-purple-600'
+                      }`}
+                      onClick={() => setFocusedField('final2')}
+                      onFocus={() => setFocusedField('final2')}
+                    >
+                      {answers.final2 || <span className="text-gray-400">?</span>}
+                    </div>
                   </div>
                 </div>
               </div>
