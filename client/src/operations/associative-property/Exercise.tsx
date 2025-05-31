@@ -3256,6 +3256,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
             <ChevronLeft className="mr-1 h-3 w-3 sm:h-4 sm:w-4" /> {currentTranslations.previous}
           </Button>
 
+          {(() => {
+            console.log('🔍 [RENDER-DEBUG] Button condition check:');
+            console.log('🔍 [RENDER-DEBUG] viewingPrevious:', viewingPrevious);
+            console.log('🔍 [RENDER-DEBUG] waitingRef.current:', waitingRef.current);
+            console.log('🔍 [RENDER-DEBUG] exerciseStarted:', exerciseStarted);
+            console.log('🔍 [RENDER-DEBUG] exerciseCompleted:', exerciseCompleted);
+            return null;
+          })()}
           {viewingPrevious ? (
             <Button 
               onClick={returnToActiveProblem} 
