@@ -2750,7 +2750,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
 
           {/* Interactive Exercise para nivel intermedio */}
-          {settings.difficulty === 'intermediate' && exerciseStarted && (
+          {settings.difficulty === 'intermediate' && (
             <InteractiveExercise 
               operands={currentProblem.operands}
               interactiveAnswers={interactiveAnswers}
@@ -2785,7 +2785,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           )}
 
           {/* Advanced Exercise para nivel avanzado */}
-          {settings.difficulty === 'advanced' && exerciseStarted && (
+          {settings.difficulty === 'advanced' && (
             <AdvancedExercise 
               operands={currentProblem.operands}
               interactiveAnswers={interactiveAnswers}

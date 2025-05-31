@@ -279,7 +279,7 @@ const InteractiveExercise: React.FC<InteractiveExerciseProps> = ({
                 parseInt(interactiveAnswers.blank2) === operands[2] && 
                 parseInt(interactiveAnswers.blank3) === operands[0] + operands[1] + operands[2]
               : selectedChoice === 'a'
-            ) ? '¡Correcto!' : 'Incorrecto. La propiedad asociativa dice que podemos agrupar los números de diferentes maneras al sumar, moviendo los paréntesis, pero siempre manteniendo el mismo orden de los números.'}
+            ) ? '¡Correcto!' : 'Incorrecto. La propiedad asociativa dice que podemos cambiar la agrupación sin cambiar el resultado.'}
           </div>
         </div>
       )}
