@@ -624,7 +624,7 @@ export function DrawingCanvas({
       // Campo final
       context.fillStyle = '#000000';
       context.font = contentFont;
-      const final1Y = blank1Y + lineSpacing * 1.5;
+      const final1Y = blank1Y + lineSpacing * 2; // Aumentar espacio vertical
       context.fillText('=', leftColumnCenterX - baseFontSize * 1, final1Y);
       
       // Rectángulo más grande para el resultado final (doble tamaño)
@@ -678,12 +678,13 @@ export function DrawingCanvas({
       // Campo final
       context.fillStyle = '#000000';
       context.font = contentFont;
-      context.fillText('=', rightColumnCenterX - baseFontSize * 1, final1Y);
+      const final2Y = blank1Y + lineSpacing * 2; // Usar la misma separación que la columna izquierda
+      context.fillText('=', rightColumnCenterX - baseFontSize * 1, final2Y);
       
       // Rectángulo más grande para el resultado final (doble tamaño)
       context.strokeStyle = '#9ca3af';
       context.lineWidth = 2;
-      context.strokeRect(rightColumnCenterX - baseFontSize * 0.2, final1Y - baseFontSize * 0.6, baseFontSize * 2, baseFontSize * 1.2);
+      context.strokeRect(rightColumnCenterX - baseFontSize * 0.2, final2Y - baseFontSize * 0.6, baseFontSize * 2, baseFontSize * 1.2);
     };
 
 
