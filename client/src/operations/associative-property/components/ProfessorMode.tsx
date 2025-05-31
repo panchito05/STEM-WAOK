@@ -149,7 +149,7 @@ export const ProfessorMode: React.FC<ProfessorModeProps> = ({
   // Calcular respuesta correcta
   const calculateCorrectAnswer = useCallback((prob: AssociativePropertyProblem): number => {
     return prob.operands.reduce((sum, operand) => {
-      const num = typeof operand === 'number' ? operand : parseFloat(operand.toString());
+      const num = typeof operand === 'number' ? operand : parseFloat(String(operand));
       return sum + (isNaN(num) ? 0 : num);
     }, 0);
   }, []);

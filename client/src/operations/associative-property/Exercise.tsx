@@ -1367,12 +1367,14 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       setCurrentAttempts(newAttempts);
 
       const problemIndexForHistory = currentProblemIndex;
-      const newHistoryEntry: UserAnswerType = {
+      const newHistoryEntry: AssociativePropertyUserAnswer = {
           problemId: currentProblem.id,
           problem: currentProblem,
           userAnswer: NaN,
           isCorrect: false,
-          status: 'timeout' // o 'unanswered'
+          status: 'timeout', // o 'unanswered'
+          attempts: currentAttempts,
+          timestamp: Date.now()
       };
       setUserAnswersHistory(prev => {
           const newHistory = [...prev];
@@ -1384,7 +1386,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
       if (settings.maxAttempts > 0 && newAttempts >= settings.maxAttempts) {
         // Cambiar el mensaje a "Answered (Incorrect!). The correct answer is = X"
         setFeedbackMessage(`Answered (Incorrect!). The correct answer is = ${currentProblem.correctAnswer}`);
-        const updatedHistoryEntry: UserAnswerType = { ...newHistoryEntry, status: 'revealed' };
+        const updatedHistoryEntry: AssociativePropertyUserAnswer = { ...newHistoryEntry, status: 'revealed' };
          setUserAnswersHistory(prev => {
             const newHistory = [...prev];
             newHistory[problemIndexForHistory] = updatedHistoryEntry;
@@ -1732,7 +1734,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
           const isCorrect = parseFloat(currentAnswer) === currentProblem.correctAnswer;
           
           // Crear objeto de respuesta
-          const answer: UserAnswerType = {
+          const answer: AssociativePropertyUserAnswer = {
             problemId: currentProblem.id,
             problem: currentProblem,
             userAnswer: parseFloat(currentAnswer),

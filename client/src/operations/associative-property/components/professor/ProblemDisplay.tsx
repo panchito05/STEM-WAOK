@@ -22,7 +22,7 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   const problemData = useMemo(() => {
     const isValid = InputValidator.validateProblem(problem);
     const correctAnswer = isValid 
-      ? problem.operands.reduce((sum, op) => sum + (typeof op === 'number' ? op : parseFloat(op.toString())), 0)
+      ? problem.operands.reduce((sum, op) => sum + (typeof op === 'number' ? op : parseFloat(String(op))), 0)
       : 0;
     
     return {
@@ -37,7 +37,7 @@ export const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
     if (!problemData.isValid) return [];
     
     return problem.operands.map(op => {
-      const num = typeof op === 'number' ? op : parseFloat(op.toString());
+      const num = typeof op === 'number' ? op : parseFloat(String(op));
       return isNaN(num) ? '0' : InputValidator.formatNumber(num);
     });
   }, [problem.operands, problemData.isValid]);
