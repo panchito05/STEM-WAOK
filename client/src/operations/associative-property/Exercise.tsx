@@ -2864,6 +2864,7 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
               setActiveInteractiveField={setActiveInteractiveField}
               validationTrigger={advancedValidationTrigger}
               exerciseStarted={exerciseStarted}
+              showAnswers={waitingRef.current && feedbackColor === "blue"}
               onAnswer={(isCorrect) => {
                 if (isCorrect) {
                   setFeedbackMessage("¡Excelente! Has demostrado tu comprensión de la propiedad asociativa con números más complejos.");

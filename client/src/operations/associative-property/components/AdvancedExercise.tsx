@@ -33,6 +33,37 @@ const AdvancedExercise: React.FC<AdvancedExerciseProps> = ({
   const [shuffledChoices, setShuffledChoices] = useState<any[]>([]);
   const [verificationExpression, setVerificationExpression] = useState<{ expression: string; isCorrect: boolean } | null>(null);
 
+  // Efecto para mostrar respuestas automáticamente cuando se solicite
+  useEffect(() => {
+    if (showAnswers && operands.length >= 3) {
+      console.log('[ASSOCIATIVE-PROPERTY-DEBUG] Mostrando respuestas para ejercicio:', exercise);
+      
+      switch (exercise) {
+        case 'fill-blank':
+          setInteractiveAnswers(prev => ({
+            ...prev,
+            blank1: operands[1].toString(),
+            blank2: operands[2].toString(),
+            blank3: operands.reduce((sum, val) => sum + val, 0).toString()
+          }));
+          break;
+          
+        case 'verification':
+          // Para verificación, siempre es verdadero (ambas expresiones son equivalentes)
+          setVerificationAnswer('verdadero');
+          break;
+          
+        case 'multiple-choice':
+          // Para opción múltiple, seleccionar la respuesta correcta
+          const correctChoice = shuffledChoices.find(choice => choice.correct);
+          if (correctChoice) {
+            setSelectedChoice(correctChoice.id);
+          }
+          break;
+      }
+    }
+  }, [showAnswers, operands, exercise, shuffledChoices, setInteractiveAnswers]);
+
   useEffect(() => {
     // Reiniciar estado cuando cambian los operandos
     setShowResult(false);
