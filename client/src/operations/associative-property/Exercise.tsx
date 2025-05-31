@@ -2841,6 +2841,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                 
                 // Mostrar botón de continuar
                 setWaitingForContinue(true);
+                
+                // Auto-continuar si está habilitado
+                if (autoContinue && !blockAutoAdvance) {
+                  if (autoContinueTimerRef.current) clearTimeout(autoContinueTimerRef.current);
+                  autoContinueTimerRef.current = setTimeout(() => {
+                    if (!blockAutoAdvance && waitingRef.current) {
+                      handleContinue();
+                      autoContinueTimerRef.current = null;
+                    }
+                  }, 3000);
+                }
               }}
             />
           )}
@@ -2892,6 +2903,17 @@ export default function Exercise({ settings, onOpenSettings }: ExerciseProps) {
                   
                   // Mostrar botón de continuar en lugar de avance automático
                   setWaitingForContinue(true);
+                  
+                  // Auto-continuar si está habilitado
+                  if (autoContinue && !blockAutoAdvance) {
+                    if (autoContinueTimerRef.current) clearTimeout(autoContinueTimerRef.current);
+                    autoContinueTimerRef.current = setTimeout(() => {
+                      if (!blockAutoAdvance && waitingRef.current) {
+                        handleContinue();
+                        autoContinueTimerRef.current = null;
+                      }
+                    }, 3000);
+                  }
                 } else {
                   setFeedbackMessage("Revisa tu respuesta. La propiedad asociativa mantiene el mismo resultado independientemente de la agrupación.");
                   setFeedbackColor("red");
